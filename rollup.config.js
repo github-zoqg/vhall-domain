@@ -1,6 +1,9 @@
 import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
 import {uglify} from "rollup-plugin-uglify";
+import alias from '@rollup/plugin-alias';
+import path from 'path';
+const _dirname = path.resolve();
 export default {
     input: 'src/index.js',
     //是否开启摇树优化
@@ -29,5 +32,10 @@ export default {
         }),
         uglify(),
         commonjs(),
+        alias({
+            entries: [
+                {find: '@', replacement: path.resolve(_dirname,'src')}
+            ]
+        }),
     ]
 };
