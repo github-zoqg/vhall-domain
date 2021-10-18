@@ -1,33 +1,14 @@
 //common
-import * as contextServer from "./common/context.server";
-import useMsgServer from "./common/msg.server";
+export * from "./common/index";
 
 //insertFile
-import useInsertFileServer from "./insertFile/insertFile.server";
+export * from "./insertFile/index";
 
 //praise
-import usePraiseServer from "./praise/praise.server";
+export * from "./praise/index";
 
 //signIn
-import useSignInServer from "./signIn/signIn.server";
+export * from "./signIn/index";
 
 //timer
-import useTimerServer from "./timer/timer.server";
-
-export {
-    //common
-    contextServer,
-    useMsgServer,
-
-    //insertFile
-    useInsertFileServer,
-
-    //praise
-    usePraiseServer,
-
-    //signIn
-    useSignInServer,
-
-    //timer
-    useTimerServer
-}
+export * from "./timer/index";
