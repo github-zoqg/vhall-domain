@@ -1,14 +1,17 @@
 //common
-export * from "./common/index";
+import contextServer from './common/context.server';
+import userMsgServer from './common/msg.server';
 
 //insertFile
-export * from "./insertFile/index";
+import insertFileServer from "./insertFile/insertFile.server";
 
 //praise
-export * from "./praise/index";
+import praiseServer from "./praise/praise.server";
 
 //signIn
-export * from "./signIn/index";
+import signInServer from "./signIn/signIn.server";
 
 //timer
-export * from "./timer/index";
+import timerServer from "./timer/timer.server";
+
+export {contextServer,userMsgServer,insertFileServer,praiseServer,signInServer,timerServer};

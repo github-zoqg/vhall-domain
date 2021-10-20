@@ -11,5 +11,5 @@ class ContextServer {
         return this.value[key]
     }
 }
-
-export default new ContextServer()
+const contextServer = new ContextServer();
+export default contextServer;
