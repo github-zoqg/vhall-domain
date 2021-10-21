@@ -1,6 +1,6 @@
 //common
 import contextServer from './common/context.server';
-import userMsgServer from './common/msg.server';
+import useMsgServer from './common/msg.server';
 
 //insertFile
 import insertFileServer from "./insertFile/insertFile.server";
@@ -14,4 +14,4 @@ import signInServer from "./signIn/signIn.server";
 //timer
 import timerServer from "./timer/timer.server";
 
-export {contextServer,userMsgServer,insertFileServer,praiseServer,signInServer,timerServer};
+export {contextServer,useMsgServer,insertFileServer,praiseServer,signInServer,timerServer};

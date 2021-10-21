@@ -1,5 +1,5 @@
 function useInsertFileServer() {
-    const state = {}
+    let state = {}
 
     return { state }
 }

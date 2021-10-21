@@ -1,15 +1,20 @@
-class ContextServer {
-    constructor() {
-        this.value = {}
+function useContextServer() {
+    const state = {
+        serverPool: {}
     }
 
-    set(key, value) {
-        this.value[key] = value
+    const set = (key, server) => {
+        const { serverPool } = state;
+        serverPool[key] = server;
     }
 
-    get(key) {
-        return this.value[key]
+    const get = (key) => {
+        const { serverPool } = state;
+        return serverPool[key]
     }
+
+    return { set, get }
 }
-const contextServer = new ContextServer();
+
+const contextServer = useContextServer();
 export default contextServer;
