@@ -890,188 +890,6 @@
     return BaseModule;
   }();
 
-  var ChatGroup = /*#__PURE__*/function (_BaseModule) {
-    _inherits(ChatGroup, _BaseModule);
-
-    var _super = _createSuper(ChatGroup);
-
-    function ChatGroup(chatInstance) {
-      var _this;
-
-      _classCallCheck(this, ChatGroup);
-
-      if (!chatInstance) {
-        throw new Error('Expected a chatInstance option');
-      }
-
-      _this = _super.call(this);
-      _this.chatInstance = chatInstance;
-      return _this;
-    }
-    /**
-     * 根据已有groupId，生成小组
-     * @param {String} groupId 
-     */
-
-
-    _createClass(ChatGroup, [{
-      key: "groupBuild",
-      value: function groupBuild(groupId) {
-        if (this.groupInstance) {
-          throw new Error('GroupInstance cannot be created repeatedly');
-        }
-
-        this.groupInstance = this.chatInstance.groupBuild(groupId);
-        this.listenEvents();
-      }
-      /**
-       * 创建小组，自己必定会在小组内
-       * @param {Array} accounts 小组成员列表（如不包含自己，则会自动加入），Array<string>
-       * @param {*} context 小组的context信息，objetc
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "groupCreate",
-      value: function groupCreate(accounts, context) {
-        var _this2 = this;
-
-        if (this.groupInstance) {
-          throw new Error('GroupInstance cannot be created repeatedly');
-        }
-
-        return new Promise(function (resolve, reject) {
-          _this2.chatInstance.groupCreate(accounts, context).then(function (res) {
-            _this2.groupInstance = res;
-
-            _this2.listenEvents();
-          })["catch"](function (err) {
-            reject(err);
-          });
-        });
-      }
-      /**
-       * 注册事件
-       */
-
-    }, {
-      key: "listenEvents",
-      value: function listenEvents() {
-        var _this3 = this;
-
-        this.groupInstance.on(VhallChat.EVENTS.CHAT, function (msg) {
-          // 聊天消息
-          _this3.$emit('GROUP_CHAT', msg);
-        });
-        this.groupInstance.on(VhallChat.EVENTS.GROUP_MEMEBER_JOIN, function (ev) {
-          // 小组加入新成员
-          this.$emit('GROUP_MEMEBER_JOIN', ev);
-        });
-        this.groupInstance.on(VhallChat.EVENTS.GROUP_MEMEBER_LEFT, function (ev) {
-          // 小组成员离开（掉线、离开）
-          this.$emit('GROUP_MEMEBER_LEFT', ev);
-        });
-        this.groupInstance.on(VhallChat.EVENTS.GROUP_INFO_UPDATE, function (ev) {
-          // 小组信息更新，context信息更新
-          this.$emit('GROUP_INFO_UPDATE', ev);
-        });
-        this.groupInstance.on(VhallChat.EVENTS.GROUP_DISSOLVE, function (ev) {
-          // 小组解散 (被从小组移除不会触发此事件)
-          this.$emit('GROUP_DISSOLVE', ev);
-        });
-      }
-      /**
-       * 发送聊天消息
-       * @param {String} text 消息内容
-       * @param {Object} opt 消息选项
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "emitTextChat",
-      value: function emitTextChat(text) {
-        var opt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-        return this.groupInstance.emitTextChat(text, opt);
-      }
-      /**
-       * 获取最近的10条历史聊天消息
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "getLatelyHistoryList",
-      value: function getLatelyHistoryList() {
-        return this.groupInstance.getLatelyHistoryList();
-      }
-      /**
-       * 激活小组，之前的context不会保留
-       * @param {Array} accounts 可选，小组成员列表，Array<string>
-       * @param {Object} context 可选，小组的context信息 
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "groupActivate",
-      value: function groupActivate(accounts, context) {
-        return this.groupInstance.activate(accounts, context);
-      }
-      /**
-       * 获取小组上下文信息
-       * @returns {Object} 小组上下文对象 context
-       */
-
-    }, {
-      key: "groupGetContext",
-      value: function groupGetContext() {
-        return this.groupInstance.getContext();
-      }
-      /**
-       * 邀请成员加入（不需要确认）
-       * @param {Array} accounts 小组成员列表，Array<string>
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "groupInvite",
-      value: function groupInvite(accounts) {
-        return this.groupInstance.inviter(accounts);
-      }
-      /**
-       * 将成员移除
-       * @param {Array} accounts 小组成员列表，Array<string>
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "groupRemove",
-      value: function groupRemove(accounts) {
-        return this.groupInstance.remove(accounts);
-      }
-      /**
-       * 离开小组
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "groupLeft",
-      value: function groupLeft() {
-        return this.groupInstance.left();
-      }
-      /**
-       * 解散小组（小组内所有成员会收到解散消息）
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "groupDissolve",
-      value: function groupDissolve() {
-        return this.groupInstance.dissolve();
-      }
-    }]);
-
-    return ChatGroup;
-  }(BaseModule);
-
   var ChatModule = /*#__PURE__*/function (_BaseModule) {
     _inherits(ChatModule, _BaseModule);
 
@@ -1096,18 +914,25 @@
         var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         var defaultOptions = this.initDefaultOptions();
         var options = merge.recursive({}, defaultOptions, customOptions);
-        console.log('实例聊天的参数', options);
         return new Promise(function (resolve, reject) {
-          VhallChat.createInstance(options).then(function (res) {
-            _this.instance = res;
+          VhallChat.createInstance(options, function (event) {
+            _this.instance = event.message;
 
             _this.listenEvents();
 
-            resolve(res);
-          })["catch"](function (err) {
-            reject(err);
-          });
+            resolve(event);
+          }, reject);
         });
+      }
+      /**
+       * 销毁聊天实例
+       */
+
+    }, {
+      key: "destroy",
+      value: function destroy() {
+        this.instance.destroy();
+        this.instance = null;
       }
       /**
        * 获取实例化聊天的默认参数
@@ -1158,98 +983,77 @@
         var _this2 = this;
 
         this.instance.onRoomMsg(function (msg) {
-          // 房间消息
+          // 房间消息（不对外）
           _this2.$emit('ROOM_MSG', msg);
         });
-        this.instance.on(VhallChat.EVENTS.CHAT, function (msg) {
+        this.instance.onChat(function (msg) {
           // 聊天消息
           _this2.$emit('CHAT', msg);
         });
-        this.instance.on(VhallChat.EVENTS.JOIN, function (msg) {
+        this.instance.onCustomMsg(function (msg) {
+          // 自定义消息
+          _this2.$emit('CUSTOM_MSG', msg);
+        });
+        this.instance.onOffLine(function () {
+          // 连接断开
+          _this2.$emit('OFFLINE');
+        });
+        this.instance.onOnLine(function () {
+          // 连接连接上了
+          _this2.$emit('ONLINE');
+        });
+        this.instance.onDocMsg(function (msg) {
+          // 文档消息（不对外）
+          _this2.$emit('DOC_MSG');
+        });
+        this.instance.join(function (msg) {
           // 用户加入
           _this2.$emit('JOIN', msg);
         });
-        this.instance.on(VhallChat.EVENTS.LEFT, function (msg) {
+        this.instance.leave(function (msg) {
           // 用户离开
           _this2.$emit('LEFT', msg);
-        });
-        this.instance.on(VhallChat.EVENTS.KICK, function (msg) {
-          // 被踢出
-          _this2.$emit('KICK', msg);
-        });
-        this.instance.on(VhallChat.EVENTS.MUTE, function (msg) {
-          // 被禁言
-          _this2.$emit('MUTE', msg);
-        });
-        this.instance.on(VhallChat.EVENTS.UNMUTE, function (msg) {
-          // 取消禁言
-          _this2.$emit('UNMUTE', msg);
-        });
-        this.instance.on(VhallChat.EVENTS.SUPER_ALLOW, function (msg) {
-          // 加入超级白名单
-          _this2.$emit('SUPER_ALLOW', msg);
-        });
-        this.instance.on(VhallChat.EVENTS.UNSUPER_ALLOW, function (msg) {
-          // 被移出超级白名单
-          _this2.$emit('UNSUPER_ALLOW', msg);
-        });
-        this.instance.on(VhallChat.EVENTS.MUTE_ALL, function (msg) {
-          // 频道禁言
-          _this2.$emit('MUTE_ALL', msg);
-        });
-        this.instance.on(VhallChat.EVENTS.UNMUTE_ALL, function (msg) {
-          // 频道取消禁言
-          _this2.$emit('UNMUTE_ALL', msg);
-        });
-        this.instance.on(VhallChat.EVENTS.OFFLINE, function (msg) {
-          // 连接离线
-          _this2.$emit('OFFLINE', msg);
-        });
-        this.instance.on(VhallChat.EVENTS.ONLINE, function (msg) {
-          // 连接在线
-          _this2.$emit('ONLINE', msg);
-        });
-        this.instance.on(VhallChat.EVENTS.GROUP_NEW, function (msg) {
-          // 加入小组（包含自行加入和被拉入）
-          _this2.$emit('GROUP_NEW', msg);
-        });
-        this.instance.on(VhallChat.EVENTS.GROUP_DISSOLVE, function (msg) {
-          // 小组解散（任意小组解散，必须是已加入的小组）
-          _this2.$emit('GROUP_DISSOLVE', msg);
-        });
-        this.instance.on(VhallChat.EVENTS.AUDIT_CUSTOM_ALERT, function (msg) {
-          // 聊天审核新消息
-          _this2.$emit('AUDIT_CUSTOM_ALERT', msg);
         });
       }
       /**
        * 发送聊天消息
-       * @param {String} text 消息内容
-       * @param {Object} opt 消息选项
+       * @param {String} data 消息体
        * @returns {Promise}
        */
 
     }, {
       key: "emitTextChat",
-      value: function emitTextChat(text) {
-        var opt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-        return this.instance.emitTextChat(text, opt);
+      value: function emitTextChat(data) {
+        var _this3 = this;
+
+        return new Promise(function (resolve, reject) {
+          _this3.instance.emitChat(data, resolve, reject);
+        });
       }
       /**
        * 发送自定义消息
-       * @param {String} text 消息内容
-       * @param {Object} opt 消息选项
+       * @param {String} data 消息体
        * @returns {Promise}
        */
 
     }, {
       key: "emitCustomChat",
-      value: function emitCustomChat(text) {
-        var opt = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-        return this.instance.emitCustomChat(text, opt);
+      value: function emitCustomChat(data) {
+        return this.instance.emitCustomMsg(data);
       }
       /**
-       * 发送房间消息
+       * 发送文档消息（不对外）
+       * @param {Object} data 消息体
+       * @returns {Promise}
+       */
+
+    }, {
+      key: "emitDocMsg",
+      value: function emitDocMsg(data) {
+        return this.instance.emitDocMsg(data);
+      }
+      /**
+       * 发送房间消息（不对外）
        * @param {Object} data 消息体
        * @returns {Promise}
        */
@@ -1257,170 +1061,131 @@
     }, {
       key: "emitRoomMsg",
       value: function emitRoomMsg(data) {
-        return this.instance.emitRoomMsg(data);
+        var retData = JSON.stringify(data);
+        return this.instance.emitRoomMsg(retData);
       }
       /**
-       * 添加自定义消息监听事件
-       * @param {String} customMsgType 消息 type
-       * @param {Function} handler 事件回调
-       */
-
-    }, {
-      key: "onCustomChat",
-      value: function onCustomChat(customMsgType, handler) {
-        var _this3 = this;
-
-        // 首先判断handlers内有没有type事件容器，没有则创建一个新数组容器
-        if (!(customMsgType in this.handlers)) {
-          this.handlers[customMsgType] = [];
-          this.instance.on(customMsgType, function (msg) {
-            // 连接在线
-            _this3.$emit(customMsgType, msg);
-          });
-        } // 将事件存入
-
-
-        this.handlers[customMsgType].push(handler);
-      }
-      /**
-       * 更改用户禁言状态
-       * @param {Object} opt 
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "setUserMute",
-      value: function setUserMute(opt) {
-        return this.instance.setUserMute(opt);
-      }
-      /**
-       * 更改频道禁言状态
-       * @param {Object} opt 
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "setChannelMute",
-      value: function setChannelMute(opt) {
-        return this.instance.setChannelMute(opt);
-      }
-      /**
-       * 踢出用户，并加入连接黑名单
-       * @param {Object} opt 
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "setUserBlock",
-      value: function setUserBlock(opt) {
-        return this.instance.setUserBlock(opt);
-      }
-      /**
-       * 获取禁言用户列表
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "getMuteList",
-      value: function getMuteList() {
-        return this.instance.getMuteList();
-      }
-      /**
-       * 获取在线用户列表
+       * 获取用户列表信息
        * @param {Object} params 分页参数
        * @returns {Promise}
        */
 
     }, {
-      key: "getOnlineList",
-      value: function getOnlineList(params) {
-        return this.instance.getOnlineList(params);
-      }
-      /**
-       * 获取链接黑名单列表
-       * @returns {Promise}
-       */
+      key: "getUserListInfo",
+      value: function getUserListInfo(params) {
+        var _this4 = this;
 
-    }, {
-      key: "getBlockList",
-      value: function getBlockList() {
-        return this.instance.getBlockList();
-      }
-      /**
-       * 获取超级白名单列表
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "getAllowList",
-      value: function getAllowList() {
-        return this.instance.getAllowList();
-      }
-      /**
-       * 获取最近的10条历史聊天消息
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "getLatelyHistoryList",
-      value: function getLatelyHistoryList() {
-        return this.instance.getLatelyHistoryList();
-      }
-      /**
-       * 创建小组，自己必定会在小组内
-       * @param {Array} accounts 用户id列表
-       * @param {Object} context 小组的context信息
-       * @returns {Promise}
-       */
-
-    }, {
-      key: "groupCreate",
-      value: function groupCreate(accounts, context) {
-        var group = new ChatGroup(this.instance);
+        var defaultParams = {
+          currPage: 1,
+          pageSize: 10
+        };
+        var retParams = merge.recursive({}, defaultParams, params);
         return new Promise(function (resolve, reject) {
-          group.groupCreate(accounts, context).then(function () {
-            resolve(group);
-          })["catch"](function (err) {
-            reject(err);
-          });
+          _this4.instance.getUserListInfo(retParams, resolve, reject);
         });
       }
       /**
-       * 根据已有groupId，生成小组，此groupId必须是之前已存在的。后续“激活小组”、“主动加入小组”都是基于这个小组
-       * @param {String} groupId 小组id
+       * 禁言某个用户
+       * @param {Object} accountId 用户 id 
        * @returns {Promise}
        */
 
     }, {
-      key: "groupBuild",
-      value: function groupBuild(groupId) {
-        var group = new ChatGroup(this.instance);
-        group.groupBuild(groupId);
-        return group;
+      key: "setUserDisable",
+      value: function setUserDisable(accountId) {
+        return new Peomise(function (resolve, reject) {
+          var param = {
+            type: VhallChat.TYPE_DISABLE,
+            targetId: accountId
+          };
+          chat.setDisable(param, resolve, reject);
+        });
       }
       /**
-       * 审核消息
-       * @param {Number} status 审核结果 (1通过，2不通过)
-       * @param {Array} msgIds msg_id列表（字符串数组），最大长度100个（请自行去重复）
+       * 取消禁言某个用户
+       * @param {Object} accountId 用户 id 
        * @returns {Promise}
        */
 
     }, {
-      key: "auditAction",
-      value: function auditAction(status, msgIds) {
-        return this.instance.auditAction(status, msgIds);
+      key: "setUserPermit",
+      value: function setUserPermit(accountId) {
+        return new Peomise(function (resolve, reject) {
+          var param = {
+            type: VhallChat.TYPE_PERMIT,
+            targetId: accountId
+          };
+          chat.setDisable(param, resolve, reject);
+        });
       }
       /**
-       * 一次性操作待审核区所有消息
-       * @param {Number} status 1通过，2不通过
-       * @param {Boolean} isSend 这里的消息，不会被发送出去（通过长连接），但在历史消息记录可查（isSend 设置成true则投送）
+       * 禁言频道
        * @returns {Promise}
        */
 
     }, {
-      key: "auditAllAction",
-      value: function auditAllAction(status, isSend) {
-        return this.instance.auditAllAction(status, isSend);
+      key: "setChannelDisable",
+      value: function setChannelDisable() {
+        return new Peomise(function (resolve, reject) {
+          var param = {
+            type: VhallChat.TYPE_DISABLE_ALL
+          };
+          chat.setDisable(param, resolve, reject);
+        });
+      }
+      /**
+       * 取消禁言频道
+       * @returns {Promise}
+       */
+
+    }, {
+      key: "setChannelPermit",
+      value: function setChannelPermit() {
+        return new Peomise(function (resolve, reject) {
+          var param = {
+            type: VhallChat.TYPE_PERMIT_ALL
+          };
+          chat.setDisable(param, resolve, reject);
+        });
+      }
+      /**
+       * 获取历史聊天消息
+       * @returns {Promise}
+       */
+
+    }, {
+      key: "getHistoryList",
+      value: function getHistoryList(params) {
+        var _this5 = this;
+
+        var defaultParams = {
+          currPage: 1,
+          pageSize: 200
+        };
+        var retParams = merge.recursive({}, defaultParams, params);
+        return new Promise(function (resolve, reject) {
+          _this5.instance.getHistoryList(retParams, resolve, reject);
+        });
+      }
+      /**
+       * 获取房间在线信息
+       * @param {Object} params 分页参数
+       * @returns {Promise}
+       */
+
+    }, {
+      key: "getOnlineInfo",
+      value: function getOnlineInfo(params) {
+        var _this6 = this;
+
+        var defaultParams = {
+          currPage: 1,
+          pageSize: 200
+        };
+        var retParams = merge.recursive({}, defaultParams, params);
+        return new Promise(function (resolve, reject) {
+          _this6.instance.getOnlineInfo(retParams, resolve, reject);
+        });
       }
     }]);
 
@@ -1448,7 +1213,7 @@
         var _this2 = this;
 
         var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        var defaultOptions = {};
+        var defaultOptions = this.initDefaultOptions();
         var options = merge.recursive({}, defaultOptions, customOptions);
 
         var onSuccess = function onSuccess() {
@@ -1467,8 +1232,36 @@
         this.listenEvents();
       }
     }, {
+      key: "initDefaultOptions",
+      value: function initDefaultOptions() {
+        isPc();
+
+        var _store$get = store.get('roomInitData'),
+            paasInfo = _store$get.paasInfo,
+            userInfo = _store$get.userInfo;
+
+        var defaultOptions = {
+          accountId: userInfo.third_party_user_id,
+          roomId: paasInfo.room_id,
+          channelId: paasInfo.channel_id,
+          // 频道id 必须
+          appId: paasInfo.paas_app_id,
+          // appId 必须
+          role: userInfo.role_name,
+          // 角色 必须
+          isVod: false,
+          // 是否是回放 必须
+          client: window.VHDocSDK.Client.PC_WEB,
+          // 客户端类型
+          token: this.token
+        };
+        return defaultOptions;
+      }
+    }, {
       key: "listenEvents",
       value: function listenEvents() {
+        var _this3 = this;
+
         // 创建容器事件
         this.instance.on(VHDocSDK.Event.CREATE_CONTAINER, function (data) {}); // 选择容器
 
@@ -1476,15 +1269,38 @@
 
         this.instance.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE, function (data) {}); // 开关变换
 
-        this.instance.on(VHDocSDK.Event.SWITCH_CHANGE, function (status) {}); // 删除容器时候触发的事件
+        this.instance.on(VHDocSDK.Event.SWITCH_CHANGE, function (status) {
+          _this3.$emit('SWITCH_CHANGE', status);
+        }); // 删除容器时候触发的事件
 
-        this.instance.on(VHDocSDK.Event.DELETE_CONTAINER, function (data) {}); // 所有的文档准备完成
+        this.instance.on(VHDocSDK.Event.DELETE_CONTAINER, function (data) {
+          _this3.$emit('DELETE_CONTAINER');
+        }); // 所有的文档准备完成
 
-        this.instance.on(VHDocSDK.Event.ALL_COMPLETE, function () {}); // 正在演示的文档被删除
+        this.instance.on(VHDocSDK.Event.ALL_COMPLETE, function () {
+          _this3.$emit('ALL_COMPLETE');
+        }); // 正在演示的文档被删除(文档不存在)
 
         this.instance.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT, function (_ref) {
-          _ref.cid;
-              _ref.docId;
+          var cid = _ref.cid,
+              docId = _ref.docId;
+
+          _this3.$emit('DOCUMENT_NOT_EXIT', {
+            cid: cid,
+            docId: docId
+          });
+        }); // 翻页事件
+
+        this.instance.on(VHDocSDK.Event.PAGE_CHANGE, function (event) {
+          _this3.$emit('PAGE_CHANGE', event);
+        }); // 回放文件加载完成
+
+        this.instance.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, function (event) {
+          _this3.$emit('VOD_CUEPOINT_LOAD_COMPLETE', event);
+        }); // ppt文档加载完毕
+
+        this.instance.on(VHDocSDK.Event.PLAYBACKCOMPLETE, function (event) {
+          _this3.$emit('PLAYBACKCOMPLETE', event);
         });
       }
     }, {
@@ -1495,8 +1311,68 @@
         this.instance = null;
       }
     }, {
-      key: "createContainer",
-      value: function createContainer() {}
+      key: "createBoard",
+      value: function createBoard(customOptions) {
+        var elId = this.instance.createUUID('board');
+        var defaultOptions = {
+          elId: elId,
+          // div 容器 必须
+          width: 200,
+          // div 宽度，像素单位，数值型不带px 必须
+          height: 200,
+          // div 高度，像素单位，数值型不带px 必须
+          backgroundColor: 'RGBA',
+          // 背景颜色， 支持RGB 与 RGBA， 如果全透明，舞台背景色与网页背景色相同，如 ‘#FF0000’或 ‘#FF000000’ 必须
+          noDispatch: false,
+          // 非必填，默认false，是否推送消息到远端，false为推送，true为不推送，加载远程文档时该字段应为true
+          option: {
+            // 非必填，画笔预设选项
+            graphicType: VHDocSDK.GRAPHIC.PEN,
+            // 选项请参考画笔预设值,
+            stroke: '#000',
+            // 颜色值
+            strokeWidth: 4 // 正数 Number
+
+          }
+        };
+        var options = merge.recursive({}, defaultOptions, customOptions);
+        this.instance.createBoard(options);
+      }
+    }, {
+      key: "creatDocument",
+      value: function creatDocument(customOptions) {
+        var _defaultOptions;
+
+        var elId = sdk.createUUID('document'); // 容器id，必须用此方法创建，文档传入document，返回唯一id
+
+        var defaultOptions = (_defaultOptions = {
+          id: customOptions.id,
+          docId: customOptions.docId,
+          elId: elId,
+          // div 容器 必须
+          width: 200,
+          // div 宽度，像素单位，数值型不带px 必须
+          height: 200
+        }, _defineProperty(_defaultOptions, "docId", 'yyy'), _defineProperty(_defaultOptions, "noDispatch", false), _defineProperty(_defaultOptions, "option", {
+          // 非必填，画笔预设选项
+          graphicType: VHDocSDK.GRAPHIC.PEN,
+          // 选项请参考画笔预设值,
+          stroke: '#000',
+          // 颜色值
+          strokeWidth: 4 // 正数 Number
+
+        }), _defaultOptions);
+        merge.recursive({}, defaultOptions, customOptions);
+        sdk.createDocument(opts); // 返回promise
+      }
+    }, {
+      key: "selectContainer",
+      value: function selectContainer(id) {
+        this.instance.selectContainer({
+          id: id
+        });
+        this.currentCid = id;
+      }
       /**
        * 
        * @param {*} child is cid-ret
@@ -1506,6 +1382,36 @@
       key: "addChild",
       value: function addChild(child) {
         this.children.push(child);
+      }
+    }, {
+      key: "zoomIn",
+      value: function zoomIn() {
+        this.instance.zoomIn();
+      }
+    }, {
+      key: "zoomOut",
+      value: function zoomOut() {
+        this.instance.zoomOut();
+      }
+    }, {
+      key: "zoomReset",
+      value: function zoomReset() {
+        this.instance.zoomReset();
+      }
+    }, {
+      key: "move",
+      value: function move() {
+        this.instance.move();
+      }
+    }, {
+      key: "prevStep",
+      value: function prevStep() {
+        this.instance.prevStep();
+      }
+    }, {
+      key: "nextStep",
+      value: function nextStep() {
+        this.instance.nextStep();
       }
     }]);
 
@@ -2303,28 +2209,57 @@
   var PlayerModule = /*#__PURE__*/function (_BaseModule) {
     _inherits(PlayerModule, _BaseModule);
 
-    _createSuper(PlayerModule);
+    var _super = _createSuper(PlayerModule);
 
     function PlayerModule(customOptions) {
       var _this;
 
       _classCallCheck(this, PlayerModule);
 
+      _this = _super.call(this, customOptions);
+
       _this.init(customOptions);
 
       _this.isPlaying = false;
-      return _possibleConstructorReturn(_this);
+      return _this;
     }
 
     _createClass(PlayerModule, [{
       key: "init",
       value: function init() {
+        var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var successCb = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
+        var failCb = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
+
+        if (customOptions.type === 'live') {
+          this.initLivePlayer(customOptions, successCb, failCb);
+        }
+
+        if (customOptions.type === 'vod') {
+          this.initVodPlayer(customOptions, successCb, failCb);
+        }
+      }
+    }, {
+      key: "createInstance",
+      value: function createInstance() {
         var _this2 = this;
 
         var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         var successCb = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
         var failCb = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
+
+        var _store$get = store.get('roomInitData'),
+            paasInfo = _store$get.paasInfo,
+            userInfo = _store$get.userInfo;
+
+        var defaultOptions = {
+          appId: paasInfo.paas_app_id,
+          accountId: userInfo.third_party_user_id,
+          token: paasInfo.paas_access_token,
+          type: 'live'
+        };
         var options = merge.recursive({}, defaultOptions, customOptions);
+        console.log('options:', options);
 
         var onSuccess = function onSuccess(event) {
           _this2.instance = event.vhallplayer;
@@ -2340,6 +2275,48 @@
         };
 
         VhallPlayer.createInstance(options, onSuccess, onFail);
+      }
+    }, {
+      key: "initLivePlayer",
+      value: function initLivePlayer() {
+        var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var successCb = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
+        var failCb = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
+
+        var _store$get2 = store.get('roomInitData'),
+            paasInfo = _store$get2.paasInfo;
+            _store$get2.userInfo;
+
+        var defaultOptions = {
+          type: 'live',
+          language: 'zh',
+          liveOption: {
+            roomId: paasInfo.room_id,
+            forceMSE: true,
+            type: 'flv'
+          }
+        };
+        var options = merge.recursive({}, defaultOptions, customOptions);
+        this.createInstance(options, successCb, failCb);
+      }
+    }, {
+      key: "initVodPlayer",
+      value: function initVodPlayer() {
+        var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var successCb = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
+        var failCb = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
+        var defaultOptions = {
+          appId: '',
+          accountId: '',
+          token: '',
+          type: 'live',
+          vodOption: {
+            forceMSE: true,
+            recordId: ''
+          }
+        };
+        var options = merge.recursive({}, defaultOptions, customOptions);
+        this.createInstance(options, successCb, failCb);
       }
     }, {
       key: "listenEvents",
@@ -2564,7 +2541,7 @@
   }(BaseModule);
 
   var initLoader = function initLoader() {
-    Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-base/vhall-msg-2.0.0.js?oldver=1.0.11&t=3'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/3.0.0/vhall-jssdk-chat-3.0.0.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js')]).then(function (res) {
+    Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js')]).then(function (res) {
     });
   };
 
