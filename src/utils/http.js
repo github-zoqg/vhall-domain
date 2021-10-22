@@ -11,13 +11,16 @@
  *      }
  *   })
  */
+import { isPc } from './index.js'
 
 
-
-let BUSE_URL = ''
+let BUSE_URL = 'https://t-saas-dispatch.vhall.com'
 let TOKEN = ''
 let LIVETOKEN = ''
-let HEADERS = null
+let HEADERS = {
+    platform: isPc() ? 7 : 10,
+    token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MzM5MzMxODcsImV4cCI6MTYzNjUyNTE4NywidXNlcl9pZCI6IjE2NDIzMTUyIiwicGxhdGZvcm0iOiI3IiwiY2giOiJjIiwiYnVzaW5lc3NfYWNjb3VudF9pZCI6IiJ9.6qmS6dG9QMmIHdXE9oV7FSPN2zZdGZa1ERfJSYA7Ir4'
+}
 
 
 function setBaseUrl(url) {
@@ -103,6 +106,7 @@ function json(params, success, fail) {
     if (!LIVETOKEN) {
         TOKEN && xhr.setRequestHeader('token', TOKEN)
     }
+    console.log('HEADERS', HEADERS)
     if (HEADERS) {
         Object.getOwnPropertyNames(HEADERS).forEach(item => {
             xhr.setRequestHeader(item, HEADERS[item])

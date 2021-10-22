@@ -1,4 +1,3 @@
-
 import contextServer from "../common/context.server"
 import useMsgServer from "../common/msg.server"
 import requestApi from '../../request/index.js';
@@ -19,13 +18,14 @@ export default function useRoomBaseServer() {
     // 初始化房间信息,包含发起/观看(嵌入/标品)
     const getWatchInitData = (options) => {
         const { vhallSaasInstance } = state;
-        state.watchInitData = vhallSaasInstance.init(options).then(res => {
+        return vhallSaasInstance.init(options).then(res => {
             if (res.code === 200) {
                 state.inited = true;
-                return state.watchInitData = res.data;
+                state.watchInitData = res.data;
             } else {
-                return state.setWatchInitErrorData = res;
+                state.setWatchInitErrorData = res;
             }
+            return res
         });
     }
 
@@ -46,22 +46,32 @@ export default function useRoomBaseServer() {
         })
     }
 
-    // 开播liveStart
-    const liveStart = (data) => {
+    // 设置设备检测状态
+    const setDevice = (data) => {
+        return requestApi.roomBase.setDevice(data).then(res => {
+            return res;
+        })
+    }
+
+    // 开播startLive
+    const startLive = (data = {}) => {
+        setDevice(data)
         return requestApi.live.startLive(data)
     }
 
     // 结束直播
-    const liveEnd = (data) => {
+    const endLive = (data) => {
         return requestApi.live.endLive(data)
     }
 
     const init = (option) => {
         const vhallSaasInstance = new window.VhallSaasSDK()
         state.vhallSaasInstance = vhallSaasInstance
-        getWatchInitData(option)
-        initSubServer()
         addToContext()
+        return getWatchInitData(option).then(res => {
+            initSubServer()
+            return res
+        })
     }
 
     const initSubServer = () => {
@@ -69,7 +79,7 @@ export default function useRoomBaseServer() {
         contextServer.set('msgServer', msgServer)
     }
 
-    const result = { state, init, getWatchInitData, getWebinarInfo, getConfigList, watchEmbedInit, liveStart, liveEnd }
+    const result = { state, init, getWatchInitData, getWebinarInfo, getConfigList, startLive, endLive, setDevice }
 
     function addToContext() {
         contextServer.set('roomBaseServer', result)
