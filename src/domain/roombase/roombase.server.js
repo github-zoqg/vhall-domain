@@ -1,6 +1,7 @@
 
 import contextServer from "../common/context.server"
 import useMsgServer from "../common/msg.server"
+import requestApi from '../../request/index.js';
 import '../../libs/sdk.js'
 
 export default function useRoomBaseServer(){
@@ -14,8 +15,8 @@ export default function useRoomBaseServer(){
     }
 
     const init=()=>{
-        state.vhallSaas = new window.VhallSaasSDK()
-        vhallSaas.init({
+        const vhallSaasInstance = new window.VhallSaasSDK()
+        vhallSaasInstance.init({
             development: true,
             webinarId: 287395517,
             clientType: 'receive',
@@ -26,9 +27,10 @@ export default function useRoomBaseServer(){
             token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MzM5MzMxODcsImV4cCI6MTYzNjUyNTE4NywidXNlcl9pZCI6IjE2NDIzMTUyIiwicGxhdGZvcm0iOiI3IiwiY2giOiJjIiwiYnVzaW5lc3NfYWNjb3VudF9pZCI6IiJ9.6qmS6dG9QMmIHdXE9oV7FSPN2zZdGZa1ERfJSYA7Ir4'
         }).then(res => {
             console.log('initResponseData', res)
+            state.vhallSaas = res
         })
 
-        contextServer.set('vhallSaas', vhallSaas)
+        contextServer.set('vhallSaas', state.vhallSaas)
         const msgServer = useMsgServer()
         contextServer.set('msgServer', msgServer)
     }
@@ -63,10 +65,7 @@ export default function useRoomBaseServer(){
 
     // 获取活动信息
     const getWebinarInfo = (data) => {
-        request('v3/webinars/webinar/info', {
-            method: 'POST',
-            body: qs.stringify(data)
-        }).then(res => {
+        requestApi.roomBase.getWebinarInfo(data).then(res => {
             state.webinarVo = res.data;
             return state.webinarVo;
         })
