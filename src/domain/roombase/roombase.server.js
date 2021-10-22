@@ -4,44 +4,24 @@ import useMsgServer from "../common/msg.server"
 import requestApi from '../../request/index.js';
 import '../../libs/sdk.js'
 
-export default function useRoomBaseServer(){
+export default function useRoomBaseServer() {
     const state = {
+        inited:false,
         isLiveOver: false,
         webinarVo: {},
         watchInitData: {},
         setWatchInitErrorData: {},
         configList: {},
-        vhallSaas: null
+        vhallSaasInstance: null
     }
 
-    const init=()=>{
-        const vhallSaasInstance = new window.VhallSaasSDK()
-        vhallSaasInstance.init({
-            development: true,
-            webinarId: 287395517,
-            clientType: 'receive',
-            receiveType: 'standard',
-            requestHeaders: {
-                platform: 7
-            },
-            token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MzM5MzMxODcsImV4cCI6MTYzNjUyNTE4NywidXNlcl9pZCI6IjE2NDIzMTUyIiwicGxhdGZvcm0iOiI3IiwiY2giOiJjIiwiYnVzaW5lc3NfYWNjb3VudF9pZCI6IiJ9.6qmS6dG9QMmIHdXE9oV7FSPN2zZdGZa1ERfJSYA7Ir4'
-        }).then(res => {
-            console.log('initResponseData', res)
-            state.vhallSaas = res
-        })
 
-        contextServer.set('vhallSaas', state.vhallSaas)
-        const msgServer = useMsgServer()
-        contextServer.set('msgServer', msgServer)
-    }
-
-    const getGrayConfig = (data) => {
-        state.watchInitData = VhallSaasSDK.watchInit(data);
-    }
-
-    const getWatchInitData = (data) => {
-        state.watchInitData = VhallSaasSDK.init(data).then(res => {
+    // 初始化房间信息,包含发起/观看(嵌入/标品)
+    const getWatchInitData = (options) => {
+        const { vhallSaasInstance } = state;
+        state.watchInitData = vhallSaasInstance.init(options).then(res => {
             if (res.code === 200) {
+                state.inited = true;
                 return state.watchInitData = res.data;
             } else {
                 return state.setWatchInitErrorData = res;
@@ -49,38 +29,51 @@ export default function useRoomBaseServer(){
         });
     }
 
-    // 嵌入观看端初始化
-    const watchEmbedInit = () => {
-        request('/v3/webinars/watch/inline-init', {
-            method: 'GET',
-            body: qs.stringify(data)
-        }).then(res => {
-            if (res.code === 200) {
-                return state.watchInitData = res.data;
-            } else {
-                return state.setWatchInitErrorData = res;
-            }
-        })
-    }
 
     // 获取活动信息
     const getWebinarInfo = (data) => {
-        requestApi.roomBase.getWebinarInfo(data).then(res => {
+        return requestApi.roomBase.getWebinarInfo(data).then(res => {
             state.webinarVo = res.data;
-            return state.webinarVo;
+            return res;
         })
     }
 
     // 获取房间权限配置列表
     const getConfigList = (data) => {
-        request('/v3/users/permission/get-config-list', {
-            method: 'POST',
-            body: qs.stringify(data)
-        }).then(res => {
+        return requestApi.roomBase.getConfigList(data).then(res => {
             state.configList = JSON.parse(res.data.permissions);
-            return state.configList;
+            return res;
         })
     }
 
-    return { state, init, getWatchInitData, getWebinarInfo, getConfigList, watchEmbedInit }
+    // 开播liveStart
+    const liveStart = (data) => {
+        return requestApi.live.startLive(data)
+    }
+
+    // 结束直播
+    const liveEnd = (data) => {
+        return requestApi.live.endLive(data)
+    }
+
+    const init = (option) => {
+        const vhallSaasInstance = new window.VhallSaasSDK()
+        state.vhallSaasInstance = vhallSaasInstance
+        getWatchInitData(option)
+        initSubServer()
+        addToContext()
+    }
+
+    const initSubServer = () => {
+        const msgServer = useMsgServer();
+        contextServer.set('msgServer', msgServer)
+    }
+
+    const result = { state, init, getWatchInitData, getWebinarInfo, getConfigList, watchEmbedInit, liveStart, liveEnd }
+
+    function addToContext() {
+        contextServer.set('roomBaseServer', result)
+    }
+
+    return result;
 }
