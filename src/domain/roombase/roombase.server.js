@@ -1,8 +1,9 @@
-import VhallSaasSDK from '@/libs/sdk'
+
 import contextServer from "../common/context.server"
 import useMsgServer from "../common/msg.server"
+import '../../libs/sdk.js'
 
-export default function useActiveServer(){
+export default function useRoomBaseServer(){
     const state = {
         isLiveOver:false,
         webinarVo:{},
@@ -11,7 +12,7 @@ export default function useActiveServer(){
     }
 
     const init=()=>{
-        state.vhallSaas = new VhallSaasSDK()
+        state.vhallSaas = new window.VhallSaasSDK()
         vhallSaas.init({
             development:true,
             webinarId:287395517,

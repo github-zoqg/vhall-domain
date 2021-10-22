@@ -2,9 +2,10 @@
   "name": "vhall-saas-domain",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/bundle-cjs.js",
+  "main": "src/index.js",
   "module": "dist/bundle-es.js",
   "scripts": {
+    "dev": "rollup -c --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c ./build/rollup.build.js"
   },
@@ -13,10 +14,21 @@
   "devDependencies": {
     "@babel/core": "^7.15.8",
     "@babel/preset-env": "^7.15.8",
+    "@babel/preset-react": "^7.14.5",
     "@rollup/plugin-alias": "^3.1.5",
+    "@rollup/plugin-node-resolve": "^13.0.5",
+    "@rollup/plugin-replace": "^3.0.0",
     "rollup": "^2.58.0",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-uglify": "^6.0.4"
+    "rollup-plugin-uglify": "^6.0.4",
+    "rollup-plugin-generate-html-template": "^1.7.0",
+    "rollup-plugin-hot": "^0.1.1",
+    "rollup-plugin-livereload": "^2.0.5",
+    "rollup-plugin-serve": "^1.1.0"
+  },
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
   }
 }

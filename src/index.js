@@ -1,3 +1,3 @@
-export * from "@/domain/index";
-import * as VhallSaasDomain from '@/domain/index';
-export default VhallSaasDomain;
+export * from "./domain/index.js";
+// import * as VhallSaasDomain from '@/domain/index.js';
+// export default VhallSaasDomain;
