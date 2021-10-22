@@ -142,7 +142,7 @@ export default function useChatServer() {
     //私有方法，处理图片链接
     const _handleImgUrl = (rawData) => {
         //todo 可能需要去重
-        this.imgUrls.push(...rawData);
+        state.imgUrls.push(...rawData);
     }
 
     //私有方法，处理私聊列表
