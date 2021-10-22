@@ -5,29 +5,37 @@ import {textToEmojiText} from './emoji';
 import Msg from './msg-class';
 
 class ChatServer {
-    constructor() {
-        //聊天列表
+    constructor(params={}) {
+
+        let defaultParams = {
+            roomId: '',
+            page:0,
+            limit:10,
+            keywordList:[],
+            avatar:'',
+            roleName: '',
+            imgUrls:[]
+        };
+
         this.chatList = [];
-        //当前页数
-        this.page = 0;
-        //默认的每页限制条数
-        this.limit = 10;
-        //图片预览数组
-        this.imgUrls = [];
 
-        //缓存获取到的敏感词过滤
-        this.keywordList = [];
+        //混合参数
+        let mixedParams = Object.assign({},defaultParams,params);
 
-
+        Object
+            .keys(mixedParams)
+            .forEach(item=>{
+                this[item] = mixedParams[item];
+            });
     }
 
     //接收聊天消息
-    getHistoryMsg(params = {}) {
+  async  getHistoryMsg(params = {}) {
 
         const _this = this;
 
         //请求获取聊天消息
-        let backData = this.fetchHistoryData(params);
+        let backData = await this.fetchHistoryData(params);
 
         let list = [];
 
@@ -43,7 +51,7 @@ class ChatServer {
 
                     //处理私聊列表
                     if (item.context && Array.isArray(item.context.at_list) && item.context.at_list.length && item.data.text_content) {
-                        this._handlePrivateChatList(item,);
+                        item.context.at_list = this._handlePrivateChatList(item,item.context.at_list);
                     }
 
                     //格式化消息
@@ -57,19 +65,25 @@ class ChatServer {
                 .reverse()
                 .filter(item => ['customPraise'].includes(item.type));
 
-            this.chatList.unshift(...list)
+            this.chatList.unshift(...list);
         }
-
-
+        //返回原始数据等以方便使用
+        let result = {
+            backData,
+            list,
+            chatList:this.chatList
+        };
+        return result;
     }
 
     //发送聊天消息(这部分主要是提取自PC观看端)
     sendMsg(params={}) {
 
+        //todo 可以考虑取值初始化的时候传入
         let {inputValue,needFilter=true,name='',avatar='',roleName=2} = params;
 
+        //todo 校验内容应交视图控制,不需要写入到领域里，因为领域相对需要纯一些的函数，统一输入统一输出
         if ((!inputValue || (inputValue && !inputValue.trim()))) {
-            //todo 需要调用sdk或者事件，弹出一个提示，或者抛错由视图捕获自行处理
             return this.$message({
                 message: this.$t('内容不能为空'),
                 showClose: true,
@@ -77,8 +91,10 @@ class ChatServer {
                 customClass: 'zdy-info-box'
             });
         }
+
         const data = {};
 
+        //组装内容也可考虑交由视图
         if (inputValue) {
             data.type = 'text';
             data.barrageTxt = inputValue.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
@@ -94,16 +110,17 @@ class ChatServer {
         let filterStatus = true;
 
         if(needFilter &&  this.keywordList.length){
+            //只要找到一个敏感词，消息就不让发
             filterStatus = !this.keywordList.some(item=>inputValue.includes(item.name));
         }
 
         //todo 暂时做示意，这部分可能会通过sdk完成
         if (roleName != 2 || (roleName == 2 && filterStatus)) {
-            window.chatSDK.emit(data, context)
-            window.vhallReport && window.vhallReport.report('CHAT', {
-                event: JSON.stringify(data),
-                market_tools_id:roleName
-            })
+            // window.chatSDK.emit(data, context)
+            // window.vhallReport && window.vhallReport.report('CHAT', {
+            //     event: JSON.stringify(data),
+            //     market_tools_id:roleName
+            // })
         }
 
 
@@ -124,7 +141,8 @@ class ChatServer {
 
         let rawData = [];
 
-        return rawData;
+        //返回一个promise做示意
+        return Promise.resolve(rawData);
     }
 
     //获取keywordList
@@ -192,6 +210,4 @@ class ChatServer {
 
 
 }
-
-const chatServer = new ChatServer();
-export default chatServer;
+export default ChatServer;
