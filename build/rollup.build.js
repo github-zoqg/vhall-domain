@@ -30,48 +30,48 @@ const inputMapList = [
             // },
         ]
     },
-    {
-        input: 'src/domain/common/context.server.js',
-        output: {
-            file: './dist/vhall-saas-domain/lib/contextServer.js',
-            format: 'esm'
-        }
-    },
-    {
-        input: 'src/domain/common/msg.server.js',
-        output: {
-            file: './dist/vhall-saas-domain/lib/userMsgServer.js',
-            format: 'esm'
-        }
-    },
-    {
-        input: 'src/domain/insertFile/insertFile.server.js',
-        output: {
-            file: './dist/vhall-saas-domain/lib/insertFileServer.js',
-            format: 'esm'
-        }
-    },
-    {
-        input: 'src/domain/praise/praise.server.js',
-        output: {
-            file: './dist/vhall-saas-domain/lib/praiseServer.js',
-            format: 'esm'
-        }
-    },
-    {
-        input: 'src/domain/signIn/signIn.server.js',
-        output: {
-            file: './dist/vhall-saas-domain/lib/signInServer.js',
-            format: 'esm'
-        }
-    },
-    {
-        input: 'src/domain/timer/timer.server.js',
-        output: {
-            file: './dist/vhall-saas-domain/lib/timerServer.js',
-            format: 'esm'
-        }
-    },
+    // {
+    //     input: 'src/domain/common/context.server.js',
+    //     output: {
+    //         file: './dist/vhall-saas-domain/lib/contextServer.js',
+    //         format: 'esm'
+    //     }
+    // },
+    // {
+    //     input: 'src/domain/common/msg.server.js',
+    //     output: {
+    //         file: './dist/vhall-saas-domain/lib/userMsgServer.js',
+    //         format: 'esm'
+    //     }
+    // },
+    // {
+    //     input: 'src/domain/insertFile/insertFile.server.js',
+    //     output: {
+    //         file: './dist/vhall-saas-domain/lib/insertFileServer.js',
+    //         format: 'esm'
+    //     }
+    // },
+    // {
+    //     input: 'src/domain/praise/praise.server.js',
+    //     output: {
+    //         file: './dist/vhall-saas-domain/lib/praiseServer.js',
+    //         format: 'esm'
+    //     }
+    // },
+    // {
+    //     input: 'src/domain/signIn/signIn.server.js',
+    //     output: {
+    //         file: './dist/vhall-saas-domain/lib/signInServer.js',
+    //         format: 'esm'
+    //     }
+    // },
+    // {
+    //     input: 'src/domain/timer/timer.server.js',
+    //     output: {
+    //         file: './dist/vhall-saas-domain/lib/timerServer.js',
+    //         format: 'esm'
+    //     }
+    // },
 ];
 const pluginsConfig = [
     babel({
