@@ -1,3 +1,4 @@
+
 function useContextServer() {
     const state = {
         serverPool: {}
@@ -13,8 +14,14 @@ function useContextServer() {
         return serverPool[key]
     }
 
-    return { set, get }
+    const show = () => {
+        const { serverPool } = state;
+        return serverPool
+    }
+
+    return { set, get, show }
 }
 
-const contextServer = useContextServer();
+const contextServer = useContextServer()
+
 export default contextServer;

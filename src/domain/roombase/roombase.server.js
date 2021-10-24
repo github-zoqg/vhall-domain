@@ -1,5 +1,3 @@
-import contextServer from "../common/context.server"
-import useMsgServer from "../common/msg.server"
 import requestApi from '../../request/index.js';
 import '../../libs/sdk.js'
 
@@ -67,23 +65,11 @@ export default function useRoomBaseServer() {
     const init = (option) => {
         const vhallSaasInstance = new window.VhallSaasSDK()
         state.vhallSaasInstance = vhallSaasInstance
-        addToContext()
-        return getWatchInitData(option).then(res => {
-            initSubServer()
-            return res
-        })
+        return getWatchInitData(option)
     }
 
-    const initSubServer = () => {
-        const msgServer = useMsgServer();
-        contextServer.set('msgServer', msgServer)
-    }
 
-    const result = { state, init, getWatchInitData, getWebinarInfo, getConfigList, startLive, endLive, setDevice }
 
-    function addToContext() {
-        contextServer.set('roomBaseServer', result)
-    }
+    return { state, init, getWatchInitData, getWebinarInfo, getConfigList, startLive, endLive, setDevice }
 
-    return result;
 }

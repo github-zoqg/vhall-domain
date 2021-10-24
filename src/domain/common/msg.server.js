@@ -1,4 +1,4 @@
-import contextServer from './context.server.js'
+import contextServer from '@/domain/common/context.server.js'
 
 export default function useMsgServer() {
     const state = {
@@ -6,8 +6,8 @@ export default function useMsgServer() {
     }
 
     const init = () => {
-        if(!contextServer.get('roomBaseServer')) return
-        const roomBaseState = contextServer.get('roomBaseServer').state
+        if (!contextServer.get('roomBaseServer')) return
+        const { state: roomBaseState } = contextServer.get('roomBaseServer')
         return roomBaseState.vhallSaasInstance.createChat().then(res => {
             state.msgInstance = res
             console.log('state', state)
@@ -26,7 +26,7 @@ export default function useMsgServer() {
     }
 
     const destroy = () => {
-        if(!state.msgInstance) return
+        if (!state.msgInstance) return
         state.msgInstance.destroy
         state.msgInstance = null
     }
