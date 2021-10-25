@@ -3,7 +3,12 @@ import useRoomBaseServer from '@/domain/roombase/roombase.server.js'
 import contextServer from '@/domain/common/context.server.js'
 
 
-export default function useRoomInitGroupServer() {
+export default function useRoomInitGroupServer(options = {}) {
+    const state = {
+        biz_id: options.biz_id || 2,
+        platform: options.platform || 7
+    }
+
     let roomBaseServer = useRoomBaseServer();
     let msgServer = useMsgServer();
 
@@ -49,5 +54,5 @@ export default function useRoomInitGroupServer() {
 
     }
 
-    return { roomBaseServer, msgServer, initSendLive, initReciveLive }
+    return { state, roomBaseServer, msgServer, initSendLive, initReciveLive }
 }
