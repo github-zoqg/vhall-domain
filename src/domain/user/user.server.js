@@ -14,5 +14,10 @@ export default function useUserServer() {
         return requestApi.roomBase.callbackUserInfo(data)
     }
 
-    return { state, loginInfo, callbackUserInfo }
+    // 注册
+    const register = (data) => {
+        return requestApi.roomBase.register(data)
+    }
+
+    return { state, loginInfo, callbackUserInfo, register }
 }

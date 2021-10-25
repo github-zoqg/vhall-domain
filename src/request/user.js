@@ -50,4 +50,23 @@ const userBase = {
     callbackUserInfo,
 }
 
+// 注册
+const register = (params = {}) => {
+    const { state } = contextServer.get('roomBaseServer')
+
+    const retParmams = { ...params }
+
+    return $http({
+        url: '/v3/users/oauth/callback',
+        type: 'POST',
+        data: retParmams
+    })
+}
+
+const userBase = {
+    loginInfo,
+    callbackUserInfo,
+    register,
+}
+
 export default userBase
