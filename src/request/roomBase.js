@@ -7,8 +7,8 @@ const getWebinarInfo = (params = {}) => {
     const { state } = contextServer.get('roomBaseServer')
 
     const retParmams = {
-      webinar_id: params.webinarId || state.watchInitData.webinar.id,
-      is_no_check: 1 || params.is_no_check
+        webinar_id: params.webinarId || state.watchInitData.webinar.id,
+        is_no_check: 1 || params.is_no_check
     }
 
     return $http({
@@ -37,19 +37,19 @@ const getConfigList = (params = {}) => {
 
 // 设置设备检测状态
 const setDevice = (params = {}) => {
-  const { state } = contextServer.get('roomBaseServer')
+    const { state } = contextServer.get('roomBaseServer')
 
-  const retParmams = {
-      room_id: params.room_id || state.watchInitData.interact.room_id,
-      status: params.status || 1,
-      type: params.type || 0
+    const retParmams = {
+        room_id: params.room_id || state.watchInitData.interact.room_id,
+        status: params.status || 1,
+        type: params.type || 0
   }
 
-  return $http({
-      url: '/v3/interacts/room/set-device',
-      type: 'POST',
-      data: retParmams
-  })
+    return $http({
+        url: '/v3/interacts/room/set-device',
+        type: 'POST',
+        data: retParmams
+    })
 }
 
 const roomBase = {
