@@ -1,19 +1,10 @@
 //common
-import contextServer from './common/context.server.js';
-import useMsgServer from './common/msg.server.js';
+import contextServer from '@/domain/common/context.server.js';
+import useMsgServer from '@/domain/common/msg.server.js';
+import useInteractiveServer from '@/domain/stream/interactive.server.js'
 
-import useRoomBaseServer from './roombase/roombase.server.js'
-import useInteractiveServer from './stream/interactive.server.js'
-//insertFile
-// import insertFileServer from "./insertFile/insertFile.server";
+import useRoomBaseServer from '@/domain/roombase/roombase.server.js'
 
-//praise
-// import praiseServer from "./praise/praise.server";
+import useRoomInitGroupServer from '@/domain/roombase/roomInit.group.server.js'
 
-//signIn
-// import signInServer from "./signIn/signIn.server";
-
-//timer
-// import timerServer from "./timer/timer.server";
-
-export {contextServer,useMsgServer,useRoomBaseServer,useInteractiveServer};
+export { contextServer, useMsgServer, useRoomBaseServer, useRoomInitGroupServer,useInteractiveServer};
