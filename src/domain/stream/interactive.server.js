@@ -163,7 +163,9 @@ export default function useInteractiveServer() {
         })
     }
 
-    const result = { state, startPushStream }
-    return { state, startPushStream ,init}
+    return { state, startPushStream ,init, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
+    createLocalPhotoStream, stopStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
+    muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
+    getSpeakers, getVideoConstraints, isScreenShareSupported, getPacketLossRate}
 
 }
