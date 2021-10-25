@@ -3,7 +3,7 @@ import contextServer from './common/context.server.js';
 import useMsgServer from './common/msg.server.js';
 
 import useRoomBaseServer from './roombase/roombase.server.js'
-
+import useInteractiveServer from './stream/interactive.server.js'
 //insertFile
 // import insertFileServer from "./insertFile/insertFile.server";
 
@@ -16,4 +16,4 @@ import useRoomBaseServer from './roombase/roombase.server.js'
 //timer
 // import timerServer from "./timer/timer.server";
 
-export {contextServer,useMsgServer,useRoomBaseServer};
+export {contextServer,useMsgServer,useRoomBaseServer,useInteractiveServer};
