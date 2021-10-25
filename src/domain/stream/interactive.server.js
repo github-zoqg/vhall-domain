@@ -1,6 +1,6 @@
 export default function useInteractiveServer() {
     let state = {
-        vhallSaasInstance: null,
+        vhallSaasInstance: null,  // vhallsdk的实例
         interactiveInstance: null,  // 互动实例
         streamId: null
     }
@@ -103,6 +103,10 @@ export default function useInteractiveServer() {
     const isScreenShareSupported = () => {
         return state.interactiveInstance.isScreenShareSupported() 
     }
+    // 检查当前浏览器支持性
+    const checkSystemRequirements = () => {
+        return state.interactiveInstance.checkSystemRequirements() 
+    }
     // 获取上下行丢包率
     const getPacketLossRate = () => {
         return state.interactiveInstance.getPacketLossRate() 
@@ -168,6 +172,6 @@ export default function useInteractiveServer() {
     return { state, startPushStream ,init, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
     createLocalPhotoStream, stopStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
     muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
-    getSpeakers, getVideoConstraints, isScreenShareSupported, getPacketLossRate}
+    getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate}
 
 }
