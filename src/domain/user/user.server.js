@@ -14,5 +14,20 @@ export default function useUserServer() {
         return requestApi.roomBase.callbackUserInfo(data)
     }
 
-    return { state, loginInfo, callbackUserInfo }
+    // 注册
+    const register = (data) => {
+        return requestApi.roomBase.register(data)
+    }
+
+    // 手机||邮箱验证码
+    const codeCheck = (data) => {
+        return requestApi.roomBase.codeCheck(data)
+    }
+
+    // 密码重置
+    const resetPassword = (data) => {
+        return requestApi.roomBase.resetPassword(data)
+    }
+
+    return { state, loginInfo, callbackUserInfo, register, codeCheck, resetPassword }
 }

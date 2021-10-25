@@ -547,12 +547,15 @@
 
   var initSendLive = function initSendLive(params) {
     var retParmams = {
-      webinar_id: params.webinarId,
+      webinar_id: params.webinarId || '',
       live_token: params.live_token || '',
       nickname: params.nickname || '',
       email: params.email || '',
       biz_id: params.biz_id || ''
     };
+
+
+    console.log('retParmams::::::',params,retParmams)
     return new Promise(function (resolve, reject) {
       $fetch({
         url: '/v3/webinars/live/init',
@@ -2564,7 +2567,11 @@
         this.setRequestConfig(options);
         this.setClientType(options.clientType);
 
+        console.log('init options::::::',options)
+
         if (options.clientType === 'send') {
+        console.log('send send send::::::',options)
+
           return this.initSendLive(options);
         } else {
           return this.initReceiveLive(options);
@@ -2576,6 +2583,7 @@
         var _this = this;
 
         return new Promise(function (resolve, reject) {
+          console.log('send send send send send::::::',options)
           _this.request.live.initSendLive(options).then(function (res) {
             if (res.code === 200) {
               store.set('roomInitData', getRoomInfo(res));
@@ -2596,6 +2604,7 @@
           embed: 'initEmbeddedReceiveLive',
           sdk: 'initSdkReceiveLive'
         };
+        console.log('receive options::::', options);
         return new Promise(function (resolve, reject) {
           _this2.request.live[receiveApi[options.receiveType]](options).then(function (res) {
             if (res.code === 200) {
