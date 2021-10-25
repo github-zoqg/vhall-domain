@@ -14,13 +14,10 @@
 import { isPc } from './index.js'
 
 
-let BUSE_URL = 'https://t-saas-dispatch.vhall.com'
+let BUSE_URL = ''
 let TOKEN = ''
 let LIVETOKEN = ''
-let HEADERS = {
-    platform: isPc() ? 7 : 10,
-    token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MzM5MzMxODcsImV4cCI6MTYzNjUyNTE4NywidXNlcl9pZCI6IjE2NDIzMTUyIiwicGxhdGZvcm0iOiI3IiwiY2giOiJjIiwiYnVzaW5lc3NfYWNjb3VudF9pZCI6IiJ9.6qmS6dG9QMmIHdXE9oV7FSPN2zZdGZa1ERfJSYA7Ir4'
-}
+let HEADERS = {}
 
 
 function setBaseUrl(url) {

@@ -1,5 +1,6 @@
+
 import requestApi from '../../request/index.js';
-import '../../libs/sdk.js'
+import contextServer from "@/domain/common/context.server.js"
 
 export default function useRoomBaseServer() {
     const state = {
@@ -8,18 +9,18 @@ export default function useRoomBaseServer() {
         webinarVo: {},
         watchInitData: {},
         watchInitErrorData: undefined,// 默认undefined，如果为其他值将触发特殊逻辑
-        configList: {},
-        vhallSaasInstance: null
+        configList: {}
     }
 
 
     // 初始化房间信息,包含发起/观看(嵌入/标品)
     const getWatchInitData = (options) => {
-        const { vhallSaasInstance } = state;
+        console.log(contextServer.get('useRoomInitGroupServer'))
+        const { state: roomInitGroupServer } = contextServer.get('roomInitGroupServer')
 
-        console.log('init options:',options)
+        console.log('init options:',roomInitGroupServer)
 
-        return vhallSaasInstance.init(options).then(res => {
+        return roomInitGroupServer.vhallSaasInstance.init(options).then(res => {
             if (res.code === 200) {
                 state.inited = true;
                 state.watchInitData = res.data;
@@ -66,9 +67,6 @@ export default function useRoomBaseServer() {
     }
 
     const init = (option) => {
-        const vhallSaasInstance = new window.VhallSaasSDK()
-        state.vhallSaasInstance = vhallSaasInstance
-
         return getWatchInitData(option)
     }
 

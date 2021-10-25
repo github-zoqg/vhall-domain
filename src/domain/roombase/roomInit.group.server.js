@@ -1,12 +1,12 @@
+import contextServer from '@/domain/common/context.server.js'
 import useMsgServer from '@/domain/common/msg.server.js'
 import useRoomBaseServer from '@/domain/roombase/roombase.server.js'
-import contextServer from '@/domain/common/context.server.js'
-
+import { setBaseUrl, setToken, setRequestHeaders } from '@/utils/http.js';
 
 export default function useRoomInitGroupServer(options = {}) {
     const state = {
-        biz_id: options.biz_id || 2,
-        platform: options.platform || 7
+        bizId: options.biz_id || 2,
+        vhallSaasInstance: null
     }
 
     let roomBaseServer = useRoomBaseServer();
@@ -14,14 +14,33 @@ export default function useRoomInitGroupServer(options = {}) {
 
     contextServer.set('roomBaseServer', roomBaseServer)
     contextServer.set('msgServer', msgServer)
-    contextServer.set('useRoomInitGroupServer', state)
 
     const reload = async () => {
         msgServer.destroy();
         await msgServer.init();
     }
 
+    const setRequestConfig = (options) => {
+        if (options.development) {
+            setBaseUrl('https://t-saas-dispatch.vhall.com')
+        } else {
+            setBaseUrl('https://saas-api.vhall.com')
+        }
+
+        setToken(options.token, options.liveToken)
+
+        if (options.requestHeaders) {
+            setRequestHeaders(options.requestHeaders)
+        }
+    }
+
+    const initSdk = () => {
+        state.vhallSaasInstance = new window.VhallSaasSDK()
+        addToContext()
+    }
+
     const initSendLive = async (customOptions = {}) => {
+        initSdk()
         const defaultOptions = {
             clientType: 'send',
             development: true,
@@ -30,6 +49,8 @@ export default function useRoomInitGroupServer(options = {}) {
             }
         }
         const options = Object.assign({}, defaultOptions, customOptions)
+        setRequestConfig(options)
+
         await roomBaseServer.init(options);
         await roomBaseServer.getWebinarInfo();
         await roomBaseServer.getConfigList();
@@ -40,6 +61,7 @@ export default function useRoomInitGroupServer(options = {}) {
     }
 
     const initReceiveLive = async (customOptions = {}) => {
+        initSdk()
         const defaultOptions = {
             clientType: 'receive',
             development: true,
@@ -49,8 +71,8 @@ export default function useRoomInitGroupServer(options = {}) {
             receiveType: 'standard'
         }
         const options = Object.assign({}, defaultOptions, customOptions)
+        setRequestConfig(options)
 
-        console.log('recive live:',options)
         await roomBaseServer.init(options)
         await roomBaseServer.getWebinarInfo()
         await roomBaseServer.getConfigList()
@@ -58,5 +80,11 @@ export default function useRoomInitGroupServer(options = {}) {
         return true;
     }
 
-    return { state,roomBaseServer, msgServer,reload, initSendLive, initReceiveLive }
+    const result = { state,roomBaseServer, msgServer,reload, initSendLive, initReceiveLive }
+
+    function addToContext() {
+        contextServer.set('roomInitGroupServer', result)
+    }
+
+    return result;
 }
