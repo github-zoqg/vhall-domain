@@ -1489,22 +1489,25 @@
         };
         var options = merge.recursive({}, defaultOptions, customOptions);
         console.log("optionssssssssssssssssssssssssssss", options);
+        return new Promise(function (resolve, reject) {
+          var onSuccess = function onSuccess(event) {
+            _this2.instance = event.vhallrtc;
 
-        var onSuccess = function onSuccess(event) {
-          _this2.instance = event.vhallrtc;
+            _this2.listenEvents();
 
-          _this2.listenEvents();
+            console.log('init interactive sdk success:', event);
+            successCb(event);
+            resolve(event);
+          };
 
-          console.log('init interactive sdk success:', event);
-          successCb(event);
-        };
+          var onFail = function onFail(event) {
+            console.log('fail:', event);
+            failCb(event);
+            reject(event);
+          };
 
-        var onFail = function onFail(event) {
-          console.log('fail:', event);
-          failCb(event);
-        };
-
-        VhallRTC.createInstance(options, onSuccess, onFail);
+          VhallRTC.createInstance(options, onSuccess, onFail);
+        });
       }
     }, {
       key: "listenEvents",
@@ -2669,7 +2672,9 @@
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         return new Promise(function (resolve, reject) {
           var instance = new InteractiveModule(options);
-          resolve(instance);
+          instance.init(options).then(function (res) {
+            resolve(instance);
+          });
         });
       }
     }, {
