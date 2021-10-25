@@ -23,5 +23,4 @@ function useContextServer() {
 }
 
 const contextServer = useContextServer()
-
 export default contextServer;

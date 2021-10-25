@@ -547,15 +547,12 @@
 
   var initSendLive = function initSendLive(params) {
     var retParmams = {
-      webinar_id: params.webinarId || '',
+      webinar_id: params.webinarId,
       live_token: params.live_token || '',
       nickname: params.nickname || '',
       email: params.email || '',
       biz_id: params.biz_id || ''
     };
-
-
-    console.log('retParmams::::::',params,retParmams)
     return new Promise(function (resolve, reject) {
       $fetch({
         url: '/v3/webinars/live/init',
@@ -2187,6 +2184,24 @@
         return this.instance.isScreenShareSupported();
       }
       /**
+       * 检查当前浏览器支持性
+       * @returns Boolean
+       */
+
+    }, {
+      key: "checkSystemRequirements",
+      value: function checkSystemRequirements() {
+        var _this27 = this;
+
+        return new Promise(function (resolve, reject) {
+          _this27.instance.checkSystemRequirements().then(function (data) {
+            resolve(data.result);
+          })["catch"](function (error) {
+            reject(error);
+          });
+        });
+      }
+      /**
        * 获取上下行丢包率
        * @returns  data中有 upLossRate 上行丢包率   downLossRate 下行丢包率
        */
@@ -2194,10 +2209,10 @@
     }, {
       key: "getPacketLossRate",
       value: function getPacketLossRate() {
-        var _this27 = this;
+        var _this28 = this;
 
         return new Promise(function (resolve, reject) {
-          _this27.instance.getPacketLossRate().then(function (data) {
+          _this28.instance.getPacketLossRate().then(function (data) {
             resolve(data);
           })["catch"](function (error) {
             reject(error);
@@ -2567,11 +2582,7 @@
         this.setRequestConfig(options);
         this.setClientType(options.clientType);
 
-        console.log('init options::::::',options)
-
         if (options.clientType === 'send') {
-        console.log('send send send::::::',options)
-
           return this.initSendLive(options);
         } else {
           return this.initReceiveLive(options);
@@ -2583,7 +2594,6 @@
         var _this = this;
 
         return new Promise(function (resolve, reject) {
-          console.log('send send send send send::::::',options)
           _this.request.live.initSendLive(options).then(function (res) {
             if (res.code === 200) {
               store.set('roomInitData', getRoomInfo(res));
@@ -2604,7 +2614,6 @@
           embed: 'initEmbeddedReceiveLive',
           sdk: 'initSdkReceiveLive'
         };
-        console.log('receive options::::', options);
         return new Promise(function (resolve, reject) {
           _this2.request.live[receiveApi[options.receiveType]](options).then(function (res) {
             if (res.code === 200) {
