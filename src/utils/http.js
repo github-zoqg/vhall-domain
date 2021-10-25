@@ -29,9 +29,7 @@ function setToken(token, livetoken) {
     LIVETOKEN = livetoken
 }
 function setRequestHeaders(options) {
-    HEADERS = {
-        ...options
-    }
+    Object.assign(HEADERS,options)
 }
 
 function $fetch(options) {
