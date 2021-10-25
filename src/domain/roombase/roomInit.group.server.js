@@ -38,12 +38,15 @@ export default function useRoomInitGroupServer(options = {}) {
     }
 
     const initSdk = () => {
-        state.vhallSaasInstance = new window.VhallSaasSDK()
-        addToContext()
+        return new Promise((resolve,reject)=>{
+            state.vhallSaasInstance = new window.VhallSaasSDK()
+            addToContext()
+            resolve()
+        })
     }
 
     const initSendLive = async (customOptions = {}) => {
-        initSdk()
+        await initSdk()
         const defaultOptions = {
             clientType: 'send',
             development: true,

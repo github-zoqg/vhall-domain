@@ -1,3 +1,5 @@
+import contextServer from "@/domain/common/context.server.js"
+
 export default function useInteractiveServer() {
     let state = {
         vhallSaasInstance: null,  // vhallsdk的实例
@@ -6,9 +8,8 @@ export default function useInteractiveServer() {
     }
     let interactives = null
     const init = (option) => {
-        const vhallSaasInstance = new window.VhallSaasSDK()
-        console.log('vhallSaasInstance',vhallSaasInstance);
-        state.vhallSaasInstance = vhallSaasInstance
+        const roomInitGroupServer = contextServer.get('roomInitGroupServer');
+        state.vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
     }
     // 基础api
     // 常见本地流
@@ -105,6 +106,7 @@ export default function useInteractiveServer() {
     }
     // 检查当前浏览器支持性
     const checkSystemRequirements = () => {
+        console.log('state:',state)
         return state.interactiveInstance.checkSystemRequirements() 
     }
     // 获取上下行丢包率
