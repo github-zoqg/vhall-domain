@@ -14,6 +14,7 @@ export default function useRoomInitGroupServer(options = {}) {
 
     contextServer.set('roomBaseServer', roomBaseServer)
     contextServer.set('msgServer', msgServer)
+    contextServer.set('useRoomInitGroupServer', state)
 
 
     const initSendLive = async (customOptions = {}) => {
