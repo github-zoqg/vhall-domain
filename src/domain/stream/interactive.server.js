@@ -1,7 +1,7 @@
 export default function useInteractiveServer() {
     let state = {
         vhallSaasInstance: null,
-        interactiveInstance: null,
+        interactiveInstance: null,  // 互动实例
         streamId: null
     }
     let interactives = null
@@ -13,23 +13,23 @@ export default function useInteractiveServer() {
     // 基础api
     // 常见本地流
     const createLocalStream = (options = {}, addConfig = {}) => {
-       return state.vhallSaasInstance.createLocalStream(options)
+       return state.interactiveInstance.createLocalStream(options)
     }
     // 创建摄像头视频流
     const createLocalVideoStream = (options = {}, addConfig = {}) => {
-        return state.vhallSaasInstance.createLocalVideoStream(options,addConfig)
+        return state.interactiveInstance.createLocalVideoStream(options,addConfig)
     }
     // 创建桌面共享流
     const createLocaldesktopStream = (options = {}, addConfig = {}) => {
-        return state.vhallSaasInstance.createLocaldesktopStream(options,addConfig)
+        return state.interactiveInstance.createLocaldesktopStream(options,addConfig)
     }
     // 创建本地音频流
     const createLocalAudioStream = (options = {}, addConfig = {}) => {
-        return state.vhallSaasInstance.createLocalAudioStream(options,addConfig)
+        return state.interactiveInstance.createLocalAudioStream(options,addConfig)
     }
     // 创建图片推流
     const createLocalPhotoStream = (options = {}, addConfig = {}) => {
-        return state.vhallSaasInstance.createLocalPhotoStream(options,addConfig)
+        return state.interactiveInstance.createLocalPhotoStream(options,addConfig)
     }
     // 销毁额本地流
     const stopStream =(streamId) =>{
@@ -37,7 +37,7 @@ export default function useInteractiveServer() {
     }
     // 推送本地流到远端
     const publishStream = (options = {}) => {
-        return state.vhallSaasInstance.publishStream({streamId: state.streamId || options.streamId})
+        return state.interactiveInstance.publishStream({streamId: state.streamId || options.streamId})
     }
     // 取消推送到远端的流
     const unpublishStream = (streamId) => {
@@ -45,71 +45,73 @@ export default function useInteractiveServer() {
     }
     // 订阅远端流
     const subscribeStream = (options = {}) => {
-        return state.vhallSaasInstance.subscribeStream(options)
+        return state.interactiveInstance.subscribeStream(options)
     }
     // 取消订阅远端流
     const unSubscribeStream = (streamId) => {
-        return state.vhallSaasInstance.unSubscribeStream(streamId)
+        return state.interactiveInstance.unSubscribeStream(streamId)
     }
     // 设置大小流
     const setDual = (options = {}) => {
-        return state.vhallSaasInstance.setDual(options)
+        return state.interactiveInstance.setDual(options)
     }
     // 改变视频的禁用和启用
     const muteVideo = (options = {}) => {
-        return state.vhallSaasInstance.muteVideo(options)
+        return state.interactiveInstance.muteVideo(options)
     }
     // 改变音频的禁用和启用
     const muteAudio = (options = {}) => {
-        return state.vhallSaasInstance.muteAudio(options)
+        return state.interactiveInstance.muteAudio(options)
     }
     // 开启旁路
     const startBroadCast = (options = {},addConfig ={}) => {
-        return state.vhallSaasInstance.startBroadCast(options, addConfig)
+        return state.interactiveInstance.startBroadCast(options, addConfig)
     }
     // 停止旁路
     const stopBroadCast = () => {
-        return state.vhallSaasInstance.stopBroadCast()
+        return state.interactiveInstance.stopBroadCast()
     }
     // 动态配置指定旁路布局模板
     const setBroadCastLayout = (options = {}) => {
-        return state.vhallSaasInstance.setBroadCastLayout(options)
+        return state.interactiveInstance.setBroadCastLayout(options)
     }
     // 动态配置旁路主屏
     const setBroadCastScreen = (mainScreenStreamId = '') => {
-        return state.vhallSaasInstance.setBroadCastScreen(mainScreenStreamId)
+        return state.interactiveInstance.setBroadCastScreen(mainScreenStreamId)
     }
     // 获取全部音视频列表
     const getDevices = () => {
-        return state.vhallSaasInstance.getDevices()
+        return state.interactiveInstance.getDevices()
     }
     // 获取摄像头列表
     const getCameras = () => {
-        return state.vhallSaasInstance.getCameras()
+        return state.interactiveInstance.getCameras()
     }
     // 获取麦克风列表
     const getMicrophones = () => {
-        return state.vhallSaasInstance.getMicrophones()
+        return state.interactiveInstance.getMicrophones()
     }
     // 获取扬声器列表
     const getSpeakers = () => {
-        return state.vhallSaasInstance.getSpeakers()
+        return state.interactiveInstance.getSpeakers()
     }
     // 获取设备的分辨率
     const getVideoConstraints = (deviceId = '') => {
-        return state.vhallSaasInstance.getSpeakers(deviceId)
+        return state.interactiveInstance.getSpeakers(deviceId)
     }
     // 是否支持桌面共享
     const isScreenShareSupported = () => {
-        return state.vhallSaasInstance.isScreenShareSupported() 
+        return state.interactiveInstance.isScreenShareSupported() 
     }
     // 获取上下行丢包率
     const getPacketLossRate = () => {
-        return state.vhallSaasInstance.getPacketLossRate() 
+        return state.interactiveInstance.getPacketLossRate() 
     }
 
     // 组合api
     const startPushStream = ()=> {
+        console.log('state:',state)
+
         state.vhallSaasInstance.createInteractive().then((res)=>{
             interactives = res
             state.interactiveInstance = interactives
