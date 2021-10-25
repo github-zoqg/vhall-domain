@@ -16,10 +16,15 @@ function useContextServer() {
 
     const show = () => {
         const { serverPool } = state;
-        return serverPool
+        return { ...serverPool }
     }
 
-    return { set, get, show }
+    const clear = () => {
+        const { serverPool } = state
+        serverPool = {}
+    }
+
+    return { set, get, show, clear }
 }
 
 const contextServer = useContextServer()

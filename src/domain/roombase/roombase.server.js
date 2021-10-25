@@ -1,10 +1,11 @@
 
-import requestApi from '../../request/index.js';
+import requestApi from '@/request/index.js';
 import contextServer from "@/domain/common/context.server.js"
+import useEventEmitter from '@/domain/common/eventEmitter.server.js';
 
 export default function useRoomBaseServer() {
     const state = {
-        inited:false,
+        inited: false,
         isLiveOver: false,
         webinarVo: {},
         watchInitData: {},
@@ -12,13 +13,14 @@ export default function useRoomBaseServer() {
         configList: {}
     }
 
+    const eventEmitter = useEventEmitter()
 
     // 初始化房间信息,包含发起/观看(嵌入/标品)
     const getWatchInitData = (options) => {
         console.log(contextServer.get('useRoomInitGroupServer'))
         const { state: roomInitGroupServer } = contextServer.get('roomInitGroupServer')
 
-        console.log('init options:',roomInitGroupServer)
+        console.log('init options:', roomInitGroupServer)
 
         return roomInitGroupServer.vhallSaasInstance.init(options).then(res => {
             if (res.code === 200) {
@@ -29,6 +31,14 @@ export default function useRoomBaseServer() {
             }
             return res
         });
+    }
+
+    const on = (type, cb) => {
+        eventEmitter.$on(type, cb)
+    }
+
+    const destroy = () => {
+        eventEmitter.$destroy()
     }
 
 
@@ -72,6 +82,6 @@ export default function useRoomBaseServer() {
 
 
 
-    return { state, init, getWatchInitData, getWebinarInfo, getConfigList, startLive, endLive, setDevice }
+    return { state, init, on, destroy, getWatchInitData, getWebinarInfo, getConfigList, startLive, endLive, setDevice }
 
 }

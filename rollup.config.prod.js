@@ -1,5 +1,6 @@
 import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
+import {uglify} from "rollup-plugin-uglify";
 import alias from '@rollup/plugin-alias';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 
@@ -12,7 +13,7 @@ const inputMapList = [
         input: 'src/index.js',
         output: [
             {
-                file: './dist/lib/vhall-saas-domain.js',
+                file: './dist/lib/vhall-saas-domain.dist.js',
                 format: 'umd',
                 name:'vhall-sass-domain',
                 sourcemap:true
@@ -24,6 +25,7 @@ const pluginsConfig = [
     babel({
         exclude: 'node_modules/**'
     }),
+    uglify(),
     commonjs(),
     nodeResolve({
         extensions:['.mjs','.js','.json']

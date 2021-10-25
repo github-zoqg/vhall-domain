@@ -1,5 +1,4 @@
 import $http from '@/utils/http.js'
-import { merge } from '@/utils/index.js'
 import contextServer from "@/domain/common/context.server.js"
 
 // 查询活动基础信息
