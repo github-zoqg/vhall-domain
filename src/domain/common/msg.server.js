@@ -6,11 +6,10 @@ export default function useMsgServer() {
     }
 
     const init = () => {
-        if (!contextServer.get('roomBaseServer')) return
-        const { state: roomBaseState } = contextServer.get('roomBaseServer')
-        return roomBaseState.vhallSaasInstance.createChat().then(res => {
+        if (!contextServer.get('roomInitGroupServer')) return
+        const { state: roomInitGroupServer } = contextServer.get('roomInitGroupServer')
+        return roomInitGroupServer.vhallSaasInstance.createChat().then(res => {
             state.msgInstance = res
-            console.log('state', state)
             return res
         })
     }
