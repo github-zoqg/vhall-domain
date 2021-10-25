@@ -45,11 +45,6 @@ const callbackUserInfo = (params = {}) => {
     })
 }
 
-const userBase = {
-    loginInfo,
-    callbackUserInfo,
-}
-
 // 注册
 const register = (params = {}) => {
     const { state } = contextServer.get('roomBaseServer')
