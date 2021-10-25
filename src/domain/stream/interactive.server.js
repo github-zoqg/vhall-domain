@@ -10,6 +10,9 @@ export default function useInteractiveServer() {
     const init = (option) => {
         const roomInitGroupServer = contextServer.get('roomInitGroupServer');
         state.vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
+        state.vhallSaasInstance.createInteractive().then((res)=>{
+            state.interactiveInstance = interactives
+        })
     }
     // 基础api
     // 常见本地流
@@ -117,15 +120,7 @@ export default function useInteractiveServer() {
     // 组合api
     const startPushStream = ()=> {
         console.log('state:',state)
-
-        state.vhallSaasInstance.createInteractive().then((res)=>{
-            interactives = res
-            state.interactiveInstance = interactives
-            setTimeout(async()=>{
-                console.log('5555555kaiakai',interactives.getDevices());
-                await createLocalAndPushStream(interactives)
-            },3000)
-        })
+        createLocalAndPushStream(state.interactiveInstance)
     }
     // 创建本地的推流和推流
     const createLocalAndPushStream = (interactive) => {
