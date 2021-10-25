@@ -2,7 +2,7 @@ export default function useInteractiveServer() {
     let state = {
         vhallSaasInstance: null
     }
-    let interactive = null
+    let interactives = null
     const init = (option) => {
         const vhallSaasInstance = new window.VhallSaasSDK()
         console.log('vhallSaasInstance',vhallSaasInstance);
@@ -14,22 +14,26 @@ export default function useInteractiveServer() {
         // })
     }
     const startPushStream = ()=> {
-        console.log('2222222');
+        
         const vhallSaasInstance = new window.VhallSaasSDK()
         console.log('vhallSaasInstance',vhallSaasInstance);
         state.vhallSaasInstance = vhallSaasInstance
         vhallSaasInstance.createInteractive().then((res)=>{
-            interactive = res
+            interactives = res
+            console.log('kaikaiakaia22222',interactives);
+           
             setTimeout(()=>{
-                createLocalVideoStream(interactive)
-            },5000)
+                console.log('5555555kaiakai',interactives.getDevices());
+                createLocalVideoStream(interactives)
+            },6000)
         })
         console.log('2223333333',vhallSaasInstance.createInteractive());
         
     }
     const createLocalVideoStream = (interactive) => {
-        let camerasList = null,micropsList = null,videoConstraintsList = null
+        let camerasList = null,micropsList = null,videoConstraintsList = null,streamId =null
         console.log('33333333333333333333',interactive);
+        console.log('5555555',interactive.getDevices());
         interactive.getDevices().then((data)=>{
             console.log('devices list::',data);
             camerasList = data.videoInputDevices.filter(d => d.label && d.deviceId != 'desktopScreen')
