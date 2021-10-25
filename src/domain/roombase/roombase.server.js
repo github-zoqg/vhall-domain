@@ -7,7 +7,7 @@ export default function useRoomBaseServer() {
         isLiveOver: false,
         webinarVo: {},
         watchInitData: {},
-        setWatchInitErrorData: {},
+        watchInitErrorData: undefined,// 默认undefined，如果为其他值将触发特殊逻辑
         configList: {},
         vhallSaasInstance: null
     }
@@ -16,12 +16,15 @@ export default function useRoomBaseServer() {
     // 初始化房间信息,包含发起/观看(嵌入/标品)
     const getWatchInitData = (options) => {
         const { vhallSaasInstance } = state;
+
+        console.log('init options:',options)
+
         return vhallSaasInstance.init(options).then(res => {
             if (res.code === 200) {
                 state.inited = true;
                 state.watchInitData = res.data;
             } else {
-                state.setWatchInitErrorData = res;
+                state.watchInitErrorData = res;
             }
             return res
         });
@@ -65,6 +68,7 @@ export default function useRoomBaseServer() {
     const init = (option) => {
         const vhallSaasInstance = new window.VhallSaasSDK()
         state.vhallSaasInstance = vhallSaasInstance
+
         return getWatchInitData(option)
     }
 
