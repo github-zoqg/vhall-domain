@@ -168,7 +168,9 @@ export default function useInteractiveServer() {
             console.log('getDevies is failed::',err);
         })
     }
-
+    const listenerSdk = () => {
+        state.interactiveInstance.
+    }
     return { state, startPushStream ,init, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
     createLocalPhotoStream, stopStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
     muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
