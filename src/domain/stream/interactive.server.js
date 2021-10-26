@@ -184,6 +184,7 @@ export default function useInteractiveServer() {
         for (const remoteStream in state.interactiveInstance.getRemoteStreams()) {
             state.remoteStreams.push(remoteStream)
         }
+        return state.remoteStreams
     }
     // sdk的监听事件
     const listenerSdk = () => {
