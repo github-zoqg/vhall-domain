@@ -42,7 +42,7 @@ const setDevice = (params = {}) => {
         room_id: params.room_id || state.watchInitData.interact.room_id,
         status: params.status || 1,
         type: params.type || 0
-  }
+    }
 
     return $http({
         url: '/v3/interacts/room/set-device',
@@ -51,10 +51,32 @@ const setDevice = (params = {}) => {
     })
 }
 
+// 开始暂停结束录制api
+const recordApi = (params = {}) => {
+    const { state } = contextServer.get('roomBaseServer')
+    const { state: roomInitGroupServerState } = contextServer.get('roomInitGroupServer')
+
+    const retParmams = {
+        webinar_id: params.webinarId || state.watchInitData.webinar.id,
+        status: params.status || 1
+    }
+
+    if (params.live_token || roomInitGroupServerState.live_token) {
+        retParmams.live_token = params.live_token || roomInitGroupServerState.live_token
+    }
+
+    return $http({
+        url: '/v3/webinars/record/ticker',
+        type: 'POST',
+        data: retParmams
+    })
+}
+
 const roomBase = {
     getWebinarInfo,
     getConfigList,
-    setDevice
+    setDevice,
+    recordApi
 }
 
 export default roomBase

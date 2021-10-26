@@ -76,12 +76,33 @@ export default function useRoomBaseServer() {
         return requestApi.live.endLive(data)
     }
 
+    // 开始/恢复录制
+    const startRecord = () => {
+        return requestApi.roomBase.recordApi({
+            status: 1
+        })
+    }
+
+    // 暂停录制
+    const pauseRecord = () => {
+        return requestApi.roomBase.recordApi({
+            status: 2
+        })
+    }
+
+    // 结束录制
+    const endRecord = () => {
+        return requestApi.roomBase.recordApi({
+            status: 3
+        })
+    }
+
     const init = (option) => {
         return getWatchInitData(option)
     }
 
 
 
-    return { state, init, on, destroy, getWatchInitData, getWebinarInfo, getConfigList, startLive, endLive, setDevice }
+    return { state, init, on, destroy, getWatchInitData, getWebinarInfo, getConfigList, startLive, endLive, setDevice, startRecord, pauseRecord, endRecord }
 
 }
