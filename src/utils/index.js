@@ -34,6 +34,7 @@ function uploadFile(options, onChange) {
     inputObj.click();
     inputObj.addEventListener('change', function (e) {
         onChange && onChange(e)
+        document.body.removeChild(this)
     })
 }
 

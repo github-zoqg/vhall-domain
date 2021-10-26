@@ -10,12 +10,12 @@ function useInsertFileServer() {
 
     // 获取插播列表
     const getInsertFileList = (params = {}) => {
-        return requestApi.insertVideo.getInsertFileList(params)
+        return requestApi.insertFile.getInsertFileList(params)
     }
 
     // 删除插播文件
     const deleteInsertFile = (params = {}) => {
-        return requestApi.insertVideo.deleteInsertFile(params)
+        return requestApi.insertFile.deleteInsertFile(params)
     }
 
     // 检查captureStream是否能用
@@ -32,7 +32,7 @@ function useInsertFileServer() {
         const { state: roomBaseState } = contextServer.get('roomBaseServer')
 
         let accept = 'video/mp4,video/webm,audio/ogg'
-        if (roomBaseState.webinar.mode == 1) { // 直播模式：1-音频、2-视频、3-互动
+        if (roomBaseState.watchInitData.webinar.mode == 1) { // 直播模式：1-音频、2-视频、3-互动
             accept = 'audio/ogg'
         }
 
@@ -43,22 +43,8 @@ function useInsertFileServer() {
         uploadFile(retParams, onChange)
     }
 
-    // 注册本地音视频播放器开始/播放等事件回调
-    const initVideoEvents = (videoELement, cbs) => {
-        videoELement.addEventListener("ended", () => {
-            cbs.onended && cbs.onended()
-        });
-        videoELement.addEventListener("play", ()=>{
-            cbs.onplay && cbs.onplay()
-
-        });
-        videoELement.addEventListener("pause", ()=>{
-            cbs.onpause && cbs.onpause()
-        });
-    }
-
     // 创建video标签播放本地音视频文件
-    const createLocalVideoElement = (file, options = {}, cbs = {}) => {
+    const createLocalVideoElement = (file, options = {}) => {
         return new Promise((resolve, reject) => {
             state._isAudio = file.type.includes('ogg')
             const videoElement =  document.createElement('video')
@@ -84,7 +70,6 @@ function useInsertFileServer() {
                     }
                 },100)
             })
-            initVideoEvents(cbs)
         })
     }
 
@@ -178,13 +163,14 @@ function useInsertFileServer() {
             }
         }
 
-        const interactiveServer = contextServer.get('useInteractiveServer')
+        const interactiveServer = contextServer.get('interactiveServer')
+        console.log('interactiveServer', interactiveServer)
         return interactiveServer.createLocalStream(retOptions)
     }
 
     // 推插播流
     const publishInsertStream = (stream) => {
-        const interactiveServer = contextServer.get('useInteractiveServer')
+        const interactiveServer = contextServer.get('interactiveServer')
         return new Promise((resolve, reject) => {
             interactiveServer.publishStream({ streamId: stream.streamId })
                 .then(res => {
@@ -198,10 +184,11 @@ function useInsertFileServer() {
     // 停止推流
     const stopPublishInsertStream = (streamId) => {
         return new Promise((resolve, reject)=>{
-            const interactiveServer = contextServer.get('useInteractiveServer')
-            interactiveServer.unpublishStream({ streamId: streamId || this._LoclaStreamId })
+            const interactiveServer = contextServer.get('interactiveServer')
+            console.log('stopPublishInsertStream', streamId)
+            interactiveServer.unpublishStream(streamId || this._LoclaStreamId)
                 .then(res => {
-                    this._LoclaStreamId = null
+                    state._LoclaStreamId = null
                     resolve(res)
                 })
                 .catch(reject)
@@ -210,13 +197,13 @@ function useInsertFileServer() {
 
     // 订阅流
     const subscribeInsertStream = (options = {}) => {
-        const interactiveServer = contextServer.get('useInteractiveServer')
+        const interactiveServer = contextServer.get('interactiveServer')
         return interactiveServer.subscribeStream(options)
     }
 
     // 取消订阅流
     const unsubscribeInsertStream = (options = {}) => {
-        const interactiveServer = contextServer.get('useInteractiveServer')
+        const interactiveServer = contextServer.get('interactiveServer')
         return interactiveServer.unSubscribeStream(options)
     }
 
