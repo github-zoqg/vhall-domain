@@ -5,6 +5,7 @@ import useInteractiveServer from '@/domain/stream/interactive.server.js'
 
 import useRoomBaseServer from '@/domain/roombase/roombase.server.js'
 import useUserServer from '@/domain/user/user.server.js'
+import virtualAudienceServer from '@/domain/virtualAudience/virtualAudience.server.js'
 import useInsertFileServer from '@/domain/stream/insertFile.server.js'
 
 import useRoomInitGroupServer from '@/domain/roombase/roomInit.group.server.js'
@@ -14,6 +15,7 @@ export {
     useMsgServer,
     useRoomBaseServer,
     useUserServer,
+    virtualAudienceServer,
     useRoomInitGroupServer,
     useInteractiveServer,
     useInsertFileServer
