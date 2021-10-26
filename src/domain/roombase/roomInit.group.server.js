@@ -7,7 +7,8 @@ import { setBaseUrl, setToken, setRequestHeaders } from '@/utils/http.js';
 export default function useRoomInitGroupServer(options = {}) {
     const state = {
         bizId: options.biz_id || 2,// 区分 端（知客/直播） 2-直播 4-知客
-        vhallSaasInstance: null
+        vhallSaasInstance: null,
+        live_token: null
     }
 
     let roomBaseServer = useRoomBaseServer();
@@ -48,6 +49,11 @@ export default function useRoomInitGroupServer(options = {}) {
                 platform: 7
             }
         }
+
+        if (customOptions.liveToken) {
+            state.live_token = customOptions.liveToken
+        }
+
         const options = Object.assign({}, defaultOptions, customOptions)
         setRequestConfig(options)
 
@@ -78,7 +84,7 @@ export default function useRoomInitGroupServer(options = {}) {
         await roomBaseServer.getConfigList()
         await msgServer.init();
         await interactiveServer.init();
-        
+
         return true;
     }
 
