@@ -1,4 +1,5 @@
 import contextServer from "@/domain/common/context.server.js"
+import requestApi from "../../request";
 
 export default function useInteractiveServer() {
     let state = {
@@ -152,17 +153,58 @@ export default function useInteractiveServer() {
         return state.interactiveInstance.getStreamMute(streamId)
     }
 
+    // 上麦
+    const speakOn=(data={})=>{
+        return requestApi.mic.speakOn(data)
+    }
+
+    // 下麦
+    const speakOff=(data={})=>{
+        return requestApi.mic.speakOff(data)
+    }
+
+    const speakUserOff=(data={})=>{
+        return requestApi.interactive.speakUserOff(data)
+    }
+
+    // 设置主屏
+    const setMainScreen=(data={})=>{
+        return requestApi.interactive.setMainScreen(data)
+    }
 
 
+    // 设置主讲人
+    const setSpeaker = (data={})=>{
+        return requestApi.interactive.setSpeaker(data)
+    }
 
+    // 设置（麦克风-1 摄像头-2）
+    const setRoomDevice=(data={})=>{
+        return requestApi.interactive.setRoomDevice(data)
+    }
+
+    // 允许举手
+    const setHandsup = (data={})=>{
+        return requestApi.mic.setHandsUp(data)
+    }
+
+    // 邀请上麦
+    const inviteMic = (data={})=>{
+        return requestApi.mic.inviteMic(data)
+    }
+
+    const cancelApply = (data={})=>{
+        return requestApi.mic.cancelApply(data)
+    }
+
+    const refuseInvite = (data={})=>{
+        return requestApi.mic.refuseInvite(data)
+    }
 
     // 监听事件
     const on = (type,callback) => {
         return state.interactiveInstance.on(type, callback)
     }
-
-
-
 
     // 组合api
     const startPushStream = ()=> {
@@ -206,6 +248,7 @@ export default function useInteractiveServer() {
             console.log('getDevies is failed::', err);
         })
     }
+
     const pulishStream = (streamId) => {
         interactive.publishStream({ streamId }).then((res) => {
             console.log('publish stream success::', streamId);
@@ -214,6 +257,7 @@ export default function useInteractiveServer() {
             console.log('publish is failed::', err);
         })
     }
+
     // 订阅流列表
     const remoteStreamList = ()=> {
         state.remoteStreams = state.interactiveInstance.getRemoteStreams()
@@ -222,6 +266,7 @@ export default function useInteractiveServer() {
         }
         return state.remoteStreams
     }
+
     // sdk的监听事件
     const listenerSdk = () => {
         state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_ADD, (e) => {
@@ -239,6 +284,6 @@ export default function useInteractiveServer() {
     createLocalPhotoStream, destroyStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
     muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
     getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate, getRoomStreams, remoteStreamList,
-    listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel, on, getRoomInfo, getStreamMute, setBroadCastAdaptiveLayoutMode}
-
+    listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel, on, getRoomInfo, getStreamMute, setBroadCastAdaptiveLayoutMode,speakOn,speakOff,speakUserOff,setMainScreen,
+    setSpeaker,setSpeaker,setRoomDevice,setHandsup,inviteMic,cancelApply,refuseInvite}
 }
