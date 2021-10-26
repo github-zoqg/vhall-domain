@@ -139,6 +139,10 @@ export default function useInteractiveServer() {
     const getAudioLevel = (streamId) => {
         return state.interactiveInstance.getAudioLevel(streamId)
     }
+    // 获取流的mute状态
+    const getStreamMute = (streamId) => {
+        return state.interactiveInstance.getStreamMute(streamId)
+    }
 
 
 
@@ -223,6 +227,6 @@ export default function useInteractiveServer() {
     createLocalPhotoStream, stopStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
     muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
     getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate, getRoomStreams, remoteStreamList,
-    listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel, on, getRoomInfo}
+    listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel, on, getRoomInfo, getStreamMute}
 
 }

@@ -119,6 +119,39 @@
     throw new TypeError("\"" + name + "\" is read-only");
   }
 
+  function _toConsumableArray(arr) {
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
+  }
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) return _arrayLikeToArray(arr);
+  }
+
+  function _iterableToArray(iter) {
+    if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
+  }
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
   function useContextServer() {
     var state = {
       serverPool: {}
@@ -413,6 +446,11 @@
 
     var getAudioLevel = function getAudioLevel(streamId) {
       return state.interactiveInstance.getAudioLevel(streamId);
+    }; // 获取流的mute状态
+
+
+    var getStreamMute = function getStreamMute(streamId) {
+      return state.interactiveInstance.getStreamMute(streamId);
     }; // 监听事件
 
 
@@ -531,7 +569,75 @@
       getStreamPacketLoss: getStreamPacketLoss,
       getAudioLevel: getAudioLevel,
       on: on,
-      getRoomInfo: getRoomInfo
+      getRoomInfo: getRoomInfo,
+      getStreamMute: getStreamMute
+    };
+  }
+
+  function useMediaCheckServer() {
+    var interactiveServer = null;
+    var state = {
+      videoNode: "vh-device-check-video",
+      // 视频容器
+      selectedVideoDeviceId: "",
+      // 当前选取的设备id
+      localStreamId: "" // 本地流id
+
+    };
+
+    var init = function init() {
+      var opt = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      state.videoNode = opt.videoNode || "vh-device-check-video";
+      state.selectedVideoDeviceId = opt.selectedVideoDeviceId === undefined ? opt.selectedVideoDeviceId : "";
+      state.localStreamId = opt.localStreamId === undefined ? opt.localStreamId : "";
+      interactiveServer = contextServer.get("interactiveServer");
+    };
+
+    var setVideoNode = function setVideoNode(videoNode) {
+      state.videoNode = videoNode;
+    };
+
+    var setSelectedVideoDeviceId = function setSelectedVideoDeviceId(selectedVideoDeviceId) {
+      state.selectedVideoDeviceId = selectedVideoDeviceId;
+    }; // 开始视频预览
+
+
+    var startPreviewVideo = function startPreviewVideo() {
+      var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var originalOpts = {
+        videoNode: state.videoNode,
+        // 传入本地视频显示容器，必填
+        audio: false,
+        // 是否获取音频，选填，默认为true
+        videoDevice: state.selectedVideoDeviceId,
+        profile: VhallRTC.RTC_VIDEO_PROFILE_240P_16x9_M
+      };
+      var options = Object.assign.apply(Object, _toConsumableArray(originalOpts).concat(_toConsumableArray(opts)));
+      return interactiveServer.createLocalVideoStream(options).then(function (streamId) {
+        state.localStreamId = streamId;
+        return streamId;
+      });
+    }; // 结束视频预览
+
+
+    var stopPreviewVideo = function stopPreviewVideo(streamId) {
+      var id = streamId || state.localStreamId;
+      return interactiveServer.stopStream(id).then(function () {
+        setVideoNode("");
+        return state.localStreamId;
+      });
+    };
+
+    init();
+    return {
+      state: state,
+      init: init,
+      setVideoNode: setVideoNode,
+      setSelectedVideoDeviceId: setSelectedVideoDeviceId,
+      startPreviewVideo: startPreviewVideo,
+      stopPreviewVideo: stopPreviewVideo,
+      getDevices: interactiveServer.getDevices,
+      getVideoConstraints: interactiveServer.getVideoConstraints
     };
   }
 
@@ -2840,6 +2946,27 @@
             });
           });
         }
+        /**
+         * 获取流的mute状态
+         * @returns  
+         */
+
+      }, {
+        key: "getStreamMute",
+        value: function getStreamMute() {
+          var _this31 = this;
+
+          var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+          return new Promise(function (resolve, reject) {
+            _this31.instance.getStreamMute({
+              streamId: streamId
+            }).then(function (data) {
+              resolve(data);
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
       }]);
 
       return InteractiveModule;
@@ -3436,6 +3563,7 @@
     inputObj.click();
     inputObj.addEventListener('change', function (e) {
       onChange && onChange(e);
+      document.body.removeChild(this);
     });
   } // 判断浏览器是否是 chrome88 以上版本
 
@@ -3763,9 +3891,13 @@
       is_no_check: params.is_no_check || 1,
       pos: params.pos || 0,
       limit: params.limit || 10,
-      name: params.name || '',
       get_no_trans: params.get_no_trans || 1
     };
+
+    if (params.name) {
+      retParmams.name = params.name;
+    }
+
     return $fetch({
       url: '/v3/webinars/waiting-file/get-list',
       type: 'POST',
@@ -3777,7 +3909,7 @@
   var deleteInsertFile = function deleteInsertFile() {
     var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     return $fetch({
-      url: '/v3/webinars/waiting-file/get-list',
+      url: '/v3/webinars/waiting-file/deletes',
       type: 'POST',
       data: params
     });
@@ -3788,6 +3920,47 @@
     deleteInsertFile: deleteInsertFile
   };
 
+  var virtualClientStart = function virtualClientStart() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    // const { state } = contextServer.get('roomInitGroupServer') || {}
+    var retParmams = params;
+    return $fetch({
+      url: '/v3/webinars/virtual/start',
+      type: 'GET',
+      data: retParmams
+    });
+  }; // 发起端-增加虚拟观众
+
+
+  var virtualAccumulation = function virtualAccumulation() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    // const { state } = contextServer.get('roomInitGroupServer') || {}
+    var retParmams = params;
+    return $fetch({
+      url: '/v3/webinars/virtual/accumulation',
+      type: 'GET',
+      data: retParmams
+    });
+  }; // 发起端-获取虚拟观众基数
+
+
+  var virtualClientGet = function virtualClientGet() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    // const { state } = contextServer.get('roomInitGroupServer') || {}
+    var retParmams = params;
+    return $fetch({
+      url: '/v3/webinars/virtual/get-base',
+      type: 'GET',
+      data: retParmams
+    });
+  };
+
+  var virtualClient = {
+    virtualClientStart: virtualClientStart,
+    virtualAccumulation: virtualAccumulation,
+    virtualClientGet: virtualClientGet
+  };
+
   var RequestApi = function RequestApi() {
     _classCallCheck(this, RequestApi);
 
@@ -3795,6 +3968,7 @@
     this.roomBase = roomBase;
     this.user = userBase;
     this.insertFile = insertFile;
+    this.virtualClient = virtualClient;
   };
 
   var requestApi = new RequestApi();
@@ -3975,6 +4149,48 @@
     };
   }
 
+  function useVirtualClientStartServe() {
+    var state = {
+      preson: {
+        pv: '',
+        basePv: '',
+        baseTime: '',
+        onlineNum: '',
+        baseOnlineNum: ''
+      },
+      addCount: ''
+    };
+
+    var virtualClientStart = function virtualClientStart(data) {
+      return requestApi.virtualClient.virtualClientStart(data);
+    };
+
+    var virtualAccumulation = function virtualAccumulation(data) {
+      return requestApi.virtualClient.virtualAccumulation(data);
+    };
+
+    var virtualClientGet = function virtualClientGet(data) {
+      var http = requestApi.virtualClient.virtualClientGet(data);
+      http.then(function (res) {
+        console.log('请求成功！！！！！');
+        state.preson.pv = res.data.pv;
+        state.preson.basePv = res.data.base_pv;
+        state.preson.baseTime = res.data.base_time;
+        state.addCount = res.data.base_time;
+        state.preson.onlineNum = res.data.online;
+        state.preson.baseOnlineNum = res.data.base_online;
+      });
+      return http;
+    };
+
+    return {
+      state: state,
+      virtualClientStart: virtualClientStart,
+      virtualAccumulation: virtualAccumulation,
+      virtualClientGet: virtualClientGet
+    };
+  }
+
   function useInsertFileServer() {
     var _this = this;
 
@@ -3985,13 +4201,13 @@
 
     var getInsertFileList = function getInsertFileList() {
       var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return requestApi.insertVideo.getInsertFileList(params);
+      return requestApi.insertFile.getInsertFileList(params);
     }; // 删除插播文件
 
 
     var deleteInsertFile = function deleteInsertFile() {
       var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return requestApi.insertVideo.deleteInsertFile(params);
+      return requestApi.insertFile.deleteInsertFile(params);
     }; // 检查captureStream是否能用
 
 
@@ -4014,7 +4230,7 @@
 
       var accept = 'video/mp4,video/webm,audio/ogg';
 
-      if (roomBaseState.webinar.mode == 1) {
+      if (roomBaseState.watchInitData.webinar.mode == 1) {
         // 直播模式：1-音频、2-视频、3-互动
         accept = 'audio/ogg';
       }
@@ -4023,25 +4239,11 @@
         accept: accept
       };
       uploadFile(retParams, onChange);
-    }; // 注册本地音视频播放器开始/播放等事件回调
-
-
-    var initVideoEvents = function initVideoEvents(videoELement, cbs) {
-      videoELement.addEventListener("ended", function () {
-        cbs.onended && cbs.onended();
-      });
-      videoELement.addEventListener("play", function () {
-        cbs.onplay && cbs.onplay();
-      });
-      videoELement.addEventListener("pause", function () {
-        cbs.onpause && cbs.onpause();
-      });
     }; // 创建video标签播放本地音视频文件
 
 
     var createLocalVideoElement = function createLocalVideoElement(file) {
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      var cbs = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
       return new Promise(function (resolve, reject) {
         state._isAudio = file.type.includes('ogg');
         var videoElement = document.createElement('video');
@@ -4072,7 +4274,6 @@
             }
           }, 100);
         });
-        initVideoEvents(cbs);
       });
     }; // 使用canvas抓流
 
@@ -4182,13 +4383,14 @@
         });
       }
 
-      var interactiveServer = contextServer.get('useInteractiveServer');
+      var interactiveServer = contextServer.get('interactiveServer');
+      console.log('interactiveServer', interactiveServer);
       return interactiveServer.createLocalStream(retOptions);
     }; // 推插播流
 
 
     var publishInsertStream = function publishInsertStream(stream) {
-      var interactiveServer = contextServer.get('useInteractiveServer');
+      var interactiveServer = contextServer.get('interactiveServer');
       return new Promise(function (resolve, reject) {
         interactiveServer.publishStream({
           streamId: stream.streamId
@@ -4202,11 +4404,10 @@
 
     var stopPublishInsertStream = function stopPublishInsertStream(streamId) {
       return new Promise(function (resolve, reject) {
-        var interactiveServer = contextServer.get('useInteractiveServer');
-        interactiveServer.unpublishStream({
-          streamId: streamId || _this._LoclaStreamId
-        }).then(function (res) {
-          _this._LoclaStreamId = null;
+        var interactiveServer = contextServer.get('interactiveServer');
+        console.log('stopPublishInsertStream', streamId);
+        interactiveServer.unpublishStream(streamId || _this._LoclaStreamId).then(function (res) {
+          state._LoclaStreamId = null;
           resolve(res);
         })["catch"](reject);
       });
@@ -4215,14 +4416,14 @@
 
     var subscribeInsertStream = function subscribeInsertStream() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var interactiveServer = contextServer.get('useInteractiveServer');
+      var interactiveServer = contextServer.get('interactiveServer');
       return interactiveServer.subscribeStream(options);
     }; // 取消订阅流
 
 
     var unsubscribeInsertStream = function unsubscribeInsertStream() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var interactiveServer = contextServer.get('useInteractiveServer');
+      var interactiveServer = contextServer.get('interactiveServer');
       return interactiveServer.unSubscribeStream(options);
     };
 
@@ -4427,17 +4628,69 @@
     return result;
   }
 
+  function useDesktopShareServer() {
+    var state = {
+      vhallSaasInstance: null
+    };
+    state.vhallSaasInstance = contextServer.get('roomInitGroupServer').state.vhallSaasInstance;
+    var interactiveServer = contextServer.get('interactiveServer'); //检测浏览器是否支持桌面共享
+
+    var browserDetection = function browserDetection() {
+      var ua = navigator.userAgent;
+      var chromeTest = ua.match(/chrome\/([\d\.]+)/i);
+      var chromeVersion = chromeTest ? chromeTest[1] : 0;
+      var safariTest = ua.match(/Version\/([\d.]+).*Safari/);
+      var safariVersion = safariTest ? safariTest[1].replace(/\./g, '') : 0; //浏览器是否支持桌面共享
+
+      var isSupport = !chromeVersion && (!safariVersion || Number(safariVersion) < 1304); //浏览器是否版本过低，需要安装插件支持
+
+      var needInstallPlugin = Number(chromeVersion) < 74;
+      return {
+        isSupport: isSupport,
+        needInstallPlugin: needInstallPlugin,
+        chromeTest: chromeTest,
+        chromeVersion: chromeVersion,
+        safariTest: safariTest,
+        safariVersion: safariVersion
+      };
+    }; //分享屏幕检测
+
+
+    var shareScreenCheck = function shareScreenCheck() {
+      return new Promise(function (resolve, reject) {
+        interactiveServer.checkSystemRequirements().then(function (checkResult) {
+          console.log('result', checkResult.result, 'detail', checkResult.detail);
+
+          if (checkResult.result || checkResult.detail.isScreenShareSupported) {
+            resolve(true);
+          } else {
+            reject(false);
+          }
+        });
+      });
+    };
+
+    return {
+      state: state,
+      browserDetection: browserDetection,
+      shareScreenCheck: shareScreenCheck
+    };
+  }
+
   exports.contextServer = contextServer;
   exports.requestApi = requestApi;
   exports.setBaseUrl = setBaseUrl;
   exports.setRequestHeaders = setRequestHeaders;
   exports.setToken = setToken;
+  exports.useDesktopShareServer = useDesktopShareServer;
   exports.useInsertFileServer = useInsertFileServer;
   exports.useInteractiveServer = useInteractiveServer;
+  exports.useMediaCheckServer = useMediaCheckServer;
   exports.useMsgServer = useMsgServer;
   exports.useRoomBaseServer = useRoomBaseServer;
   exports.useRoomInitGroupServer = useRoomInitGroupServer;
   exports.useUserServer = useUserServer;
+  exports.useVirtualAudienceServer = useVirtualClientStartServe;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 

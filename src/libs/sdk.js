@@ -2301,6 +2301,27 @@
           });
         });
       }
+      /**
+       * 获取流的mute状态
+       * @returns  
+       */
+
+    }, {
+      key: "getStreamMute",
+      value: function getStreamMute() {
+        var _this31 = this;
+
+        var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+        return new Promise(function (resolve, reject) {
+          _this31.instance.getStreamMute({
+            streamId: streamId
+          }).then(function (data) {
+            resolve(data);
+          })["catch"](function (error) {
+            reject(error);
+          });
+        });
+      }
     }]);
 
     return InteractiveModule;
