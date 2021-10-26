@@ -1,4 +1,3 @@
-import useInteractiveServer from "@/domain/stream/interactive.server.js";
 import contextServer from "@/domain/common/context.server.js";
 
 // 业务功能: 1.获取设备列表(继承interactiveServer-getDevices) / 2.本地预览 / 3.停止预览  /  4.获取清晰度(继承interactiveServer-getVideoConstraints)
@@ -12,8 +11,11 @@ export default function useMediaCheckServer() {
         localStreamId: "" // 本地流id
     }
 
-    const init = () => {
-        console.log('asfjkashdfkjashfkjashfkjashdkfhksjh')
+    const init = (opt= {}) => {
+        state.videoNode = opt.videoNode || "vh-device-check-video"
+        state.selectedVideoDeviceId = opt.selectedVideoDeviceId === undefined ? opt.selectedVideoDeviceId : ""
+        state.localStreamId = opt.localStreamId === undefined ? opt.localStreamId : ""
+
         interactiveServer = contextServer.get("interactiveServer")
     }
 
@@ -27,8 +29,7 @@ export default function useMediaCheckServer() {
 
     // 开始视频预览
     const startPreviewVideo = () => {
-        console.log('---------------hhhhhhhh-----------------')
-            console.log(streamId)
+        console.log(state.localStreamId)
         const opts = {
             videoNode: state.videoNode, // 传入本地视频显示容器，必填
             audio: false, // 是否获取音频，选填，默认为true
@@ -36,9 +37,6 @@ export default function useMediaCheckServer() {
             profile: VhallRTC.RTC_VIDEO_PROFILE_240P_16x9_M
         }
         return interactiveServer.createLocalVideoStream(opts).then(streamId => {
-            console.log('---------------hhhhhhhh-----------------')
-            console.log(streamId)
-            console.log('---------------hhhhhhhh-----------------')
             state.localStreamId = streamId
             return streamId
         })
