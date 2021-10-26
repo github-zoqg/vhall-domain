@@ -1,9 +1,14 @@
 import $http from '@/utils/http.js'
+import contextServer from "@/domain/common/context.server.js"
 
 
 // 设置主屏
 const setMainScreen = (params={})=>{
-    let retParams = {}
+    const { state } = contextServer.get('roomBaseServer')
+
+    let retParams = {
+        room_id: params.room_id || state.watchInitData.interact.room_id,
+    }
     retParams = Object.assign(retParams,params)
 
     return $http({
@@ -15,7 +20,11 @@ const setMainScreen = (params={})=>{
 
 // 设置主讲人
 const setSpeaker = (params={})=>{
-    let retParams = {}
+    const { state } = contextServer.get('roomBaseServer')
+
+    let retParams = {
+        room_id: params.room_id || state.watchInitData.interact.room_id,
+    }
     retParams = Object.assign(retParams,params)
 
     return $http({
@@ -27,7 +36,15 @@ const setSpeaker = (params={})=>{
 
 // 设置音视频设备开关
 const setRoomDevice = (params={})=>{
-    let retParams = {}
+    const { state } = contextServer.get('roomBaseServer')
+
+    let retParams = {
+        room_id: params.room_id || state.watchInitData.interact.room_id,
+        device: params.device,
+        status: params.status,
+        account_Id: params.account_Id,
+        receive_account_id: params.receive_account_id
+    }
     retParams = Object.assign(retParams,params)
 
     return $http({

@@ -1,21 +1,34 @@
 import $http from '@/utils/http.js'
+import contextServer from "@/domain/common/context.server.js"
+
 
 // 允许上下麦
-const allowSpeak = (params={})=>{
-    const retParams = {}
+const allowSpeak = (params = {}) => {
+    const { state } = contextServer.get('roomBaseServer')
+
+    let retParams = {
+        roomId: params.roomId || state.watchInitData.interact.room_id,
+        receive_account_id: ''
+    }
+    retParams = Object.assign(retParams, params)
+
 
     return $http({
-        url:'/v3/interacts/inav/agree-apply',
-        type:'POST',
-        data:retParams
+        url: '/v3/interacts/inav/agree-apply',
+        type: 'POST',
+        data: retParams
     })
 }
 
-
 // 用户上麦
 const speakOn = (params = {}) => {
-    const retParmams = {
+    const { state } = contextServer.get('roomBaseServer')
+
+    let retParmams = {
+        room_id: params.room_id || state.watchInitData.interact.room_id,
     }
+    retParams = Object.assign(retParams, params)
+
 
     return $http({
         url: '/v3/interacts/inav-user/speak',
@@ -25,70 +38,103 @@ const speakOn = (params = {}) => {
 }
 
 // 用户自己下麦
-const speakOff = (params = {})=>{
-    const retParams = {}
+const speakOff = (params = {}) => {
+    const { state } = contextServer.get('roomBaseServer')
+
+    let retParams = {
+        room_id: params.room_id || state.watchInitData.interact.room_id,
+    }
+    retParams = Object.assign(retParams, params)
 
     return $http({
-        url:'/v3/interacts/inav-user/nospeak',
-        type:'POST',
-        data:retParams
+        url: '/v3/interacts/inav-user/nospeak',
+        type: 'POST',
+        data: retParams
     })
 }
 
 // 设置其他人下麦
-const speakUserOff = (params={})=>{
-    const retParams = {}
+const speakUserOff = (params = {}) => {
+    const { state } = contextServer.get('roomBaseServer')
+
+    let retParams = {
+        room_id: params.room_id || state.watchInitData.interact.room_id,
+    }
+
+    retParams = Object.assign(retParams, params)
 
     return $http({
-        url:'/v3/interacts/inav/nospeak',
-        type:'POST',
-        data:retParams
+        url: '/v3/interacts/inav/nospeak',
+        type: 'POST',
+        data: retParams
     })
 }
 
 
 // 允许举手
-const setHandsup = (params={})=>{
-    const retParams = {}
+const setHandsup = (params = {}) => {
+    const { state } = contextServer.get('roomBaseServer')
+
+    let retParams = {
+        room_id: params.room_id || state.watchInitData.interact.room_id,
+        status: 0 // 1-允许 0-不允许
+    }
+
+    retParams = Object.assign(retParams, params)
 
     return $http({
-        url:'/v3/interacts/inav-user/nospeak',
-        type:'POST',
-        data:retParams
+        url: '/v3/interacts/inav-user/nospeak',
+        type: 'POST',
+        data: retParams
     })
 }
 
 // 邀请上麦
-const inviteMic = (params={})=>{
-    const retParams = {}
+const inviteMic = (params = {}) => {
+    const { state } = contextServer.get('roomBaseServer')
+    
+    let retParams = {
+        room_id: params.room_id || state.watchInitData.interact.room_id,
+    }
+    retParams = Object.assign(retParams,params)
 
     return $http({
-        url:'/v3/interacts/inav/invite',
-        type:'POST',
-        data:retParams
+        url: '/v3/interacts/inav/invite',
+        type: 'POST',
+        data: retParams
     })
 }
 
 
 // 取消申请
-const cancelApply = (params={})=>{
-    const retParams = {}
+const cancelApply = (params = {}) => {
+    const { state } = contextServer.get('roomBaseServer')
+
+    let retParams = {
+        room_id: params.room_id || state.watchInitData.interact.room_id,
+    }
+    retParams = Object.assign(retParams,params)
 
     return $http({
-        url:'/v3/interacts/inav-user/nospeak',
-        type:'POST',
-        data:retParams
+        url: '/v3/interacts/inav-user/cancel-apply',
+        type: 'POST',
+        data: retParams
     })
 }
 
 // 拒绝邀请上麦
-const refuseInvite = (params={})=>{
-    const retParams = {}
+const refuseInvite = (params = {}) => {
+    const { state } = contextServer.get('roomBaseServer')
+
+    let retParams = {
+        room_id: params.room_id || state.watchInitData.interact.room_id,
+    }
+    retParams = Object.assign(retParams,params)
 
     return $http({
-        url:'/v3/interacts/inav-user/reject-invite',
-        type:'POST',
-        data:retParams
+        url: '/v3/interacts/inav-user/reject-invite',
+        type: 'POST',
+        data: retParams
     })
 }
 
