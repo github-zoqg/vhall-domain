@@ -2,6 +2,7 @@ import '../libs/sdk.js'
 import roomBase from './roomBase.js'
 import user from './user.js'
 import insertFile from './insertFile.js'
+import virtualClient from './virtualClient.js'
 
 class RequestApi {
     constructor() {
@@ -9,6 +10,7 @@ class RequestApi {
         this.roomBase = roomBase
         this.user = user
         this.insertFile = insertFile
+        this.virtualClient = virtualClient
     }
 }
 
