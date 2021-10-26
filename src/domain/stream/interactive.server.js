@@ -113,7 +113,6 @@ export default function useInteractiveServer() {
     // 检查当前浏览器支持性
     const checkSystemRequirements = async () => {
         if(!state.interactiveInstance)return;
-        console.log('state:', state.interactiveInstance)
         return state.interactiveInstance.checkSystemRequirements()
     }
     // 获取上下行丢包率

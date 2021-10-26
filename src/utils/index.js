@@ -21,4 +21,27 @@ function isPc() {
     return flag;
 }
 
-export { merge, isPc };
+// 上传文件
+function uploadFile(options, onChange) {
+    var inputObj=document.createElement('input')
+    inputObj.setAttribute('id','file');
+    inputObj.setAttribute('type','file');
+    inputObj.setAttribute('name','file');
+    inputObj.setAttribute("style",'height:0px; position: absolute;');
+    inputObj.setAttribute("accept",options.accept);
+    document.body.appendChild(inputObj);
+    inputObj.value;
+    inputObj.click();
+    inputObj.addEventListener('change', function (e) {
+        onChange && onChange(e)
+    })
+}
+
+// 判断浏览器是否是 chrome88 以上版本
+function isChrome88() {
+    let chromeReg = /Chrome\/(\d{2})[.\d]+\sSafari\/[.\d]+$/gi;
+    let chromeResult = chromeReg.exec(navigator.userAgent);
+    return chromeResult && chromeResult.length > 0 && chromeResult[1] > 87
+}
+
+export { merge, isPc, uploadFile, isChrome88 };

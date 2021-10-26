@@ -5,7 +5,16 @@ import useInteractiveServer from '@/domain/stream/interactive.server.js'
 
 import useRoomBaseServer from '@/domain/roombase/roombase.server.js'
 import useUserServer from '@/domain/user/user.server.js'
+import useInsertFileServer from '@/domain/stream/insertFile.server.js'
 
 import useRoomInitGroupServer from '@/domain/roombase/roomInit.group.server.js'
 
-export { contextServer, useMsgServer, useRoomBaseServer, useUserServer, useRoomInitGroupServer,useInteractiveServer };
+export {
+    contextServer,
+    useMsgServer,
+    useRoomBaseServer,
+    useUserServer,
+    useRoomInitGroupServer,
+    useInteractiveServer,
+    useInsertFileServer
+};

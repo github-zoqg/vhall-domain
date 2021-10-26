@@ -24,12 +24,6 @@ export default function useRoomInitGroupServer(options = {}) {
     }
 
     const setRequestConfig = (options) => {
-        if (options.development) {
-            setBaseUrl('https://t-saas-dispatch.vhall.com')
-        } else {
-            setBaseUrl('https://saas-api.vhall.com')
-        }
-
         setToken(options.token, options.liveToken)
 
         if (options.requestHeaders) {

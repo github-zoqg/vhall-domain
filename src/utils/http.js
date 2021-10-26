@@ -14,7 +14,7 @@
 import { isPc } from './index.js'
 
 
-let BUSE_URL = ''
+let BUSE_URL = 'https://t-saas-dispatch.vhall.com'
 let TOKEN = ''
 let LIVETOKEN = ''
 let HEADERS = {}
@@ -29,9 +29,7 @@ function setToken(token, livetoken) {
     LIVETOKEN = livetoken
 }
 function setRequestHeaders(options) {
-    HEADERS = {
-        ...options
-    }
+    Object.assign(HEADERS,options)
 }
 
 function $fetch(options) {
