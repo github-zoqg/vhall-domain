@@ -253,20 +253,20 @@
 
 
     var stopStream = function stopStream(streamId) {
-      return state.interactiveInstance.destroyStream(state.streamId || streamId);
+      return state.interactiveInstance.destroyStream(streamId || state.streamId);
     }; // 推送本地流到远端
 
 
     var publishStream = function publishStream() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       return state.interactiveInstance.publishStream({
-        streamId: state.streamId || options.streamId
+        streamId: options.streamId || state.streamId
       });
     }; // 取消推送到远端的流
 
 
     var unpublishStream = function unpublishStream(streamId) {
-      return state.interactiveInstance.unpublishStream(state.streamId || streamId);
+      return state.interactiveInstance.unpublishStream(streamId || state.streamId);
     }; // 订阅远端流
 
 
@@ -392,21 +392,32 @@
 
     var getPacketLossRate = function getPacketLossRate() {
       return state.interactiveInstance.getPacketLossRate();
-    }; // 获取上下行丢包率
+    }; // 获取流上下行丢包率
 
 
     var getStreamPacketLoss = function getStreamPacketLoss() {
-      return state.interactiveInstance.getStreamPacketLoss();
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.getStreamPacketLoss(options);
     }; // 获取房间流信息
 
 
     var getRoomStreams = function getRoomStreams() {
       return state.interactiveInstance.getRoomStreams();
+    }; // 获取房间总的流信息(本地流加远端流)
+
+
+    var getRoomInfo = function getRoomInfo() {
+      return state.interactiveInstance.getRoomInfo();
     }; // 获取流音频能量
 
 
     var getAudioLevel = function getAudioLevel(streamId) {
       return state.interactiveInstance.getAudioLevel(streamId);
+    }; // 监听事件
+
+
+    var on = function on(type, callback) {
+      return state.interactiveInstance.on(type, callback);
     }; // 组合api
 
 
@@ -518,7 +529,9 @@
       listenerSdk: listenerSdk,
       setVideoProfile: setVideoProfile,
       getStreamPacketLoss: getStreamPacketLoss,
-      getAudioLevel: getAudioLevel
+      getAudioLevel: getAudioLevel,
+      on: on,
+      getRoomInfo: getRoomInfo
     };
   }
 
@@ -2731,6 +2744,17 @@
           return this.instance.getRoomStreams();
         }
         /**
+         * 获取房间总的信息
+         * @param {Object} options --  streamId: 切换本地流Id profile: 必填，互动视频质量参数
+         * @returns {Promise} - 配置本地流视频质量参数的promise回调
+         */
+
+      }, {
+        key: "getRoomInfo",
+        value: function getRoomInfo() {
+          return this.instance.getRoomInfo();
+        }
+        /**
          * 是否支持桌面共享
          * @returns Boolean
          */
@@ -2786,9 +2810,10 @@
         value: function getStreamPacketLoss() {
           var _this29 = this;
 
+          var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           return new Promise(function (resolve, reject) {
-            _this29.instance.getStreamPacketLoss().then(function (data) {
-              resolve(data);
+            _this29.instance.getStreamPacketLoss(options).then(function () {
+              resolve();
             })["catch"](function (error) {
               reject(error);
             });
