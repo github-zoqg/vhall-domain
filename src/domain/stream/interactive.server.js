@@ -4,13 +4,13 @@ export default function useInteractiveServer() {
     let state = {
         vhallSaasInstance: null,  // vhallsdk的实例
         interactiveInstance: null,  // 互动实例
-        streamId: null
+        streamId: null,
+        remoteStreams:[] // 远端流数组
     }
 
     const init = (option) => {
         const roomInitGroupServer = contextServer.get('roomInitGroupServer');
         state.vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
-
         return state.vhallSaasInstance.createInteractive().then(interactives => {
             state.interactiveInstance = interactives
             console.log('state.interactiveInstance',interactives,interactives.instance)
@@ -40,15 +40,15 @@ export default function useInteractiveServer() {
     }
     // 销毁额本地流
     const stopStream = (streamId) => {
-        return state.interactiveInstance.destroyStream(state.streamId || streamId)
+        return state.interactiveInstance.destroyStream(streamId || state.streamId)
     }
     // 推送本地流到远端
     const publishStream = (options = {}) => {
-        return state.interactiveInstance.publishStream({ streamId: state.streamId || options.streamId })
+        return state.interactiveInstance.publishStream({ streamId: options.streamId || state.streamId })
     }
     // 取消推送到远端的流
     const unpublishStream = (streamId) => {
-        return state.interactiveInstance.unpublishStream(state.streamId || streamId)
+        return state.interactiveInstance.unpublishStream( streamId || state.streamId)
     }
     // 订阅远端流
     const subscribeStream = (options = {}) => {
@@ -106,6 +106,10 @@ export default function useInteractiveServer() {
     const getVideoConstraints = (deviceId = '') => {
         return state.interactiveInstance.getSpeakers(deviceId)
     }
+    // 配置本地流视频质量参数
+    const setVideoProfile = (options = {}) => {
+        return state.interactiveInstance.setVideoProfile(options)
+    }
     // 是否支持桌面共享
     const isScreenShareSupported = () => {
         return state.interactiveInstance.isScreenShareSupported()
@@ -119,17 +123,39 @@ export default function useInteractiveServer() {
     const getPacketLossRate = () => {
         return state.interactiveInstance.getPacketLossRate()
     }
+    // 获取流上下行丢包率
+    const getStreamPacketLoss = (options = {}) => {
+        return state.interactiveInstance.getStreamPacketLoss(options)
+    }
+    // 获取房间流信息
+    const getRoomStreams = () => {
+        return state.interactiveInstance.getRoomStreams()
+    }
+    // 获取房间总的流信息(本地流加远端流)
+    const getRoomInfo = () => {
+        return state.interactiveInstance.getRoomInfo()
+    }
+    // 获取流音频能量
+    const getAudioLevel = (streamId) => {
+        return state.interactiveInstance.getAudioLevel(streamId)
+    }
 
+
+
+
+
+    // 监听事件
+    const on = (type,callback) => {
+        return state.interactiveInstance.on(type, callback)
+    }
     // 组合api
-    const startPushStream = () => {
-
-        setTimeout(async () => {
-            await createLocalAndPushStream(state.interactiveInstance)
-        }, 3000)
+    const startPushStream = ()=> {
+        console.log('state:',state)
+        createLocalAndStream(state.interactiveInstance)
     }
 
     // 创建本地的推流和推流
-    const createLocalAndPushStream = (interactive) => {
+    const createLocalAndStream = (interactive) => {
         let camerasList = null, micropsList = null, videoConstraintsList = null, streamId = null
         return interactive.getDevices().then((data) => {
             console.log('devices list::', data);
@@ -153,13 +179,7 @@ export default function useInteractiveServer() {
                     console.log('create local stream success::', res);
                     state.streamId = res
                     streamId = res
-                }).then(() => {
-                    interactive.publishStream({ streamId }).then((res) => {
-                        console.log('publish stream success::', streamId);
-                    })
-                        .catch((err) => {
-                            console.log('publish is failed::', err);
-                        })
+                    return res
                 }).catch((err) => {
                     console.log('local stream failed::', err);
                 })
@@ -170,12 +190,39 @@ export default function useInteractiveServer() {
             console.log('getDevies is failed::', err);
         })
     }
-
-    return {
-        state, startPushStream, init, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
-        createLocalPhotoStream, stopStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
-        muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
-        getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate
+    const pulishStream = (streamId) => {
+        interactive.publishStream({ streamId }).then((res) => {
+            console.log('publish stream success::', streamId);
+        })
+        .catch((err) => {
+            console.log('publish is failed::', err);
+        })
     }
+    // 订阅流列表
+    const remoteStreamList = ()=> {
+        state.remoteStreams = state.interactiveInstance.getRemoteStreams()
+        for (const remoteStream in state.interactiveInstance.getRemoteStreams()) {
+            state.remoteStreams.push(remoteStream)
+        }
+        return state.remoteStreams
+    }
+    // sdk的监听事件
+    const listenerSdk = () => {
+        state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_ADD, (e) => {
+            // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
+            console.log('remote stream add info::',e);
+            state.remoteStreams.push(e)
+        })
+        state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, (e) => {
+            // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
+            console.log('remote stream remove info::',e);
+            state.remoteStreams.filter(item => item.streamId == e.streamId)
+        })
+    }
+    return { state, startPushStream ,init, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
+    createLocalPhotoStream, stopStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
+    muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
+    getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate, getRoomStreams, remoteStreamList,
+    listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel, on, getRoomInfo}
 
 }
