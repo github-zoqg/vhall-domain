@@ -106,6 +106,10 @@ export default function useInteractiveServer() {
     const getVideoConstraints = (deviceId = '') => {
         return state.interactiveInstance.getSpeakers(deviceId)
     }
+    // 配置本地流视频质量参数
+    const setVideoProfile = (options = {}) => {
+        return state.interactiveInstance.setVideoProfile(options)
+    }
     // 是否支持桌面共享
     const isScreenShareSupported = () => {
         return state.interactiveInstance.isScreenShareSupported()
@@ -119,9 +123,17 @@ export default function useInteractiveServer() {
     const getPacketLossRate = () => {
         return state.interactiveInstance.getPacketLossRate()
     }
+    // 获取上下行丢包率
+    const getStreamPacketLoss = () => {
+        return state.interactiveInstance.getStreamPacketLoss()
+    }
     // 获取房间流信息
     const getRoomStreams = () => {
         return state.interactiveInstance.getRoomStreams()
+    }
+    // 获取流音频能量
+    const getAudioLevel = (streamId) => {
+        return state.interactiveInstance.getAudioLevel(streamId)
     }
 
 
@@ -132,11 +144,11 @@ export default function useInteractiveServer() {
     // 组合api
     const startPushStream = ()=> {
         console.log('state:',state)
-        createLocalAndPushStream(state.interactiveInstance)
+        createLocalAndStream(state.interactiveInstance)
     }
 
     // 创建本地的推流和推流
-    const createLocalAndPushStream = (interactive) => {
+    const createLocalAndStream = (interactive) => {
         let camerasList = null, micropsList = null, videoConstraintsList = null, streamId = null
         return interactive.getDevices().then((data) => {
             console.log('devices list::', data);
@@ -160,13 +172,7 @@ export default function useInteractiveServer() {
                     console.log('create local stream success::', res);
                     state.streamId = res
                     streamId = res
-                }).then(() => {
-                    interactive.publishStream({ streamId }).then((res) => {
-                        console.log('publish stream success::', streamId);
-                    })
-                        .catch((err) => {
-                            console.log('publish is failed::', err);
-                        })
+                    return res
                 }).catch((err) => {
                     console.log('local stream failed::', err);
                 })
@@ -175,6 +181,14 @@ export default function useInteractiveServer() {
             })
         }).catch((err) => {
             console.log('getDevies is failed::', err);
+        })
+    }
+    const pulishStream = (streamId) => {
+        interactive.publishStream({ streamId }).then((res) => {
+            console.log('publish stream success::', streamId);
+        })
+        .catch((err) => {
+            console.log('publish is failed::', err);
         })
     }
     // 订阅流列表
@@ -201,6 +215,7 @@ export default function useInteractiveServer() {
     return { state, startPushStream ,init, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
     createLocalPhotoStream, stopStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
     muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
-    getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate, getRoomStreams, remoteStreamList}
+    getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate, getRoomStreams, remoteStreamList,
+    listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel}
 
 }

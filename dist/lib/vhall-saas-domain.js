@@ -201,7 +201,9 @@
       // vhallsdk的实例
       interactiveInstance: null,
       // 互动实例
-      streamId: null
+      streamId: null,
+      remoteStreams: [] // 远端流数组
+
     };
 
     var init = function init(option) {
@@ -344,6 +346,12 @@
     var getVideoConstraints = function getVideoConstraints() {
       var deviceId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
       return state.interactiveInstance.getSpeakers(deviceId);
+    }; // 配置本地流视频质量参数
+
+
+    var setVideoProfile = function setVideoProfile() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.setVideoProfile(options);
     }; // 是否支持桌面共享
 
 
@@ -384,33 +392,34 @@
 
     var getPacketLossRate = function getPacketLossRate() {
       return state.interactiveInstance.getPacketLossRate();
+    }; // 获取上下行丢包率
+
+
+    var getStreamPacketLoss = function getStreamPacketLoss() {
+      return state.interactiveInstance.getStreamPacketLoss();
+    }; // 获取房间流信息
+
+
+    var getRoomStreams = function getRoomStreams() {
+      return state.interactiveInstance.getRoomStreams();
+    }; // 获取流音频能量
+
+
+    var getAudioLevel = function getAudioLevel(streamId) {
+      return state.interactiveInstance.getAudioLevel(streamId);
     }; // 组合api
 
 
     var startPushStream = function startPushStream() {
-      setTimeout( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
-        return regeneratorRuntime.wrap(function _callee2$(_context2) {
-          while (1) {
-            switch (_context2.prev = _context2.next) {
-              case 0:
-                _context2.next = 2;
-                return createLocalAndPushStream(state.interactiveInstance);
-
-              case 2:
-              case "end":
-                return _context2.stop();
-            }
-          }
-        }, _callee2);
-      })), 3000);
+      console.log('state:', state);
+      createLocalAndStream(state.interactiveInstance);
     }; // 创建本地的推流和推流
 
 
-    var createLocalAndPushStream = function createLocalAndPushStream(interactive) {
+    var createLocalAndStream = function createLocalAndStream(interactive) {
       var camerasList = null,
           micropsList = null,
-          videoConstraintsList = null,
-          streamId = null;
+          videoConstraintsList = null;
       return interactive.getDevices().then(function (data) {
         console.log('devices list::', data);
         camerasList = data.videoInputDevices.filter(function (d) {
@@ -436,15 +445,7 @@
           interactive.createLocalVideoStream(params).then(function (res) {
             console.log('create local stream success::', res);
             state.streamId = res;
-            streamId = res;
-          }).then(function () {
-            interactive.publishStream({
-              streamId: streamId
-            }).then(function (res) {
-              console.log('publish stream success::', streamId);
-            })["catch"](function (err) {
-              console.log('publish is failed::', err);
-            });
+            return res;
           })["catch"](function (err) {
             console.log('local stream failed::', err);
           });
@@ -453,6 +454,33 @@
         });
       })["catch"](function (err) {
         console.log('getDevies is failed::', err);
+      });
+    };
+
+
+    var remoteStreamList = function remoteStreamList() {
+      state.remoteStreams = state.interactiveInstance.getRemoteStreams();
+
+      for (var remoteStream in state.interactiveInstance.getRemoteStreams()) {
+        state.remoteStreams.push(remoteStream);
+      }
+
+      return state.remoteStreams;
+    }; // sdk的监听事件
+
+
+    var listenerSdk = function listenerSdk() {
+      state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_ADD, function (e) {
+        // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
+        console.log('remote stream add info::', e);
+        state.remoteStreams.push(e);
+      });
+      state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, function (e) {
+        // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
+        console.log('remote stream remove info::', e);
+        state.remoteStreams.filter(function (item) {
+          return item.streamId == e.streamId;
+        });
       });
     };
 
@@ -484,7 +512,13 @@
       getVideoConstraints: getVideoConstraints,
       isScreenShareSupported: isScreenShareSupported,
       checkSystemRequirements: checkSystemRequirements,
-      getPacketLossRate: getPacketLossRate
+      getPacketLossRate: getPacketLossRate,
+      getRoomStreams: getRoomStreams,
+      remoteStreamList: remoteStreamList,
+      listenerSdk: listenerSdk,
+      setVideoProfile: setVideoProfile,
+      getStreamPacketLoss: getStreamPacketLoss,
+      getAudioLevel: getAudioLevel
     };
   }
 
@@ -1916,15 +1950,9 @@
       var _super = _createSuper(InteractiveModule);
 
       function InteractiveModule(customOptions) {
-        var _this;
-
         _classCallCheck(this, InteractiveModule);
 
-        _this = _super.call(this, customOptions);
-
-        _this.init(customOptions);
-
-        return _this;
+        return _super.call(this, customOptions);
       }
       /**
        * 初始化互动sdk
@@ -1938,7 +1966,7 @@
       _createClass(InteractiveModule, [{
         key: "init",
         value: function init() {
-          var _this2 = this;
+          var _this = this;
 
           var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           var successCb = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
@@ -1983,9 +2011,9 @@
           console.log("optionssssssssssssssssssssssssssss", options);
           return new Promise(function (resolve, reject) {
             var onSuccess = function onSuccess(event) {
-              _this2.instance = event.vhallrtc;
+              _this.instance = event.vhallrtc;
 
-              _this2.listenEvents();
+              _this.listenEvents();
 
               console.log('init interactive sdk success:', event);
               successCb(event);
@@ -2004,39 +2032,39 @@
       }, {
         key: "listenEvents",
         value: function listenEvents() {
-          var _this3 = this;
+          var _this2 = this;
 
           this.instance.on(VhallRTC.EVENT_REMOTESTREAM_ADD, function (e) {
             // 远端流加入事件
-            _this3.$emit('interactive_REMOTESTREAM_ADD', e);
+            _this2.$emit('interactive_REMOTESTREAM_ADD', e);
           });
           this.instance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, function (e) {
             // 远端流离开事件
-            _this3.$emit('interactive_REMOTESTREAM_REMOVED', e);
+            _this2.$emit('interactive_REMOTESTREAM_REMOVED', e);
           });
           this.instance.on(VhallRTC.EVENT_ROOM_EXCDISCONNECTED, function (e) {
             // 房间信令异常断开事件
-            _this3.$emit('interactive_ROOM_EXCDISCONNECTED', e);
+            _this2.$emit('interactive_ROOM_EXCDISCONNECTED', e);
           });
           this.instance.on(VhallRTC.EVENT_REMOTESTREAM_MUTE, function (e) {
             // 远端流音视频状态改变事件
-            _this3.$emit('interactive_REMOTESTREAM_MUTE', e);
+            _this2.$emit('interactive_REMOTESTREAM_MUTE', e);
           });
           this.instance.on(VhallRTC.EVENT_REMOTESTREAM_FAILED, function (e) {
             // 本地推流或订阅远端流异常断开事件
-            _this3.$emit('interactive_REMOTESTREAM_FAILED', e);
+            _this2.$emit('interactive_REMOTESTREAM_FAILED', e);
           });
           this.instance.on(VhallRTC.EVENT_STREAM_END, function (e) {
             // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
-            _this3.$emit('interactive_STREAM_END', e);
+            _this2.$emit('interactive_STREAM_END', e);
           });
           this.instance.on(VhallRTC.EVENT_STREAM_STUNK, function (e) {
             // 本地流视频发送帧率异常事件
-            _this3.$emit('interactive_STREAM_STUNK', e);
+            _this2.$emit('interactive_STREAM_STUNK', e);
           });
           this.instance.on(VhallRTC.EVENT_DEVICE_CHANGE, function (e) {
             // 新增设备或移除设备时触发
-            _this3.$emit('interactive_DEVICE_CHANGE', e);
+            _this2.$emit('interactive_DEVICE_CHANGE', e);
           });
         }
         /**
@@ -2047,12 +2075,12 @@
       }, {
         key: "destroyInit",
         value: function destroyInit() {
-          var _this4 = this;
+          var _this3 = this;
 
           return new Promise(function (resolve, reject) {
-            _this4.instance.destroyInstance({}).then(function () {
+            _this3.instance.destroyInstance({}).then(function () {
               resolve();
-              _this4.instance = null;
+              _this3.instance = null;
             })["catch"](function (error) {
               reject(error);
             });
@@ -2068,11 +2096,11 @@
       }, {
         key: "createLocalStream",
         value: function createLocalStream() {
-          var _this5 = this;
+          var _this4 = this;
 
           var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           return new Promise(function (resolve, reject) {
-            _this5.instance.createStream(options).then(function (data) {
+            _this4.instance.createStream(options).then(function (data) {
               resolve(data.streamId);
             })["catch"](function (error) {
               if (store.get('roomInitData').userInfo.role_name != 1) {
@@ -2100,7 +2128,7 @@
       }, {
         key: "createLocalVideoStream",
         value: function createLocalVideoStream() {
-          var _this6 = this;
+          var _this5 = this;
 
           var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -2130,7 +2158,7 @@
             var params = merge.recursive({}, defaultOptions, addConfig);
             console.log('pass params::', params);
 
-            _this6.instance.createStream(params).then(function (data) {
+            _this5.instance.createStream(params).then(function (data) {
               resolve(data.streamId);
             })["catch"](function (error) {
               if (store.get('roomInitData').userInfo.role_name != 1) {
@@ -2158,7 +2186,7 @@
       }, {
         key: "createLocaldesktopStream",
         value: function createLocaldesktopStream() {
-          var _this7 = this;
+          var _this6 = this;
 
           var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -2182,7 +2210,7 @@
             };
             var params = merge.recursive({}, defaultOptions, addConfig);
 
-            _this7.instance.createStream(params).then(function (data) {
+            _this6.instance.createStream(params).then(function (data) {
               resolve(data.streamId);
             })["catch"](function (error) {
               if (store.get('roomInitData').userInfo.role_name != 1) {
@@ -2210,7 +2238,7 @@
       }, {
         key: "createLocalAudioStream",
         value: function createLocalAudioStream() {
-          var _this8 = this;
+          var _this7 = this;
 
           var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -2237,7 +2265,7 @@
             };
             var params = merge.recursive({}, defaultOptions, addConfig);
 
-            _this8.instance.createStream(params).then(function (data) {
+            _this7.instance.createStream(params).then(function (data) {
               resolve(data.streamId);
             })["catch"](function (error) {
               reject(error);
@@ -2254,7 +2282,7 @@
       }, {
         key: "createLocalPhotoStream",
         value: function createLocalPhotoStream() {
-          var _this9 = this;
+          var _this8 = this;
 
           var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -2270,7 +2298,7 @@
             };
             var params = merge.recursive({}, defaultOptions, addConfig);
 
-            _this9.instance.createStream(params).then(function (data) {
+            _this8.instance.createStream(params).then(function (data) {
               resolve(data.streamId);
             })["catch"](function (error) {
               reject(error);
@@ -2286,11 +2314,11 @@
       }, {
         key: "destroyStream",
         value: function destroyStream() {
-          var _this10 = this;
+          var _this9 = this;
 
           var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
           return new Promise(function (resolve, reject) {
-            _this10.instance.destroyStream({
+            _this9.instance.destroyStream({
               streamId: streamId
             }).then(function () {
               resolve();
@@ -2308,11 +2336,11 @@
       }, {
         key: "publishStream",
         value: function publishStream() {
-          var _this11 = this;
+          var _this10 = this;
 
           var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           return new Promise(function (resolve, reject) {
-            _this11.instance.publish({
+            _this10.instance.publish({
               streamId: options.streamId,
               accountId: options.accountId
             }).then(function (data) {
@@ -2331,11 +2359,11 @@
       }, {
         key: "unpublishStream",
         value: function unpublishStream() {
-          var _this12 = this;
+          var _this11 = this;
 
           var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
           return new Promise(function (resolve, reject) {
-            _this12.instance.unpublish({
+            _this11.instance.unpublish({
               streamId: streamId
             }).then(function () {
               resolve();
@@ -2353,7 +2381,7 @@
       }, {
         key: "subscribeStream",
         value: function subscribeStream() {
-          var _this13 = this;
+          var _this12 = this;
 
           var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           return new Promise(function (resolve, reject) {
@@ -2373,7 +2401,7 @@
             };
             var params = merge.recursive({}, defaultOptions, addConfig);
 
-            _this13.instance.subscribe(params).then(function (data) {
+            _this12.instance.subscribe(params).then(function (data) {
               resolve(data);
             })["catch"](function (error) {
               reject(error);
@@ -2389,11 +2417,11 @@
       }, {
         key: "unSubscribeStream",
         value: function unSubscribeStream() {
-          var _this14 = this;
+          var _this13 = this;
 
           var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
           return new Promise(function (resolve, reject) {
-            _this14.instance.unsubscribe({
+            _this13.instance.unsubscribe({
               streamId: streamId
             }).then(function (data) {
               resolve(data);
@@ -2411,7 +2439,7 @@
       }, {
         key: "setDual",
         value: function setDual() {
-          var _this15 = this;
+          var _this14 = this;
 
           var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           return new Promise(function (resolve, reject) {
@@ -2420,7 +2448,7 @@
               dual: options.dual
             };
 
-            _this15.instance.setDual(params).then(function (data) {
+            _this14.instance.setDual(params).then(function (data) {
               resolve(data);
             })["catch"](function (error) {
               reject(error);
@@ -2436,7 +2464,7 @@
       }, {
         key: "muteVideo",
         value: function muteVideo() {
-          var _this16 = this;
+          var _this15 = this;
 
           var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           return new Promise(function (resolve, reject) {
@@ -2445,7 +2473,7 @@
               isMute: options.isMute
             };
 
-            _this16.instance.muteVideo(params).then(function (data) {
+            _this15.instance.muteVideo(params).then(function (data) {
               resolve(data);
             })["catch"](function (error) {
               reject(error);
@@ -2461,7 +2489,7 @@
       }, {
         key: "muteAudio",
         value: function muteAudio() {
-          var _this17 = this;
+          var _this16 = this;
 
           var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           return new Promise(function (resolve, reject) {
@@ -2470,7 +2498,7 @@
               isMute: options.isMute
             };
 
-            _this17.instance.muteAudio(params).then(function (data) {
+            _this16.instance.muteAudio(params).then(function (data) {
               resolve(data);
             })["catch"](function (error) {
               reject(error);
@@ -2486,7 +2514,7 @@
       }, {
         key: "startBroadCast",
         value: function startBroadCast() {
-          var _this18 = this;
+          var _this17 = this;
 
           var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -2506,7 +2534,7 @@
             };
             var params = merge.recursive({}, defaultOptions, addConfig);
 
-            _this18.instance.startBroadCast(params).then(function () {
+            _this17.instance.startBroadCast(params).then(function () {
               resolve();
             })["catch"](function (error) {
               reject(error);
@@ -2521,10 +2549,10 @@
       }, {
         key: "stopBroadCast",
         value: function stopBroadCast() {
-          var _this19 = this;
+          var _this18 = this;
 
           return new Promise(function (resolve, reject) {
-            _this19.instance.stopBroadCast().then(function () {
+            _this18.instance.stopBroadCast().then(function () {
               resolve();
             })["catch"](function (error) {
               reject(error);
@@ -2540,11 +2568,11 @@
       }, {
         key: "setBroadCastLayout",
         value: function setBroadCastLayout() {
-          var _this20 = this;
+          var _this19 = this;
 
           var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
           return new Promise(function (resolve, reject) {
-            _this20.instance.setBroadCastLayout({
+            _this19.instance.setBroadCastLayout({
               layout: options.layout || VhallRTC.CANVAS_LAYOUT_PATTERN_FLOAT_6_5D
             }).then(function () {
               resolve();
@@ -2562,11 +2590,11 @@
       }, {
         key: "setBroadCastScreen",
         value: function setBroadCastScreen() {
-          var _this21 = this;
+          var _this20 = this;
 
           var mainScreenStreamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
           return new Promise(function (resolve, reject) {
-            _this21.instance.setBroadCastScreen({
+            _this20.instance.setBroadCastScreen({
               mainScreenStreamId: mainScreenStreamId
             }).then(function () {
               resolve();
@@ -2583,10 +2611,10 @@
       }, {
         key: "getDevices",
         value: function getDevices() {
-          var _this22 = this;
+          var _this21 = this;
 
           return new Promise(function (resolve, reject) {
-            _this22.instance.getDevices().then(function (devices) {
+            _this21.instance.getDevices().then(function (devices) {
               resolve(devices);
             })["catch"](function (error) {
               reject(error);
@@ -2601,10 +2629,10 @@
       }, {
         key: "getCameras",
         value: function getCameras() {
-          var _this23 = this;
+          var _this22 = this;
 
           return new Promise(function (resolve, reject) {
-            _this23.instance.getCameras().then(function (devices) {
+            _this22.instance.getCameras().then(function (devices) {
               resolve(devices);
             })["catch"](function (error) {
               reject(error);
@@ -2619,10 +2647,10 @@
       }, {
         key: "getMicrophones",
         value: function getMicrophones() {
-          var _this24 = this;
+          var _this23 = this;
 
           return new Promise(function (resolve, reject) {
-            _this24.instance.getMicrophones().then(function (devices) {
+            _this23.instance.getMicrophones().then(function (devices) {
               resolve(devices);
             })["catch"](function (error) {
               reject(error);
@@ -2637,10 +2665,10 @@
       }, {
         key: "getSpeakers",
         value: function getSpeakers() {
-          var _this25 = this;
+          var _this24 = this;
 
           return new Promise(function (resolve, reject) {
-            _this25.instance.getSpeakers().then(function (devices) {
+            _this24.instance.getSpeakers().then(function (devices) {
               resolve(devices);
             })["catch"](function (error) {
               reject(error);
@@ -2656,10 +2684,10 @@
       }, {
         key: "getVideoConstraints",
         value: function getVideoConstraints(deviceId) {
-          var _this26 = this;
+          var _this25 = this;
 
           return new Promise(function (resolve, reject) {
-            _this26.instance.getVideoConstraints({
+            _this25.instance.getVideoConstraints({
               deviceId: deviceId
             }, function (data) {
               resolve(data);
@@ -2667,6 +2695,40 @@
               reject(error);
             });
           });
+        }
+        /**
+         * 配置本地流视频质量参数
+         * @param {Object} options --  streamId: 切换本地流Id profile: 必填，互动视频质量参数
+         * @returns {Promise} - 配置本地流视频质量参数的promise回调
+         */
+
+      }, {
+        key: "setVideoProfile",
+        value: function setVideoProfile() {
+          var _this26 = this;
+
+          var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+          return new Promise(function (resolve, reject) {
+            _this26.instance.setVideoProfile({
+              streamId: options.streamId,
+              profile: options.profile
+            }, function (data) {
+              resolve(data);
+            }, function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 获取房间流信息
+         * @param {Object} options --  streamId: 切换本地流Id profile: 必填，互动视频质量参数
+         * @returns {Promise} - 配置本地流视频质量参数的promise回调
+         */
+
+      }, {
+        key: "getRoomStreams",
+        value: function getRoomStreams() {
+          return this.instance.getRoomStreams();
         }
         /**
          * 是否支持桌面共享
@@ -2708,6 +2770,45 @@
 
           return new Promise(function (resolve, reject) {
             _this28.instance.getPacketLossRate().then(function (data) {
+              resolve(data);
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 获取流上下行丢包率
+         * @returns  data中有 
+         */
+
+      }, {
+        key: "getStreamPacketLoss",
+        value: function getStreamPacketLoss() {
+          var _this29 = this;
+
+          return new Promise(function (resolve, reject) {
+            _this29.instance.getStreamPacketLoss().then(function (data) {
+              resolve(data);
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 获取流音频能量
+         * @returns  
+         */
+
+      }, {
+        key: "getAudioLevel",
+        value: function getAudioLevel() {
+          var _this30 = this;
+
+          var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+          return new Promise(function (resolve, reject) {
+            _this30.instance.getAudioLevel({
+              streamId: streamId
+            }).then(function (data) {
               resolve(data);
             })["catch"](function (error) {
               reject(error);
@@ -3320,6 +3421,18 @@
     return chromeResult && chromeResult.length > 0 && chromeResult[1] > 87;
   }
 
+  /**
+   * ajax请求 jsonp处理
+   * 1.jsonp 请求格式
+   *   $fetch({
+   *      url:'',
+   *      type: 'GET',
+   *      jsonp: 'callback',
+   *      data: {
+   *        name: 123
+   *      }
+   *   })
+   */
   var BUSE_URL = 'https://t-saas-dispatch.vhall.com';
   var TOKEN = '';
   var LIVETOKEN = '';
@@ -3336,7 +3449,7 @@
   }
 
   function setRequestHeaders(options) {
-    HEADERS = _objectSpread2({}, options);
+    Object.assign(HEADERS, options);
   }
 
   function $fetch(options) {
