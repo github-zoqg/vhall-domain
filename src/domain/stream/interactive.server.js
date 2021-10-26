@@ -152,6 +152,10 @@ export default function useInteractiveServer() {
     const on = (type,callback) => {
         return state.interactiveInstance.on(type, callback)
     }
+
+
+
+
     // 组合api
     const startPushStream = ()=> {
         console.log('state:',state)
