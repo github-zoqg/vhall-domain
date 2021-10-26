@@ -12,7 +12,9 @@ import useVirtualAudienceServer from '@/domain/virtualAudience/virtualAudience.s
 import useInsertFileServer from '@/domain/stream/insertFile.server.js'
 
 import useRoomInitGroupServer from '@/domain/roombase/roomInit.group.server.js'
+
 import useDesktopShareServer from "@/domain/stream/desktopShare.server.js";
+import useChatServer from "@/domain/chat/chatServer";
 
 export {
     contextServer,
@@ -25,5 +27,6 @@ export {
     useInteractiveServer,
     useMediaCheckServer,
     useInsertFileServer,
-    useDesktopShareServer
+    useDesktopShareServer,
+    useChatServer
 };
