@@ -3,6 +3,8 @@
  * */
 import {textToEmojiText} from './emoji';
 import Msg from './msg-class';
+import contextServer from '@/domain/common/context.server.js';
+import $http from '@/utils/http.js';
 
 export default function useChatServer() {
 
@@ -19,22 +21,22 @@ export default function useChatServer() {
 
         roomId: '',
         avatar: '',
-        roleName: '',
+        roleName: ''
     };
 
-    const init = (params = {}) => {
-        let {roleName = '', roomId = '', avatar = '', keywordList = []} = params;
-        state.roomId = roomId;
-        state.roleName = roleName;
-        state.avatar = avatar;
-        //todo 需要看一下到底从哪里拿敏感词
-    }
+    //消息服务
+    const msgServer = contextServer.get('msgServer');
+
+    //基础服务
+    const roomServer = contextServer.get('roomBaseServer');
+
+    const {roomId = '', roleName, avatar = ''} = roomServer.state.watchInitData;
 
     //接收聊天消息
-    const getHistoryMsg = (params = {}) => {
+    const getHistoryMsg = async (params = {}) => {
 
         //请求获取聊天消息
-        let backData = fetchHistoryData(params);
+        let backData = await fetchHistoryData(params);
 
         let list = [];
 
@@ -70,15 +72,15 @@ export default function useChatServer() {
         return {
             backData,
             list,
-            chatList: state.chatList
+            chatList: state.chatList,
+            imgUrls:state.imgUrls || []
         };
     }
 
     //发送聊天消息(这部分主要是提取自PC观看端)
     const sendMsg = (params = {}) => {
 
-        //todo 可以考虑取值初始化的时候传入
-        let {inputValue, needFilter = true, name = '', avatar = '', roleName = 2} = params;
+        let {inputValue, needFilter = true} = params;
 
         const data = {};
 
@@ -90,9 +92,9 @@ export default function useChatServer() {
         }
 
         const context = {
-            nickname: name, // 昵称
-            avatar: avatar, // 头像
-            role_name: roleName // 角色 1主持人2观众3助理4嘉宾
+            nickname: state.name, // 昵称
+            avatar: state.avatar, // 头像
+            role_name: state.roleName // 角色 1主持人2观众3助理4嘉宾
         }
 
         let filterStatus = true;
@@ -102,15 +104,14 @@ export default function useChatServer() {
             filterStatus = !state.keywordList.some(item => inputValue.includes(item.name));
         }
 
-        //todo 暂时做示意，这部分可能会通过sdk完成
-        if (roleName != 2 || (roleName == 2 && filterStatus)) {
-            // window.chatSDK.emit(data, context)
-            // window.vhallReport && window.vhallReport.report('CHAT', {
-            //     event: JSON.stringify(data),
-            //     market_tools_id:roleName
-            // })
-        }
-
+        return new Promise((resolve,reject)=>{
+            if (roleName != 2 || (roleName == 2 && filterStatus)) {
+                msgServer.$emit(data,context);
+                resolve();
+            }else{
+                reject();
+            }
+        });
 
     }
 
@@ -118,30 +119,28 @@ export default function useChatServer() {
     const fetchHistoryData = (params) => {
 
         let defaultParams = {
-            room_id: state.roomId,
+            room_id: roomId,
             pos: state.page * state.limit,
             limit: state.limit
         };
 
         let mixedParams = Object.assign({}, defaultParams, params);
 
-        //todo 发起请求的实际方法，可能是sdk或者借助axios
+        return $http({
+            url:'/v3/interacts/chat/get-list',
+            type:'POST',
+            data: mixedParams
+        });
 
-        let rawData = [];
-
-        //返回一个promise做示意
-        return Promise.resolve(rawData);
     }
 
     //获取keywordList
-    const getKeywordList = () => {
-        let list = [];
-        return list;
+    const setKeywordList = (list=[]) => {
+        state.keywordList = list;
     }
 
     //私有方法，处理图片链接
     const _handleImgUrl = (rawData) => {
-        //todo 可能需要去重
         state.imgUrls.push(...rawData);
     }
 
@@ -196,5 +195,5 @@ export default function useChatServer() {
         return resultMsg;
     }
 
-    return {state, init, getHistoryMsg, sendMsg};
+    return {state, getHistoryMsg, sendMsg,fetchHistoryData,setKeywordList};
 }
