@@ -228,419 +228,6 @@
     };
   }
 
-  function useInteractiveServer() {
-    var state = {
-      vhallSaasInstance: null,
-      // vhallsdk的实例
-      interactiveInstance: null,
-      // 互动实例
-      streamId: null,
-      remoteStreams: [] // 远端流数组
-
-    };
-
-    var init = function init(option) {
-      var roomInitGroupServer = contextServer.get('roomInitGroupServer');
-      state.vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
-      return state.vhallSaasInstance.createInteractive().then(function (interactives) {
-        state.interactiveInstance = interactives;
-        console.log('state.interactiveInstance', interactives, interactives.instance);
-        return true;
-      });
-    }; // 基础api
-    // 常见本地流
-
-
-    var createLocalStream = function createLocalStream() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return state.interactiveInstance.createLocalStream(options);
-    }; // 创建摄像头视频流
-
-
-    var createLocalVideoStream = function createLocalVideoStream() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      return state.interactiveInstance.createLocalVideoStream(options, addConfig);
-    }; // 创建桌面共享流
-
-
-    var createLocaldesktopStream = function createLocaldesktopStream() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      return state.interactiveInstance.createLocaldesktopStream(options, addConfig);
-    }; // 创建本地音频流
-
-
-    var createLocalAudioStream = function createLocalAudioStream() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      return state.interactiveInstance.createLocalAudioStream(options, addConfig);
-    }; // 创建图片推流
-
-
-    var createLocalPhotoStream = function createLocalPhotoStream() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      return state.interactiveInstance.createLocalPhotoStream(options, addConfig);
-    }; // 销毁额本地流
-
-
-    var stopStream = function stopStream(streamId) {
-      return state.interactiveInstance.destroyStream(streamId || state.streamId);
-    }; // 推送本地流到远端
-
-
-    var publishStream = function publishStream() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return state.interactiveInstance.publishStream({
-        streamId: options.streamId || state.streamId
-      });
-    }; // 取消推送到远端的流
-
-
-    var unpublishStream = function unpublishStream(streamId) {
-      return state.interactiveInstance.unpublishStream(streamId || state.streamId);
-    }; // 订阅远端流
-
-
-    var subscribeStream = function subscribeStream() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return state.interactiveInstance.subscribeStream(options);
-    }; // 取消订阅远端流
-
-
-    var unSubscribeStream = function unSubscribeStream(streamId) {
-      return state.interactiveInstance.unSubscribeStream(streamId);
-    }; // 设置大小流
-
-
-    var setDual = function setDual() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return state.interactiveInstance.setDual(options);
-    }; // 改变视频的禁用和启用
-
-
-    var muteVideo = function muteVideo() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return state.interactiveInstance.muteVideo(options);
-    }; // 改变音频的禁用和启用
-
-
-    var muteAudio = function muteAudio() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return state.interactiveInstance.muteAudio(options);
-    }; // 开启旁路
-
-
-    var startBroadCast = function startBroadCast() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      return state.interactiveInstance.startBroadCast(options, addConfig);
-    }; // 停止旁路
-
-
-    var stopBroadCast = function stopBroadCast() {
-      return state.interactiveInstance.stopBroadCast();
-    }; // 动态配置指定旁路布局模板
-
-
-    var setBroadCastLayout = function setBroadCastLayout() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return state.interactiveInstance.setBroadCastLayout(options);
-    }; // 动态配置旁路主屏
-
-
-    var setBroadCastScreen = function setBroadCastScreen() {
-      var mainScreenStreamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-      return state.interactiveInstance.setBroadCastScreen(mainScreenStreamId);
-    }; // 获取全部音视频列表
-
-
-    var getDevices = function getDevices() {
-      return state.interactiveInstance.getDevices();
-    }; // 获取摄像头列表
-
-
-    var getCameras = function getCameras() {
-      return state.interactiveInstance.getCameras();
-    }; // 获取麦克风列表
-
-
-    var getMicrophones = function getMicrophones() {
-      return state.interactiveInstance.getMicrophones();
-    }; // 获取扬声器列表
-
-
-    var getSpeakers = function getSpeakers() {
-      return state.interactiveInstance.getSpeakers();
-    }; // 获取设备的分辨率
-
-
-    var getVideoConstraints = function getVideoConstraints() {
-      var deviceId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-      return state.interactiveInstance.getSpeakers(deviceId);
-    }; // 配置本地流视频质量参数
-
-
-    var setVideoProfile = function setVideoProfile() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return state.interactiveInstance.setVideoProfile(options);
-    }; // 是否支持桌面共享
-
-
-    var isScreenShareSupported = function isScreenShareSupported() {
-      return state.interactiveInstance.isScreenShareSupported();
-    }; // 检查当前浏览器支持性
-
-
-    var checkSystemRequirements = /*#__PURE__*/function () {
-      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
-        return regeneratorRuntime.wrap(function _callee$(_context) {
-          while (1) {
-            switch (_context.prev = _context.next) {
-              case 0:
-                if (state.interactiveInstance) {
-                  _context.next = 2;
-                  break;
-                }
-
-                return _context.abrupt("return");
-
-              case 2:
-                return _context.abrupt("return", state.interactiveInstance.checkSystemRequirements());
-
-              case 3:
-              case "end":
-                return _context.stop();
-            }
-          }
-        }, _callee);
-      }));
-
-      return function checkSystemRequirements() {
-        return _ref.apply(this, arguments);
-      };
-    }(); // 获取上下行丢包率
-
-
-    var getPacketLossRate = function getPacketLossRate() {
-      return state.interactiveInstance.getPacketLossRate();
-    }; // 获取流上下行丢包率
-
-
-    var getStreamPacketLoss = function getStreamPacketLoss() {
-      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return state.interactiveInstance.getStreamPacketLoss(options);
-    }; // 获取房间流信息
-
-
-    var getRoomStreams = function getRoomStreams() {
-      return state.interactiveInstance.getRoomStreams();
-    }; // 获取房间总的流信息(本地流加远端流)
-
-
-    var getRoomInfo = function getRoomInfo() {
-      return state.interactiveInstance.getRoomInfo();
-    }; // 获取流音频能量
-
-
-    var getAudioLevel = function getAudioLevel(streamId) {
-      return state.interactiveInstance.getAudioLevel(streamId);
-    }; // 获取流的mute状态
-
-
-    var getStreamMute = function getStreamMute(streamId) {
-      return state.interactiveInstance.getStreamMute(streamId);
-    }; // 监听事件
-
-
-    var on = function on(type, callback) {
-      return state.interactiveInstance.on(type, callback);
-    }; // 组合api
-
-
-    var startPushStream = function startPushStream() {
-      console.log('state:', state);
-      createLocalAndStream(state.interactiveInstance);
-    }; // 创建本地的推流和推流
-
-
-    var createLocalAndStream = function createLocalAndStream(interactive) {
-      var camerasList = null,
-          micropsList = null,
-          videoConstraintsList = null;
-      return interactive.getDevices().then(function (data) {
-        console.log('devices list::', data);
-        camerasList = data.videoInputDevices.filter(function (d) {
-          return d.label && d.deviceId != 'desktopScreen';
-        });
-        micropsList = data.audioInputDevices.filter(function (d) {
-          return d.deviceId != 'default' && d.deviceId != 'communications' && d.label;
-        });
-      }).then(function () {
-        var RESOLUTION_REG = /((^VIDEO_PROFILE_(720P|540P|480P|360P)_1$)|(^RTC_VIDEO_PROFILE_(720P|540P|480P|360P)_16x9_M$))/;
-        interactive.getVideoConstraints(camerasList[0].deviceId).then(function (data) {
-          console.log('constrainList', data);
-          videoConstraintsList = data.filter(function (item) {
-            return RESOLUTION_REG.test(item.label);
-          });
-        }).then(function () {
-          var params = {
-            videoNode: 'vhall-video',
-            videoDevice: camerasList[0].deviceId,
-            audioDevice: micropsList[0].deviceId,
-            profile: videoConstraintsList[0]
-          };
-          interactive.createLocalVideoStream(params).then(function (res) {
-            console.log('create local stream success::', res);
-            state.streamId = res;
-            return res;
-          })["catch"](function (err) {
-            console.log('local stream failed::', err);
-          });
-        })["catch"](function (err) {
-          console.log('constrainlist is failed::', err);
-        });
-      })["catch"](function (err) {
-        console.log('getDevies is failed::', err);
-      });
-    };
-
-
-    var remoteStreamList = function remoteStreamList() {
-      state.remoteStreams = state.interactiveInstance.getRemoteStreams();
-
-      for (var remoteStream in state.interactiveInstance.getRemoteStreams()) {
-        state.remoteStreams.push(remoteStream);
-      }
-
-      return state.remoteStreams;
-    }; // sdk的监听事件
-
-
-    var listenerSdk = function listenerSdk() {
-      state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_ADD, function (e) {
-        // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-        console.log('remote stream add info::', e);
-        state.remoteStreams.push(e);
-      });
-      state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, function (e) {
-        // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-        console.log('remote stream remove info::', e);
-        state.remoteStreams.filter(function (item) {
-          return item.streamId == e.streamId;
-        });
-      });
-    };
-
-    return {
-      state: state,
-      startPushStream: startPushStream,
-      init: init,
-      createLocalStream: createLocalStream,
-      createLocalVideoStream: createLocalVideoStream,
-      createLocaldesktopStream: createLocaldesktopStream,
-      createLocalAudioStream: createLocalAudioStream,
-      createLocalPhotoStream: createLocalPhotoStream,
-      stopStream: stopStream,
-      publishStream: publishStream,
-      unpublishStream: unpublishStream,
-      subscribeStream: subscribeStream,
-      unSubscribeStream: unSubscribeStream,
-      setDual: setDual,
-      muteVideo: muteVideo,
-      muteAudio: muteAudio,
-      startBroadCast: startBroadCast,
-      stopBroadCast: stopBroadCast,
-      setBroadCastLayout: setBroadCastLayout,
-      setBroadCastScreen: setBroadCastScreen,
-      getDevices: getDevices,
-      getCameras: getCameras,
-      getMicrophones: getMicrophones,
-      getSpeakers: getSpeakers,
-      getVideoConstraints: getVideoConstraints,
-      isScreenShareSupported: isScreenShareSupported,
-      checkSystemRequirements: checkSystemRequirements,
-      getPacketLossRate: getPacketLossRate,
-      getRoomStreams: getRoomStreams,
-      remoteStreamList: remoteStreamList,
-      listenerSdk: listenerSdk,
-      setVideoProfile: setVideoProfile,
-      getStreamPacketLoss: getStreamPacketLoss,
-      getAudioLevel: getAudioLevel,
-      on: on,
-      getRoomInfo: getRoomInfo,
-      getStreamMute: getStreamMute
-    };
-  }
-
-  function useMediaCheckServer() {
-    var interactiveServer = null;
-    var state = {
-      videoNode: "vh-device-check-video",
-      // 视频容器
-      selectedVideoDeviceId: "",
-      // 当前选取的设备id
-      localStreamId: "" // 本地流id
-
-    };
-
-    var init = function init() {
-      var opt = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      state.videoNode = opt.videoNode || "vh-device-check-video";
-      state.selectedVideoDeviceId = opt.selectedVideoDeviceId === undefined ? opt.selectedVideoDeviceId : "";
-      state.localStreamId = opt.localStreamId === undefined ? opt.localStreamId : "";
-      interactiveServer = contextServer.get("interactiveServer");
-    };
-
-    var setVideoNode = function setVideoNode(videoNode) {
-      state.videoNode = videoNode;
-    };
-
-    var setSelectedVideoDeviceId = function setSelectedVideoDeviceId(selectedVideoDeviceId) {
-      state.selectedVideoDeviceId = selectedVideoDeviceId;
-    }; // 开始视频预览
-
-
-    var startPreviewVideo = function startPreviewVideo() {
-      var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var originalOpts = {
-        videoNode: state.videoNode,
-        // 传入本地视频显示容器，必填
-        audio: false,
-        // 是否获取音频，选填，默认为true
-        videoDevice: state.selectedVideoDeviceId,
-        profile: VhallRTC.RTC_VIDEO_PROFILE_240P_16x9_M
-      };
-      var options = Object.assign.apply(Object, _toConsumableArray(originalOpts).concat(_toConsumableArray(opts)));
-      return interactiveServer.createLocalVideoStream(options).then(function (streamId) {
-        state.localStreamId = streamId;
-        return streamId;
-      });
-    }; // 结束视频预览
-
-
-    var stopPreviewVideo = function stopPreviewVideo(streamId) {
-      var id = streamId || state.localStreamId;
-      return interactiveServer.stopStream(id).then(function () {
-        setVideoNode("");
-        return state.localStreamId;
-      });
-    };
-
-    init();
-    return {
-      state: state,
-      init: init,
-      setVideoNode: setVideoNode,
-      setSelectedVideoDeviceId: setSelectedVideoDeviceId,
-      startPreviewVideo: startPreviewVideo,
-      stopPreviewVideo: stopPreviewVideo,
-      getDevices: interactiveServer.getDevices,
-      getVideoConstraints: interactiveServer.getVideoConstraints
-    };
-  }
-
   (function (factory) {
     typeof define === 'function' && define.amd ? define(factory) : factory();
   })(function () {
@@ -3793,12 +3380,39 @@
       type: 'POST',
       data: retParmams
     });
+  }; // 开始暂停结束录制api
+
+
+  var recordApi = function recordApi() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+    var _contextServer$get4 = contextServer.get('roomBaseServer'),
+        state = _contextServer$get4.state;
+
+    var _contextServer$get5 = contextServer.get('roomInitGroupServer'),
+        roomInitGroupServerState = _contextServer$get5.state;
+
+    var retParmams = {
+      webinar_id: params.webinarId || state.watchInitData.webinar.id,
+      status: params.status || 1
+    };
+
+    if (params.live_token || roomInitGroupServerState.live_token) {
+      retParmams.live_token = params.live_token || roomInitGroupServerState.live_token;
+    }
+
+    return $fetch({
+      url: '/v3/webinars/record/ticker',
+      type: 'POST',
+      data: retParmams
+    });
   };
 
   var roomBase = {
     getWebinarInfo: getWebinarInfo,
     getConfigList: getConfigList,
-    setDevice: setDevice
+    setDevice: setDevice,
+    recordApi: recordApi
   };
 
   var loginInfo = function loginInfo() {
@@ -3961,6 +3575,148 @@
     virtualClientGet: virtualClientGet
   };
 
+  var setMainScreen = function setMainScreen() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var retParams = {};
+    retParams = Object.assign(retParams, params);
+    return $fetch({
+      url: '/v3/interacts/room/set-main-screen',
+      type: 'POST',
+      data: retParams
+    });
+  }; // 设置主讲人
+
+
+  var setSpeaker = function setSpeaker() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var retParams = {};
+    retParams = Object.assign(retParams, params);
+    return $fetch({
+      url: '/v3/interacts/room/set-doc-permission',
+      type: 'POST',
+      data: retParams
+    });
+  }; // 设置音视频设备开关
+
+
+  var setRoomDevice = function setRoomDevice() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var retParams = {};
+    retParams = Object.assign(retParams, params);
+    return $fetch({
+      url: '/v3/interacts/room/set-device-status',
+      type: 'POST',
+      data: retParams
+    });
+  };
+
+  var interactive = {
+    setMainScreen: setMainScreen,
+    // 设置主屏
+    setSpeaker: setSpeaker,
+    // 设置主讲人
+    setRoomDevice: setRoomDevice // 设置音视频设备开关
+
+  };
+
+  var allowSpeak = function allowSpeak() {
+    var retParams = {};
+    return $fetch({
+      url: '/v3/interacts/inav/agree-apply',
+      type: 'POST',
+      data: retParams
+    });
+  }; // 用户上麦
+
+
+  var speakOn = function speakOn() {
+    var retParmams = {};
+    return $fetch({
+      url: '/v3/interacts/inav-user/speak',
+      type: 'POST',
+      data: retParmams
+    });
+  }; // 用户自己下麦
+
+
+  var speakOff = function speakOff() {
+    var retParams = {};
+    return $fetch({
+      url: '/v3/interacts/inav-user/nospeak',
+      type: 'POST',
+      data: retParams
+    });
+  }; // 设置其他人下麦
+
+
+  var speakUserOff = function speakUserOff() {
+    var retParams = {};
+    return $fetch({
+      url: '/v3/interacts/inav/nospeak',
+      type: 'POST',
+      data: retParams
+    });
+  }; // 允许举手
+
+
+  var setHandsup = function setHandsup() {
+    var retParams = {};
+    return $fetch({
+      url: '/v3/interacts/inav-user/nospeak',
+      type: 'POST',
+      data: retParams
+    });
+  }; // 邀请上麦
+
+
+  var inviteMic = function inviteMic() {
+    var retParams = {};
+    return $fetch({
+      url: '/v3/interacts/inav/invite',
+      type: 'POST',
+      data: retParams
+    });
+  }; // 取消申请
+
+
+  var cancelApply = function cancelApply() {
+    var retParams = {};
+    return $fetch({
+      url: '/v3/interacts/inav-user/nospeak',
+      type: 'POST',
+      data: retParams
+    });
+  }; // 拒绝邀请上麦
+
+
+  var refuseInvite = function refuseInvite() {
+    var retParams = {};
+    return $fetch({
+      url: '/v3/interacts/inav-user/reject-invite',
+      type: 'POST',
+      data: retParams
+    });
+  };
+
+  var mic = {
+    allowSpeak: allowSpeak,
+    // 允许上麦
+    speakOn: speakOn,
+    // 用户上麦
+    speakOff: speakOff,
+    // 用户下麦
+    speakUserOff: speakUserOff,
+    // 设置其他人下麦
+    inviteMic: inviteMic,
+    // 邀请上麦
+    setHandsup: setHandsup,
+    // 允许举手
+    cancelApply: cancelApply,
+    // 取消申请
+    refuseInvite: refuseInvite // 拒绝邀请上麦
+
+  };
+
   var RequestApi = function RequestApi() {
     _classCallCheck(this, RequestApi);
 
@@ -3969,9 +3725,633 @@
     this.user = userBase;
     this.insertFile = insertFile;
     this.virtualClient = virtualClient;
+    this.interactive = interactive;
+    this.mic = mic;
   };
 
   var requestApi = new RequestApi();
+
+  function useInteractiveServer() {
+    var _ref2;
+
+    var state = {
+      vhallSaasInstance: null,
+      // vhallsdk的实例
+      interactiveInstance: null,
+      // 互动实例
+      streamId: null,
+      remoteStreams: [] // 远端流数组
+
+    };
+
+    var init = function init(option) {
+      var roomInitGroupServer = contextServer.get('roomInitGroupServer');
+      state.vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
+      return state.vhallSaasInstance.createInteractive().then(function (interactives) {
+        state.interactiveInstance = interactives;
+        console.log('state.interactiveInstance', interactives, interactives.instance);
+        return true;
+      });
+    }; // 基础api
+    // 常见本地流
+
+
+    var createLocalStream = function createLocalStream() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.createLocalStream(options);
+    }; // 创建摄像头视频流
+
+
+    var createLocalVideoStream = function createLocalVideoStream() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      return state.interactiveInstance.createLocalVideoStream(options, addConfig);
+    }; // 创建桌面共享流
+
+
+    var createLocaldesktopStream = function createLocaldesktopStream() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      return state.interactiveInstance.createLocaldesktopStream(options, addConfig);
+    }; // 创建本地音频流
+
+
+    var createLocalAudioStream = function createLocalAudioStream() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      return state.interactiveInstance.createLocalAudioStream(options, addConfig);
+    }; // 创建图片推流
+
+
+    var createLocalPhotoStream = function createLocalPhotoStream() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      return state.interactiveInstance.createLocalPhotoStream(options, addConfig);
+    }; // 销毁额本地流
+
+
+    var stopStream = function stopStream(streamId) {
+      return state.interactiveInstance.destroyStream(streamId || state.streamId);
+    }; // 推送本地流到远端
+
+
+    var publishStream = function publishStream() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.publishStream({
+        streamId: options.streamId || state.streamId
+      });
+    }; // 取消推送到远端的流
+
+
+    var unpublishStream = function unpublishStream(streamId) {
+      return state.interactiveInstance.unpublishStream(streamId || state.streamId);
+    }; // 订阅远端流
+
+
+    var subscribeStream = function subscribeStream() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.subscribeStream(options);
+    }; // 取消订阅远端流
+
+
+    var unSubscribeStream = function unSubscribeStream(streamId) {
+      return state.interactiveInstance.unSubscribeStream(streamId);
+    }; // 设置大小流
+
+
+    var setDual = function setDual() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.setDual(options);
+    }; // 改变视频的禁用和启用
+
+
+    var muteVideo = function muteVideo() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.muteVideo(options);
+    }; // 改变音频的禁用和启用
+
+
+    var muteAudio = function muteAudio() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.muteAudio(options);
+    }; // 开启旁路
+
+
+    var startBroadCast = function startBroadCast() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      return state.interactiveInstance.startBroadCast(options, addConfig);
+    }; // 停止旁路
+
+
+    var stopBroadCast = function stopBroadCast() {
+      return state.interactiveInstance.stopBroadCast();
+    }; // 动态配置指定旁路布局模板
+
+
+    var setBroadCastLayout = function setBroadCastLayout() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.setBroadCastLayout(options);
+    }; // 动态配置旁路主屏
+
+
+    var setBroadCastScreen = function setBroadCastScreen() {
+      var mainScreenStreamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+      return state.interactiveInstance.setBroadCastScreen(mainScreenStreamId);
+    }; // 获取全部音视频列表
+
+
+    var getDevices = function getDevices() {
+      return state.interactiveInstance.getDevices();
+    }; // 获取摄像头列表
+
+
+    var getCameras = function getCameras() {
+      return state.interactiveInstance.getCameras();
+    }; // 获取麦克风列表
+
+
+    var getMicrophones = function getMicrophones() {
+      return state.interactiveInstance.getMicrophones();
+    }; // 获取扬声器列表
+
+
+    var getSpeakers = function getSpeakers() {
+      return state.interactiveInstance.getSpeakers();
+    }; // 获取设备的分辨率
+
+
+    var getVideoConstraints = function getVideoConstraints() {
+      var deviceId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+      return state.interactiveInstance.getSpeakers(deviceId);
+    }; // 配置本地流视频质量参数
+
+
+    var setVideoProfile = function setVideoProfile() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.setVideoProfile(options);
+    }; // 是否支持桌面共享
+
+
+    var isScreenShareSupported = function isScreenShareSupported() {
+      return state.interactiveInstance.isScreenShareSupported();
+    }; // 检查当前浏览器支持性
+
+
+    var checkSystemRequirements = /*#__PURE__*/function () {
+      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                if (state.interactiveInstance) {
+                  _context.next = 2;
+                  break;
+                }
+
+                return _context.abrupt("return");
+
+              case 2:
+                return _context.abrupt("return", state.interactiveInstance.checkSystemRequirements());
+
+              case 3:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee);
+      }));
+
+      return function checkSystemRequirements() {
+        return _ref.apply(this, arguments);
+      };
+    }(); // 获取上下行丢包率
+
+
+    var getPacketLossRate = function getPacketLossRate() {
+      return state.interactiveInstance.getPacketLossRate();
+    }; // 获取流上下行丢包率
+
+
+    var getStreamPacketLoss = function getStreamPacketLoss() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.getStreamPacketLoss(options);
+    }; // 获取房间流信息
+
+
+    var getRoomStreams = function getRoomStreams() {
+      return state.interactiveInstance.getRoomStreams();
+    }; // 获取房间总的流信息(本地流加远端流)
+
+
+    var getRoomInfo = function getRoomInfo() {
+      return state.interactiveInstance.getRoomInfo();
+    }; // 获取流音频能量
+
+
+    var getAudioLevel = function getAudioLevel(streamId) {
+      return state.interactiveInstance.getAudioLevel(streamId);
+    }; // 获取流的mute状态
+
+
+    var getStreamMute = function getStreamMute(streamId) {
+      return state.interactiveInstance.getStreamMute(streamId);
+    }; // 上麦
+
+
+    var speakOn = function speakOn() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.mic.speakOn(data);
+    }; // 下麦
+
+
+    var speakOff = function speakOff() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.mic.speakOff(data);
+    };
+
+    var speakUserOff = function speakUserOff() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.interactive.speakUserOff(data);
+    }; // 设置主屏
+
+
+    var setMainScreen = function setMainScreen() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.interactive.setMainScreen(data);
+    }; // 设置主讲人
+
+
+    var setSpeaker = function setSpeaker() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.interactive.setSpeaker(data);
+    }; // 设置（麦克风-1 摄像头-2）
+
+
+    var setRoomDevice = function setRoomDevice() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.interactive.setRoomDevice(data);
+    }; // 允许举手
+
+
+    var setHandsup = function setHandsup() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.mic.setHandsUp(data);
+    }; // 邀请上麦
+
+
+    var inviteMic = function inviteMic() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.mic.inviteMic(data);
+    };
+
+    var cancelApply = function cancelApply() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.mic.cancelApply(data);
+    };
+
+    var refuseInvite = function refuseInvite() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.mic.refuseInvite(data);
+    }; // 监听事件
+
+
+    var on = function on(type, callback) {
+      return state.interactiveInstance.on(type, callback);
+    }; // 组合api
+
+
+    var startPushStream = function startPushStream() {
+      console.log('state:', state);
+      createLocalAndStream(state.interactiveInstance);
+    }; // 创建本地的推流和推流
+
+
+    var createLocalAndStream = function createLocalAndStream(interactive) {
+      var camerasList = null,
+          micropsList = null,
+          videoConstraintsList = null;
+      return interactive.getDevices().then(function (data) {
+        console.log('devices list::', data);
+        camerasList = data.videoInputDevices.filter(function (d) {
+          return d.label && d.deviceId != 'desktopScreen';
+        });
+        micropsList = data.audioInputDevices.filter(function (d) {
+          return d.deviceId != 'default' && d.deviceId != 'communications' && d.label;
+        });
+      }).then(function () {
+        var RESOLUTION_REG = /((^VIDEO_PROFILE_(720P|540P|480P|360P)_1$)|(^RTC_VIDEO_PROFILE_(720P|540P|480P|360P)_16x9_M$))/;
+        interactive.getVideoConstraints(camerasList[0].deviceId).then(function (data) {
+          console.log('constrainList', data);
+          videoConstraintsList = data.filter(function (item) {
+            return RESOLUTION_REG.test(item.label);
+          });
+        }).then(function () {
+          var params = {
+            videoNode: 'vhall-video',
+            videoDevice: camerasList[0].deviceId,
+            audioDevice: micropsList[0].deviceId,
+            profile: videoConstraintsList[0]
+          };
+          interactive.createLocalVideoStream(params).then(function (res) {
+            console.log('create local stream success::', res);
+            state.streamId = res;
+            return res;
+          })["catch"](function (err) {
+            console.log('local stream failed::', err);
+          });
+        })["catch"](function (err) {
+          console.log('constrainlist is failed::', err);
+        });
+      })["catch"](function (err) {
+        console.log('getDevies is failed::', err);
+      });
+    };
+
+
+    var remoteStreamList = function remoteStreamList() {
+      state.remoteStreams = state.interactiveInstance.getRemoteStreams();
+
+      for (var remoteStream in state.interactiveInstance.getRemoteStreams()) {
+        state.remoteStreams.push(remoteStream);
+      }
+
+      return state.remoteStreams;
+    }; // sdk的监听事件
+
+
+    var listenerSdk = function listenerSdk() {
+      state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_ADD, function (e) {
+        // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
+        console.log('remote stream add info::', e);
+        state.remoteStreams.push(e);
+      });
+      state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, function (e) {
+        // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
+        console.log('remote stream remove info::', e);
+        state.remoteStreams.filter(function (item) {
+          return item.streamId == e.streamId;
+        });
+      });
+    };
+
+    return _ref2 = {
+      state: state,
+      startPushStream: startPushStream,
+      init: init,
+      createLocalStream: createLocalStream,
+      createLocalVideoStream: createLocalVideoStream,
+      createLocaldesktopStream: createLocaldesktopStream,
+      createLocalAudioStream: createLocalAudioStream,
+      createLocalPhotoStream: createLocalPhotoStream,
+      stopStream: stopStream,
+      publishStream: publishStream,
+      unpublishStream: unpublishStream,
+      subscribeStream: subscribeStream,
+      unSubscribeStream: unSubscribeStream,
+      setDual: setDual,
+      muteVideo: muteVideo,
+      muteAudio: muteAudio,
+      startBroadCast: startBroadCast,
+      stopBroadCast: stopBroadCast,
+      setBroadCastLayout: setBroadCastLayout,
+      setBroadCastScreen: setBroadCastScreen,
+      getDevices: getDevices,
+      getCameras: getCameras,
+      getMicrophones: getMicrophones,
+      getSpeakers: getSpeakers,
+      getVideoConstraints: getVideoConstraints,
+      isScreenShareSupported: isScreenShareSupported,
+      checkSystemRequirements: checkSystemRequirements,
+      getPacketLossRate: getPacketLossRate,
+      getRoomStreams: getRoomStreams,
+      remoteStreamList: remoteStreamList,
+      listenerSdk: listenerSdk,
+      setVideoProfile: setVideoProfile,
+      getStreamPacketLoss: getStreamPacketLoss,
+      getAudioLevel: getAudioLevel,
+      on: on,
+      getRoomInfo: getRoomInfo,
+      getStreamMute: getStreamMute,
+      speakOn: speakOn,
+      speakOff: speakOff,
+      speakUserOff: speakUserOff,
+      setMainScreen: setMainScreen,
+      setSpeaker: setSpeaker
+    }, _defineProperty(_ref2, "setSpeaker", setSpeaker), _defineProperty(_ref2, "setRoomDevice", setRoomDevice), _defineProperty(_ref2, "setHandsup", setHandsup), _defineProperty(_ref2, "inviteMic", inviteMic), _defineProperty(_ref2, "cancelApply", cancelApply), _defineProperty(_ref2, "refuseInvite", refuseInvite), _ref2;
+  }
+
+  function useMediaCheckServer() {
+    var interactiveServer = null;
+    var state = {
+      videoNode: "vh-device-check-video",
+      // 视频容器
+      selectedVideoDeviceId: "",
+      // 当前选取的设备id
+      localStreamId: "" // 本地流id
+
+    };
+
+    var init = function init() {
+      var opt = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      state.videoNode = opt.videoNode || "vh-device-check-video";
+      state.selectedVideoDeviceId = opt.selectedVideoDeviceId === undefined ? opt.selectedVideoDeviceId : "";
+      state.localStreamId = opt.localStreamId === undefined ? opt.localStreamId : "";
+      interactiveServer = contextServer.get("interactiveServer");
+    };
+
+    var setVideoNode = function setVideoNode(videoNode) {
+      state.videoNode = videoNode;
+    };
+
+    var setSelectedVideoDeviceId = function setSelectedVideoDeviceId(selectedVideoDeviceId) {
+      state.selectedVideoDeviceId = selectedVideoDeviceId;
+    }; // 开始视频预览
+
+
+    var startPreviewVideo = function startPreviewVideo() {
+      var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var originalOpts = {
+        videoNode: state.videoNode,
+        // 传入本地视频显示容器，必填
+        audio: false,
+        // 是否获取音频，选填，默认为true
+        videoDevice: state.selectedVideoDeviceId,
+        profile: VhallRTC.RTC_VIDEO_PROFILE_240P_16x9_M
+      };
+      var options = Object.assign.apply(Object, _toConsumableArray(originalOpts).concat(_toConsumableArray(opts)));
+      return interactiveServer.createLocalVideoStream(options).then(function (streamId) {
+        state.localStreamId = streamId;
+        return streamId;
+      });
+    }; // 结束视频预览
+
+
+    var stopPreviewVideo = function stopPreviewVideo(streamId) {
+      var id = streamId || state.localStreamId;
+      return interactiveServer.stopStream(id).then(function () {
+        setVideoNode("");
+        return state.localStreamId;
+      });
+    };
+
+    init();
+    return {
+      state: state,
+      init: init,
+      setVideoNode: setVideoNode,
+      setSelectedVideoDeviceId: setSelectedVideoDeviceId,
+      startPreviewVideo: startPreviewVideo,
+      stopPreviewVideo: stopPreviewVideo,
+      getDevices: interactiveServer.getDevices,
+      getVideoConstraints: interactiveServer.getVideoConstraints
+    };
+  }
+
+  function usePlayerServer() {
+    var state = {
+      playerInstance: null
+    };
+    var vhallSaasInstance = null;
+
+    var init = function init() {
+      var roomInitGroupServer = contextServer.get('roomInitGroupServer');
+      vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
+      return vhallSaasInstance.createPlayer().then(function (instance) {
+        state.playerInstance = instance;
+        return true;
+      });
+    };
+
+    var play = function play() {
+      return state.playerInstance.play();
+    };
+
+    var pause = function pause() {
+      return state.playerInstance.pause();
+    };
+
+    var isPause = function isPause() {
+      return state.playerInstance.isPause();
+    };
+
+    var getQualitys = function getQualitys() {
+      return state.playerInstance.getQualitys();
+    };
+
+    var getCurrentQuality = function getCurrentQuality() {
+      return state.playerInstance.getCurrentQuality();
+    };
+
+    var setQuality = function setQuality() {
+      return state.playerInstance.setQuality();
+    };
+
+    var enterFullScreen = function enterFullScreen() {
+      return state.playerInstance.enterFullScreen();
+    };
+
+    var exitFullScreen = function exitFullScreen() {
+      return state.playerInstance.exitFullScreen();
+    };
+
+    var setMute = function setMute() {
+      return state.playerInstance.setMute();
+    };
+
+    var getVolume = function getVolume() {
+      return state.playerInstance.getVolume();
+    };
+
+    var setVolume = function setVolume() {
+      return state.playerInstance.setVolume();
+    };
+
+    var getDuration = function getDuration() {
+      return state.playerInstance.getDuration();
+    };
+
+    var getCurrentTime = function getCurrentTime() {
+      return state.playerInstance.getCurrentTime();
+    };
+
+    var setCurrentTime = function setCurrentTime() {
+      return state.playerInstance.setCurrentTime();
+    };
+
+    var getUsableSpeed = function getUsableSpeed() {
+      return state.playerInstance.getUsableSpeed();
+    };
+
+    var setPlaySpeed = function setPlaySpeed() {
+      return state.playerInstance.setPlaySpeed();
+    };
+
+    var openControls = function openControls() {
+      return state.playerInstance.openControls();
+    };
+
+    var openUI = function openUI() {
+      return state.playerInstance.openUI();
+    };
+
+    var setResetVideo = function setResetVideo() {
+      return state.playerInstance.setResetVideo();
+    };
+
+    var setBarrageInfo = function setBarrageInfo() {
+      return state.playerInstance.setBarrageInfo();
+    };
+
+    var addBarrage = function addBarrage() {
+      return state.playerInstance.addBarrage();
+    };
+
+    var toggleBarrage = function toggleBarrage() {
+      return state.playerInstance.toggleBarrage();
+    };
+
+    var toggleSubtitle = function toggleSubtitle() {
+      return state.playerInstance.toggleSubtitle();
+    };
+
+    var on = function on(type, cb) {};
+
+    var emit = function emit(type, params) {};
+
+    var destroy = function destroy() {};
+
+    return {
+      state: state,
+      init: init,
+      on: on,
+      emit: emit,
+      destroy: destroy,
+      play: play,
+      pause: pause,
+      isPause: isPause,
+      getQualitys: getQualitys,
+      getCurrentQuality: getCurrentQuality,
+      setQuality: setQuality,
+      enterFullScreen: enterFullScreen,
+      exitFullScreen: exitFullScreen,
+      setMute: setMute,
+      getVolume: getVolume,
+      setVolume: setVolume,
+      getDuration: getDuration,
+      getCurrentTime: getCurrentTime,
+      setCurrentTime: setCurrentTime,
+      getUsableSpeed: getUsableSpeed,
+      setPlaySpeed: setPlaySpeed,
+      openControls: openControls,
+      openUI: openUI,
+      setResetVideo: setResetVideo,
+      setBarrageInfo: setBarrageInfo,
+      addBarrage: addBarrage,
+      toggleBarrage: toggleBarrage,
+      toggleSubtitle: toggleSubtitle
+    };
+  }
 
   function useEventEmitter() {
     var state = {
@@ -4092,6 +4472,27 @@
 
     var endLive = function endLive(data) {
       return requestApi.live.endLive(data);
+    }; // 开始/恢复录制
+
+
+    var startRecord = function startRecord() {
+      return requestApi.roomBase.recordApi({
+        status: 1
+      });
+    }; // 暂停录制
+
+
+    var pauseRecord = function pauseRecord() {
+      return requestApi.roomBase.recordApi({
+        status: 2
+      });
+    }; // 结束录制
+
+
+    var endRecord = function endRecord() {
+      return requestApi.roomBase.recordApi({
+        status: 3
+      });
     };
 
     var init = function init(option) {
@@ -4108,7 +4509,10 @@
       getConfigList: getConfigList,
       startLive: startLive,
       endLive: endLive,
-      setDevice: setDevice
+      setDevice: setDevice,
+      startRecord: startRecord,
+      pauseRecord: pauseRecord,
+      endRecord: endRecord
     };
   }
 
@@ -4447,7 +4851,8 @@
     var state = {
       bizId: options.biz_id || 2,
       // 区分 端（知客/直播） 2-直播 4-知客
-      vhallSaasInstance: null
+      vhallSaasInstance: null,
+      live_token: null
     };
     var roomBaseServer = useRoomBaseServer();
     var msgServer = useMsgServer();
@@ -4517,31 +4922,36 @@
                     platform: 7
                   }
                 };
+
+                if (customOptions.liveToken) {
+                  state.live_token = customOptions.liveToken;
+                }
+
                 options = Object.assign({}, defaultOptions, customOptions);
                 setRequestConfig(options);
-                _context2.next = 8;
+                _context2.next = 9;
                 return roomBaseServer.init(options);
 
-              case 8:
-                _context2.next = 10;
+              case 9:
+                _context2.next = 11;
                 return roomBaseServer.getWebinarInfo();
 
-              case 10:
-                _context2.next = 12;
+              case 11:
+                _context2.next = 13;
                 return roomBaseServer.getConfigList();
 
-              case 12:
-                _context2.next = 14;
+              case 13:
+                _context2.next = 15;
                 return msgServer.init();
 
-              case 14:
-                _context2.next = 16;
+              case 15:
+                _context2.next = 17;
                 return interactiveServer.init();
 
-              case 16:
+              case 17:
                 return _context2.abrupt("return", true);
 
-              case 17:
+              case 18:
               case "end":
                 return _context2.stop();
             }
@@ -4687,6 +5097,7 @@
   exports.useInteractiveServer = useInteractiveServer;
   exports.useMediaCheckServer = useMediaCheckServer;
   exports.useMsgServer = useMsgServer;
+  exports.usePlayerServer = usePlayerServer;
   exports.useRoomBaseServer = useRoomBaseServer;
   exports.useRoomInitGroupServer = useRoomInitGroupServer;
   exports.useUserServer = useUserServer;
