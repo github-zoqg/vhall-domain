@@ -39,7 +39,7 @@ export default function useInteractiveServer() {
         return state.interactiveInstance.createLocalPhotoStream(options, addConfig)
     }
     // 销毁额本地流
-    const stopStream = (streamId) => {
+    const destroyStream = (streamId) => {
         return state.interactiveInstance.destroyStream(streamId || state.streamId)
     }
     // 推送本地流到远端
@@ -81,6 +81,10 @@ export default function useInteractiveServer() {
     // 动态配置指定旁路布局模板
     const setBroadCastLayout = (options = {}) => {
         return state.interactiveInstance.setBroadCastLayout(options)
+    }
+    // 配置旁路布局自适应模式
+    const setBroadCastAdaptiveLayoutMode = (options = {}) => {
+        return state.interactiveInstance.setBroadCastAdaptiveLayoutMode(options)
     }
     // 动态配置旁路主屏
     const setBroadCastScreen = (mainScreenStreamId = '') => {
@@ -228,7 +232,7 @@ export default function useInteractiveServer() {
         })
     }
     return { state, startPushStream ,init, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
-    createLocalPhotoStream, stopStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
+    createLocalPhotoStream, destroyStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
     muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
     getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate, getRoomStreams, remoteStreamList,
     listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel, on, getRoomInfo, getStreamMute}
