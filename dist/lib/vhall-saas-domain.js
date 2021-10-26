@@ -292,6 +292,7 @@
       }
     }
 
+<<<<<<< HEAD
     function _defineProperties(target, props) {
       for (var i = 0; i < props.length; i++) {
         var descriptor = props[i];
@@ -301,6 +302,11 @@
         Object.defineProperty(target, descriptor.key, descriptor);
       }
     }
+=======
+    var destroyStream = function destroyStream(streamId) {
+      return state.interactiveInstance.destroyStream(streamId || state.streamId);
+    }; // 推送本地流到远端
+>>>>>>> b8413cfa23a2d3e50a401be956832c60df90d906
 
     function _createClass(Constructor, protoProps, staticProps) {
       if (protoProps) _defineProperties(Constructor.prototype, protoProps);
@@ -404,11 +410,18 @@
       };
     }
 
+<<<<<<< HEAD
     var mountSDK = function mountSDK(src) {
       return new Promise(function (resolve) {
         var node = document.createElement('script');
         document.head.appendChild(node);
         node.src = src;
+=======
+    var setBroadCastLayout = function setBroadCastLayout() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.setBroadCastLayout(options);
+    }; // 配置旁路布局自适应模式
+>>>>>>> b8413cfa23a2d3e50a401be956832c60df90d906
 
         node.onload = function () {
           resolve();
@@ -607,6 +620,7 @@
 
     var store = new Store();
 
+<<<<<<< HEAD
     var getRoomInfo = function getRoomInfo(res) {
       var _data = res.data;
       return {
@@ -636,6 +650,46 @@
           report_extra: _data.report_data.report_extra
         }
       };
+=======
+    return {
+      state: state,
+      startPushStream: startPushStream,
+      init: init,
+      createLocalStream: createLocalStream,
+      createLocalVideoStream: createLocalVideoStream,
+      createLocaldesktopStream: createLocaldesktopStream,
+      createLocalAudioStream: createLocalAudioStream,
+      createLocalPhotoStream: createLocalPhotoStream,
+      destroyStream: destroyStream,
+      publishStream: publishStream,
+      unpublishStream: unpublishStream,
+      subscribeStream: subscribeStream,
+      unSubscribeStream: unSubscribeStream,
+      setDual: setDual,
+      muteVideo: muteVideo,
+      muteAudio: muteAudio,
+      startBroadCast: startBroadCast,
+      stopBroadCast: stopBroadCast,
+      setBroadCastLayout: setBroadCastLayout,
+      setBroadCastScreen: setBroadCastScreen,
+      getDevices: getDevices,
+      getCameras: getCameras,
+      getMicrophones: getMicrophones,
+      getSpeakers: getSpeakers,
+      getVideoConstraints: getVideoConstraints,
+      isScreenShareSupported: isScreenShareSupported,
+      checkSystemRequirements: checkSystemRequirements,
+      getPacketLossRate: getPacketLossRate,
+      getRoomStreams: getRoomStreams,
+      remoteStreamList: remoteStreamList,
+      listenerSdk: listenerSdk,
+      setVideoProfile: setVideoProfile,
+      getStreamPacketLoss: getStreamPacketLoss,
+      getAudioLevel: getAudioLevel,
+      on: on,
+      getRoomInfo: getRoomInfo,
+      getStreamMute: getStreamMute
+>>>>>>> b8413cfa23a2d3e50a401be956832c60df90d906
     };
 
     function getDefaultExportFromCjs(x) {
@@ -676,8 +730,159 @@
           items[_i] = arguments[_i];
         }
 
+<<<<<<< HEAD
         return _merge(items[0] === true, false, items);
       }
+=======
+  function usePlayerServer() {
+    var state = {
+      playerInstance: null
+    };
+    var vhallSaasInstance = null;
+
+    var init = function init() {
+      var roomInitGroupServer = contextServer.get('roomInitGroupServer');
+      vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
+      return vhallSaasInstance.createPlayer().then(function (instance) {
+        state.playerInstance = instance;
+        return true;
+      });
+    };
+
+    var play = function play() {
+      return state.playerInstance.play();
+    };
+
+    var pause = function pause() {
+      return state.playerInstance.pause();
+    };
+
+    var isPause = function isPause() {
+      return state.playerInstance.isPause();
+    };
+
+    var getQualitys = function getQualitys() {
+      return state.playerInstance.getQualitys();
+    };
+
+    var getCurrentQuality = function getCurrentQuality() {
+      return state.playerInstance.getCurrentQuality();
+    };
+
+    var setQuality = function setQuality() {
+      return state.playerInstance.setQuality();
+    };
+
+    var enterFullScreen = function enterFullScreen() {
+      return state.playerInstance.enterFullScreen();
+    };
+
+    var exitFullScreen = function exitFullScreen() {
+      return state.playerInstance.exitFullScreen();
+    };
+
+    var setMute = function setMute() {
+      return state.playerInstance.setMute();
+    };
+
+    var getVolume = function getVolume() {
+      return state.playerInstance.getVolume();
+    };
+
+    var setVolume = function setVolume() {
+      return state.playerInstance.setVolume();
+    };
+
+    var getDuration = function getDuration() {
+      return state.playerInstance.getDuration();
+    };
+
+    var getCurrentTime = function getCurrentTime() {
+      return state.playerInstance.getCurrentTime();
+    };
+
+    var setCurrentTime = function setCurrentTime() {
+      return state.playerInstance.setCurrentTime();
+    };
+
+    var getUsableSpeed = function getUsableSpeed() {
+      return state.playerInstance.getUsableSpeed();
+    };
+
+    var setPlaySpeed = function setPlaySpeed() {
+      return state.playerInstance.setPlaySpeed();
+    };
+
+    var openControls = function openControls() {
+      return state.playerInstance.openControls();
+    };
+
+    var openUI = function openUI() {
+      return state.playerInstance.openUI();
+    };
+
+    var setResetVideo = function setResetVideo() {
+      return state.playerInstance.setResetVideo();
+    };
+
+    var setBarrageInfo = function setBarrageInfo() {
+      return state.playerInstance.setBarrageInfo();
+    };
+
+    var addBarrage = function addBarrage() {
+      return state.playerInstance.addBarrage();
+    };
+
+    var toggleBarrage = function toggleBarrage() {
+      return state.playerInstance.toggleBarrage();
+    };
+
+    var toggleSubtitle = function toggleSubtitle() {
+      return state.playerInstance.toggleSubtitle();
+    };
+
+    var on = function on(type, cb) {};
+
+    var emit = function emit(type, params) {};
+
+    var destroy = function destroy() {};
+
+    return {
+      state: state,
+      init: init,
+      on: on,
+      emit: emit,
+      destroy: destroy,
+      play: play,
+      pause: pause,
+      isPause: isPause,
+      getQualitys: getQualitys,
+      getCurrentQuality: getCurrentQuality,
+      setQuality: setQuality,
+      enterFullScreen: enterFullScreen,
+      exitFullScreen: exitFullScreen,
+      setMute: setMute,
+      getVolume: getVolume,
+      setVolume: setVolume,
+      getDuration: getDuration,
+      getCurrentTime: getCurrentTime,
+      setCurrentTime: setCurrentTime,
+      getUsableSpeed: getUsableSpeed,
+      setPlaySpeed: setPlaySpeed,
+      openControls: openControls,
+      openUI: openUI,
+      setResetVideo: setResetVideo,
+      setBarrageInfo: setBarrageInfo,
+      addBarrage: addBarrage,
+      toggleBarrage: toggleBarrage,
+      toggleSubtitle: toggleSubtitle
+    };
+  }
+
+  (function (factory) {
+    typeof define === 'function' && define.amd ? define(factory) : factory();
+  })(function () {
+>>>>>>> b8413cfa23a2d3e50a401be956832c60df90d906
 
       exports.merge = merge;
 
@@ -3227,6 +3432,7 @@
       xhr = new ActiveXObject('Microsoft.XMLHTTP');
     }
 
+<<<<<<< HEAD
     xhr.onreadystatechange = function () {
       if (xhr.readyState == 4) {
         var status = xhr.status;
@@ -3246,10 +3452,67 @@
           success && success(response);
         } else {
           fail && fail(status);
+=======
+          var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+          return new Promise(function (resolve, reject) {
+            _this19.instance.setBroadCastLayout({
+              layout: options.layout || VhallRTC.CANVAS_LAYOUT_PATTERN_FLOAT_6_5D
+            }).then(function () {
+              resolve();
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 配置旁路布局自适应模式
+         * @param {Object} options --  layout: 指定旁路布局模板
+         * @returns {Promise} - 配置旁路布局自适应模式的promise回调
+         */
+
+      }, {
+        key: "setBroadCastAdaptiveLayoutMode",
+        value: function setBroadCastAdaptiveLayoutMode() {
+          var _this20 = this;
+
+          var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+          return new Promise(function (resolve, reject) {
+            _this20.instance.setBroadCastAdaptiveLayoutMode({
+              adaptiveLayoutMode: options.adaptiveLayoutMode || VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE
+            }).then(function () {
+              resolve();
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 动态配置旁路主屏
+         * @param {String} mainScreenStreamId -- 将哪路流设置成主屏的流Id
+         * @returns {Promise} - 动态配置旁路主屏的promise回调
+         */
+
+      }, {
+        key: "setBroadCastScreen",
+        value: function setBroadCastScreen() {
+          var _this21 = this;
+
+          var mainScreenStreamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+          return new Promise(function (resolve, reject) {
+            _this21.instance.setBroadCastScreen({
+              mainScreenStreamId: mainScreenStreamId
+            }).then(function () {
+              resolve();
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+>>>>>>> b8413cfa23a2d3e50a401be956832c60df90d906
         }
       }
     };
 
+<<<<<<< HEAD
     if (params.type == 'GET') {
       if (params.data) {
         xhr.open(params.type, params.url + '?' + params.data, true);
@@ -3314,6 +3577,124 @@
     }
   } // 格式化数据
 
+=======
+      }, {
+        key: "getDevices",
+        value: function getDevices() {
+          var _this22 = this;
+
+          return new Promise(function (resolve, reject) {
+            _this22.instance.getDevices().then(function (devices) {
+              resolve(devices);
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 获取摄像头列表
+         * @returns {Promise} - 获取摄像头列表的promise回调
+         */
+
+      }, {
+        key: "getCameras",
+        value: function getCameras() {
+          var _this23 = this;
+
+          return new Promise(function (resolve, reject) {
+            _this23.instance.getCameras().then(function (devices) {
+              resolve(devices);
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 获取麦克风列表
+         * @returns {Promise} - 获取麦克风列表的promise回调
+         */
+
+      }, {
+        key: "getMicrophones",
+        value: function getMicrophones() {
+          var _this24 = this;
+
+          return new Promise(function (resolve, reject) {
+            _this24.instance.getMicrophones().then(function (devices) {
+              resolve(devices);
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 获取扬声器列表
+         * @returns {Promise} - 获取扬声器列表的promise回调
+         */
+
+      }, {
+        key: "getSpeakers",
+        value: function getSpeakers() {
+          var _this25 = this;
+
+          return new Promise(function (resolve, reject) {
+            _this25.instance.getSpeakers().then(function (devices) {
+              resolve(devices);
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 获取设备的分辨率
+         * @param {String} deviceId -- 摄像头设备的Id
+         * @returns {Promise} - 分辨率获取之后的promise回调
+         */
+
+      }, {
+        key: "getVideoConstraints",
+        value: function getVideoConstraints(deviceId) {
+          var _this26 = this;
+
+          return new Promise(function (resolve, reject) {
+            _this26.instance.getVideoConstraints({
+              deviceId: deviceId
+            }, function (data) {
+              resolve(data);
+            }, function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 配置本地流视频质量参数
+         * @param {Object} options --  streamId: 切换本地流Id profile: 必填，互动视频质量参数
+         * @returns {Promise} - 配置本地流视频质量参数的promise回调
+         */
+
+      }, {
+        key: "setVideoProfile",
+        value: function setVideoProfile() {
+          var _this27 = this;
+
+          var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+          return new Promise(function (resolve, reject) {
+            _this27.instance.setVideoProfile({
+              streamId: options.streamId,
+              profile: options.profile
+            }, function (data) {
+              resolve(data);
+            }, function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 获取房间流信息
+         * @param {Object} options --  streamId: 切换本地流Id profile: 必填，互动视频质量参数
+         * @returns {Promise} - 配置本地流视频质量参数的promise回调
+         */
+>>>>>>> b8413cfa23a2d3e50a401be956832c60df90d906
 
   function formatParams(data) {
     var arr = [];
@@ -3327,6 +3708,7 @@
     return arr.join('&');
   } // 随机数
 
+<<<<<<< HEAD
   var getWebinarInfo = function getWebinarInfo() {
     var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 
@@ -3369,6 +3751,101 @@
 
     var _contextServer$get3 = contextServer.get('roomBaseServer'),
         state = _contextServer$get3.state;
+=======
+      }, {
+        key: "checkSystemRequirements",
+        value: function checkSystemRequirements() {
+          var _this28 = this;
+
+          return new Promise(function (resolve, reject) {
+            _this28.instance.checkSystemRequirements().then(function (data) {
+              resolve(data.result);
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 获取上下行丢包率
+         * @returns  data中有 upLossRate 上行丢包率   downLossRate 下行丢包率
+         */
+
+      }, {
+        key: "getPacketLossRate",
+        value: function getPacketLossRate() {
+          var _this29 = this;
+
+          return new Promise(function (resolve, reject) {
+            _this29.instance.getPacketLossRate().then(function (data) {
+              resolve(data);
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 获取流上下行丢包率
+         * @returns  data中有 
+         */
+
+      }, {
+        key: "getStreamPacketLoss",
+        value: function getStreamPacketLoss() {
+          var _this30 = this;
+
+          var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+          return new Promise(function (resolve, reject) {
+            _this30.instance.getStreamPacketLoss(options).then(function () {
+              resolve();
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 获取流音频能量
+         * @returns  
+         */
+
+      }, {
+        key: "getAudioLevel",
+        value: function getAudioLevel() {
+          var _this31 = this;
+
+          var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+          return new Promise(function (resolve, reject) {
+            _this31.instance.getAudioLevel({
+              streamId: streamId
+            }).then(function (data) {
+              resolve(data);
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
+        /**
+         * 获取流的mute状态
+         * @returns  
+         */
+
+      }, {
+        key: "getStreamMute",
+        value: function getStreamMute() {
+          var _this32 = this;
+
+          var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+          return new Promise(function (resolve, reject) {
+            _this32.instance.getStreamMute({
+              streamId: streamId
+            }).then(function (data) {
+              resolve(data);
+            })["catch"](function (error) {
+              reject(error);
+            });
+          });
+        }
+      }]);
+>>>>>>> b8413cfa23a2d3e50a401be956832c60df90d906
 
     var retParmams = {
       room_id: params.room_id || state.watchInitData.interact.room_id,
@@ -4159,10 +4636,52 @@
       state.localStreamId = opt.localStreamId === undefined ? opt.localStreamId : "";
       interactiveServer = contextServer.get("interactiveServer");
     };
+<<<<<<< HEAD
 
     var setVideoNode = function setVideoNode(videoNode) {
       state.videoNode = videoNode;
     };
+=======
+    return $fetch({
+      url: '/v3/interacts/room/set-device',
+      type: 'POST',
+      data: retParmams
+    });
+  }; // 开始暂停结束录制api
+
+
+  var recordApi = function recordApi() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+    var _contextServer$get4 = contextServer.get('roomBaseServer'),
+        state = _contextServer$get4.state;
+
+    var _contextServer$get5 = contextServer.get('roomInitGroupServer'),
+        roomInitGroupServerState = _contextServer$get5.state;
+
+    var retParmams = {
+      webinar_id: params.webinarId || state.watchInitData.webinar.id,
+      status: params.status || 1
+    };
+
+    if (params.live_token || roomInitGroupServerState.live_token) {
+      retParmams.live_token = params.live_token || roomInitGroupServerState.live_token;
+    }
+
+    return $fetch({
+      url: '/v3/webinars/record/ticker',
+      type: 'POST',
+      data: retParmams
+    });
+  };
+
+  var roomBase = {
+    getWebinarInfo: getWebinarInfo,
+    getConfigList: getConfigList,
+    setDevice: setDevice,
+    recordApi: recordApi
+  };
+>>>>>>> b8413cfa23a2d3e50a401be956832c60df90d906
 
     var setSelectedVideoDeviceId = function setSelectedVideoDeviceId(selectedVideoDeviceId) {
       state.selectedVideoDeviceId = selectedVideoDeviceId;
@@ -5087,11 +5606,502 @@
     };
   }
 
+  // import { emojiUrl } from './config.js'
+  var emojiUrl = 'https://cnstatic01.e.vhall.com/static/img/arclist';
+
+  var faceArr = {
+    '[微笑]': '1',
+    '[撇嘴]': '2',
+    '[色]': '3',
+    '[发呆]': '4',
+    '[得意]': '5',
+    '[流泪]': '6',
+    '[害羞]': '7',
+    '[闭嘴]': '8',
+    '[睡]': '9',
+    '[哭]': '10',
+    '[尴尬]': '11',
+    '[发怒]': '12',
+    '[调皮]': '13',
+    '[呲牙]': '14',
+    '[惊讶]': '15',
+    '[难过]': '16',
+    '[酷]': '17',
+    '[汗]': '18',
+    '[抓狂]': '19',
+    '[吐]': '20',
+    '[偷笑]': '21',
+    '[愉快]': '22',
+    '[白眼]': '23',
+    '[傲慢]': '24',
+    '[饥饿]': '25',
+    '[困]': '26',
+    '[惊恐]': '27',
+    '[流汗]': '28',
+    '[憨笑]': '29',
+    '[悠闲]': '30',
+    '[奋斗]': '31',
+    '[咒骂]': '32',
+    '[疑问]': '33',
+    '[嘘]': '34',
+    '[晕]': '35',
+    '[疯了]': '36',
+    '[衰]': '37',
+    '[骷髅]': '38',
+    '[敲打]': '39',
+    '[再见]': '40',
+    '[擦汗]': '41',
+    '[抠鼻]': '42',
+    '[鼓掌]': '43',
+    '[糗大了]': '44',
+    '[坏笑]': '45',
+    '[左哼哼]': '46',
+    '[右哼哼]': '47',
+    '[哈欠]': '48',
+    '[鄙视]': '49',
+    '[委屈]': '50',
+    '[快哭了]': '51',
+    '[阴险]': '52',
+    '[亲亲]': '53',
+    '[吓]': '54',
+    '[可怜]': '55',
+    '[菜刀]': '56',
+    '[西瓜]': '57',
+    '[啤酒]': '58',
+    '[篮球]': '59',
+    '[乒乓]': '60',
+    '[咖啡]': '61',
+    '[饭]': '62',
+    '[猪头]': '63',
+    '[玫瑰]': '64',
+    '[凋谢]': '65',
+    '[嘴唇]': '66',
+    '[爱心]': '67',
+    '[心碎]': '68',
+    '[蛋糕]': '69',
+    '[闪电]': '70',
+    '[炸弹]': '71',
+    '[刀]': '72',
+    '[足球]': '73',
+    '[瓢虫]': '74',
+    '[便便]': '75',
+    '[月亮]': '76',
+    '[太阳]': '77',
+    '[礼物]': '78',
+    '[拥抱]': '79',
+    '[强]': '80',
+    '[弱]': '81',
+    '[握手]': '82',
+    '[胜利]': '83',
+    '[抱拳]': '84',
+    '[勾引]': '85',
+    '[拳头]': '86',
+    '[差劲]': '87',
+    '[爱你]': '88',
+    '[NO]': '89',
+    '[OK]': '90'
+  };
+
+  var textToEmoji = function textToEmoji(s) {
+    s = s.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>'); // eslint-disable-next-line no-useless-escape
+
+    var reg = /\[[^\[\]]+?\]/g;
+    var ret = [];
+    var textArr = s.split(reg); // 字符串分割，返回一个数组
+
+    var emojiArr = s.match(reg); // 返回一个数组，成员是所有匹配的子字符串
+    // 文字与表情 轮流添加到a
+    // textArr 的长度 永远比 emojiArr 大 1
+    // 当然 emojiArr 可能为 null，此时 textArr 长度为 1，成员即为原始字符串
+
+    textArr.forEach(function (cont, i) {
+      // 当文字内容不为空 添加到a
+      cont && ret.push({
+        msgType: 'text',
+        msgCont: cont
+      }); // 最后一次循环，肯定没有表情与之对应，所以忽略
+      // 如果不是最后一次，添加表情到a
+      // 当然此处还需判断是否有此表情的图片定义
+
+      if (i !== textArr.length - 1) {
+        if (faceArr[emojiArr[i]]) {
+          ret.push({
+            msgType: 'emoji',
+            msgCont: emojiArr[i],
+            msgImage: emojiToPath(emojiArr[i])
+          });
+        } else {
+          ret.push({
+            msgType: 'text',
+            msgCont: emojiArr[i]
+          });
+        }
+      } // i !== textArr.length - 1 &&
+      //   ret.push(
+      //     faceArr[emojiArr[i]]
+      //       ? {
+      //           msgType: 'emoji',
+      //           msgCont: emojiArr[i],
+      //           msgImage: emojiToPath(emojiArr[i])
+      //         }
+      //       : {
+      //           msgType: 'text',
+      //           msgCont: emojiArr[i]
+      //         }
+      //   )
+
+    });
+    return ret;
+  };
+
+
+  function combinationStr(arr) {
+    var result = '';
+    arr.forEach(function (item) {
+      var str = item.msgType === 'text' ? item.msgCont : "<img width=\"24\" height=\"24\" style=\"vertical-align:text-bottom;\" src=\"".concat(item.msgImage, "\"/>");
+      result += str;
+    });
+    return result;
+  }
+
+  function textToEmojiText(str) {
+    var arr = textToEmoji(str);
+    var result = combinationStr(arr);
+    return result;
+  }
+
+  var emojiToPath = function emojiToPath(key) {
+    return key.includes('[删除]') ? "".concat(emojiUrl, "/").concat(faceArr[key], "@2x.png") : "".concat(emojiUrl, "/Expression_").concat(faceArr[key], "@2x.png");
+  };
+
+  var count = 0;
+
+  var Msg = function Msg(_ref) {
+    var _ref$avatar = _ref.avatar,
+        avatar = _ref$avatar === void 0 ? '' : _ref$avatar,
+        _ref$sendId = _ref.sendId,
+        sendId = _ref$sendId === void 0 ? '' : _ref$sendId,
+        _ref$nickName = _ref.nickName,
+        nickName = _ref$nickName === void 0 ? '' : _ref$nickName,
+        _ref$type = _ref.type,
+        type = _ref$type === void 0 ? 'text' : _ref$type,
+        _ref$showTime = _ref.showTime,
+        showTime = _ref$showTime === void 0 ? '' : _ref$showTime,
+        _ref$roleName = _ref.roleName,
+        roleName = _ref$roleName === void 0 ? '' : _ref$roleName,
+        _ref$content = _ref.content,
+        content = _ref$content === void 0 ? {} : _ref$content,
+        _ref$sendTime = _ref.sendTime,
+        sendTime = _ref$sendTime === void 0 ? '' : _ref$sendTime,
+        _ref$client = _ref.client,
+        client = _ref$client === void 0 ? '' : _ref$client,
+        _ref$self = _ref.self,
+        self = _ref$self === void 0 ? false : _ref$self,
+        _ref$replyMsg = _ref.replyMsg,
+        replyMsg = _ref$replyMsg === void 0 ? {} : _ref$replyMsg,
+        _ref$atList = _ref.atList,
+        atList = _ref$atList === void 0 ? [] : _ref$atList,
+        _ref$context = _ref.context,
+        context = _ref$context === void 0 ? {} : _ref$context,
+        _ref$source = _ref.source,
+        source = _ref$source === void 0 ? 'mobile' : _ref$source;
+
+    _classCallCheck(this, Msg);
+
+    // 用户id
+    this.type = type;
+    this.avatar = avatar;
+    this.sendId = sendId;
+    this.nickName = nickName;
+    this.roleName = roleName;
+    this.content = content;
+    this.showTime = showTime;
+    this.sendTime = sendTime;
+    this.client = client;
+    this.count = count++;
+    this.self = self;
+    this.replyMsg = replyMsg;
+    this.atList = atList;
+    this.context = context;
+    this.source = source;
+  };
+
+  function useChatServer() {
+    var state = {
+      //聊天记录
+      chatList: [],
+      //过滤的敏感词列表
+      keywordList: [],
+      //预览图片地址
+      imgUrls: [],
+      page: 0,
+      limit: 10,
+      roomId: '',
+      avatar: '',
+      roleName: ''
+    }; //消息服务
+
+    var msgServer = contextServer.get('msgServer'); //基础服务
+
+    var roomServer = contextServer.get('roomBaseServer');
+    var _roomServer$state$wat = roomServer.state.watchInitData,
+        _roomServer$state$wat2 = _roomServer$state$wat.roomId,
+        roomId = _roomServer$state$wat2 === void 0 ? '' : _roomServer$state$wat2,
+        roleName = _roomServer$state$wat.roleName;
+        _roomServer$state$wat.avatar;
+   //接收聊天消息
+
+    var getHistoryMsg = /*#__PURE__*/function () {
+      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
+        var _state$chatList;
+
+        var params,
+            from,
+            backData,
+            list,
+            _args = arguments;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                params = _args.length > 0 && _args[0] !== undefined ? _args[0] : {};
+                from = _args.length > 1 && _args[1] !== undefined ? _args[1] : '观看端';
+                _context.next = 4;
+                return fetchHistoryData(params);
+
+              case 4:
+                backData = _context.sent;
+                list = (backData.data.list || []).map(function (item) {
+                  //处理普通内容
+                  item.data.text_content && (item.data.text_content = textToEmojiText(item.data.text_content)); //处理图片预览
+
+                  item.data.image_urls && _handleImgUrl(item.data.image_urls); //处理私聊列表
+
+                  if (item.context && Array.isArray(item.context.at_list) && item.context.at_list.length && item.data.text_content) {
+                    item.context.at_list = _handlePrivateChatList(item, item.context.at_list);
+                  } //格式化消息
+
+
+                  return _handleGenerateMsg(item, from);
+                }).reduce(function (acc, curr) {
+                  var showTime = curr.showTime;
+                  acc.some(function (s) {
+                    return s.showTime === showTime;
+                  }) ? acc.push(_objectSpread2(_objectSpread2({}, curr), {}, {
+                    showTime: ''
+                  })) : acc.push(curr);
+                  return acc;
+                }, []).reverse().filter(function (item) {
+                  return !['customPraise'].includes(item.type);
+                });
+
+                if (['观看端'].includes(from)) {
+                  list.forEach(function (msg, index) {
+                    if (index !== 0) {
+                      var preMsgTime = list[index - 1].sendTime;
+
+                      if (preMsgTime.slice(0, 13) === msg.sendTime.slice(0, 13)) {
+                        msg.showTime = '';
+                      }
+                    }
+                  });
+                }
+
+                (_state$chatList = state.chatList).unshift.apply(_state$chatList, _toConsumableArray(list)); //返回原始数据等以方便使用
+
+
+                return _context.abrupt("return", {
+                  backData: backData,
+                  list: list,
+                  chatList: state.chatList,
+                  imgUrls: state.imgUrls || []
+                });
+
+              case 9:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee);
+      }));
+
+      return function getHistoryMsg() {
+        return _ref.apply(this, arguments);
+      };
+    }(); //发送聊天消息(这部分主要是提取自PC观看端)
+
+
+    var sendMsg = function sendMsg() {
+      var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var inputValue = params.inputValue,
+          _params$needFilter = params.needFilter,
+          needFilter = _params$needFilter === void 0 ? true : _params$needFilter;
+      var data = {}; //组装内容也可考虑交由视图
+
+      if (inputValue) {
+        data.type = 'text';
+        data.barrageTxt = inputValue.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
+        data.text_content = inputValue;
+      }
+
+      var context = {
+        nickname: state.name,
+        // 昵称
+        avatar: state.avatar,
+        // 头像
+        role_name: state.roleName // 角色 1主持人2观众3助理4嘉宾
+
+      };
+      var filterStatus = true;
+
+      if (needFilter && state.keywordList.length) {
+        //只要找到一个敏感词，消息就不让发
+        filterStatus = !state.keywordList.some(function (item) {
+          return inputValue.includes(item.name);
+        });
+      }
+
+      return new Promise(function (resolve, reject) {
+        if (roleName != 2 || roleName == 2 && filterStatus) {
+          msgServer.$emit(data, context);
+          resolve();
+        } else {
+          reject();
+        }
+      });
+    }; //发起请求，或者聊天记录数据
+
+
+    var fetchHistoryData = function fetchHistoryData(params) {
+      var defaultParams = {
+        room_id: roomId,
+        pos: state.page * state.limit,
+        limit: state.limit
+      };
+      var mixedParams = Object.assign({}, defaultParams, params);
+      return $fetch({
+        url: '/v3/interacts/chat/get-list',
+        type: 'POST',
+        data: mixedParams
+      });
+    }; //获取keywordList
+
+
+    var setKeywordList = function setKeywordList() {
+      var list = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      state.keywordList = list;
+    }; //私有方法，处理图片链接
+
+
+    var _handleImgUrl = function _handleImgUrl(rawData) {
+      var _state$imgUrls;
+
+      (_state$imgUrls = state.imgUrls).push.apply(_state$imgUrls, _toConsumableArray(rawData));
+    }; //私有方法，处理私聊列表
+
+
+    var _handlePrivateChatList = function _handlePrivateChatList(item) {
+      var list = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+      var from = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '观看端';
+
+      if (['观看端'].includes(from)) {
+        return list.map(function (a) {
+          item.data.text_content = item.data.text_content.replace("***".concat(a.nick_name), "@".concat(a.nick_name));
+          return a;
+        });
+      }
+
+      if (['h5'].includes(from)) {
+        return list.map(function (a) {
+          // 向前兼容fix 14968  历史消息有得是@
+          if (item.data.text_content.indexOf('***') >= 0) {
+            item.data.text_content = item.data.text_content.replace("***".concat(a.nick_name), "<span style='color:#4da1ff;float:left'>@".concat(a.nick_name, " &nbsp;</span> "));
+          } else {
+            item.data.text_content = item.data.text_content.replace("@".concat(a.nick_name), "<span style='color:#4da1ff;float:left'>@".concat(a.nick_name, " &nbsp;</span> "));
+          }
+
+          return a;
+        });
+      }
+    }; //私有方法，组装消息（暂时按照的h5版本的,大致数据一致，具体业务逻辑操作有差异，后续返回一个promise，并返回未处理的原始数据，由视图自己决定如何处理）
+
+
+    var _handleGenerateMsg = function _handleGenerateMsg() {
+      var item = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      var from = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+      var params = {};
+
+      if (['观看端'].includes(from)) {
+        params = {
+          type: item.data.type,
+          avatar: item.avatar ? item.avatar : '',
+          sendId: item.sender_id,
+          showTime: item.showTime,
+          nickName: item.nickname,
+          roleName: item.role_name,
+          sendTime: item.date_time,
+          content: item.data,
+          replyMsg: item.context.reply_msg,
+          atList: item.context.atList,
+          msgId: item.msg_id,
+          channel: item.channel_id,
+          isHistoryMsg: true
+        };
+      }
+
+      if (['h5'].includes(from)) {
+        params = {
+          type: item.data.type,
+          avatar: item.avatar ? item.avatar : defaultAvatar,
+          sendId: item.sender_id,
+          showTime: item.show_time,
+          nickName: item.nickname,
+          roleName: item.role_name,
+          sendTime: item.date_time,
+          content: item.data,
+          context: item.context,
+          replyMsg: item.context.reply_msg,
+          atList: item.context.at_list
+        };
+      }
+
+      var resultMsg = new Msg(params);
+
+      if (item.data.event_type) {
+        resultMsg = _objectSpread2(_objectSpread2({}, resultMsg), {}, {
+          type: item.data.event_type,
+          event_type: item.data.event_type,
+          content: {
+            source_status: item.data.source_status,
+            gift_name: item.data.gift_name,
+            gift_url: item.data.gift_url
+          }
+        });
+
+        if (['观看端'].includes(from)) {
+          resultMsg.nickName = item.nickname.length > 8 ? item.nickname.substr(0, 8) + '...' : item.nickname;
+          resultMsg.interactToolsStatus = true;
+        }
+      }
+
+      return resultMsg;
+    };
+
+    return {
+      state: state,
+      getHistoryMsg: getHistoryMsg,
+      sendMsg: sendMsg,
+      fetchHistoryData: fetchHistoryData,
+      setKeywordList: setKeywordList
+    };
+  }
+
   exports.contextServer = contextServer;
   exports.requestApi = requestApi;
   exports.setBaseUrl = setBaseUrl;
   exports.setRequestHeaders = setRequestHeaders;
   exports.setToken = setToken;
+  exports.useChatServer = useChatServer;
   exports.useDesktopShareServer = useDesktopShareServer;
   exports.useInsertFileServer = useInsertFileServer;
   exports.useInteractiveServer = useInteractiveServer;
