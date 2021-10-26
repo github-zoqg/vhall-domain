@@ -140,7 +140,10 @@ export default function useInteractiveServer() {
 
 
 
-
+    // 监听事件
+    const on = (type,callback) => {
+        return state.interactiveInstance.on(type, callback)
+    }
     // 组合api
     const startPushStream = ()=> {
         console.log('state:',state)
@@ -216,6 +219,6 @@ export default function useInteractiveServer() {
     createLocalPhotoStream, stopStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
     muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
     getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate, getRoomStreams, remoteStreamList,
-    listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel}
+    listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel, on}
 
 }
