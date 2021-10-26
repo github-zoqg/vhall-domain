@@ -1,1 +1,14 @@
+.DS_Store
 node_modules
+dist
+.idea/
+.iml
+*.ipr
+*.iws
+
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+package-lock.json
