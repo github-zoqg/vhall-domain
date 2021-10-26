@@ -247,6 +247,11 @@
         console.log('state.interactiveInstance', interactives, interactives.instance);
         return true;
       });
+    }; // 销毁实例
+
+
+    var destroyInit = function destroyInit() {
+      return state.interactiveInstance.destroyInit();
     }; // 基础api
     // 常见本地流
 
@@ -348,6 +353,12 @@
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       return state.interactiveInstance.setBroadCastLayout(options);
     }; // 配置旁路布局自适应模式
+
+
+    var setBroadCastAdaptiveLayoutMode = function setBroadCastAdaptiveLayoutMode() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.setBroadCastAdaptiveLayoutMode(options);
+    }; // 动态配置旁路主屏
 
 
     var setBroadCastScreen = function setBroadCastScreen() {
@@ -537,6 +548,7 @@
       state: state,
       startPushStream: startPushStream,
       init: init,
+      destroyInit: destroyInit,
       createLocalStream: createLocalStream,
       createLocalVideoStream: createLocalVideoStream,
       createLocaldesktopStream: createLocaldesktopStream,
@@ -570,7 +582,8 @@
       getAudioLevel: getAudioLevel,
       on: on,
       getRoomInfo: getRoomInfo,
-      getStreamMute: getStreamMute
+      getStreamMute: getStreamMute,
+      setBroadCastAdaptiveLayoutMode: setBroadCastAdaptiveLayoutMode
     };
   }
 
