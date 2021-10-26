@@ -3320,6 +3320,18 @@
     return chromeResult && chromeResult.length > 0 && chromeResult[1] > 87;
   }
 
+  /**
+   * ajax请求 jsonp处理
+   * 1.jsonp 请求格式
+   *   $fetch({
+   *      url:'',
+   *      type: 'GET',
+   *      jsonp: 'callback',
+   *      data: {
+   *        name: 123
+   *      }
+   *   })
+   */
   var BUSE_URL = 'https://t-saas-dispatch.vhall.com';
   var TOKEN = '';
   var LIVETOKEN = '';
@@ -3336,7 +3348,7 @@
   }
 
   function setRequestHeaders(options) {
-    HEADERS = _objectSpread2({}, options);
+    Object.assign(HEADERS, options);
   }
 
   function $fetch(options) {
