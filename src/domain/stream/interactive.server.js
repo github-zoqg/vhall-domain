@@ -40,15 +40,15 @@ export default function useInteractiveServer() {
     }
     // 销毁额本地流
     const stopStream = (streamId) => {
-        return state.interactiveInstance.destroyStream(state.streamId || streamId)
+        return state.interactiveInstance.destroyStream(streamId || state.streamId)
     }
     // 推送本地流到远端
     const publishStream = (options = {}) => {
-        return state.interactiveInstance.publishStream({ streamId: state.streamId || options.streamId })
+        return state.interactiveInstance.publishStream({ streamId: options.streamId || state.streamId })
     }
     // 取消推送到远端的流
     const unpublishStream = (streamId) => {
-        return state.interactiveInstance.unpublishStream(state.streamId || streamId)
+        return state.interactiveInstance.unpublishStream( streamId || state.streamId)
     }
     // 订阅远端流
     const subscribeStream = (options = {}) => {
@@ -123,13 +123,17 @@ export default function useInteractiveServer() {
     const getPacketLossRate = () => {
         return state.interactiveInstance.getPacketLossRate()
     }
-    // 获取上下行丢包率
-    const getStreamPacketLoss = () => {
-        return state.interactiveInstance.getStreamPacketLoss()
+    // 获取流上下行丢包率
+    const getStreamPacketLoss = (options = {}) => {
+        return state.interactiveInstance.getStreamPacketLoss(options)
     }
     // 获取房间流信息
     const getRoomStreams = () => {
         return state.interactiveInstance.getRoomStreams()
+    }
+    // 获取房间总的流信息(本地流加远端流)
+    const getRoomInfo = () => {
+        return state.interactiveInstance.getRoomInfo()
     }
     // 获取流音频能量
     const getAudioLevel = (streamId) => {
@@ -219,6 +223,6 @@ export default function useInteractiveServer() {
     createLocalPhotoStream, stopStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
     muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
     getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate, getRoomStreams, remoteStreamList,
-    listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel, on}
+    listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel, on, getRoomInfo}
 
 }

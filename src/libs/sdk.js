@@ -2205,6 +2205,17 @@
         return this.instance.getRoomStreams();
       }
       /**
+       * 获取房间总的信息
+       * @param {Object} options --  streamId: 切换本地流Id profile: 必填，互动视频质量参数
+       * @returns {Promise} - 配置本地流视频质量参数的promise回调
+       */
+
+    }, {
+      key: "getRoomInfo",
+      value: function getRoomInfo() {
+        return this.instance.getRoomInfo();
+      }
+      /**
        * 是否支持桌面共享
        * @returns Boolean
        */
@@ -2260,9 +2271,10 @@
       value: function getStreamPacketLoss() {
         var _this29 = this;
 
+        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         return new Promise(function (resolve, reject) {
-          _this29.instance.getStreamPacketLoss().then(function (data) {
-            resolve(data);
+          _this29.instance.getStreamPacketLoss(options).then(function () {
+            resolve();
           })["catch"](function (error) {
             reject(error);
           });
