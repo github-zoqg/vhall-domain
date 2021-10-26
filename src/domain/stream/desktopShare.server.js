@@ -1,21 +1,17 @@
 import contextServer from "../common/context.server";
 export default function useDesktopShareServer(){
+
     let state = {
         vhallSaasInstance:null
     };
 
-    try {
-        state.vhallSaasInstance = new window.VhallSaasSDK();
-    }catch (e){
 
-    }
-
+    state.vhallSaasInstance = contextServer.get('roomInitGroupServer').state.vhallSaasInstance;
     const interactiveServer = contextServer.get('interactiveServer');
 
     //检测浏览器是否支持桌面共享
     const  browserDetection = ()=>{
         const ua = navigator.userAgent;
-        // eslint-disable-next-line no-useless-escape
         const chromeTest = ua.match(/chrome\/([\d\.]+)/i);
         const chromeVersion = chromeTest ? chromeTest[1] : 0;
         const safariTest = ua.match(/Version\/([\d.]+).*Safari/);
@@ -49,16 +45,20 @@ export default function useDesktopShareServer(){
      * */
     const stopShareScreen = (options={},successFunc,errorFunc)=>{
 
-        //todo 接入sdk调用unpublish
-       state.vhallSaasInstance.unpublish(
+        return new Promise((resolve,reject)=>{
+            state.vhallSaasInstance.unpublish(
                 options,
-            () => {
-                successFunc();
-            },
-            e => {
-                errorFunc();
-            }
-        );
+                () => {
+                    successFunc();
+                    resolve();
+                },
+                e => {
+                    errorFunc();
+                    reject();
+                }
+            );
+        });
+
     }
 
     return {state,browserDetection,shareScreenCheck};
