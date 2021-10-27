@@ -2,19 +2,28 @@ import contextServer from "../common/context.server";
 
 export default function usePlayerServer() {
     let state = {
-        playerInstance: null
+        playerInstance: null,
+        isPlaying:false,
+        markPoints:[],
+        type:'live',// live or vod
+        voice:60
     }
 
     let vhallSaasInstance = null;
 
-    const init = () => {
+    const init = (options) => {
         const roomInitGroupServer = contextServer.get('roomInitGroupServer')
         vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance
 
-        return vhallSaasInstance.createPlayer().then(instance=>{
-            state.playerInstance = instance
+        return vhallSaasInstance.createPlayer(options).then((instance)=>{
+            state.playerInstance = instance;
+            state.markPoints = state.playerInstance.markPoints;
             return true
         })
+    }
+
+    const setType = (type='live')=>{
+        state.type = type
     }
 
     const play = () => {
@@ -57,12 +66,13 @@ export default function usePlayerServer() {
         return state.playerInstance.getVolume()
     }
 
-    const setVolume = () => {
-        return state.playerInstance.setVolume()
+    const setVolume = (val) => {
+        state.voice = val;
+        return state.playerInstance.setVolume(val)
     }
 
-    const getDuration = () => {
-        return state.playerInstance.getDuration()
+    const getDuration = (onFail=()=>{}) => {
+        return state.playerInstance.getDuration(onFail)
     }
 
     const getCurrentTime = () => {
@@ -81,12 +91,12 @@ export default function usePlayerServer() {
         return state.playerInstance.setPlaySpeed()
     }
 
-    const openControls = () => {
-        return state.playerInstance.openControls()
+    const openControls = (status) => {
+        return state.playerInstance.openControls(status)
     }
 
-    const openUI = () => {
-        return state.playerInstance.openUI()
+    const openUI = (status) => {
+        return state.playerInstance.openUI(status)
     }
 
     const setResetVideo = () => {
@@ -110,11 +120,11 @@ export default function usePlayerServer() {
     }
 
     const on = (type, cb) => {
-
+        state.playerInstance.$on(type,cb)
     }
 
     const emit = (type,params) => {
-
+        state.playerInstance.$emit(type,params)
     }
 
     const destroy = () => {
@@ -123,6 +133,7 @@ export default function usePlayerServer() {
 
     return { 
         state, 
+        setType,
         init,
         on, 
         emit, 

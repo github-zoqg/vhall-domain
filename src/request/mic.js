@@ -70,7 +70,6 @@ const speakUserOff = (params = {}) => {
     })
 }
 
-
 // 允许举手
 const setHandsup = (params = {}) => {
     const { state } = contextServer.get('roomBaseServer')
@@ -104,7 +103,6 @@ const inviteMic = (params = {}) => {
         data: retParams
     })
 }
-
 
 // 取消申请
 const cancelApply = (params = {}) => {
