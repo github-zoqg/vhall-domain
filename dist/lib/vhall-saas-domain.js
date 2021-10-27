@@ -11391,16 +11391,16 @@
       return state.playerInstance.getCurrentTime();
     };
 
-    var setCurrentTime = function setCurrentTime() {
-      return state.playerInstance.setCurrentTime();
+    var setCurrentTime = function setCurrentTime(val) {
+      return state.playerInstance.setCurrentTime(val);
     };
 
     var getUsableSpeed = function getUsableSpeed() {
       return state.playerInstance.getUsableSpeed();
     };
 
-    var setPlaySpeed = function setPlaySpeed() {
-      return state.playerInstance.setPlaySpeed();
+    var setPlaySpeed = function setPlaySpeed(val) {
+      return state.playerInstance.setPlaySpeed(val);
     };
 
     var openControls = function openControls(status) {
@@ -11411,12 +11411,12 @@
       return state.playerInstance.openUI(status);
     };
 
-    var setResetVideo = function setResetVideo() {
-      return state.playerInstance.setResetVideo();
+    var setResetVideo = function setResetVideo(val) {
+      return state.playerInstance.setResetVideo(val);
     };
 
-    var setBarrageInfo = function setBarrageInfo() {
-      return state.playerInstance.setBarrageInfo();
+    var setBarrageInfo = function setBarrageInfo(val) {
+      return state.playerInstance.setBarrageInfo(val);
     };
 
     var addBarrage = function addBarrage() {
