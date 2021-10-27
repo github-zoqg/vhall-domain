@@ -11104,12 +11104,14 @@
     var inviteMic = function inviteMic() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       return requestApi.mic.inviteMic(data);
-    };
+    }; // 取消申请
+
 
     var cancelApply = function cancelApply() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       return requestApi.mic.cancelApply(data);
-    };
+    }; // 拒绝邀请
+
 
     var refuseInvite = function refuseInvite() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
@@ -11967,6 +11969,82 @@
     };
   }
 
+  function useMicServer() {
+    var state = {}; // 上麦
+
+    var speakOn = function speakOn() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.mic.speakOn(data);
+    }; // 下麦
+
+
+    var speakOff = function speakOff() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.mic.speakOff(data);
+    };
+
+    var speakUserOff = function speakUserOff() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.interactive.speakUserOff(data);
+    }; // 设置主屏
+
+
+    var setMainScreen = function setMainScreen() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.interactive.setMainScreen(data);
+    }; // 设置主讲人
+
+
+    var setSpeaker = function setSpeaker() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.interactive.setSpeaker(data);
+    }; // 设置（麦克风-1 摄像头-2）
+
+
+    var setRoomDevice = function setRoomDevice() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.interactive.setRoomDevice(data);
+    }; // 允许举手
+
+
+    var setHandsup = function setHandsup() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.mic.setHandsUp(data);
+    }; // 邀请上麦
+
+
+    var inviteMic = function inviteMic() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.mic.inviteMic(data);
+    }; // 取消申请
+
+
+    var cancelApply = function cancelApply() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.mic.cancelApply(data);
+    }; // 拒绝邀请
+
+
+    var refuseInvite = function refuseInvite() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.mic.refuseInvite(data);
+    };
+
+    return {
+      state: state,
+      speakOn: speakOn,
+      speakOff: speakOff,
+      speakUserOff: speakUserOff,
+      setMainScreen: setMainScreen,
+      setSpeaker: setSpeaker,
+      setRoomDevice: setRoomDevice,
+      setHandsup: setHandsup,
+      inviteMic: inviteMic,
+      cancelApply: cancelApply,
+      refuseInvite: refuseInvite
+    };
+  }
+
   function useRoomInitGroupServer() {
     var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
     var state = {
@@ -11978,9 +12056,11 @@
     var roomBaseServer = useRoomBaseServer();
     var msgServer = useMsgServer();
     var interactiveServer = useInteractiveServer();
+    var micServer = useMicServer();
     contextServer.set('roomBaseServer', roomBaseServer);
     contextServer.set('msgServer', msgServer);
     contextServer.set('interactiveServer', interactiveServer);
+    contextServer.set('micServer', micServer);
 
     var reload = /*#__PURE__*/function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
@@ -12708,6 +12788,7 @@
   exports.useInsertFileServer = useInsertFileServer;
   exports.useInteractiveServer = useInteractiveServer;
   exports.useMediaCheckServer = useMediaCheckServer;
+  exports.useMicServer = useMicServer;
   exports.useMsgServer = useMsgServer;
   exports.usePlayerServer = usePlayerServer;
   exports.useRoomBaseServer = useRoomBaseServer;

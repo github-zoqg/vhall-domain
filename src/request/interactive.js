@@ -42,7 +42,6 @@ const setRoomDevice = (params={})=>{
         room_id: params.room_id || state.watchInitData.interact.room_id,
         device: params.device,
         status: params.status,
-        account_Id: params.account_Id,
         receive_account_id: params.receive_account_id
     }
     retParams = Object.assign(retParams,params)

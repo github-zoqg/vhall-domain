@@ -192,11 +192,11 @@ export default function useInteractiveServer() {
     const inviteMic = (data={})=>{
         return requestApi.mic.inviteMic(data)
     }
-
+    // 取消申请
     const cancelApply = (data={})=>{
         return requestApi.mic.cancelApply(data)
     }
-
+    // 拒绝邀请
     const refuseInvite = (data={})=>{
         return requestApi.mic.refuseInvite(data)
     }

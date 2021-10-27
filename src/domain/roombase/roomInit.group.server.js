@@ -3,6 +3,7 @@ import useMsgServer from '@/domain/common/msg.server.js'
 import useRoomBaseServer from '@/domain/roombase/roombase.server.js'
 import useInteractiveServer from '@/domain/stream/interactive.server.js';
 import { setBaseUrl, setToken, setRequestHeaders } from '@/utils/http.js';
+import useMicServer from "@/domain/stream/mic.server.js";
 
 export default function useRoomInitGroupServer(options = {}) {
     const state = {
@@ -14,10 +15,12 @@ export default function useRoomInitGroupServer(options = {}) {
     let roomBaseServer = useRoomBaseServer();
     let msgServer = useMsgServer();
     let interactiveServer = useInteractiveServer()
+    let micServer = useMicServer()
 
     contextServer.set('roomBaseServer', roomBaseServer)
     contextServer.set('msgServer', msgServer)
     contextServer.set('interactiveServer',interactiveServer)
+    contextServer.set('micServer',micServer)
 
     const reload = async () => {
         msgServer.destroy();
