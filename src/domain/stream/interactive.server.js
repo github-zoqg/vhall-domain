@@ -203,8 +203,6 @@ export default function useInteractiveServer() {
 
     // 监听事件
     const on = (type,callback) => {
-        console.log('111111111type',type)
-        console.log('111111111type3333',VhallRTC[type])
         return state.interactiveInstance.$on(type, callback)
     }
 
