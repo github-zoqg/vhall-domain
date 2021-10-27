@@ -27,6 +27,9 @@ export default function useChatServer() {
     //消息服务
     const msgServer = contextServer.get('msgServer');
 
+    //消息sdk
+    const {msgInstance} = msgServer.state;
+
     //基础服务
     const roomServer = contextServer.get('roomBaseServer');
 
@@ -50,6 +53,8 @@ export default function useChatServer() {
                 //处理私聊列表
                 if (item.context && Array.isArray(item.context.at_list) && item.context.at_list.length && item.data.text_content) {
                     item.context.at_list = _handlePrivateChatList(item, item.context.at_list);
+                    //发起端的特殊处理，可以考虑统一
+                    item.context.atList = item.context.at_list;
                 }
 
                 //格式化消息
@@ -85,40 +90,23 @@ export default function useChatServer() {
         };
     }
 
-    //发送聊天消息(这部分主要是提取自PC观看端)
+    //发送聊天消息
     const sendMsg = (params = {}) => {
 
-        let {inputValue, needFilter = true} = params;
+        let {inputValue, needFilter = true, data = {}, context = {}} = params;
+        // let filterStatus = checkHasKeyword(needFilter, inputValue);
+        // return new Promise((resolve, reject) => {
+        //     if (roleName != 2 || (roleName == 2 && filterStatus)) {
+        //         msgServer.$emit(data, context);
+        //         resolve();
+        //     } else {
+        //         reject();
+        //     }
+        // });
 
-        const data = {};
-
-        //组装内容也可考虑交由视图
-        if (inputValue) {
-            data.type = 'text';
-            data.barrageTxt = inputValue.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
-            data.text_content = inputValue;
-        }
-
-        const context = {
-            nickname: state.name, // 昵称
-            avatar: state.avatar, // 头像
-            role_name: state.roleName // 角色 1主持人2观众3助理4嘉宾
-        }
-
-        let filterStatus = true;
-
-        if (needFilter && state.keywordList.length) {
-            //只要找到一个敏感词，消息就不让发
-            filterStatus = !state.keywordList.some(item => inputValue.includes(item.name));
-        }
-
-        return new Promise((resolve, reject) => {
-            if (roleName != 2 || (roleName == 2 && filterStatus)) {
-                msgServer.$emit(data, context);
-                resolve();
-            } else {
-                reject();
-            }
+        return  new Promise((resolve,reject)=>{
+            msgInstance.emitTextChat(data,context);
+            resolve();
         });
 
     }
@@ -145,6 +133,18 @@ export default function useChatServer() {
     //获取keywordList
     const setKeywordList = (list = []) => {
         state.keywordList = list;
+    }
+
+    //检测是否包含敏感词
+    const checkHasKeyword = (needFilter=true,inputValue)=>{
+        let filterStatus = true;
+
+        if (needFilter && state.keywordList.length) {
+            //只要找到一个敏感词，消息就不让发
+            filterStatus = !state.keywordList.some(item => inputValue.includes(item.name));
+        }
+
+        return filterStatus;
     }
 
     //私有方法，处理图片链接
@@ -185,7 +185,7 @@ export default function useChatServer() {
     const _handleGenerateMsg = (item = {}, from = '') => {
         let params = {};
 
-        if (['观看端'].includes(from)) {
+        if (['观看端','发起端'].includes(from)) {
             params = {
                 type: item.data.type,
                 avatar: item.avatar ? item.avatar : '',
@@ -200,6 +200,10 @@ export default function useChatServer() {
                 msgId: item.msg_id,
                 channel: item.channel_id,
                 isHistoryMsg: true
+            }
+
+            if(['发起端'].includes(from) && params.avatar === ''){
+                params.avatar = 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png';
             }
         }
 
@@ -239,5 +243,5 @@ export default function useChatServer() {
         return resultMsg;
     }
 
-    return {state, getHistoryMsg, sendMsg, fetchHistoryData, setKeywordList};
+    return {state, getHistoryMsg, sendMsg, fetchHistoryData, setKeywordList,checkHasKeyword};
 }
