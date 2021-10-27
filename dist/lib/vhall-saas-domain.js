@@ -3283,6 +3283,8 @@
     }
 
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    var interact_token = sessionStorage.getItem('interact_token') || null;
+    interact_token && xhr.setRequestHeader('interact-token', interact_token);
 
     if (!LIVETOKEN) {
       TOKEN && xhr.setRequestHeader('token', TOKEN);
@@ -3687,14 +3689,14 @@
     var _contextServer$get2 = contextServer.get('roomBaseServer'),
         state = _contextServer$get2.state;
 
-    var retParmams = {
+    var retParams = {
       room_id: params.room_id || state.watchInitData.interact.room_id
     };
     retParams = Object.assign(retParams, params);
     return $fetch({
       url: '/v3/interacts/inav-user/speak',
       type: 'POST',
-      data: retParmams
+      data: retParams
     });
   }; // 用户自己下麦
 
@@ -4140,7 +4142,9 @@
 
 
     var on = function on(type, callback) {
-      return state.interactiveInstance.on(type, callback);
+      console.log('111111111type', type);
+      console.log('111111111type3333', VhallRTC[type]);
+      return state.interactiveInstance.$on(type, callback);
     }; // 组合api
 
 

@@ -24,7 +24,7 @@ const allowSpeak = (params = {}) => {
 const speakOn = (params = {}) => {
     const { state } = contextServer.get('roomBaseServer')
 
-    let retParmams = {
+    let retParams = {
         room_id: params.room_id || state.watchInitData.interact.room_id,
     }
     retParams = Object.assign(retParams, params)
@@ -33,7 +33,7 @@ const speakOn = (params = {}) => {
     return $http({
         url: '/v3/interacts/inav-user/speak',
         type: 'POST',
-        data: retParmams
+        data: retParams
     })
 }
 
