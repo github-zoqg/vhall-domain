@@ -10622,7 +10622,6 @@
       room_id: params.room_id || state.watchInitData.interact.room_id,
       device: params.device,
       status: params.status,
-      account_Id: params.account_Id,
       receive_account_id: params.receive_account_id
     };
     retParams = Object.assign(retParams, params);
@@ -11986,24 +11985,6 @@
     var speakUserOff = function speakUserOff() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       return requestApi.interactive.speakUserOff(data);
-    }; // 设置主屏
-
-
-    var setMainScreen = function setMainScreen() {
-      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return requestApi.interactive.setMainScreen(data);
-    }; // 设置主讲人
-
-
-    var setSpeaker = function setSpeaker() {
-      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return requestApi.interactive.setSpeaker(data);
-    }; // 设置（麦克风-1 摄像头-2）
-
-
-    var setRoomDevice = function setRoomDevice() {
-      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return requestApi.interactive.setRoomDevice(data);
     }; // 允许举手
 
 
@@ -12035,9 +12016,6 @@
       speakOn: speakOn,
       speakOff: speakOff,
       speakUserOff: speakUserOff,
-      setMainScreen: setMainScreen,
-      setSpeaker: setSpeaker,
-      setRoomDevice: setRoomDevice,
       setHandsup: setHandsup,
       inviteMic: inviteMic,
       cancelApply: cancelApply,
