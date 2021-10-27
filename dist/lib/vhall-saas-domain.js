@@ -11991,6 +11991,12 @@
     var setHandsup = function setHandsup() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       return requestApi.mic.setHandsUp(data);
+    }; // 允许上麦
+
+
+    var allowSpeak = function allowSpeak() {
+      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.mic.allowSpeak(data);
     }; // 邀请上麦
 
 
@@ -12016,6 +12022,7 @@
       speakOn: speakOn,
       speakOff: speakOff,
       speakUserOff: speakUserOff,
+      allowSpeak: allowSpeak,
       setHandsup: setHandsup,
       inviteMic: inviteMic,
       cancelApply: cancelApply,
