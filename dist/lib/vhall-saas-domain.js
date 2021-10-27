@@ -12443,13 +12443,15 @@
       roleName: ''
     }; //消息服务
 
-    var msgServer = contextServer.get('msgServer'); //基础服务
+    var msgServer = contextServer.get('msgServer'); //消息sdk
+
+    var msgInstance = msgServer.state.msgInstance; //基础服务
 
     var roomServer = contextServer.get('roomBaseServer');
     var _roomServer$state$wat = roomServer.state.watchInitData,
         _roomServer$state$wat2 = _roomServer$state$wat.roomId,
-        roomId = _roomServer$state$wat2 === void 0 ? '' : _roomServer$state$wat2,
-        roleName = _roomServer$state$wat.roleName;
+        roomId = _roomServer$state$wat2 === void 0 ? '' : _roomServer$state$wat2;
+        _roomServer$state$wat.roleName;
         _roomServer$state$wat.avatar;
    //接收聊天消息
 
@@ -12480,7 +12482,9 @@
                   item.data.image_urls && _handleImgUrl(item.data.image_urls); //处理私聊列表
 
                   if (item.context && Array.isArray(item.context.at_list) && item.context.at_list.length && item.data.text_content) {
-                    item.context.at_list = _handlePrivateChatList(item, item.context.at_list);
+                    item.context.at_list = _handlePrivateChatList(item, item.context.at_list); //发起端的特殊处理，可以考虑统一
+
+                    item.context.atList = item.context.at_list;
                   } //格式化消息
 
 
@@ -12530,46 +12534,29 @@
       return function getHistoryMsg() {
         return _ref.apply(this, arguments);
       };
-    }(); //发送聊天消息(这部分主要是提取自PC观看端)
+    }(); //发送聊天消息
 
 
     var sendMsg = function sendMsg() {
       var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var inputValue = params.inputValue,
-          _params$needFilter = params.needFilter,
-          needFilter = _params$needFilter === void 0 ? true : _params$needFilter;
-      var data = {}; //组装内容也可考虑交由视图
-
-      if (inputValue) {
-        data.type = 'text';
-        data.barrageTxt = inputValue.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
-        data.text_content = inputValue;
-      }
-
-      var context = {
-        nickname: state.name,
-        // 昵称
-        avatar: state.avatar,
-        // 头像
-        role_name: state.roleName // 角色 1主持人2观众3助理4嘉宾
-
-      };
-      var filterStatus = true;
-
-      if (needFilter && state.keywordList.length) {
-        //只要找到一个敏感词，消息就不让发
-        filterStatus = !state.keywordList.some(function (item) {
-          return inputValue.includes(item.name);
-        });
-      }
+      params.inputValue;
+          params.needFilter;
+          var _params$data = params.data,
+          data = _params$data === void 0 ? {} : _params$data,
+          _params$context = params.context,
+          context = _params$context === void 0 ? {} : _params$context; // let filterStatus = checkHasKeyword(needFilter, inputValue);
+      // return new Promise((resolve, reject) => {
+      //     if (roleName != 2 || (roleName == 2 && filterStatus)) {
+      //         msgServer.$emit(data, context);
+      //         resolve();
+      //     } else {
+      //         reject();
+      //     }
+      // });
 
       return new Promise(function (resolve, reject) {
-        if (roleName != 2 || roleName == 2 && filterStatus) {
-          msgServer.$emit(data, context);
-          resolve();
-        } else {
-          reject();
-        }
+        msgInstance.emitTextChat(data, context);
+        resolve();
       });
     }; //发起请求，或者聊天记录数据
 
@@ -12592,6 +12579,22 @@
     var setKeywordList = function setKeywordList() {
       var list = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
       state.keywordList = list;
+    }; //检测是否包含敏感词
+
+
+    var checkHasKeyword = function checkHasKeyword() {
+      var needFilter = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+      var inputValue = arguments.length > 1 ? arguments[1] : undefined;
+      var filterStatus = true;
+
+      if (needFilter && state.keywordList.length) {
+        //只要找到一个敏感词，消息就不让发
+        filterStatus = !state.keywordList.some(function (item) {
+          return inputValue.includes(item.name);
+        });
+      }
+
+      return filterStatus;
     }; //私有方法，处理图片链接
 
 
@@ -12633,7 +12636,7 @@
       var from = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
       var params = {};
 
-      if (['观看端'].includes(from)) {
+      if (['观看端', '发起端'].includes(from)) {
         params = {
           type: item.data.type,
           avatar: item.avatar ? item.avatar : '',
@@ -12649,6 +12652,10 @@
           channel: item.channel_id,
           isHistoryMsg: true
         };
+
+        if (['发起端'].includes(from) && params.avatar === '') {
+          params.avatar = 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png';
+        }
       }
 
       if (['h5'].includes(from)) {
@@ -12694,7 +12701,8 @@
       getHistoryMsg: getHistoryMsg,
       sendMsg: sendMsg,
       fetchHistoryData: fetchHistoryData,
-      setKeywordList: setKeywordList
+      setKeywordList: setKeywordList,
+      checkHasKeyword: checkHasKeyword
     };
   }
 
