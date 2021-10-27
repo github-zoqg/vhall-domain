@@ -10842,6 +10842,11 @@
         console.log('state.interactiveInstance', interactives, interactives.instance);
         return true;
       });
+    }; // 销毁实例
+
+
+    var destroyInit = function destroyInit() {
+      return state.interactiveInstance.destroyInit();
     }; // 基础api
     // 常见本地流
 
@@ -10943,6 +10948,12 @@
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       return state.interactiveInstance.setBroadCastLayout(options);
     }; // 配置旁路布局自适应模式
+
+
+    var setBroadCastAdaptiveLayoutMode = function setBroadCastAdaptiveLayoutMode() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return state.interactiveInstance.setBroadCastAdaptiveLayoutMode(options);
+    }; // 动态配置旁路主屏
 
 
     var setBroadCastScreen = function setBroadCastScreen() {
@@ -11189,6 +11200,7 @@
       state: state,
       startPushStream: startPushStream,
       init: init,
+      destroyInit: destroyInit,
       createLocalStream: createLocalStream,
       createLocalVideoStream: createLocalVideoStream,
       createLocaldesktopStream: createLocaldesktopStream,
@@ -11223,6 +11235,7 @@
       on: on,
       getRoomInfo: getRoomInfo,
       getStreamMute: getStreamMute,
+      setBroadCastAdaptiveLayoutMode: setBroadCastAdaptiveLayoutMode,
       speakOn: speakOn,
       speakOff: speakOff,
       speakUserOff: speakUserOff,
@@ -12428,144 +12441,232 @@
       roomId: '',
       avatar: '',
       roleName: ''
-    };
+    }; //消息服务
 
-    var init = function init() {
-      var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var _params$roleName = params.roleName,
-          roleName = _params$roleName === void 0 ? '' : _params$roleName,
-          _params$roomId = params.roomId,
-          roomId = _params$roomId === void 0 ? '' : _params$roomId,
-          _params$avatar = params.avatar,
-          avatar = _params$avatar === void 0 ? '' : _params$avatar;
-          params.keywordList;
-      state.roomId = roomId;
-      state.roleName = roleName;
-      state.avatar = avatar; //todo 需要看一下到底从哪里拿敏感词
-    }; //接收聊天消息
+    var msgServer = contextServer.get('msgServer'); //基础服务
 
+    var roomServer = contextServer.get('roomBaseServer');
+    var _roomServer$state$wat = roomServer.state.watchInitData,
+        _roomServer$state$wat2 = _roomServer$state$wat.roomId,
+        roomId = _roomServer$state$wat2 === void 0 ? '' : _roomServer$state$wat2,
+        roleName = _roomServer$state$wat.roleName;
+        _roomServer$state$wat.avatar;
+   //接收聊天消息
 
-    var getHistoryMsg = function getHistoryMsg() {
-      var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      //请求获取聊天消息
-      var backData = fetchHistoryData(params);
-      var list = [];
-
-      if (backData.data.list.length > 0) {
+    var getHistoryMsg = /*#__PURE__*/function () {
+      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
         var _state$chatList;
 
-        list = (backData.data.list || []).map(function (item) {
-          //处理普通内容
-          item.data.text_content && (item.data.text_content = textToEmojiText(item.data.text_content)); //处理图片预览
+        var params,
+            from,
+            backData,
+            list,
+            _args = arguments;
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                params = _args.length > 0 && _args[0] !== undefined ? _args[0] : {};
+                from = _args.length > 1 && _args[1] !== undefined ? _args[1] : '观看端';
+                _context.next = 4;
+                return fetchHistoryData(params);
 
-          item.data.image_urls && _handleImgUrl(item.data.image_urls); //处理私聊列表
+              case 4:
+                backData = _context.sent;
+                list = (backData.data.list || []).map(function (item) {
+                  //处理普通内容
+                  item.data.text_content && (item.data.text_content = textToEmojiText(item.data.text_content)); //处理图片预览
 
-          if (item.context && Array.isArray(item.context.at_list) && item.context.at_list.length && item.data.text_content) {
-            item.context.at_list = _handlePrivateChatList(item, item.context.at_list);
-          } //格式化消息
+                  item.data.image_urls && _handleImgUrl(item.data.image_urls); //处理私聊列表
 
-
-          return _handleGenerateMsg(item);
-        }).reduce(function (acc, curr) {
-          var showTime = curr.showTime;
-          acc.some(function (s) {
-            return s.showTime === showTime;
-          }) ? acc.push(_objectSpread2(_objectSpread2({}, curr), {}, {
-            showTime: ''
-          })) : acc.push(curr);
-          return acc;
-        }, []).reverse().filter(function (item) {
-          return ['customPraise'].includes(item.type);
-        });
-
-        (_state$chatList = state.chatList).unshift.apply(_state$chatList, _toConsumableArray(list));
-      } //返回原始数据等以方便使用
+                  if (item.context && Array.isArray(item.context.at_list) && item.context.at_list.length && item.data.text_content) {
+                    item.context.at_list = _handlePrivateChatList(item, item.context.at_list);
+                  } //格式化消息
 
 
-      return {
-        backData: backData,
-        list: list,
-        chatList: state.chatList
+                  return _handleGenerateMsg(item, from);
+                }).reduce(function (acc, curr) {
+                  var showTime = curr.showTime;
+                  acc.some(function (s) {
+                    return s.showTime === showTime;
+                  }) ? acc.push(_objectSpread2(_objectSpread2({}, curr), {}, {
+                    showTime: ''
+                  })) : acc.push(curr);
+                  return acc;
+                }, []).reverse().filter(function (item) {
+                  return !['customPraise'].includes(item.type);
+                });
+
+                if (['观看端'].includes(from)) {
+                  list.forEach(function (msg, index) {
+                    if (index !== 0) {
+                      var preMsgTime = list[index - 1].sendTime;
+
+                      if (preMsgTime.slice(0, 13) === msg.sendTime.slice(0, 13)) {
+                        msg.showTime = '';
+                      }
+                    }
+                  });
+                }
+
+                (_state$chatList = state.chatList).unshift.apply(_state$chatList, _toConsumableArray(list)); //返回原始数据等以方便使用
+
+
+                return _context.abrupt("return", {
+                  backData: backData,
+                  list: list,
+                  chatList: state.chatList,
+                  imgUrls: state.imgUrls || []
+                });
+
+              case 9:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee);
+      }));
+
+      return function getHistoryMsg() {
+        return _ref.apply(this, arguments);
       };
-    }; //发送聊天消息(这部分主要是提取自PC观看端)
+    }(); //发送聊天消息(这部分主要是提取自PC观看端)
 
 
     var sendMsg = function sendMsg() {
       var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      //todo 可以考虑取值初始化的时候传入
       var inputValue = params.inputValue,
           _params$needFilter = params.needFilter,
           needFilter = _params$needFilter === void 0 ? true : _params$needFilter;
-          params.name;
-          params.avatar;
-          params.roleName;
+      var data = {}; //组装内容也可考虑交由视图
 
       if (inputValue) {
-        inputValue.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
+        data.type = 'text';
+        data.barrageTxt = inputValue.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
+        data.text_content = inputValue;
       }
+
+      var context = {
+        nickname: state.name,
+        // 昵称
+        avatar: state.avatar,
+        // 头像
+        role_name: state.roleName // 角色 1主持人2观众3助理4嘉宾
+
+      };
+      var filterStatus = true;
 
       if (needFilter && state.keywordList.length) {
         //只要找到一个敏感词，消息就不让发
-        !state.keywordList.some(function (item) {
+        filterStatus = !state.keywordList.some(function (item) {
           return inputValue.includes(item.name);
         });
-      } //todo 暂时做示意，这部分可能会通过sdk完成
+      }
+
+      return new Promise(function (resolve, reject) {
+        if (roleName != 2 || roleName == 2 && filterStatus) {
+          msgServer.$emit(data, context);
+          resolve();
+        } else {
+          reject();
+        }
+      });
     }; //发起请求，或者聊天记录数据
 
 
     var fetchHistoryData = function fetchHistoryData(params) {
       var defaultParams = {
-        room_id: state.roomId,
+        room_id: roomId,
         pos: state.page * state.limit,
         limit: state.limit
       };
-      Object.assign({}, defaultParams, params); //todo 发起请求的实际方法，可能是sdk或者借助axios
-
-      var rawData = []; //返回一个promise做示意
-
-      return Promise.resolve(rawData);
+      var mixedParams = Object.assign({}, defaultParams, params);
+      return $fetch({
+        url: '/v3/interacts/chat/get-list',
+        type: 'POST',
+        data: mixedParams
+      });
     }; //获取keywordList
+
+
+    var setKeywordList = function setKeywordList() {
+      var list = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
+      state.keywordList = list;
+    }; //私有方法，处理图片链接
 
 
     var _handleImgUrl = function _handleImgUrl(rawData) {
       var _state$imgUrls;
 
-      //todo 可能需要去重
       (_state$imgUrls = state.imgUrls).push.apply(_state$imgUrls, _toConsumableArray(rawData));
     }; //私有方法，处理私聊列表
 
 
     var _handlePrivateChatList = function _handlePrivateChatList(item) {
       var list = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-      return list.map(function (a) {
-        // 向前兼容fix 14968  历史消息有得是@
-        if (item.data.text_content.indexOf('***') >= 0) {
-          item.data.text_content = item.data.text_content.replace("***".concat(a.nick_name), "<span style='color:#4da1ff;float:left'>@".concat(a.nick_name, " &nbsp;</span> "));
-        } else {
-          item.data.text_content = item.data.text_content.replace("@".concat(a.nick_name), "<span style='color:#4da1ff;float:left'>@".concat(a.nick_name, " &nbsp;</span> "));
-        }
+      var from = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '观看端';
 
-        return a;
-      });
+      if (['观看端'].includes(from)) {
+        return list.map(function (a) {
+          item.data.text_content = item.data.text_content.replace("***".concat(a.nick_name), "@".concat(a.nick_name));
+          return a;
+        });
+      }
+
+      if (['h5'].includes(from)) {
+        return list.map(function (a) {
+          // 向前兼容fix 14968  历史消息有得是@
+          if (item.data.text_content.indexOf('***') >= 0) {
+            item.data.text_content = item.data.text_content.replace("***".concat(a.nick_name), "<span style='color:#4da1ff;float:left'>@".concat(a.nick_name, " &nbsp;</span> "));
+          } else {
+            item.data.text_content = item.data.text_content.replace("@".concat(a.nick_name), "<span style='color:#4da1ff;float:left'>@".concat(a.nick_name, " &nbsp;</span> "));
+          }
+
+          return a;
+        });
+      }
     }; //私有方法，组装消息（暂时按照的h5版本的,大致数据一致，具体业务逻辑操作有差异，后续返回一个promise，并返回未处理的原始数据，由视图自己决定如何处理）
 
 
     var _handleGenerateMsg = function _handleGenerateMsg() {
       var item = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var params = {
-        type: item.data.type,
-        //todo avatar这里没有给出兜底图片，因为没有必要把兜底资源放这里，考虑由消费api的地方自行兜底
-        avatar: item.avatar ? item.avatar : '',
-        sendId: item.sender_id,
-        showTime: item.show_time,
-        nickName: item.nickname,
-        roleName: item.role_name,
-        sendTime: item.date_time,
-        content: item.data,
-        context: item.context,
-        replyMsg: item.context.reply_msg,
-        atList: item.context.at_list
-      };
+      var from = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
+      var params = {};
+
+      if (['观看端'].includes(from)) {
+        params = {
+          type: item.data.type,
+          avatar: item.avatar ? item.avatar : '',
+          sendId: item.sender_id,
+          showTime: item.showTime,
+          nickName: item.nickname,
+          roleName: item.role_name,
+          sendTime: item.date_time,
+          content: item.data,
+          replyMsg: item.context.reply_msg,
+          atList: item.context.atList,
+          msgId: item.msg_id,
+          channel: item.channel_id,
+          isHistoryMsg: true
+        };
+      }
+
+      if (['h5'].includes(from)) {
+        params = {
+          type: item.data.type,
+          avatar: item.avatar ? item.avatar : defaultAvatar,
+          sendId: item.sender_id,
+          showTime: item.show_time,
+          nickName: item.nickname,
+          roleName: item.role_name,
+          sendTime: item.date_time,
+          content: item.data,
+          context: item.context,
+          replyMsg: item.context.reply_msg,
+          atList: item.context.at_list
+        };
+      }
+
       var resultMsg = new Msg(params);
 
       if (item.data.event_type) {
@@ -12578,6 +12679,11 @@
             gift_url: item.data.gift_url
           }
         });
+
+        if (['观看端'].includes(from)) {
+          resultMsg.nickName = item.nickname.length > 8 ? item.nickname.substr(0, 8) + '...' : item.nickname;
+          resultMsg.interactToolsStatus = true;
+        }
       }
 
       return resultMsg;
@@ -12585,9 +12691,10 @@
 
     return {
       state: state,
-      init: init,
       getHistoryMsg: getHistoryMsg,
-      sendMsg: sendMsg
+      sendMsg: sendMsg,
+      fetchHistoryData: fetchHistoryData,
+      setKeywordList: setKeywordList
     };
   }
 

@@ -18,6 +18,10 @@ export default function useInteractiveServer() {
             return true
         })
     }
+    // 销毁实例
+    const destroyInit = () => {
+        return state.interactiveInstance.destroyInit()
+    }
     // 基础api
     // 常见本地流
     const createLocalStream = (options = {}, addConfig = {}) => {
@@ -276,11 +280,10 @@ export default function useInteractiveServer() {
             state.remoteStreams.filter(item => item.streamId == e.streamId)
         })
     }
-
-    return { state, startPushStream ,init, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
+    return { state, startPushStream ,init, destroyInit, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
     createLocalPhotoStream, destroyStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
     muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
     getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate, getRoomStreams, remoteStreamList,
-    listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel, on, getRoomInfo, getStreamMute,speakOn,speakOff,speakUserOff,setMainScreen,
+    listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel, on, getRoomInfo, getStreamMute, setBroadCastAdaptiveLayoutMode,speakOn,speakOff,speakUserOff,setMainScreen,
     setSpeaker,setSpeaker,setRoomDevice,setHandsup,inviteMic,cancelApply,refuseInvite}
 }
