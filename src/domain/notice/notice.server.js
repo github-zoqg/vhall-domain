@@ -1,3 +1,5 @@
+import contextServer from '@/domain/common/context.server.js';
+import $http from '@/utils/http.js';
 export default function useNoticeServer() {
     const state = {
         //公告列表
@@ -15,11 +17,8 @@ export default function useNoticeServer() {
         total:0,
     };
 
-    const init = (params = {}) => {
-        const {roomId = '', channelId = ''} = params;
-        state.roomId = roomId;
-        state.channelId = channelId;
-    }
+    const roomServer = contextServer.get('roomBaseServer');
+    const {roomId = '', channelId = ''} = roomServer.state.watchInitData;
 
     //更新当前公告列表
     const updateContentList = (msg) => {
@@ -42,7 +41,7 @@ export default function useNoticeServer() {
         }
 
         //todo 待替换为相应服务
-       return  this.$vhallapi.notice.getNoticeHistoryList({
+       return  _fetchNoticeList({
             roomId: roomId,
             is_cache: 1,
             ...state.pageInfo
@@ -68,8 +67,18 @@ export default function useNoticeServer() {
             channel_id: state.channelId,
             body: content
         };
-        return Promise.resolve();
+
+        return _fetchNoticeList(params);
     }
 
-    return {state, updateContentList, sendNotice};
+    //从服务器获取消息记录
+    const _fetchNoticeList = (params)=>{
+        return $http({
+            url: '/v3/interacts/chat/send-notice-message',
+            type: 'POST',
+            data: params
+        });
+    }
+
+    return {state, updateContentList, sendNotice,getNoticeList};
 }

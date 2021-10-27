@@ -14,6 +14,7 @@ import useInsertFileServer from '@/domain/stream/insertFile.server.js'
 import useRoomInitGroupServer from '@/domain/roombase/roomInit.group.server.js'
 import useDesktopShareServer from "@/domain/stream/desktopShare.server.js";
 import useChatServer from "@/domain/chat/chat.server.js";
+import useNoticeServer from "@/domain/notice/notice.server.js";
 
 export {
     contextServer,
@@ -28,5 +29,6 @@ export {
     useInsertFileServer,
     useDesktopShareServer,
     useChatServer,
-    useDocServer
+    useDocServer,
+    useNoticeServer
 };
