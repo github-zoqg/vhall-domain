@@ -1,25 +1,25 @@
 import contextServer from '@/domain/common/context.server.js';
 import $http from '@/utils/http.js';
-import {stat} from "@babel/core/lib/gensync-utils/fs";
+
 export default function useNoticeServer() {
     const state = {
         //公告列表
         noticeList: [],
 
         //请求的分页参数
-        pageInfo:{
+        pageInfo: {
             pos: 0,
             limit: 10,
             pageNum: 1
         },
         //总页数
-        totalPages:1,
+        totalPages: 1,
         //总条数
-        total:0,
+        total: 0,
     };
 
     const roomServer = contextServer.get('roomBaseServer');
-    const {roomId = '', channelId = ''} = roomServer.state.watchInitData;
+    const { roomId = '', channelId = '' } = roomServer.state.watchInitData;
 
     //更新当前公告列表
     const updateContentList = (msg) => {
@@ -29,8 +29,17 @@ export default function useNoticeServer() {
         });
     }
 
+    //从服务器获取消息记录
+    const fetchNoticeList = (params) => {
+        return $http({
+            url: '/v3/interacts/chat/get-announcement-list',
+            type: 'POST',
+            data: params
+        });
+    }
+
     //获取消息记录
-    const getNoticeList = ({flag=false,params={}})=>{
+    const getNoticeList = ({ flag = false, params = {} }) => {
 
         if (!flag) {
             state.noticeList = [];
@@ -41,26 +50,26 @@ export default function useNoticeServer() {
             };
             state.totalPages = 1;
             state.total = 0;
-        }else {
+        } else {
             state.pageInfo.limit = params.limit;
             state.pageInfo.pos = params.pos;
             state.pageInfo.pageNum = params.pageNum;
         }
 
 
-       return  fetchNoticeList(params)
-           .then(res => {
-            if (res.code == 200 && res.data) {
-                state.total = res.data.total;
-                if (flag) {
-                    state.noticeList.push(...res.data.list)
-                } else {
-                    state.noticeList = res.data.list
+        return fetchNoticeList(params)
+            .then(res => {
+                if (res.code == 200 && res.data) {
+                    state.total = res.data.total;
+                    if (flag) {
+                        state.noticeList.push(...res.data.list)
+                    } else {
+                        state.noticeList = res.data.list
+                    }
+                    state.totalPages = Math.ceil(res.data.total / state.pageInfo.limit);
                 }
-                state.totalPages = Math.ceil(res.data.total / state.pageInfo.limit);
-            }
-            return res;
-        });
+                return res;
+            });
     }
 
     //发送消息
@@ -72,14 +81,7 @@ export default function useNoticeServer() {
         });
     }
 
-    //从服务器获取消息记录
-    const fetchNoticeList = (params)=>{
-        return $http({
-            url: '/v3/interacts/chat/get-announcement-list',
-            type: 'POST',
-            data: params
-        });
-    }
 
-    return {state, updateContentList, sendNotice,getNoticeList};
+
+    return { state, updateContentList, sendNotice, getNoticeList };
 }

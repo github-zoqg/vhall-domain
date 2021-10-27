@@ -311,8 +311,9 @@
   _this2.$emit('LEFT',msg);});}/**
          * 发送聊天消息
          * @param {String} data 消息体
+         * @param {String} context 上线文
          * @returns {Promise}
-         */},{key:"emitTextChat",value:function emitTextChat(data){var _this3=this;return new Promise(function(resolve,reject){_this3.instance.emitChat(data,resolve,reject);});}/**
+         */},{key:"emitTextChat",value:function emitTextChat(data,context){return this.instance.emit(data,context);}/**
          * 发送自定义消息
          * @param {String} data 消息体
          * @returns {Promise}
@@ -328,7 +329,7 @@
          * 获取用户列表信息
          * @param {Object} params 分页参数
          * @returns {Promise}
-         */},{key:"getUserListInfo",value:function getUserListInfo(params){var _this4=this;var defaultParams={currPage:1,pageSize:10};var retParams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){_this4.instance.getUserListInfo(retParams,resolve,reject);});}/**
+         */},{key:"getUserListInfo",value:function getUserListInfo(params){var _this3=this;var defaultParams={currPage:1,pageSize:10};var retParams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){_this3.instance.getUserListInfo(retParams,resolve,reject);});}/**
          * 禁言某个用户
          * @param {Object} accountId 用户 id 
          * @returns {Promise}
@@ -345,26 +346,26 @@
          */},{key:"setChannelPermit",value:function setChannelPermit(){return new Peomise(function(resolve,reject){var param={type:VhallChat.TYPE_PERMIT_ALL};chat.setDisable(param,resolve,reject);});}/**
          * 获取历史聊天消息
          * @returns {Promise}
-         */},{key:"getHistoryList",value:function getHistoryList(params){var _this5=this;var defaultParams={currPage:1,pageSize:200};var retParams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){_this5.instance.getHistoryList(retParams,resolve,reject);});}/**
+         */},{key:"getHistoryList",value:function getHistoryList(params){var _this4=this;var defaultParams={currPage:1,pageSize:200};var retParams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){_this4.instance.getHistoryList(retParams,resolve,reject);});}/**
          * 获取房间在线信息
          * @param {Object} params 分页参数
          * @returns {Promise}
-         */},{key:"getOnlineInfo",value:function getOnlineInfo(params){var _this6=this;var defaultParams={currPage:1,pageSize:200};var retParams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){_this6.instance.getOnlineInfo(retParams,resolve,reject);});}}]);return ChatModule;}(BaseModule);var DocModule=/*#__PURE__*/function(_BaseModule){_inherits(DocModule,_BaseModule);_createSuper(DocModule);function DocModule(){var _this;_classCallCheck(this,DocModule);_this.instance=null;_this.children=[];return _possibleConstructorReturn(_this);}_createClass(DocModule,[{key:"init",value:function init(){var _this2=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var defaultOptions=this.initDefaultOptions();var options=merge.recursive({},defaultOptions,customOptions);var onSuccess=function onSuccess(){console.log('saasSDK文档初始化成功');_this2.$emit(CONST_VAL.DOC_SDK_READ,_this2.instance);};var onFail=function onFail(){console.error('saasSDK文档初始化失败',failed.msg);_this2.$emit(CONST_VAL.DOC_SDK_ERROR,failed.msg);};this.instance=VHDocSDK.createInstance(options,onSuccess,onFail);this.listenEvents();}},{key:"initDefaultOptions",value:function initDefaultOptions(){isPc();var _store$get=store.get('roomInitData'),paasInfo=_store$get.paasInfo,userInfo=_store$get.userInfo;var defaultOptions={accountId:userInfo.third_party_user_id,roomId:paasInfo.room_id,channelId:paasInfo.channel_id,// 频道id 必须
+         */},{key:"getOnlineInfo",value:function getOnlineInfo(params){var _this5=this;var defaultParams={currPage:1,pageSize:200};var retParams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){_this5.instance.getOnlineInfo(retParams,resolve,reject);});}}]);return ChatModule;}(BaseModule);var DocModule=/*#__PURE__*/function(_BaseModule){_inherits(DocModule,_BaseModule);var _super=_createSuper(DocModule);function DocModule(options){var _this;_classCallCheck(this,DocModule);_this=_super.call(this,options);_this.instance=null;_this.children=[];return _this;}_createClass(DocModule,[{key:"init",value:function init(){var _this2=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var defaultOptions=this.initDefaultOptions();var options=merge.recursive({},defaultOptions,customOptions);return new Promise(function(resolve,reject){var onSuccess=function onSuccess(){console.log('saasSDK文档初始化成功');resolve();};var onFail=function onFail(failed){console.error('saasSDK文档初始化失败',failed.msg);reject();};_this2.instance=window.VHDocSDK.createInstance(options,onSuccess,onFail);_this2.listenEvents();});}},{key:"initDefaultOptions",value:function initDefaultOptions(){isPc();var _store$get=store.get('roomInitData'),paasInfo=_store$get.paasInfo,userInfo=_store$get.userInfo;var defaultOptions={accountId:userInfo.third_party_user_id,roomId:paasInfo.room_id,channelId:paasInfo.channel_id,// 频道id 必须
   appId:paasInfo.paas_app_id,// appId 必须
   role:userInfo.role_name,// 角色 必须
   isVod:false,// 是否是回放 必须
   client:window.VHDocSDK.Client.PC_WEB,// 客户端类型
-  token:this.token};return defaultOptions;}},{key:"listenEvents",value:function listenEvents(){var _this3=this;// 创建容器事件
-  this.instance.on(VHDocSDK.Event.CREATE_CONTAINER,function(data){});// 选择容器
-  this.instance.on(VHDocSDK.Event.SELECT_CONTAINER,function(data){});// 当前文档加载完成
-  this.instance.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE,function(data){});// 开关变换
-  this.instance.on(VHDocSDK.Event.SWITCH_CHANGE,function(status){_this3.$emit('SWITCH_CHANGE',status);});// 删除容器时候触发的事件
-  this.instance.on(VHDocSDK.Event.DELETE_CONTAINER,function(data){_this3.$emit('DELETE_CONTAINER');});// 所有的文档准备完成
-  this.instance.on(VHDocSDK.Event.ALL_COMPLETE,function(){_this3.$emit('ALL_COMPLETE');});// 正在演示的文档被删除(文档不存在)
-  this.instance.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT,function(_ref){var cid=_ref.cid,docId=_ref.docId;_this3.$emit('DOCUMENT_NOT_EXIT',{cid:cid,docId:docId});});// 翻页事件
-  this.instance.on(VHDocSDK.Event.PAGE_CHANGE,function(event){_this3.$emit('PAGE_CHANGE',event);});// 回放文件加载完成
-  this.instance.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE,function(event){_this3.$emit('VOD_CUEPOINT_LOAD_COMPLETE',event);});// ppt文档加载完毕
-  this.instance.on(VHDocSDK.Event.PLAYBACKCOMPLETE,function(event){_this3.$emit('PLAYBACKCOMPLETE',event);});}},{key:"destroy",value:function destroy(){if(!this.instance)return;this.instance.destroy();this.instance=null;}},{key:"createBoard",value:function createBoard(customOptions){var elId=this.instance.createUUID('board');var defaultOptions={elId:elId,// div 容器 必须
+  token:''};return defaultOptions;}},{key:"listenEvents",value:function listenEvents(){var _this3=this;// 创建容器事件
+  this.instance.on(VHDocSDK.Event.CREATE_CONTAINER,function(data){_this3.$emit(VHDocSDK.Event.CREATE_CONTAINER,data);});// 选择容器
+  this.instance.on(VHDocSDK.Event.SELECT_CONTAINER,function(data){_this3.$emit(VHDocSDK.Event.SELECT_CONTAINER,data);});// 当前文档加载完成
+  this.instance.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE,function(data){_this3.$emit(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE,data);});// 开关变换
+  this.instance.on(VHDocSDK.Event.SWITCH_CHANGE,function(status){_this3.$emit(VHDocSDK.Event.SWITCH_CHANGE,status);});// 删除容器时候触发的事件
+  this.instance.on(VHDocSDK.Event.DELETE_CONTAINER,function(data){_this3.$emit(VHDocSDK.Event.DELETE_CONTAINER,data);});// 所有的文档准备完成
+  this.instance.on(VHDocSDK.Event.ALL_COMPLETE,function(data){_this3.$emit(VHDocSDK.Event.ALL_COMPLETE,data);});// 正在演示的文档被删除(文档不存在)
+  this.instance.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT,function(_ref){var cid=_ref.cid,docId=_ref.docId;_this3.$emit(VHDocSDK.Event.DOCUMENT_NOT_EXIT,{cid:cid,docId:docId});});// 翻页事件
+  this.instance.on(VHDocSDK.Event.PAGE_CHANGE,function(event){_this3.$emit(VHDocSDK.Event.PAGE_CHANGE,event);});// 回放文件加载完成
+  this.instance.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE,function(event){_this3.$emit(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE,event);});// ppt文档加载完毕
+  this.instance.on(VHDocSDK.Event.PLAYBACKCOMPLETE,function(event){_this3.$emit(VHDocSDK.Event.PLAYBACKCOMPLETEevent);});}},{key:"destroy",value:function destroy(){if(!this.instance)return;this.instance.destroy();this.instance=null;}},{key:"createBoard",value:function createBoard(customOptions){var elId=this.instance.createUUID('board');var defaultOptions={elId:elId,// div 容器 必须
   width:200,// div 宽度，像素单位，数值型不带px 必须
   height:200,// div 高度，像素单位，数值型不带px 必须
   backgroundColor:'RGBA',// 背景颜色， 支持RGB 与 RGBA， 如果全透明，舞台背景色与网页背景色相同，如 ‘#FF0000’或 ‘#FF000000’ 必须
@@ -373,15 +374,15 @@
   graphicType:VHDocSDK.GRAPHIC.PEN,// 选项请参考画笔预设值,
   stroke:'#000',// 颜色值
   strokeWidth:4// 正数 Number
-  }};var options=merge.recursive({},defaultOptions,customOptions);this.instance.createBoard(options);}},{key:"creatDocument",value:function creatDocument(customOptions){var _defaultOptions;var elId=sdk.createUUID('document');// 容器id，必须用此方法创建，文档传入document，返回唯一id
+  }};var options=merge.recursive({},defaultOptions,customOptions);return this.instance.createBoard(options);}},{key:"creatDocument",value:function creatDocument(customOptions){var _defaultOptions;var elId=sdk.createUUID('document');// 容器id，必须用此方法创建，文档传入document，返回唯一id
   var defaultOptions=(_defaultOptions={id:customOptions.id,docId:customOptions.docId,elId:elId,// div 容器 必须
   width:200,// div 宽度，像素单位，数值型不带px 必须
   height:200},_defineProperty(_defaultOptions,"docId",'yyy'),_defineProperty(_defaultOptions,"noDispatch",false),_defineProperty(_defaultOptions,"option",{// 非必填，画笔预设选项
   graphicType:VHDocSDK.GRAPHIC.PEN,// 选项请参考画笔预设值,
   stroke:'#000',// 颜色值
   strokeWidth:4// 正数 Number
-  }),_defaultOptions);merge.recursive({},defaultOptions,customOptions);sdk.createDocument(opts);// 返回promise
-  }},{key:"selectContainer",value:function selectContainer(id){this.instance.selectContainer({id:id});this.currentCid=id;}/**
+  }),_defaultOptions);var options=merge.recursive({},defaultOptions,customOptions);return sdk.createDocument(options);// 返回promise
+  }},{key:"selectContainer",value:function selectContainer(id){this.instance.selectContainer({id:id});this.currentCid=id;}},{key:"getContainerInfo",value:function getContainerInfo(params){return this.instance.getContainerInfo(params);}},{key:"destroyContainer",value:function destroyContainer(val){return this.instance.destroyContainer(val);}},{key:"getVodAllCids",value:function getVodAllCids(){return this.instance.getVodAllCids();}},{key:"setRemoteData",value:function setRemoteData(item){return this.instance.setRemoteData(item);}/**
          * 
          * @param {*} child is cid-ret
          */},{key:"addChild",value:function addChild(child){this.children.push(child);}},{key:"zoomIn",value:function zoomIn(){this.instance.zoomIn();}},{key:"zoomOut",value:function zoomOut(){this.instance.zoomOut();}},{key:"zoomReset",value:function zoomReset(){this.instance.zoomReset();}},{key:"move",value:function move(){this.instance.move();}},{key:"prevStep",value:function prevStep(){this.instance.prevStep();}},{key:"nextStep",value:function nextStep(){this.instance.nextStep();}}]);return DocModule;}(BaseModule);var InteractiveModule=/*#__PURE__*/function(_BaseModule){_inherits(InteractiveModule,_BaseModule);var _super=_createSuper(InteractiveModule);function InteractiveModule(customOptions){_classCallCheck(this,InteractiveModule);return _super.call(this,customOptions);}/**
@@ -519,35 +520,60 @@
          * @param {Object} options --  layout: 指定旁路布局模板
          * @returns {Promise} - 动态配置指定旁路布局模板的promise回调
          */},{key:"setBroadCastLayout",value:function setBroadCastLayout(){var _this19=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){_this19.instance.setBroadCastLayout({layout:options.layout||VhallRTC.CANVAS_LAYOUT_PATTERN_FLOAT_6_5D}).then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
+         * 配置旁路布局自适应模式
+         * @param {Object} options --  layout: 指定旁路布局模板
+         * @returns {Promise} - 配置旁路布局自适应模式的promise回调
+         */},{key:"setBroadCastAdaptiveLayoutMode",value:function setBroadCastAdaptiveLayoutMode(){var _this20=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){_this20.instance.setBroadCastAdaptiveLayoutMode({adaptiveLayoutMode:options.adaptiveLayoutMode||VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE}).then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
          * 动态配置旁路主屏
          * @param {String} mainScreenStreamId -- 将哪路流设置成主屏的流Id
          * @returns {Promise} - 动态配置旁路主屏的promise回调
-         */},{key:"setBroadCastScreen",value:function setBroadCastScreen(){var _this20=this;var mainScreenStreamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this20.instance.setBroadCastScreen({mainScreenStreamId:mainScreenStreamId}).then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
+         */},{key:"setBroadCastScreen",value:function setBroadCastScreen(){var _this21=this;var mainScreenStreamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this21.instance.setBroadCastScreen({mainScreenStreamId:mainScreenStreamId}).then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
          * 获取全部音视频列表
          * @returns {Promise} - 获取全部音视频列表的promise回调
-         */},{key:"getDevices",value:function getDevices(){var _this21=this;return new Promise(function(resolve,reject){_this21.instance.getDevices().then(function(devices){resolve(devices);})["catch"](function(error){reject(error);});});}/**
+         */},{key:"getDevices",value:function getDevices(){var _this22=this;return new Promise(function(resolve,reject){_this22.instance.getDevices().then(function(devices){resolve(devices);})["catch"](function(error){reject(error);});});}/**
          * 获取摄像头列表
          * @returns {Promise} - 获取摄像头列表的promise回调
-         */},{key:"getCameras",value:function getCameras(){var _this22=this;return new Promise(function(resolve,reject){_this22.instance.getCameras().then(function(devices){resolve(devices);})["catch"](function(error){reject(error);});});}/**
+         */},{key:"getCameras",value:function getCameras(){var _this23=this;return new Promise(function(resolve,reject){_this23.instance.getCameras().then(function(devices){resolve(devices);})["catch"](function(error){reject(error);});});}/**
          * 获取麦克风列表
          * @returns {Promise} - 获取麦克风列表的promise回调
-         */},{key:"getMicrophones",value:function getMicrophones(){var _this23=this;return new Promise(function(resolve,reject){_this23.instance.getMicrophones().then(function(devices){resolve(devices);})["catch"](function(error){reject(error);});});}/**
+         */},{key:"getMicrophones",value:function getMicrophones(){var _this24=this;return new Promise(function(resolve,reject){_this24.instance.getMicrophones().then(function(devices){resolve(devices);})["catch"](function(error){reject(error);});});}/**
          * 获取扬声器列表
          * @returns {Promise} - 获取扬声器列表的promise回调
-         */},{key:"getSpeakers",value:function getSpeakers(){var _this24=this;return new Promise(function(resolve,reject){_this24.instance.getSpeakers().then(function(devices){resolve(devices);})["catch"](function(error){reject(error);});});}/**
+         */},{key:"getSpeakers",value:function getSpeakers(){var _this25=this;return new Promise(function(resolve,reject){_this25.instance.getSpeakers().then(function(devices){resolve(devices);})["catch"](function(error){reject(error);});});}/**
          * 获取设备的分辨率
          * @param {String} deviceId -- 摄像头设备的Id
          * @returns {Promise} - 分辨率获取之后的promise回调
-         */},{key:"getVideoConstraints",value:function getVideoConstraints(deviceId){var _this25=this;return new Promise(function(resolve,reject){_this25.instance.getVideoConstraints({deviceId:deviceId},function(data){resolve(data);},function(error){reject(error);});});}/**
+         */},{key:"getVideoConstraints",value:function getVideoConstraints(deviceId){var _this26=this;return new Promise(function(resolve,reject){_this26.instance.getVideoConstraints({deviceId:deviceId},function(data){resolve(data);},function(error){reject(error);});});}/**
+         * 配置本地流视频质量参数
+         * @param {Object} options --  streamId: 切换本地流Id profile: 必填，互动视频质量参数
+         * @returns {Promise} - 配置本地流视频质量参数的promise回调
+         */},{key:"setVideoProfile",value:function setVideoProfile(){var _this27=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){_this27.instance.setVideoProfile({streamId:options.streamId,profile:options.profile},function(data){resolve(data);},function(error){reject(error);});});}/**
+         * 获取房间流信息
+         * @param {Object} options --  streamId: 切换本地流Id profile: 必填，互动视频质量参数
+         * @returns {Promise} - 配置本地流视频质量参数的promise回调
+         */},{key:"getRoomStreams",value:function getRoomStreams(){return this.instance.getRoomStreams();}/**
+         * 获取房间总的信息
+         * @param {Object} options --  streamId: 切换本地流Id profile: 必填，互动视频质量参数
+         * @returns {Promise} - 配置本地流视频质量参数的promise回调
+         */},{key:"getRoomInfo",value:function getRoomInfo(){return this.instance.getRoomInfo();}/**
          * 是否支持桌面共享
          * @returns Boolean
          */},{key:"isScreenShareSupported",value:function isScreenShareSupported(){return this.instance.isScreenShareSupported();}/**
          * 检查当前浏览器支持性
          * @returns Boolean
-         */},{key:"checkSystemRequirements",value:function checkSystemRequirements(){var _this26=this;return new Promise(function(resolve,reject){_this26.instance.checkSystemRequirements().then(function(data){resolve(data.result);})["catch"](function(error){reject(error);});});}/**
+         */},{key:"checkSystemRequirements",value:function checkSystemRequirements(){var _this28=this;return new Promise(function(resolve,reject){_this28.instance.checkSystemRequirements().then(function(data){resolve(data.result);})["catch"](function(error){reject(error);});});}/**
          * 获取上下行丢包率
          * @returns  data中有 upLossRate 上行丢包率   downLossRate 下行丢包率
-         */},{key:"getPacketLossRate",value:function getPacketLossRate(){var _this27=this;return new Promise(function(resolve,reject){_this27.instance.getPacketLossRate().then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}}]);return InteractiveModule;}(BaseModule);var lodash={exports:{}};(function(module,exports){(function(){/** Used as a safe reference for `undefined` in pre-ES5 environments. */var undefined$1;/** Used as the semantic version number. */var VERSION='4.17.21';/** Used as the size to enable large array optimizations. */var LARGE_ARRAY_SIZE=200;/** Error message constants. */var CORE_ERROR_TEXT='Unsupported core-js use. Try https://npms.io/search?q=ponyfill.',FUNC_ERROR_TEXT='Expected a function',INVALID_TEMPL_VAR_ERROR_TEXT='Invalid `variable` option passed into `_.template`';/** Used to stand-in for `undefined` hash values. */var HASH_UNDEFINED='__lodash_hash_undefined__';/** Used as the maximum memoize cache size. */var MAX_MEMOIZE_SIZE=500;/** Used as the internal argument placeholder. */var PLACEHOLDER='__lodash_placeholder__';/** Used to compose bitmasks for cloning. */var CLONE_DEEP_FLAG=1,CLONE_FLAT_FLAG=2,CLONE_SYMBOLS_FLAG=4;/** Used to compose bitmasks for value comparisons. */var COMPARE_PARTIAL_FLAG=1,COMPARE_UNORDERED_FLAG=2;/** Used to compose bitmasks for function metadata. */var WRAP_BIND_FLAG=1,WRAP_BIND_KEY_FLAG=2,WRAP_CURRY_BOUND_FLAG=4,WRAP_CURRY_FLAG=8,WRAP_CURRY_RIGHT_FLAG=16,WRAP_PARTIAL_FLAG=32,WRAP_PARTIAL_RIGHT_FLAG=64,WRAP_ARY_FLAG=128,WRAP_REARG_FLAG=256,WRAP_FLIP_FLAG=512;/** Used as default options for `_.truncate`. */var DEFAULT_TRUNC_LENGTH=30,DEFAULT_TRUNC_OMISSION='...';/** Used to detect hot functions by number of calls within a span of milliseconds. */var HOT_COUNT=800,HOT_SPAN=16;/** Used to indicate the type of lazy iteratees. */var LAZY_FILTER_FLAG=1,LAZY_MAP_FLAG=2,LAZY_WHILE_FLAG=3;/** Used as references for various `Number` constants. */var INFINITY=1/0,MAX_SAFE_INTEGER=9007199254740991,MAX_INTEGER=1.7976931348623157e+308,NAN=0/0;/** Used as references for the maximum length and index of an array. */var MAX_ARRAY_LENGTH=4294967295,MAX_ARRAY_INDEX=MAX_ARRAY_LENGTH-1,HALF_MAX_ARRAY_LENGTH=MAX_ARRAY_LENGTH>>>1;/** Used to associate wrap methods with their bit flags. */var wrapFlags=[['ary',WRAP_ARY_FLAG],['bind',WRAP_BIND_FLAG],['bindKey',WRAP_BIND_KEY_FLAG],['curry',WRAP_CURRY_FLAG],['curryRight',WRAP_CURRY_RIGHT_FLAG],['flip',WRAP_FLIP_FLAG],['partial',WRAP_PARTIAL_FLAG],['partialRight',WRAP_PARTIAL_RIGHT_FLAG],['rearg',WRAP_REARG_FLAG]];/** `Object#toString` result references. */var argsTag='[object Arguments]',arrayTag='[object Array]',asyncTag='[object AsyncFunction]',boolTag='[object Boolean]',dateTag='[object Date]',domExcTag='[object DOMException]',errorTag='[object Error]',funcTag='[object Function]',genTag='[object GeneratorFunction]',mapTag='[object Map]',numberTag='[object Number]',nullTag='[object Null]',objectTag='[object Object]',promiseTag='[object Promise]',proxyTag='[object Proxy]',regexpTag='[object RegExp]',setTag='[object Set]',stringTag='[object String]',symbolTag='[object Symbol]',undefinedTag='[object Undefined]',weakMapTag='[object WeakMap]',weakSetTag='[object WeakSet]';var arrayBufferTag='[object ArrayBuffer]',dataViewTag='[object DataView]',float32Tag='[object Float32Array]',float64Tag='[object Float64Array]',int8Tag='[object Int8Array]',int16Tag='[object Int16Array]',int32Tag='[object Int32Array]',uint8Tag='[object Uint8Array]',uint8ClampedTag='[object Uint8ClampedArray]',uint16Tag='[object Uint16Array]',uint32Tag='[object Uint32Array]';/** Used to match empty string literals in compiled template source. */var reEmptyStringLeading=/\b__p \+= '';/g,reEmptyStringMiddle=/\b(__p \+=) '' \+/g,reEmptyStringTrailing=/(__e\(.*?\)|\b__t\)) \+\n'';/g;/** Used to match HTML entities and HTML characters. */var reEscapedHtml=/&(?:amp|lt|gt|quot|#39);/g,reUnescapedHtml=/[&<>"']/g,reHasEscapedHtml=RegExp(reEscapedHtml.source),reHasUnescapedHtml=RegExp(reUnescapedHtml.source);/** Used to match template delimiters. */var reEscape=/<%-([\s\S]+?)%>/g,reEvaluate=/<%([\s\S]+?)%>/g,reInterpolate=/<%=([\s\S]+?)%>/g;/** Used to match property names within property paths. */var reIsDeepProp=/\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,reIsPlainProp=/^\w*$/,rePropName=/[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;/**
+         */},{key:"getPacketLossRate",value:function getPacketLossRate(){var _this29=this;return new Promise(function(resolve,reject){_this29.instance.getPacketLossRate().then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}/**
+         * 获取流上下行丢包率
+         * @returns  data中有 
+         */},{key:"getStreamPacketLoss",value:function getStreamPacketLoss(){var _this30=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){_this30.instance.getStreamPacketLoss(options).then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
+         * 获取流音频能量
+         * @returns  
+         */},{key:"getAudioLevel",value:function getAudioLevel(){var _this31=this;var streamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this31.instance.getAudioLevel({streamId:streamId}).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}/**
+         * 获取流的mute状态
+         * @returns  
+         */},{key:"getStreamMute",value:function getStreamMute(){var _this32=this;var streamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this32.instance.getStreamMute({streamId:streamId}).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}}]);return InteractiveModule;}(BaseModule);var lodash={exports:{}};(function(module,exports){(function(){/** Used as a safe reference for `undefined` in pre-ES5 environments. */var undefined$1;/** Used as the semantic version number. */var VERSION='4.17.21';/** Used as the size to enable large array optimizations. */var LARGE_ARRAY_SIZE=200;/** Error message constants. */var CORE_ERROR_TEXT='Unsupported core-js use. Try https://npms.io/search?q=ponyfill.',FUNC_ERROR_TEXT='Expected a function',INVALID_TEMPL_VAR_ERROR_TEXT='Invalid `variable` option passed into `_.template`';/** Used to stand-in for `undefined` hash values. */var HASH_UNDEFINED='__lodash_hash_undefined__';/** Used as the maximum memoize cache size. */var MAX_MEMOIZE_SIZE=500;/** Used as the internal argument placeholder. */var PLACEHOLDER='__lodash_placeholder__';/** Used to compose bitmasks for cloning. */var CLONE_DEEP_FLAG=1,CLONE_FLAT_FLAG=2,CLONE_SYMBOLS_FLAG=4;/** Used to compose bitmasks for value comparisons. */var COMPARE_PARTIAL_FLAG=1,COMPARE_UNORDERED_FLAG=2;/** Used to compose bitmasks for function metadata. */var WRAP_BIND_FLAG=1,WRAP_BIND_KEY_FLAG=2,WRAP_CURRY_BOUND_FLAG=4,WRAP_CURRY_FLAG=8,WRAP_CURRY_RIGHT_FLAG=16,WRAP_PARTIAL_FLAG=32,WRAP_PARTIAL_RIGHT_FLAG=64,WRAP_ARY_FLAG=128,WRAP_REARG_FLAG=256,WRAP_FLIP_FLAG=512;/** Used as default options for `_.truncate`. */var DEFAULT_TRUNC_LENGTH=30,DEFAULT_TRUNC_OMISSION='...';/** Used to detect hot functions by number of calls within a span of milliseconds. */var HOT_COUNT=800,HOT_SPAN=16;/** Used to indicate the type of lazy iteratees. */var LAZY_FILTER_FLAG=1,LAZY_MAP_FLAG=2,LAZY_WHILE_FLAG=3;/** Used as references for various `Number` constants. */var INFINITY=1/0,MAX_SAFE_INTEGER=9007199254740991,MAX_INTEGER=1.7976931348623157e+308,NAN=0/0;/** Used as references for the maximum length and index of an array. */var MAX_ARRAY_LENGTH=4294967295,MAX_ARRAY_INDEX=MAX_ARRAY_LENGTH-1,HALF_MAX_ARRAY_LENGTH=MAX_ARRAY_LENGTH>>>1;/** Used to associate wrap methods with their bit flags. */var wrapFlags=[['ary',WRAP_ARY_FLAG],['bind',WRAP_BIND_FLAG],['bindKey',WRAP_BIND_KEY_FLAG],['curry',WRAP_CURRY_FLAG],['curryRight',WRAP_CURRY_RIGHT_FLAG],['flip',WRAP_FLIP_FLAG],['partial',WRAP_PARTIAL_FLAG],['partialRight',WRAP_PARTIAL_RIGHT_FLAG],['rearg',WRAP_REARG_FLAG]];/** `Object#toString` result references. */var argsTag='[object Arguments]',arrayTag='[object Array]',asyncTag='[object AsyncFunction]',boolTag='[object Boolean]',dateTag='[object Date]',domExcTag='[object DOMException]',errorTag='[object Error]',funcTag='[object Function]',genTag='[object GeneratorFunction]',mapTag='[object Map]',numberTag='[object Number]',nullTag='[object Null]',objectTag='[object Object]',promiseTag='[object Promise]',proxyTag='[object Proxy]',regexpTag='[object RegExp]',setTag='[object Set]',stringTag='[object String]',symbolTag='[object Symbol]',undefinedTag='[object Undefined]',weakMapTag='[object WeakMap]',weakSetTag='[object WeakSet]';var arrayBufferTag='[object ArrayBuffer]',dataViewTag='[object DataView]',float32Tag='[object Float32Array]',float64Tag='[object Float64Array]',int8Tag='[object Int8Array]',int16Tag='[object Int16Array]',int32Tag='[object Int32Array]',uint8Tag='[object Uint8Array]',uint8ClampedTag='[object Uint8ClampedArray]',uint16Tag='[object Uint16Array]',uint32Tag='[object Uint32Array]';/** Used to match empty string literals in compiled template source. */var reEmptyStringLeading=/\b__p \+= '';/g,reEmptyStringMiddle=/\b(__p \+=) '' \+/g,reEmptyStringTrailing=/(__e\(.*?\)|\b__t\)) \+\n'';/g;/** Used to match HTML entities and HTML characters. */var reEscapedHtml=/&(?:amp|lt|gt|quot|#39);/g,reUnescapedHtml=/[&<>"']/g,reHasEscapedHtml=RegExp(reEscapedHtml.source),reHasUnescapedHtml=RegExp(reUnescapedHtml.source);/** Used to match template delimiters. */var reEscape=/<%-([\s\S]+?)%>/g,reEvaluate=/<%([\s\S]+?)%>/g,reInterpolate=/<%=([\s\S]+?)%>/g;/** Used to match property names within property paths. */var reIsDeepProp=/\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,reIsPlainProp=/^\w*$/,rePropName=/[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;/**
        * Used to match `RegExp`
        * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
        */var reRegExpChar=/[\\^$.*+?()[\]{}|]/g,reHasRegExpChar=RegExp(reRegExpChar.source);/** Used to match leading whitespace. */var reTrimStart=/^\s+/;/** Used to match a single whitespace character. */var reWhitespace=/\s/;/** Used to match wrap detail comments. */var reWrapComment=/\{(?:\n\/\* \[wrapped with .+\] \*\/)?\n?/,reWrapDetails=/\{\n\/\* \[wrapped with (.+)\] \*/,reSplitDetails=/,? & /;/** Used to match words composed of alphanumeric characters. */var reAsciiWord=/[^\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\x7f]+/g;/**
@@ -10009,20 +10035,20 @@
   if(freeModule){// Export for Node.js.
   (freeModule.exports=_)._=_;// Export for CommonJS support.
   freeExports._=_;}else {// Export to the global object.
-  root._=_;}}).call(commonjsGlobal);})(lodash,lodash.exports);var PlayerModule=/*#__PURE__*/function(_BaseModule){_inherits(PlayerModule,_BaseModule);var _super=_createSuper(PlayerModule);function PlayerModule(customOptions){var _this;_classCallCheck(this,PlayerModule);_this=_super.call(this,customOptions);_this.isPlaying=false;return _this;}_createClass(PlayerModule,[{key:"init",value:function init(){var _this2=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{type:'live'};return new Promise(function(resolve,reject){if(customOptions.type==='live'){_this2.initLivePlayer(customOptions,function(event){resolve(event);},function(err){return [reject(err)];});}if(customOptions.type==='vod'){_this2.initVodPlayer(customOptions,function(event){resolve(event);},function(err){reject(err);});}});}},{key:"createInstance",value:function createInstance(){var _this3=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var successCb=arguments.length>1&&arguments[1]!==undefined?arguments[1]:function(){};var failCb=arguments.length>2&&arguments[2]!==undefined?arguments[2]:function(){};var _store$get=store.get('roomInitData'),paasInfo=_store$get.paasInfo,userInfo=_store$get.userInfo;var defaultOptions={appId:paasInfo.paas_app_id,accountId:userInfo.third_party_user_id,token:paasInfo.paas_access_token,type:'live'};var options=merge.recursive({},defaultOptions,customOptions);console.log('options:',options);var onSuccess=function onSuccess(event){_this3.instance=event.vhallplayer;_this3.listenEvents();successCb(event);};var onFail=function onFail(event){console.log('fail:',event);failCb(event);};VhallPlayer.createInstance(options,onSuccess,onFail);}},{key:"initLivePlayer",value:function initLivePlayer(){var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var successCb=arguments.length>1&&arguments[1]!==undefined?arguments[1]:function(){};var failCb=arguments.length>2&&arguments[2]!==undefined?arguments[2]:function(){};var _store$get2=store.get('roomInitData'),paasInfo=_store$get2.paasInfo;_store$get2.userInfo;var defaultOptions={type:'live',language:'zh',liveOption:{roomId:paasInfo.room_id,forceMSE:true,type:'flv'}};var options=merge.recursive({},defaultOptions,customOptions);this.createInstance(options,successCb,failCb);}},{key:"initVodPlayer",value:function initVodPlayer(){var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var successCb=arguments.length>1&&arguments[1]!==undefined?arguments[1]:function(){};var failCb=arguments.length>2&&arguments[2]!==undefined?arguments[2]:function(){};var defaultOptions={appId:'',accountId:'',token:'',type:'live',vodOption:{forceMSE:true,recordId:''}};var options=merge.recursive({},defaultOptions,customOptions);this.createInstance(options,successCb,failCb);}},{key:"listenEvents",value:function listenEvents(){var _this4=this;this.instance.on(VhallPlayer.CURRENTTIME_CHANGE,function(e){// 当前时间改变
-  _this4.$emit('CURRENTTIME_CHANGE',e);});this.instance.on(VhallPlayer.TIMEUPDATE,function(e){// 播放时间改变时触发
-  _this4.$emit('TIMEUPDATE',e);});this.instance.on(VhallPlayer.ENDED,function(e){// 播放完毕
-  _this4.$emit('ENDED',e);});this.instance.on(VhallPlayer.ERROR,function(e){// 播放器自身出现错误时触发
-  _this4.$emit('ERROR',e);});this.instance.on(VhallPlayer.LOADED,function(e){// 视频加载完成时触发
-  _this4.$emit('LOADED',e);});this.instance.on(VhallPlayer.PLAY,function(e){// 点播开始播放时触发
-  _this4.$emit('PLAY',e);});this.instance.on(VhallPlayer.PAUSE,function(e){// 点播暂停播放时触发
-  _this4.$emit('PAUSE',e);});this.instance.on(VhallPlayer.LAG_REPORT,function(e){// 视频卡顿时触发
-  _this4.$emit('LAG_REPORT',e);});this.instance.on(VhallPlayer.LAG_RECOVER,function(e){// 视频卡顿恢复时触发
-  _this4.$emit('LAG_RECOVER',e);});this.instance.on(VhallPlayer.FULLSCREEN_CHANGE,function(e){// 全屏状态改变时触发
-  _this4.$emit('FULLSCREEN_CHANGE',e);});this.instance.on(VhallPlayer.MUTE_CHANGE,function(e){// 静音状态被改变时触发
-  _this4.$emit('MUTE_CHANGE',e);});this.instance.on(VhallPlayer.LOOP_CHANGE,function(e){// 点播循环状态被改变时触发
-  _this4.$emit('LOOP_CHANGE',e);});this.instance.on(VhallPlayer.DEFINITION_CHANGE,function(e){// 当前清晰度改变时触发(卡顿时自动切清晰度触发，手动切换不触发)
-  _this4.$emit('DEFINITION_CHANGE',e);});}},{key:"destroy",value:function destroy(){this.instance.destroy();this.instance=null;}},{key:"play",value:function play(){return this.instance.play();}},{key:"pause",value:function pause(){return this.instance.pause();}},{key:"isPause",value:function isPause(){return this.instance.getIsPause();}},{key:"getQualitys",value:function getQualitys(){// 获取清晰度列表
+  root._=_;}}).call(commonjsGlobal);})(lodash,lodash.exports);var PlayerModule=/*#__PURE__*/function(_BaseModule){_inherits(PlayerModule,_BaseModule);var _super=_createSuper(PlayerModule);function PlayerModule(customOptions){var _this;_classCallCheck(this,PlayerModule);_this=_super.call(this,customOptions);_this.isPlaying=false;return _this;}_createClass(PlayerModule,[{key:"init",value:function init(){var _this2=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{type:'live'};return new Promise(function(resolve,reject){if(customOptions.type==='live'){_this2.initLivePlayer(customOptions,function(instance){resolve(instance);},function(err){return [reject(err)];});}if(customOptions.type==='vod'){_this2.initVodPlayer(customOptions,function(instance){resolve(instance);},function(err){reject(err);});}});}},{key:"createInstance",value:function createInstance(){var _this3=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var successCb=arguments.length>1&&arguments[1]!==undefined?arguments[1]:function(){};var failCb=arguments.length>2&&arguments[2]!==undefined?arguments[2]:function(){};var _store$get=store.get('roomInitData'),paasInfo=_store$get.paasInfo,userInfo=_store$get.userInfo;var defaultOptions={appId:paasInfo.paas_app_id,accountId:userInfo.third_party_user_id,token:paasInfo.paas_access_token,type:'live'};var options=merge.recursive({},defaultOptions,customOptions);console.log('options:',options);var onSuccess=function onSuccess(event){_this3.instance=event.vhallplayer;_this3.markPoints=event.markPoints;_this3.listenEvents();successCb(event);};var onFail=function onFail(event){console.log('fail:',event);failCb(event);};VhallPlayer.createInstance(options,onSuccess,onFail);}},{key:"initLivePlayer",value:function initLivePlayer(){var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var successCb=arguments.length>1&&arguments[1]!==undefined?arguments[1]:function(){};var failCb=arguments.length>2&&arguments[2]!==undefined?arguments[2]:function(){};var _store$get2=store.get('roomInitData'),paasInfo=_store$get2.paasInfo;_store$get2.userInfo;var defaultOptions={type:'live',language:'zh',liveOption:{roomId:paasInfo.room_id,forceMSE:true,type:'flv'}};var options=merge.recursive({},defaultOptions,customOptions);this.createInstance(options,successCb,failCb);}},{key:"initVodPlayer",value:function initVodPlayer(){var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var successCb=arguments.length>1&&arguments[1]!==undefined?arguments[1]:function(){};var failCb=arguments.length>2&&arguments[2]!==undefined?arguments[2]:function(){};var defaultOptions={appId:'',accountId:'',token:'',type:'live',vodOption:{forceMSE:true,recordId:''}};var options=merge.recursive({},defaultOptions,customOptions);this.createInstance(options,successCb,failCb);}},{key:"listenEvents",value:function listenEvents(){var _this4=this;this.instance.on(VhallPlayer.CURRENTTIME_CHANGE,function(e){// 当前时间改变
+  _this4.$emit(VhallPlayer.CURRENTTIME_CHANGE,e);});this.instance.on(VhallPlayer.TIMEUPDATE,function(e){// 播放时间改变时触发
+  _this4.$emit(VhallPlayer.TIMEUPDATE,e);});this.instance.on(VhallPlayer.ENDED,function(e){// 播放完毕
+  _this4.$emit(VhallPlayer.ENDED,e);});this.instance.on(VhallPlayer.ERROR,function(e){// 播放器自身出现错误时触发
+  _this4.$emit(VhallPlayer.ERROR,e);});this.instance.on(VhallPlayer.LOADED,function(e){// 视频加载完成时触发
+  _this4.$emit(VhallPlayer.LOADED,e);});this.instance.on(VhallPlayer.PLAY,function(e){// 点播开始播放时触发
+  _this4.$emit(VhallPlayer.PLAY,e);});this.instance.on(VhallPlayer.PAUSE,function(e){// 点播暂停播放时触发
+  _this4.$emit(VhallPlayer.PAUSE,e);});this.instance.on(VhallPlayer.LAG_REPORT,function(e){// 视频卡顿时触发
+  _this4.$emit(VhallPlayer.LAG_REPORT,e);});this.instance.on(VhallPlayer.LAG_RECOVER,function(e){// 视频卡顿恢复时触发
+  _this4.$emit(VhallPlayer.LAG_RECOVER,e);});this.instance.on(VhallPlayer.FULLSCREEN_CHANGE,function(e){// 全屏状态改变时触发
+  _this4.$emit(VhallPlayer.FULLSCREEN_CHANGE,e);});this.instance.on(VhallPlayer.MUTE_CHANGE,function(e){// 静音状态被改变时触发
+  _this4.$emit(VhallPlayer.MUTE_CHANGE,e);});this.instance.on(VhallPlayer.LOOP_CHANGE,function(e){// 点播循环状态被改变时触发
+  _this4.$emit(VhallPlayer.LOOP_CHANGE,e);});this.instance.on(VhallPlayer.DEFINITION_CHANGE,function(e){// 当前清晰度改变时触发(卡顿时自动切清晰度触发，手动切换不触发)
+  _this4.$emit(VhallPlayer.DEFINITION_CHANGE,e);});}},{key:"destroy",value:function destroy(){this.instance.destroy();this.instance=null;}},{key:"play",value:function play(){return this.instance.play();}},{key:"pause",value:function pause(){return this.instance.pause();}},{key:"isPause",value:function isPause(){return this.instance.getIsPause();}},{key:"getQualitys",value:function getQualitys(){// 获取清晰度列表
   return this.instance.getQualitys();}},{key:"getCurrentQuality",value:function getCurrentQuality(){// 获取当前视频清晰度
   return this.instance.getCurrentQuality();}},{key:"setQuality",value:function setQuality(val,failure){// 设置当前视频清晰度
   return this.instance.setQuality(val,failure);}},{key:"enterFullScreen",value:function enterFullScreen(failure){// 进入全屏
@@ -10037,7 +10063,7 @@
   return this.instance.setPlaySpeed(val,failure);}},{key:"openControls",value:function openControls(isOpen){// 开关默认控制条
   return this.instance.openControls(isOpen);}},{key:"openUI",value:function openUI(isOpen){return this.instance.openUI(isOpen);}},{key:"setResetVideo",value:function setResetVideo(){var videoDom=document.getElementById(this.params.videoNode);if(videoDom&&this.instance){this.instance.setSize({width:videoDom.offsetWidth,height:videoDom.offsetHeight});}}},{key:"setBarrageInfo",value:function setBarrageInfo(option){return this.instance.setBarrageInfo(option,function(err){Vlog.error(err);});}},{key:"addBarrage",value:function addBarrage(content){return this.instance.addBarrage(content,function(err){Vlog.error(err);});}},{key:"toggleBarrage",value:function toggleBarrage(open){if(!this.instance)return;if(open){this.instance.openBarrage();}else {this.instance.closeBarrage();}}},{key:"toggleSubtitle",value:function toggleSubtitle(open){if(this.instance&&this.params.recordId){if(open){// 开启点播字幕(仅点播可用)
   this.instance.openSubtitle();}else {// 关闭点播字幕(仅点播可用)
-  this.instance.closeSubtitle();}}}}]);return PlayerModule;}(BaseModule);var initLoader=function initLoader(){Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js')]).then(function(res){});};var VhallSaasSDK=/*#__PURE__*/function(){function VhallSaasSDK(){_classCallCheck(this,VhallSaasSDK);this.msgBus=null;this.request=requestApi;this.baseState=store;}_createClass(VhallSaasSDK,[{key:"init",value:function init(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{clientType:'send',receiveType:'standard'};this.setRequestConfig(options);this.setClientType(options.clientType);if(options.clientType==='send'){return this.initSendLive(options);}else {return this.initReceiveLive(options);}}},{key:"initSendLive",value:function initSendLive(options){var _this=this;return new Promise(function(resolve,reject){_this.request.live.initSendLive(options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"initReceiveLive",value:function initReceiveLive(options){var _this2=this;var receiveApi={standard:'initStandardReceiveLive',embed:'initEmbeddedReceiveLive',sdk:'initSdkReceiveLive'};return new Promise(function(resolve,reject){_this2.request.live[receiveApi[options.receiveType]](options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"setClientType",value:function setClientType(clientType){if(clientType!=='send'&&clientType!=='receive'){throw new TypeError('clientType is invalid');}store.set('clientType',clientType);}},{key:"setRequestConfig",value:function setRequestConfig(options){if(options.development){setBaseUrl('https://t-saas-dispatch.vhall.com');}else {setBaseUrl('https://saas-api.vhall.com');}setToken(options.token,options.liveToken);if(options.requestHeaders){setRequestHeaders(options.requestHeaders);}}},{key:"isReady",value:function isReady(){return loadSuccess===true;}},{key:"createPlayer",value:function createPlayer(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new PlayerModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createInteractive",value:function createInteractive(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new InteractiveModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createChat",value:function createChat(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new ChatModule();instance.init(options).then(function(res){resolve(instance);});});}},{key:"createDoc",value:function createDoc(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new DocModule(options);resolve(instance);});}}]);return VhallSaasSDK;}();VhallSaasSDK.requestApi=requestApi;initLoader();window.VhallSaasSDK=VhallSaasSDK;});
+  this.instance.closeSubtitle();}}}}]);return PlayerModule;}(BaseModule);var initLoader=function initLoader(){Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.1.6.js')]).then(function(res){});};var VhallSaasSDK=/*#__PURE__*/function(){function VhallSaasSDK(){_classCallCheck(this,VhallSaasSDK);this.msgBus=null;this.request=requestApi;this.baseState=store;}_createClass(VhallSaasSDK,[{key:"init",value:function init(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{clientType:'send',receiveType:'standard'};this.setRequestConfig(options);this.setClientType(options.clientType);if(options.clientType==='send'){return this.initSendLive(options);}else {return this.initReceiveLive(options);}}},{key:"initSendLive",value:function initSendLive(options){var _this=this;return new Promise(function(resolve,reject){_this.request.live.initSendLive(options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"initReceiveLive",value:function initReceiveLive(options){var _this2=this;var receiveApi={standard:'initStandardReceiveLive',embed:'initEmbeddedReceiveLive',sdk:'initSdkReceiveLive'};return new Promise(function(resolve,reject){_this2.request.live[receiveApi[options.receiveType]](options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"setClientType",value:function setClientType(clientType){if(clientType!=='send'&&clientType!=='receive'){throw new TypeError('clientType is invalid');}store.set('clientType',clientType);}},{key:"setRequestConfig",value:function setRequestConfig(options){if(options.development){setBaseUrl('https://t-saas-dispatch.vhall.com');}else {setBaseUrl('https://saas-api.vhall.com');}setToken(options.token,options.liveToken);if(options.requestHeaders){setRequestHeaders(options.requestHeaders);}}},{key:"isReady",value:function isReady(){return loadSuccess===true;}},{key:"createPlayer",value:function createPlayer(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new PlayerModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createInteractive",value:function createInteractive(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new InteractiveModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createChat",value:function createChat(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new ChatModule();instance.init(options).then(function(res){resolve(instance);});});}},{key:"createDoc",value:function createDoc(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new DocModule(options);instance.init(options).then(function(res){resolve(instance);});});}}]);return VhallSaasSDK;}();VhallSaasSDK.requestApi=requestApi;initLoader();window.VhallSaasSDK=VhallSaasSDK;});
 
   function unwrapExports (x) {
   	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
@@ -11474,6 +11500,40 @@
     };
   }
 
+  function useDocServer() {
+    var init = function init(options) {
+      console.log('-----------------------initDocServer----------------------');
+
+      var _contextServer$get = contextServer.get('roomInitGroupServer'),
+          roomInitGroupServer = _contextServer$get.state;
+
+      console.log(roomInitGroupServer.vhallSaasInstance.createDoc);
+      return roomInitGroupServer.vhallSaasInstance.createDoc(options).then(function (instance) {
+        console.log('-----------------------initDocServer-------resolve---------------');
+        console.log(instance);
+        return instance;
+      })["catch"](function (e) {
+        console.log('-----------------------initDocServerreject--------------', e);
+        return e;
+      });
+    }; // -- TypeError: Cannot set properties of undefined (setting 'instance')
+    // at new DocModule (context.server.js?b7c1:2)
+    // at eval (index.js?9e93:2)
+    // at new Promise (<anonymous>)
+    // at VhallSaasSDK.createDoc (index.js?9e93:2)
+    // at Object.init (player.server.js?4cd1:9)
+    // at VueComponent.initDocSDK (doc.js?3682:165)
+    // at Vue.eval (doc.js?3682:128)
+    // at invokeWithErrorHandling (vue.runtime.esm.js?9800:1863)
+    // at Vue.$emit (vue.runtime.esm.js?9800:3903)
+    // at Vue.<computed> [as $emit] (backend.js:1793)
+
+
+    return {
+      init: init
+    };
+  }
+
   function useEventEmitter() {
     var state = {
       eventMap: {}
@@ -12706,6 +12766,102 @@
     };
   }
 
+  function useNoticeServer() {
+    var state = {
+      //公告列表
+      noticeList: [],
+      //请求的分页参数
+      pageInfo: {
+        pos: 0,
+        limit: 10,
+        pageNum: 1
+      },
+      //总页数
+      totalPages: 1,
+      //总条数
+      total: 0
+    };
+    var roomServer = contextServer.get('roomBaseServer');
+    var _roomServer$state$wat = roomServer.state.watchInitData;
+        _roomServer$state$wat.roomId;
+        _roomServer$state$wat.channelId;
+   //更新当前公告列表
+
+    var updateContentList = function updateContentList(msg) {
+      state.noticeList.unshift({
+        text: msg.room_announcement_text,
+        time: msg.push_time
+      });
+    }; //从服务器获取消息记录
+
+
+    var fetchNoticeList = function fetchNoticeList(params) {
+      return $fetch({
+        url: '/v3/interacts/chat/get-announcement-list',
+        type: 'POST',
+        data: params
+      });
+    }; //获取消息记录
+
+
+    var getNoticeList = function getNoticeList(_ref) {
+      var _ref$flag = _ref.flag,
+          flag = _ref$flag === void 0 ? false : _ref$flag,
+          _ref$params = _ref.params,
+          params = _ref$params === void 0 ? {} : _ref$params;
+
+      if (!flag) {
+        state.noticeList = [];
+        state.pageInfo = {
+          pos: 0,
+          limit: 10,
+          pageNum: 1
+        };
+        state.totalPages = 1;
+        state.total = 0;
+      } else {
+        state.pageInfo.limit = params.limit;
+        state.pageInfo.pos = params.pos;
+        state.pageInfo.pageNum = params.pageNum;
+      }
+
+      return fetchNoticeList(params).then(function (res) {
+        if (res.code == 200 && res.data) {
+          state.total = res.data.total;
+
+          if (flag) {
+            var _state$noticeList;
+
+            (_state$noticeList = state.noticeList).push.apply(_state$noticeList, _toConsumableArray(res.data.list));
+          } else {
+            state.noticeList = res.data.list;
+          }
+
+          state.totalPages = Math.ceil(res.data.total / state.pageInfo.limit);
+        }
+
+        return res;
+      });
+    }; //发送消息
+
+
+    var sendNotice = function sendNotice() {
+      var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return $fetch({
+        url: '/v3/interacts/chat/send-notice-message',
+        type: 'POST',
+        data: params
+      });
+    };
+
+    return {
+      state: state,
+      updateContentList: updateContentList,
+      sendNotice: sendNotice,
+      getNoticeList: getNoticeList
+    };
+  }
+
   exports.contextServer = contextServer;
   exports.requestApi = requestApi;
   exports.setBaseUrl = setBaseUrl;
@@ -12713,10 +12869,12 @@
   exports.setToken = setToken;
   exports.useChatServer = useChatServer;
   exports.useDesktopShareServer = useDesktopShareServer;
+  exports.useDocServer = useDocServer;
   exports.useInsertFileServer = useInsertFileServer;
   exports.useInteractiveServer = useInteractiveServer;
   exports.useMediaCheckServer = useMediaCheckServer;
   exports.useMsgServer = useMsgServer;
+  exports.useNoticeServer = useNoticeServer;
   exports.usePlayerServer = usePlayerServer;
   exports.useRoomBaseServer = useRoomBaseServer;
   exports.useRoomInitGroupServer = useRoomInitGroupServer;

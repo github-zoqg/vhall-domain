@@ -1020,17 +1020,14 @@
       /**
        * 发送聊天消息
        * @param {String} data 消息体
+       * @param {String} context 上线文
        * @returns {Promise}
        */
 
     }, {
       key: "emitTextChat",
-      value: function emitTextChat(data) {
-        var _this3 = this;
-
-        return new Promise(function (resolve, reject) {
-          _this3.instance.emitChat(data, resolve, reject);
-        });
+      value: function emitTextChat(data, context) {
+        return this.instance.emit(data, context);
       }
       /**
        * 发送自定义消息
@@ -1075,7 +1072,7 @@
     }, {
       key: "getUserListInfo",
       value: function getUserListInfo(params) {
-        var _this4 = this;
+        var _this3 = this;
 
         var defaultParams = {
           currPage: 1,
@@ -1083,7 +1080,7 @@
         };
         var retParams = merge.recursive({}, defaultParams, params);
         return new Promise(function (resolve, reject) {
-          _this4.instance.getUserListInfo(retParams, resolve, reject);
+          _this3.instance.getUserListInfo(retParams, resolve, reject);
         });
       }
       /**
@@ -1158,7 +1155,7 @@
     }, {
       key: "getHistoryList",
       value: function getHistoryList(params) {
-        var _this5 = this;
+        var _this4 = this;
 
         var defaultParams = {
           currPage: 1,
@@ -1166,7 +1163,7 @@
         };
         var retParams = merge.recursive({}, defaultParams, params);
         return new Promise(function (resolve, reject) {
-          _this5.instance.getHistoryList(retParams, resolve, reject);
+          _this4.instance.getHistoryList(retParams, resolve, reject);
         });
       }
       /**
@@ -1178,7 +1175,7 @@
     }, {
       key: "getOnlineInfo",
       value: function getOnlineInfo(params) {
-        var _this6 = this;
+        var _this5 = this;
 
         var defaultParams = {
           currPage: 1,
@@ -1186,7 +1183,7 @@
         };
         var retParams = merge.recursive({}, defaultParams, params);
         return new Promise(function (resolve, reject) {
-          _this6.instance.getOnlineInfo(retParams, resolve, reject);
+          _this5.instance.getOnlineInfo(retParams, resolve, reject);
         });
       }
     }]);
@@ -1199,12 +1196,12 @@
 
     var _super = _createSuper(DocModule);
 
-    function DocModule() {
+    function DocModule(options) {
       var _this;
 
       _classCallCheck(this, DocModule);
 
-      _this = _super.call(this);
+      _this = _super.call(this, options);
       _this.instance = null;
       _this.children = [];
       return _this;
@@ -1229,7 +1226,7 @@
             reject();
           };
 
-          _this2.instance = VHDocSDK.createInstance(options, onSuccess, onFail);
+          _this2.instance = window.VHDocSDK.createInstance(options, onSuccess, onFail);
 
           _this2.listenEvents();
         });
