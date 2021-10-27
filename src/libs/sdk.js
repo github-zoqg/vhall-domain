@@ -1085,7 +1085,7 @@
       }
       /**
        * 禁言某个用户
-       * @param {Object} accountId 用户 id 
+       * @param {Object} accountId 用户 id
        * @returns {Promise}
        */
 
@@ -1102,7 +1102,7 @@
       }
       /**
        * 取消禁言某个用户
-       * @param {Object} accountId 用户 id 
+       * @param {Object} accountId 用户 id
        * @returns {Promise}
        */
 
@@ -1403,7 +1403,7 @@
         return this.instance.setRemoteData(item);
       }
       /**
-       * 
+       *
        * @param {*} child is cid-ret
        */
 
@@ -1459,10 +1459,10 @@
     }
     /**
      * 初始化互动sdk
-     * @param {Object} customOptions 
-     * @param {*} successCb 
-     * @param {*} failCb 
-     * 
+     * @param {Object} customOptions
+     * @param {*} successCb
+     * @param {*} failCb
+     *
      */
 
 
@@ -1811,7 +1811,7 @@
       /**
        * 销毁本地流
        * @param {String} streamId -- 要销毁的流Id
-       * @returns 
+       * @returns
        */
 
     }, {
@@ -1913,7 +1913,7 @@
       }
       /**
        * 取消订阅远端流
-       * @param {String} streamId -- 要取消订阅的流Id 
+       * @param {String} streamId -- 要取消订阅的流Id
        * @returns {Promise} - 取消订阅成功后的promise 回调
        */
 
@@ -2085,28 +2085,6 @@
         });
       }
       /**
-       * 配置旁路布局自适应模式
-       * @param {Object} options --  layout: 指定旁路布局模板
-       * @returns {Promise} - 配置旁路布局自适应模式的promise回调
-       */
-
-    }, {
-      key: "setBroadCastAdaptiveLayoutMode",
-      value: function setBroadCastAdaptiveLayoutMode() {
-        var _this20 = this;
-
-        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        return new Promise(function (resolve, reject) {
-          _this20.instance.setBroadCastAdaptiveLayoutMode({
-            adaptiveLayoutMode: options.adaptiveLayoutMode || VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE
-          }).then(function () {
-            resolve();
-          })["catch"](function (error) {
-            reject(error);
-          });
-        });
-      }
-      /**
        * 动态配置旁路主屏
        * @param {String} mainScreenStreamId -- 将哪路流设置成主屏的流Id
        * @returns {Promise} - 动态配置旁路主屏的promise回调
@@ -2115,11 +2093,11 @@
     }, {
       key: "setBroadCastScreen",
       value: function setBroadCastScreen() {
-        var _this21 = this;
+        var _this20 = this;
 
         var mainScreenStreamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
         return new Promise(function (resolve, reject) {
-          _this21.instance.setBroadCastScreen({
+          _this20.instance.setBroadCastScreen({
             mainScreenStreamId: mainScreenStreamId
           }).then(function () {
             resolve();
@@ -2136,10 +2114,10 @@
     }, {
       key: "getDevices",
       value: function getDevices() {
-        var _this22 = this;
+        var _this21 = this;
 
         return new Promise(function (resolve, reject) {
-          _this22.instance.getDevices().then(function (devices) {
+          _this21.instance.getDevices().then(function (devices) {
             resolve(devices);
           })["catch"](function (error) {
             reject(error);
@@ -2154,10 +2132,10 @@
     }, {
       key: "getCameras",
       value: function getCameras() {
-        var _this23 = this;
+        var _this22 = this;
 
         return new Promise(function (resolve, reject) {
-          _this23.instance.getCameras().then(function (devices) {
+          _this22.instance.getCameras().then(function (devices) {
             resolve(devices);
           })["catch"](function (error) {
             reject(error);
@@ -2172,10 +2150,10 @@
     }, {
       key: "getMicrophones",
       value: function getMicrophones() {
-        var _this24 = this;
+        var _this23 = this;
 
         return new Promise(function (resolve, reject) {
-          _this24.instance.getMicrophones().then(function (devices) {
+          _this23.instance.getMicrophones().then(function (devices) {
             resolve(devices);
           })["catch"](function (error) {
             reject(error);
@@ -2190,10 +2168,10 @@
     }, {
       key: "getSpeakers",
       value: function getSpeakers() {
-        var _this25 = this;
+        var _this24 = this;
 
         return new Promise(function (resolve, reject) {
-          _this25.instance.getSpeakers().then(function (devices) {
+          _this24.instance.getSpeakers().then(function (devices) {
             resolve(devices);
           })["catch"](function (error) {
             reject(error);
@@ -2209,10 +2187,10 @@
     }, {
       key: "getVideoConstraints",
       value: function getVideoConstraints(deviceId) {
-        var _this26 = this;
+        var _this25 = this;
 
         return new Promise(function (resolve, reject) {
-          _this26.instance.getVideoConstraints({
+          _this25.instance.getVideoConstraints({
             deviceId: deviceId
           }, function (data) {
             resolve(data);
@@ -2220,51 +2198,6 @@
             reject(error);
           });
         });
-      }
-      /**
-       * 配置本地流视频质量参数
-       * @param {Object} options --  streamId: 切换本地流Id profile: 必填，互动视频质量参数
-       * @returns {Promise} - 配置本地流视频质量参数的promise回调
-       */
-
-    }, {
-      key: "setVideoProfile",
-      value: function setVideoProfile() {
-        var _this27 = this;
-
-        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        return new Promise(function (resolve, reject) {
-          _this27.instance.setVideoProfile({
-            streamId: options.streamId,
-            profile: options.profile
-          }, function (data) {
-            resolve(data);
-          }, function (error) {
-            reject(error);
-          });
-        });
-      }
-      /**
-       * 获取房间流信息
-       * @param {Object} options --  streamId: 切换本地流Id profile: 必填，互动视频质量参数
-       * @returns {Promise} - 配置本地流视频质量参数的promise回调
-       */
-
-    }, {
-      key: "getRoomStreams",
-      value: function getRoomStreams() {
-        return this.instance.getRoomStreams();
-      }
-      /**
-       * 获取房间总的信息
-       * @param {Object} options --  streamId: 切换本地流Id profile: 必填，互动视频质量参数
-       * @returns {Promise} - 配置本地流视频质量参数的promise回调
-       */
-
-    }, {
-      key: "getRoomInfo",
-      value: function getRoomInfo() {
-        return this.instance.getRoomInfo();
       }
       /**
        * 是否支持桌面共享
@@ -2284,10 +2217,10 @@
     }, {
       key: "checkSystemRequirements",
       value: function checkSystemRequirements() {
-        var _this28 = this;
+        var _this26 = this;
 
         return new Promise(function (resolve, reject) {
-          _this28.instance.checkSystemRequirements().then(function (data) {
+          _this26.instance.checkSystemRequirements().then(function (data) {
             resolve(data.result);
           })["catch"](function (error) {
             reject(error);
@@ -2302,71 +2235,10 @@
     }, {
       key: "getPacketLossRate",
       value: function getPacketLossRate() {
-        var _this29 = this;
+        var _this27 = this;
 
         return new Promise(function (resolve, reject) {
-          _this29.instance.getPacketLossRate().then(function (data) {
-            resolve(data);
-          })["catch"](function (error) {
-            reject(error);
-          });
-        });
-      }
-      /**
-       * 获取流上下行丢包率
-       * @returns  data中有 
-       */
-
-    }, {
-      key: "getStreamPacketLoss",
-      value: function getStreamPacketLoss() {
-        var _this30 = this;
-
-        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        return new Promise(function (resolve, reject) {
-          _this30.instance.getStreamPacketLoss(options).then(function () {
-            resolve();
-          })["catch"](function (error) {
-            reject(error);
-          });
-        });
-      }
-      /**
-       * 获取流音频能量
-       * @returns  
-       */
-
-    }, {
-      key: "getAudioLevel",
-      value: function getAudioLevel() {
-        var _this31 = this;
-
-        var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-        return new Promise(function (resolve, reject) {
-          _this31.instance.getAudioLevel({
-            streamId: streamId
-          }).then(function (data) {
-            resolve(data);
-          })["catch"](function (error) {
-            reject(error);
-          });
-        });
-      }
-      /**
-       * 获取流的mute状态
-       * @returns  
-       */
-
-    }, {
-      key: "getStreamMute",
-      value: function getStreamMute() {
-        var _this32 = this;
-
-        var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
-        return new Promise(function (resolve, reject) {
-          _this32.instance.getStreamMute({
-            streamId: streamId
-          }).then(function (data) {
+          _this27.instance.getPacketLossRate().then(function (data) {
             resolve(data);
           })["catch"](function (error) {
             reject(error);
