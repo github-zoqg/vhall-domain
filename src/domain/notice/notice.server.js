@@ -1,5 +1,6 @@
 import contextServer from '@/domain/common/context.server.js';
 import $http from '@/utils/http.js';
+import {stat} from "@babel/core/lib/gensync-utils/fs";
 export default function useNoticeServer() {
     const state = {
         //公告列表
@@ -29,52 +30,52 @@ export default function useNoticeServer() {
     }
 
     //获取消息记录
-    const getNoticeList = ({isFirst=false,roomId='',isCache=1})=>{
+    const getNoticeList = ({flag=false,params={}})=>{
 
-        if (isFirst) {
+        if (!flag) {
             state.noticeList = [];
             state.pageInfo = {
                 pos: 0,
                 limit: 10,
                 pageNum: 1
             };
+            state.totalPages = 1;
+            state.total = 0;
+        }else {
+            state.pageInfo.limit = params.limit;
+            state.pageInfo.pos = params.pos;
+            state.pageInfo.pageNum = params.pageNum;
         }
 
-        //todo 待替换为相应服务
-       return  _fetchNoticeList({
-            roomId: roomId,
-            is_cache: 1,
-            ...state.pageInfo
-        }).then(res => {
+
+       return  fetchNoticeList(params)
+           .then(res => {
             if (res.code == 200 && res.data) {
                 state.total = res.data.total;
-                if (!isFirst) {
+                if (flag) {
                     state.noticeList.push(...res.data.list)
                 } else {
                     state.noticeList = res.data.list
                 }
                 state.totalPages = Math.ceil(res.data.total / state.pageInfo.limit);
             }
+            return res;
         });
     }
 
     //发送消息
     const sendNotice = (params = {}) => {
-        //todo 借助api发送消息,返回一个promise
-        const {content = '', roomId = '', channelId = ''} = params;
-        let requestParams = {
-            room_id: state.roomId,
-            channel_id: state.channelId,
-            body: content
-        };
-
-        return _fetchNoticeList(params);
+        return $http({
+            url: '/v3/interacts/chat/send-notice-message',
+            type: 'POST',
+            data: params
+        });
     }
 
     //从服务器获取消息记录
-    const _fetchNoticeList = (params)=>{
+    const fetchNoticeList = (params)=>{
         return $http({
-            url: '/v3/interacts/chat/send-notice-message',
+            url: '/v3/interacts/chat/get-announcement-list',
             type: 'POST',
             data: params
         });
