@@ -11714,16 +11714,16 @@
         };
         return new Promise(function (resolve, reject) {
           if (customOptions.type === 'live') {
-            _this2.initLivePlayer(customOptions, function (instance) {
-              resolve(instance);
+            _this2.initLivePlayer(customOptions, function (event) {
+              resolve(event);
             }, function (err) {
               return [reject(err)];
             });
           }
 
           if (customOptions.type === 'vod') {
-            _this2.initVodPlayer(customOptions, function (instance) {
-              resolve(instance);
+            _this2.initVodPlayer(customOptions, function (event) {
+              resolve(event);
             }, function (err) {
               reject(err);
             });
@@ -11754,7 +11754,6 @@
 
         var onSuccess = function onSuccess(event) {
           _this3.instance = event.vhallplayer;
-          _this3.markPoints = event.markPoints;
 
           _this3.listenEvents();
 
@@ -11817,55 +11816,55 @@
 
         this.instance.on(VhallPlayer.CURRENTTIME_CHANGE, function (e) {
           // 当前时间改变
-          _this4.$emit(VhallPlayer.CURRENTTIME_CHANGE, e);
+          _this4.$emit('CURRENTTIME_CHANGE', e);
         });
         this.instance.on(VhallPlayer.TIMEUPDATE, function (e) {
           // 播放时间改变时触发
-          _this4.$emit(VhallPlayer.TIMEUPDATE, e);
+          _this4.$emit('TIMEUPDATE', e);
         });
         this.instance.on(VhallPlayer.ENDED, function (e) {
           // 播放完毕
-          _this4.$emit(VhallPlayer.ENDED, e);
+          _this4.$emit('ENDED', e);
         });
         this.instance.on(VhallPlayer.ERROR, function (e) {
           // 播放器自身出现错误时触发
-          _this4.$emit(VhallPlayer.ERROR, e);
+          _this4.$emit('ERROR', e);
         });
         this.instance.on(VhallPlayer.LOADED, function (e) {
           // 视频加载完成时触发
-          _this4.$emit(VhallPlayer.LOADED, e);
+          _this4.$emit('LOADED', e);
         });
         this.instance.on(VhallPlayer.PLAY, function (e) {
           // 点播开始播放时触发
-          _this4.$emit(VhallPlayer.PLAY, e);
+          _this4.$emit('PLAY', e);
         });
         this.instance.on(VhallPlayer.PAUSE, function (e) {
           // 点播暂停播放时触发
-          _this4.$emit(VhallPlayer.PAUSE, e);
+          _this4.$emit('PAUSE', e);
         });
         this.instance.on(VhallPlayer.LAG_REPORT, function (e) {
           // 视频卡顿时触发
-          _this4.$emit(VhallPlayer.LAG_REPORT, e);
+          _this4.$emit('LAG_REPORT', e);
         });
         this.instance.on(VhallPlayer.LAG_RECOVER, function (e) {
           // 视频卡顿恢复时触发
-          _this4.$emit(VhallPlayer.LAG_RECOVER, e);
+          _this4.$emit('LAG_RECOVER', e);
         });
         this.instance.on(VhallPlayer.FULLSCREEN_CHANGE, function (e) {
           // 全屏状态改变时触发
-          _this4.$emit(VhallPlayer.FULLSCREEN_CHANGE, e);
+          _this4.$emit('FULLSCREEN_CHANGE', e);
         });
         this.instance.on(VhallPlayer.MUTE_CHANGE, function (e) {
           // 静音状态被改变时触发
-          _this4.$emit(VhallPlayer.MUTE_CHANGE, e);
+          _this4.$emit('MUTE_CHANGE', e);
         });
         this.instance.on(VhallPlayer.LOOP_CHANGE, function (e) {
           // 点播循环状态被改变时触发
-          _this4.$emit(VhallPlayer.LOOP_CHANGE, e);
+          _this4.$emit('LOOP_CHANGE', e);
         });
         this.instance.on(VhallPlayer.DEFINITION_CHANGE, function (e) {
           // 当前清晰度改变时触发(卡顿时自动切清晰度触发，手动切换不触发)
-          _this4.$emit(VhallPlayer.DEFINITION_CHANGE, e);
+          _this4.$emit('DEFINITION_CHANGE', e);
         });
       }
     }, {
