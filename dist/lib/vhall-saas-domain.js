@@ -382,7 +382,7 @@
   stroke:'#000',// 颜色值
   strokeWidth:4// 正数 Number
   }),_defaultOptions);var options=merge.recursive({},defaultOptions,customOptions);return sdk.createDocument(options);// 返回promise
-  }},{key:"selectContainer",value:function selectContainer(id){this.instance.selectContainer({id:id});this.currentCid=id;}},{key:"getContainerInfo",value:function getContainerInfo(params){return this.instance.getContainerInfo(params);}},{key:"destroyContainer",value:function destroyContainer(val){return this.instance.destroyContainer(val);}},{key:"getVodAllCids",value:function getVodAllCids(){return this.instance.getVodAllCids();}},{key:"setRemoteData",value:function setRemoteData(item){return this.instance.setRemoteData(item);}/**
+  }},{key:"selectContainer",value:function selectContainer(id){this.instance.selectContainer({id:id});this.currentCid=id;}},{key:"getContainerInfo",value:function getContainerInfo(params){return this.instance.getContainerInfo(params);}},{key:"destroyContainer",value:function destroyContainer(val){return this.instance.destroyContainer(val);}},{key:"getVodAllCids",value:function getVodAllCids(){return this.instance.getVodAllCids();}},{key:"setRemoteData",value:function setRemoteData(item){return this.instance.setRemoteData(item);}},{key:"setRole",value:function setRole(val){return this.instance.setRole(val);}/**
          * 
          * @param {*} child is cid-ret
          */},{key:"addChild",value:function addChild(child){this.children.push(child);}},{key:"zoomIn",value:function zoomIn(){this.instance.zoomIn();}},{key:"zoomOut",value:function zoomOut(){this.instance.zoomOut();}},{key:"zoomReset",value:function zoomReset(){this.instance.zoomReset();}},{key:"move",value:function move(){this.instance.move();}},{key:"prevStep",value:function prevStep(){this.instance.prevStep();}},{key:"nextStep",value:function nextStep(){this.instance.nextStep();}}]);return DocModule;}(BaseModule);var InteractiveModule=/*#__PURE__*/function(_BaseModule){_inherits(InteractiveModule,_BaseModule);var _super=_createSuper(InteractiveModule);function InteractiveModule(customOptions){_classCallCheck(this,InteractiveModule);return _super.call(this,customOptions);}/**
@@ -406,7 +406,7 @@
   border:customOptions.border||{// 旁路边框属性
   width:2,color:'0x666666'}}:{}// 自动旁路   开启旁路直播方法所需参数
   };var options=merge.recursive({},defaultOptions,customOptions);console.log("optionssssssssssssssssssssssssssss",options);return new Promise(function(resolve,reject){var onSuccess=function onSuccess(event){_this.instance=event.vhallrtc;_this.listenEvents();console.log('init interactive sdk success:',event);successCb(event);resolve(event);};var onFail=function onFail(event){console.log('fail:',event);failCb(event);reject(event);};VhallRTC.createInstance(options,onSuccess,onFail);});}},{key:"listenEvents",value:function listenEvents(){var _this2=this;this.instance.on(VhallRTC.EVENT_REMOTESTREAM_ADD,function(e){// 远端流加入事件
-  _this2.$emit('interactive_REMOTESTREAM_ADD',e);});this.instance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED,function(e){// 远端流离开事件
+  console.log('succcccccccessss');_this2.$emit('interactive_REMOTESTREAM_ADD',e);});this.instance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED,function(e){// 远端流离开事件
   _this2.$emit('interactive_REMOTESTREAM_REMOVED',e);});this.instance.on(VhallRTC.EVENT_ROOM_EXCDISCONNECTED,function(e){// 房间信令异常断开事件
   _this2.$emit('interactive_ROOM_EXCDISCONNECTED',e);});this.instance.on(VhallRTC.EVENT_REMOTESTREAM_MUTE,function(e){// 远端流音视频状态改变事件
   _this2.$emit('interactive_REMOTESTREAM_MUTE',e);});this.instance.on(VhallRTC.EVENT_REMOTESTREAM_FAILED,function(e){// 本地推流或订阅远端流异常断开事件
@@ -11502,36 +11502,37 @@
   }
 
   function useDocServer() {
-    var init = function init(options) {
-      console.log('-----------------------initDocServer----------------------');
+    var state = {
+      docInstance: null
+    };
 
+    var on = function on(type, cb) {
+      if (!state.docInstance) return;
+      state.docInstance.$on(type, cb);
+    };
+
+    var destroy = function destroy() {
+      return state.docInstance.destroy();
+    };
+
+    var init = function init(options) {
       var _contextServer$get = contextServer.get('roomInitGroupServer'),
           roomInitGroupServer = _contextServer$get.state;
 
-      console.log(roomInitGroupServer.vhallSaasInstance.createDoc);
+      console.log('create doc', roomInitGroupServer.vhallSaasInstance.createDoc);
       return roomInitGroupServer.vhallSaasInstance.createDoc(options).then(function (instance) {
-        console.log('-----------------------initDocServer-------resolve---------------');
-        console.log(instance);
+        state.docInstance = instance;
         return instance;
       })["catch"](function (e) {
-        console.log('-----------------------initDocServerreject--------------', e);
         return e;
       });
-    }; // -- TypeError: Cannot set properties of undefined (setting 'instance')
-    // at new DocModule (context.server.js?b7c1:2)
-    // at eval (index.js?9e93:2)
-    // at new Promise (<anonymous>)
-    // at VhallSaasSDK.createDoc (index.js?9e93:2)
-    // at Object.init (player.server.js?4cd1:9)
-    // at VueComponent.initDocSDK (doc.js?3682:165)
-    // at Vue.eval (doc.js?3682:128)
-    // at invokeWithErrorHandling (vue.runtime.esm.js?9800:1863)
-    // at Vue.$emit (vue.runtime.esm.js?9800:3903)
-    // at Vue.<computed> [as $emit] (backend.js:1793)
-
+    };
 
     return {
-      init: init
+      state: state,
+      init: init,
+      on: on,
+      destroy: destroy
     };
   }
 
@@ -12831,15 +12832,7 @@
     var _roomServer$state$wat = roomServer.state.watchInitData;
         _roomServer$state$wat.roomId;
         _roomServer$state$wat.channelId;
-   //更新当前公告列表
-
-    var updateContentList = function updateContentList(msg) {
-      state.noticeList.unshift({
-        text: msg.room_announcement_text,
-        time: msg.push_time
-      });
-    }; //从服务器获取消息记录
-
+   //从服务器获取消息记录
 
     var fetchNoticeList = function fetchNoticeList(params) {
       return $fetch({
@@ -12902,9 +12895,9 @@
 
     return {
       state: state,
-      updateContentList: updateContentList,
       sendNotice: sendNotice,
-      getNoticeList: getNoticeList
+      getNoticeList: getNoticeList,
+      fetchNoticeList: fetchNoticeList
     };
   }
 

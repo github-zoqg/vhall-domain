@@ -1402,6 +1402,11 @@
       value: function setRemoteData(item) {
         return this.instance.setRemoteData(item);
       }
+    }, {
+      key: "setRole",
+      value: function setRole(val) {
+        return this.instance.setRole(val);
+      }
       /**
        * 
        * @param {*} child is cid-ret
@@ -1539,6 +1544,8 @@
 
         this.instance.on(VhallRTC.EVENT_REMOTESTREAM_ADD, function (e) {
           // 远端流加入事件
+          console.log('succcccccccessss');
+
           _this2.$emit('interactive_REMOTESTREAM_ADD', e);
         });
         this.instance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, function (e) {
