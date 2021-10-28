@@ -19,15 +19,7 @@ export default function useNoticeServer() {
     };
 
     const roomServer = contextServer.get('roomBaseServer');
-    const { roomId = '', channelId = '' } = roomServer.state.watchInitData;
-
-    //更新当前公告列表
-    const updateContentList = (msg) => {
-        state.noticeList.unshift({
-            text: msg.room_announcement_text,
-            time: msg.push_time
-        });
-    }
+    const {roomId = '', channelId = ''} = roomServer.state.watchInitData;
 
     //从服务器获取消息记录
     const fetchNoticeList = (params) => {
@@ -39,7 +31,7 @@ export default function useNoticeServer() {
     }
 
     //获取消息记录
-    const getNoticeList = ({ flag = false, params = {} }) => {
+    const getNoticeList = ({flag = false, params = {}}) => {
 
         if (!flag) {
             state.noticeList = [];
@@ -81,7 +73,5 @@ export default function useNoticeServer() {
         });
     }
 
-
-
-    return { state, updateContentList, sendNotice, getNoticeList };
+    return {state, sendNotice, getNoticeList, fetchNoticeList};
 }
