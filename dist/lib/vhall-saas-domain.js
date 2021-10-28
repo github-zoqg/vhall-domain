@@ -11147,6 +11147,7 @@
 
 
     var on = function on(type, callback) {
+      console.log('5555555', type);
       return state.interactiveInstance.$on(type, callback);
     }; // 组合api
 
@@ -11213,15 +11214,11 @@
     var listenerSdk = function listenerSdk() {
       state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_ADD, function (e) {
         // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-        console.log('remote stream add info::', e);
-        state.remoteStreams.push(e);
+        console.log('55555remote stream add info::', e); // state.remoteStreams.push(e)
       });
       state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, function (e) {
         // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-        console.log('remote stream remove info::', e);
-        state.remoteStreams.filter(function (item) {
-          return item.streamId == e.streamId;
-        });
+        console.log('55555remote stream remove info::', e); // state.remoteStreams.filter(item => item.streamId == e.streamId)
       });
     };
 

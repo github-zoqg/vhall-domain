@@ -203,6 +203,7 @@ export default function useInteractiveServer() {
 
     // 监听事件
     const on = (type,callback) => {
+        console.log('5555555',type);
         return state.interactiveInstance.$on(type, callback)
     }
 
@@ -271,13 +272,13 @@ export default function useInteractiveServer() {
     const listenerSdk = () => {
         state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_ADD, (e) => {
             // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-            console.log('remote stream add info::',e);
-            state.remoteStreams.push(e)
+            console.log('55555remote stream add info::',e);
+            // state.remoteStreams.push(e)
         })
         state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, (e) => {
             // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-            console.log('remote stream remove info::',e);
-            state.remoteStreams.filter(item => item.streamId == e.streamId)
+            console.log('55555remote stream remove info::',e);
+            // state.remoteStreams.filter(item => item.streamId == e.streamId)
         })
     }
     return { state, startPushStream ,init, destroyInit, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
