@@ -1318,6 +1318,11 @@
         this.instance = null;
       }
     }, {
+      key: "createUUID",
+      value: function createUUID(type) {
+        return this.instance.createUUID(type);
+      }
+    }, {
       key: "createBoard",
       value: function createBoard(customOptions) {
         var elId = this.instance.createUUID('board');
@@ -1346,8 +1351,8 @@
         return this.instance.createBoard(options);
       }
     }, {
-      key: "creatDocument",
-      value: function creatDocument(customOptions) {
+      key: "createDocument",
+      value: function createDocument(customOptions) {
         var _defaultOptions;
 
         var elId = sdk.createUUID('document'); // 容器id，必须用此方法创建，文档传入document，返回唯一id
@@ -1400,11 +1405,6 @@
       value: function setRemoteData(item) {
         return this.instance.setRemoteData(item);
       }
-      /**
-       * 
-       * @param {*} child is cid-ret
-       */
-
     }, {
       key: "addChild",
       value: function addChild(child) {
@@ -1426,6 +1426,11 @@
         this.instance.zoomReset();
       }
     }, {
+      key: "cancelZoom",
+      value: function cancelZoom() {
+        return this.instance.cancelZoom();
+      }
+    }, {
       key: "move",
       value: function move() {
         this.instance.move();
@@ -1439,6 +1444,116 @@
       key: "nextStep",
       value: function nextStep() {
         this.instance.nextStep();
+      }
+    }, {
+      key: "switchOnContainer",
+      value: function switchOnContainer(val) {
+        return this.instance.switchOnContainer(val);
+      }
+    }, {
+      key: "switchOffContainer",
+      value: function switchOffContainer(val) {
+        return this.instance.switchOffContainer(val);
+      }
+    }, {
+      key: "resetContainer",
+      value: function resetContainer() {
+        return this.instance.resetContainer();
+      }
+    }, {
+      key: "setPlayMode",
+      value: function setPlayMode(mode) {
+        return this.instance.setPlayMode(mode);
+      }
+    }, {
+      key: "setSize",
+      value: function setSize(width, height, options) {
+        return this.instance.setSize(width, height, options);
+      }
+    }, {
+      key: "setControlStyle",
+      value: function setControlStyle(style) {
+        return this.instance.setControlStyle(style);
+      }
+    }, {
+      key: "gotoPage",
+      value: function gotoPage(options) {
+        return this.instance.gotoPage(options);
+      }
+    }, {
+      key: "setPen",
+      value: function setPen(val) {
+        return this.instance.setPen(val);
+      }
+    }, {
+      key: "setEraser",
+      value: function setEraser(val) {
+        return this.instance.setEraser(val);
+      }
+    }, {
+      key: "setStroke",
+      value: function setStroke(options) {
+        return this.instance.setStroke(options);
+      }
+    }, {
+      key: "setStrokeWidth",
+      value: function setStrokeWidth(options) {
+        return this.instance.setStrokeWidth(options);
+      }
+    }, {
+      key: "clear",
+      value: function clear() {
+        return this.instance.clear();
+      }
+    }, {
+      key: "cancelDrawable",
+      value: function cancelDrawable() {
+        return this.instance.cancelDrawable();
+      }
+    }, {
+      key: "setHighlighters",
+      value: function setHighlighters() {
+        return this.instance.setHighlighters();
+      }
+    }, {
+      key: "setText",
+      value: function setText(val) {
+        return this.instance.setText(val);
+      }
+    }, {
+      key: "loadDoc",
+      value: function loadDoc(options) {
+        return this.instance.loadDoc(options);
+      }
+    }, {
+      key: "start",
+      value: function start(val, type) {
+        return this.instance.start(val, type);
+      }
+    }, {
+      key: "republish",
+      value: function republish() {
+        return this.instance.republish();
+      }
+    }, {
+      key: "setRole",
+      value: function setRole(role) {
+        return this.instance.setRole(role);
+      }
+    }, {
+      key: "setAccountId",
+      value: function setAccountId(role) {
+        return this.instance.setAccountId(role);
+      }
+    }, {
+      key: "setEditable",
+      value: function setEditable(editable) {
+        return this.instance.setEditable(editable);
+      }
+    }, {
+      key: "getThumbnailList",
+      value: function getThumbnailList(options) {
+        return this.instance.getThumbnailList(options);
       }
     }]);
 

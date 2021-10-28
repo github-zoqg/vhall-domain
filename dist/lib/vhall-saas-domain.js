@@ -365,7 +365,7 @@
   this.instance.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT,function(_ref){var cid=_ref.cid,docId=_ref.docId;_this3.$emit(VHDocSDK.Event.DOCUMENT_NOT_EXIT,{cid:cid,docId:docId});});// 翻页事件
   this.instance.on(VHDocSDK.Event.PAGE_CHANGE,function(event){_this3.$emit(VHDocSDK.Event.PAGE_CHANGE,event);});// 回放文件加载完成
   this.instance.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE,function(event){_this3.$emit(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE,event);});// ppt文档加载完毕
-  this.instance.on(VHDocSDK.Event.PLAYBACKCOMPLETE,function(event){_this3.$emit(VHDocSDK.Event.PLAYBACKCOMPLETEevent);});}},{key:"destroy",value:function destroy(){if(!this.instance)return;this.instance.destroy();this.instance=null;}},{key:"createBoard",value:function createBoard(customOptions){var elId=this.instance.createUUID('board');var defaultOptions={elId:elId,// div 容器 必须
+  this.instance.on(VHDocSDK.Event.PLAYBACKCOMPLETE,function(event){_this3.$emit(VHDocSDK.Event.PLAYBACKCOMPLETEevent);});}},{key:"destroy",value:function destroy(){if(!this.instance)return;this.instance.destroy();this.instance=null;}},{key:"createUUID",value:function createUUID(type){return this.instance.createUUID(type);}},{key:"createBoard",value:function createBoard(customOptions){var elId=this.instance.createUUID('board');var defaultOptions={elId:elId,// div 容器 必须
   width:200,// div 宽度，像素单位，数值型不带px 必须
   height:200,// div 高度，像素单位，数值型不带px 必须
   backgroundColor:'RGBA',// 背景颜色， 支持RGB 与 RGBA， 如果全透明，舞台背景色与网页背景色相同，如 ‘#FF0000’或 ‘#FF000000’ 必须
@@ -374,7 +374,7 @@
   graphicType:VHDocSDK.GRAPHIC.PEN,// 选项请参考画笔预设值,
   stroke:'#000',// 颜色值
   strokeWidth:4// 正数 Number
-  }};var options=merge.recursive({},defaultOptions,customOptions);return this.instance.createBoard(options);}},{key:"creatDocument",value:function creatDocument(customOptions){var _defaultOptions;var elId=sdk.createUUID('document');// 容器id，必须用此方法创建，文档传入document，返回唯一id
+  }};var options=merge.recursive({},defaultOptions,customOptions);return this.instance.createBoard(options);}},{key:"createDocument",value:function createDocument(customOptions){var _defaultOptions;var elId=sdk.createUUID('document');// 容器id，必须用此方法创建，文档传入document，返回唯一id
   var defaultOptions=(_defaultOptions={id:customOptions.id,docId:customOptions.docId,elId:elId,// div 容器 必须
   width:200,// div 宽度，像素单位，数值型不带px 必须
   height:200},_defineProperty(_defaultOptions,"docId",'yyy'),_defineProperty(_defaultOptions,"noDispatch",false),_defineProperty(_defaultOptions,"option",{// 非必填，画笔预设选项
@@ -382,10 +382,7 @@
   stroke:'#000',// 颜色值
   strokeWidth:4// 正数 Number
   }),_defaultOptions);var options=merge.recursive({},defaultOptions,customOptions);return sdk.createDocument(options);// 返回promise
-  }},{key:"selectContainer",value:function selectContainer(id){this.instance.selectContainer({id:id});this.currentCid=id;}},{key:"getContainerInfo",value:function getContainerInfo(params){return this.instance.getContainerInfo(params);}},{key:"destroyContainer",value:function destroyContainer(val){return this.instance.destroyContainer(val);}},{key:"getVodAllCids",value:function getVodAllCids(){return this.instance.getVodAllCids();}},{key:"setRemoteData",value:function setRemoteData(item){return this.instance.setRemoteData(item);}/**
-         * 
-         * @param {*} child is cid-ret
-         */},{key:"addChild",value:function addChild(child){this.children.push(child);}},{key:"zoomIn",value:function zoomIn(){this.instance.zoomIn();}},{key:"zoomOut",value:function zoomOut(){this.instance.zoomOut();}},{key:"zoomReset",value:function zoomReset(){this.instance.zoomReset();}},{key:"move",value:function move(){this.instance.move();}},{key:"prevStep",value:function prevStep(){this.instance.prevStep();}},{key:"nextStep",value:function nextStep(){this.instance.nextStep();}}]);return DocModule;}(BaseModule);var InteractiveModule=/*#__PURE__*/function(_BaseModule){_inherits(InteractiveModule,_BaseModule);var _super=_createSuper(InteractiveModule);function InteractiveModule(customOptions){_classCallCheck(this,InteractiveModule);return _super.call(this,customOptions);}/**
+  }},{key:"selectContainer",value:function selectContainer(id){this.instance.selectContainer({id:id});this.currentCid=id;}},{key:"getContainerInfo",value:function getContainerInfo(params){return this.instance.getContainerInfo(params);}},{key:"destroyContainer",value:function destroyContainer(val){return this.instance.destroyContainer(val);}},{key:"getVodAllCids",value:function getVodAllCids(){return this.instance.getVodAllCids();}},{key:"setRemoteData",value:function setRemoteData(item){return this.instance.setRemoteData(item);}},{key:"addChild",value:function addChild(child){this.children.push(child);}},{key:"zoomIn",value:function zoomIn(){this.instance.zoomIn();}},{key:"zoomOut",value:function zoomOut(){this.instance.zoomOut();}},{key:"zoomReset",value:function zoomReset(){this.instance.zoomReset();}},{key:"cancelZoom",value:function cancelZoom(){return this.instance.cancelZoom();}},{key:"move",value:function move(){this.instance.move();}},{key:"prevStep",value:function prevStep(){this.instance.prevStep();}},{key:"nextStep",value:function nextStep(){this.instance.nextStep();}},{key:"switchOnContainer",value:function switchOnContainer(val){return this.instance.switchOnContainer(val);}},{key:"switchOffContainer",value:function switchOffContainer(val){return this.instance.switchOffContainer(val);}},{key:"resetContainer",value:function resetContainer(){return this.instance.resetContainer();}},{key:"setPlayMode",value:function setPlayMode(mode){return this.instance.setPlayMode(mode);}},{key:"setSize",value:function setSize(width,height,options){return this.instance.setSize(width,height,options);}},{key:"setControlStyle",value:function setControlStyle(style){return this.instance.setControlStyle(style);}},{key:"gotoPage",value:function gotoPage(options){return this.instance.gotoPage(options);}},{key:"setPen",value:function setPen(val){return this.instance.setPen(val);}},{key:"setEraser",value:function setEraser(val){return this.instance.setEraser(val);}},{key:"setStroke",value:function setStroke(options){return this.instance.setStroke(options);}},{key:"setStrokeWidth",value:function setStrokeWidth(options){return this.instance.setStrokeWidth(options);}},{key:"clear",value:function clear(){return this.instance.clear();}},{key:"cancelDrawable",value:function cancelDrawable(){return this.instance.cancelDrawable();}},{key:"setHighlighters",value:function setHighlighters(){return this.instance.setHighlighters();}},{key:"setText",value:function setText(val){return this.instance.setText(val);}},{key:"loadDoc",value:function loadDoc(options){return this.instance.loadDoc(options);}},{key:"start",value:function start(val,type){return this.instance.start(val,type);}},{key:"republish",value:function republish(){return this.instance.republish();}},{key:"setRole",value:function setRole(role){return this.instance.setRole(role);}},{key:"setAccountId",value:function setAccountId(role){return this.instance.setAccountId(role);}},{key:"setEditable",value:function setEditable(editable){return this.instance.setEditable(editable);}},{key:"getThumbnailList",value:function getThumbnailList(options){return this.instance.getThumbnailList(options);}}]);return DocModule;}(BaseModule);var InteractiveModule=/*#__PURE__*/function(_BaseModule){_inherits(InteractiveModule,_BaseModule);var _super=_createSuper(InteractiveModule);function InteractiveModule(customOptions){_classCallCheck(this,InteractiveModule);return _super.call(this,customOptions);}/**
        * 初始化互动sdk
        * @param {Object} customOptions 
        * @param {*} successCb 
@@ -11501,6 +11498,8 @@
   }
 
   function useDocServer() {
+    var _ref;
+
     var state = {
       docInstance: null
     };
@@ -11527,17 +11526,86 @@
       });
     };
 
+    var createBoard = function createBoard(options) {
+      return state.docInstance.createBoard(options);
+    };
+
+    var createDocument = function createDocument(options) {
+      return state.docInstance.createDocument(options);
+    };
+
+    var selectContainer = function selectContainer(id) {
+      return state.docInstance.selectContainer(id);
+    };
+
+    var getContainerInfo = function getContainerInfo(options) {
+      return state.docInstance.getContainerInfo(options);
+    };
+
+    var destroyContainer = function destroyContainer(val) {
+      return state.docInstance.destroyContainer(val);
+    };
+
     var getVodAllCids = function getVodAllCids(val) {
       return state.docInstance.getVodAllCids(val);
     };
 
-    return {
+    var setRemoteData = function setRemoteData(item) {
+      return state.docInstance.setRemoteData(item);
+    };
+
+    var zoomIn = function zoomIn() {
+      return state.docInstance.zoomIn();
+    };
+
+    var zoomOut = function zoomOut() {
+      return state.docInstance.zoomOut();
+    };
+
+    var zoomReset = function zoomReset() {
+      return state.docInstance.zoomReset();
+    };
+
+    var move = function move() {
+      return state.docInstance.move();
+    };
+
+    var prevStep = function prevStep() {
+      return state.docInstance.prevStep();
+    };
+
+    var nextStep = function nextStep() {
+      return state.docInstance.nextStep();
+    };
+
+    var setPlayMode = function setPlayMode(mode) {
+      return state.docInstance.setPlayMode(mode);
+    };
+
+    var setSize = function setSize(width, height, options) {
+      return state.docInstance.setSize(width, height, options);
+    };
+
+    var createUUID = function createUUID(type) {
+      return state.docInstance.createUUID(type);
+    };
+
+    var setControlStyle = function setControlStyle(style) {
+      return state.docInstance.setControlStyle(style);
+    };
+
+    return _ref = {
       state: state,
       init: init,
       on: on,
       destroy: destroy,
-      getVodAllCids: getVodAllCids
-    };
+      getVodAllCids: getVodAllCids,
+      createBoard: createBoard,
+      createDocument: createDocument,
+      selectContainer: selectContainer,
+      getContainerInfo: getContainerInfo,
+      destroyContainer: destroyContainer
+    }, _defineProperty(_ref, "getVodAllCids", getVodAllCids), _defineProperty(_ref, "setRemoteData", setRemoteData), _defineProperty(_ref, "zoomIn", zoomIn), _defineProperty(_ref, "zoomOut", zoomOut), _defineProperty(_ref, "zoomReset", zoomReset), _defineProperty(_ref, "move", move), _defineProperty(_ref, "prevStep", prevStep), _defineProperty(_ref, "nextStep", nextStep), _defineProperty(_ref, "setPlayMode", setPlayMode), _defineProperty(_ref, "setSize", setSize), _defineProperty(_ref, "createUUID", createUUID), _defineProperty(_ref, "setControlStyle", setControlStyle), _ref;
   }
 
   function useEventEmitter() {

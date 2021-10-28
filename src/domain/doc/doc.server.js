@@ -26,8 +26,154 @@ export default function useDocServer() {
 
     }
 
-    const getVodAllCids = (val) => {
+    const createBoard = (options)=>{
+        return state.docInstance.createBoard(options)
+    }
+
+    const createDocument = (options)=>{
+        return state.docInstance.createDocument(options)
+    }
+
+    const selectContainer=(id)=>{
+        return state.docInstance.selectContainer(id)
+    }
+
+    const switchOnContainer=(val)=>{
+        return state.docInstance.switchOnContainer(val)
+    }
+
+    const switchOffContainer=(val)=>{
+        return state.docInstance.switchOffContainer(val)
+    }
+
+    const resetContainer=()=>{
+        return state.docInstance.resetContainer()
+    }
+
+    const getContainerInfo = options =>{
+        return state.docInstance.getContainerInfo(options)
+    }
+
+    const destroyContainer = (val)=>{
+        return state.docInstance.destroyContainer(val)
+    }
+
+    const getVodAllCids = (val)=>{
         return state.docInstance.getVodAllCids(val)
     }
-    return { state, init, on, destroy, getVodAllCids }
+
+    const setRemoteData = (item)=>{
+        return state.docInstance.setRemoteData(item)
+    }
+
+    const zoomIn=()=> {
+        return state.docInstance.zoomIn()
+    }
+
+    const zoomOut=()=> {
+        return state.docInstance.zoomOut()
+    }
+
+    const zoomReset=()=> {
+        return state.docInstance.zoomReset()
+    }
+
+    const cancelZoom=()=>{
+        return state.docInstance.cancelZoom()
+    }
+
+    const move=()=> {
+        return state.docInstance.move()
+    }
+
+    const prevStep=()=> {
+        return state.docInstance.prevStep()
+    }
+
+    const nextStep=()=> {
+        return state.docInstance.nextStep()
+    }
+
+    const setPlayMode=(mode)=>{
+        return state.docInstance.setPlayMode(mode)
+    }
+
+    const setSize=(width,height,options)=>{
+        return state.docInstance.setSize(width,height,options)
+    }
+
+    const createUUID=(type)=>{
+        return state.docInstance.createUUID(type)
+    }
+
+    const setControlStyle = (style)=>{
+        return state.docInstance.setControlStyle(style)
+    }
+
+    const gotoPage=(options)=>{
+        return state.docInstance.gotoPage(options)
+    }
+
+    const setPen=(val)=>{
+        return state.docInstance.setPen(val)
+    }
+
+    const setEraser=(val)=>{
+        return state.docInstance.setEraser(val)
+    }
+
+    const setStroke=(options)=>{
+        return state.docInstance.setStroke(options)
+    }
+
+    const setStrokeWidth=(options)=>{
+        return state.docInstance.setStrokeWidth(options)
+    }
+
+    const clear = ()=>{
+        return state.docInstance.clear()
+    }
+
+    const cancelDrawable=()=>{
+        return state.docInstance.cancelDrawable()
+    }
+
+    const setHighlighters=()=>{
+        return state.docInstance.setHighlighters()
+    }
+
+    const setText=(val)=>{
+        return state.docInstance.setText(val)
+    }
+
+    const loadDoc=(options)=>{
+        return state.docInstance.loadDoc(options)
+    }
+
+    const start=(val,type)=>{
+        return state.docInstance.start(val,type)
+    }
+
+    const republish = ()=>{
+        return state.docInstance.republish()
+    }
+
+    const setRole = (role)=>{
+        return state.docInstance.setRole(role)
+    }
+
+    const setAccountId=(role)=>{
+        return state.docInstance.setAccountId(role)
+    }
+
+    const setEditable=(editable)=>{
+        return state.docInstance.setEditable(editable)
+    }
+
+    const getThumbnailList=(options)=>{
+        return state.docInstance.getThumbnailList(options)
+    }
+
+
+    return { state, init, on, destroy, getVodAllCids,createBoard,createDocument,selectContainer,getContainerInfo,destroyContainer,getVodAllCids,setRemoteData,zoomIn,zoomOut,zoomReset,move,prevStep,nextStep ,setPlayMode,setSize,createUUID,setControlStyle}
 }
