@@ -1318,6 +1318,11 @@
         this.instance = null;
       }
     }, {
+      key: "createUUID",
+      value: function createUUID(type) {
+        return this.instance.createUUID(type);
+      }
+    }, {
       key: "createBoard",
       value: function createBoard(customOptions) {
         var elId = this.instance.createUUID('board');
@@ -1346,11 +1351,11 @@
         return this.instance.createBoard(options);
       }
     }, {
-      key: "creatDocument",
-      value: function creatDocument(customOptions) {
+      key: "createDocument",
+      value: function createDocument(customOptions) {
         var _defaultOptions;
 
-        var elId = sdk.createUUID('document'); // 容器id，必须用此方法创建，文档传入document，返回唯一id
+        var elId = this.instance.createUUID('document'); // 容器id，必须用此方法创建，文档传入document，返回唯一id
 
         var defaultOptions = (_defaultOptions = {
           id: customOptions.id,
@@ -1370,15 +1375,12 @@
 
         }), _defaultOptions);
         var options = merge.recursive({}, defaultOptions, customOptions);
-        return sdk.createDocument(options); // 返回promise
+        return this.instance.createDocument(options); // 返回promise
       }
     }, {
       key: "selectContainer",
-      value: function selectContainer(id) {
-        this.instance.selectContainer({
-          id: id
-        });
-        this.currentCid = id;
+      value: function selectContainer(options) {
+        this.instance.selectContainer(options);
       }
     }, {
       key: "getContainerInfo",
@@ -1400,11 +1402,6 @@
       value: function setRemoteData(item) {
         return this.instance.setRemoteData(item);
       }
-      /**
-       * 
-       * @param {*} child is cid-ret
-       */
-
     }, {
       key: "addChild",
       value: function addChild(child) {
@@ -1426,6 +1423,11 @@
         this.instance.zoomReset();
       }
     }, {
+      key: "cancelZoom",
+      value: function cancelZoom() {
+        return this.instance.cancelZoom();
+      }
+    }, {
       key: "move",
       value: function move() {
         this.instance.move();
@@ -1439,6 +1441,116 @@
       key: "nextStep",
       value: function nextStep() {
         this.instance.nextStep();
+      }
+    }, {
+      key: "switchOnContainer",
+      value: function switchOnContainer(val) {
+        return this.instance.switchOnContainer(val);
+      }
+    }, {
+      key: "switchOffContainer",
+      value: function switchOffContainer(val) {
+        return this.instance.switchOffContainer(val);
+      }
+    }, {
+      key: "resetContainer",
+      value: function resetContainer() {
+        return this.instance.resetContainer();
+      }
+    }, {
+      key: "setPlayMode",
+      value: function setPlayMode(mode) {
+        return this.instance.setPlayMode(mode);
+      }
+    }, {
+      key: "setSize",
+      value: function setSize(width, height, options) {
+        return this.instance.setSize(width, height, options);
+      }
+    }, {
+      key: "setControlStyle",
+      value: function setControlStyle(style) {
+        return this.instance.setControlStyle(style);
+      }
+    }, {
+      key: "gotoPage",
+      value: function gotoPage(options) {
+        return this.instance.gotoPage(options);
+      }
+    }, {
+      key: "setPen",
+      value: function setPen(val) {
+        return this.instance.setPen(val);
+      }
+    }, {
+      key: "setEraser",
+      value: function setEraser(val) {
+        return this.instance.setEraser(val);
+      }
+    }, {
+      key: "setStroke",
+      value: function setStroke(options) {
+        return this.instance.setStroke(options);
+      }
+    }, {
+      key: "setStrokeWidth",
+      value: function setStrokeWidth(options) {
+        return this.instance.setStrokeWidth(options);
+      }
+    }, {
+      key: "clear",
+      value: function clear() {
+        return this.instance.clear();
+      }
+    }, {
+      key: "cancelDrawable",
+      value: function cancelDrawable() {
+        return this.instance.cancelDrawable();
+      }
+    }, {
+      key: "setHighlighters",
+      value: function setHighlighters() {
+        return this.instance.setHighlighters();
+      }
+    }, {
+      key: "setText",
+      value: function setText(val) {
+        return this.instance.setText(val);
+      }
+    }, {
+      key: "loadDoc",
+      value: function loadDoc(options) {
+        return this.instance.loadDoc(options);
+      }
+    }, {
+      key: "start",
+      value: function start(val, type) {
+        return this.instance.start(val, type);
+      }
+    }, {
+      key: "republish",
+      value: function republish() {
+        return this.instance.republish();
+      }
+    }, {
+      key: "setRole",
+      value: function setRole(role) {
+        return this.instance.setRole(role);
+      }
+    }, {
+      key: "setAccountId",
+      value: function setAccountId(role) {
+        return this.instance.setAccountId(role);
+      }
+    }, {
+      key: "setEditable",
+      value: function setEditable(editable) {
+        return this.instance.setEditable(editable);
+      }
+    }, {
+      key: "getThumbnailList",
+      value: function getThumbnailList(options) {
+        return this.instance.getThumbnailList(options);
       }
     }]);
 
@@ -1698,6 +1810,8 @@
             videoNode: options.videoNode,
             // 必填，传入本地视频显示容器ID
             screen: true,
+            audio: options.audio || false,
+            // 桌面共享不采集麦克风防止回声
             speaker: options.speaker || false,
             // 桌面共享时是否分享桌面音频(如为true，则chrome浏览器弹框左下角将显示“分享音频”选框)，默认为false
             profile: options.profile || VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H,
@@ -2284,15 +2398,7 @@
     }, {
       key: "checkSystemRequirements",
       value: function checkSystemRequirements() {
-        var _this28 = this;
-
-        return new Promise(function (resolve, reject) {
-          _this28.instance.checkSystemRequirements().then(function (data) {
-            resolve(data.result);
-          })["catch"](function (error) {
-            reject(error);
-          });
-        });
+        return this.instance.checkSystemRequirements();
       }
       /**
        * 获取上下行丢包率
@@ -2302,10 +2408,10 @@
     }, {
       key: "getPacketLossRate",
       value: function getPacketLossRate() {
-        var _this29 = this;
+        var _this28 = this;
 
         return new Promise(function (resolve, reject) {
-          _this29.instance.getPacketLossRate().then(function (data) {
+          _this28.instance.getPacketLossRate().then(function (data) {
             resolve(data);
           })["catch"](function (error) {
             reject(error);
@@ -2320,11 +2426,11 @@
     }, {
       key: "getStreamPacketLoss",
       value: function getStreamPacketLoss() {
-        var _this30 = this;
+        var _this29 = this;
 
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         return new Promise(function (resolve, reject) {
-          _this30.instance.getStreamPacketLoss(options).then(function () {
+          _this29.instance.getStreamPacketLoss(options).then(function () {
             resolve();
           })["catch"](function (error) {
             reject(error);
@@ -2339,11 +2445,11 @@
     }, {
       key: "getAudioLevel",
       value: function getAudioLevel() {
-        var _this31 = this;
+        var _this30 = this;
 
         var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
         return new Promise(function (resolve, reject) {
-          _this31.instance.getAudioLevel({
+          _this30.instance.getAudioLevel({
             streamId: streamId
           }).then(function (data) {
             resolve(data);
@@ -2360,11 +2466,11 @@
     }, {
       key: "getStreamMute",
       value: function getStreamMute() {
-        var _this32 = this;
+        var _this31 = this;
 
         var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
         return new Promise(function (resolve, reject) {
-          _this32.instance.getStreamMute({
+          _this31.instance.getStreamMute({
             streamId: streamId
           }).then(function (data) {
             resolve(data);
