@@ -13,11 +13,24 @@ export default function useInteractiveServer() {
         const roomInitGroupServer = contextServer.get('roomInitGroupServer');
         state.vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
         return state.vhallSaasInstance.createInteractive().then(interactives => {
+            console.log('5555555555555createInteractive');
             state.interactiveInstance = interactives
-            console.log('state.interactiveInstance',interactives,interactives.instance)
+            // setTimeout(()=>{
+            //     console.log('555888888createInteractive');
+            //     state.interactiveInstance.listenEvents()
+            // },2000)
+            console.log('5555state.interactiveInstance',interactives,interactives.getRoomInfo())
             return true
         })
     }
+
+    // 监听事件
+    const on = (type,callback) => {
+        console.log('ON INTERACTIVE REGSITER SUCCESS',type);
+
+        return state.interactiveInstance.$on(type, callback)
+    }
+
     // 销毁实例
     const destroyInit = () => {
         return state.interactiveInstance.destroyInit()
@@ -155,7 +168,7 @@ export default function useInteractiveServer() {
 
     // 获取当前流的信息,返回一个数组
     const currentStreams = () => {
-        return state.interactiveInstance.currentStreams()
+        return state.interactiveInstance.currentStreams
     }
     // 上麦
     const speakOn=(data={})=>{
@@ -205,11 +218,7 @@ export default function useInteractiveServer() {
         return requestApi.mic.refuseInvite(data)
     }
 
-    // 监听事件
-    const on = (type,callback) => {
-        console.log('5555555',type);
-        return state.interactiveInstance.$on(type, callback)
-    }
+
 
     // 组合api
     const startPushStream = ()=> {

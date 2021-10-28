@@ -17,10 +17,13 @@ export default function useRoomInitGroupServer(options = {}) {
     let interactiveServer = useInteractiveServer()
     let micServer = useMicServer()
 
-    contextServer.set('roomBaseServer', roomBaseServer)
-    contextServer.set('msgServer', msgServer)
-    contextServer.set('interactiveServer',interactiveServer)
-    contextServer.set('micServer',micServer)
+
+    setTimeout(() => {
+        contextServer.set('roomBaseServer', roomBaseServer)
+        contextServer.set('msgServer', msgServer)
+        contextServer.set('interactiveServer', interactiveServer)
+        contextServer.set('micServer', micServer)
+    }, 100)
 
     const reload = async () => {
         msgServer.destroy();
@@ -36,7 +39,7 @@ export default function useRoomInitGroupServer(options = {}) {
     }
 
     const initSdk = () => {
-        return new Promise((resolve,reject)=>{
+        return new Promise((resolve, reject) => {
             state.vhallSaasInstance = new window.VhallSaasSDK()
             addToContext()
             resolve()
@@ -91,7 +94,7 @@ export default function useRoomInitGroupServer(options = {}) {
         return true;
     }
 
-    const result = { state,roomBaseServer, msgServer,interactiveServer,reload, initSendLive, initReceiveLive }
+    const result = { state, roomBaseServer, msgServer, interactiveServer, reload, initSendLive, initReceiveLive }
 
     function addToContext() {
         contextServer.set('roomInitGroupServer', result)
