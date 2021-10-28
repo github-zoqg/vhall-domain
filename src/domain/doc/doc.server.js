@@ -37,6 +37,7 @@ export default function useDocServer() {
     }
 
     const selectContainer=(option)=>{
+        console.log('select container:',option)
         return state.docInstance.selectContainer(option)
     }
 

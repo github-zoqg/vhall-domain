@@ -1355,7 +1355,6 @@
       value: function createDocument(customOptions) {
         var _defaultOptions;
 
-        console.log('create Document success!');
         var elId = this.instance.createUUID('document'); // 容器id，必须用此方法创建，文档传入document，返回唯一id
 
         var defaultOptions = (_defaultOptions = {
@@ -1380,11 +1379,8 @@
       }
     }, {
       key: "selectContainer",
-      value: function selectContainer(id) {
-        this.instance.selectContainer({
-          id: id
-        });
-        this.currentCid = id;
+      value: function selectContainer(options) {
+        this.instance.selectContainer(options);
       }
     }, {
       key: "getContainerInfo",
