@@ -14,7 +14,7 @@
 import { isPc } from './index.js'
 
 
-let BUSE_URL = 'https://t-saas-dispatch.vhall.com'
+let BUSE_URL = ''
 let TOKEN = ''
 let LIVETOKEN = ''
 let HEADERS = {}
