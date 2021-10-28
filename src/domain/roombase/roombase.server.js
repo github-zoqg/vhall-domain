@@ -41,7 +41,6 @@ export default function useRoomBaseServer() {
         eventEmitter.$destroy()
     }
 
-
     // 获取活动信息
     const getWebinarInfo = (data) => {
         return requestApi.roomBase.getWebinarInfo(data).then(res => {
