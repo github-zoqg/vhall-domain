@@ -6,14 +6,22 @@ export default function userMemberServer(){
         //申请上麦的人员
         applyUsers:[],
         //是否刷新了
-        isRefresh:true,
+        isRefresh:false,
 
         //总数
         totalNum:0,
         //当前页数
-        page:1
+        page:1,
+
+        //举手状态
+        raiseHandTip:false
 
     };
+
+    //设置state的值
+    const setState = (key, value) => {
+        state[key] = value;
+    }
 
     //请求在线成员列表然后处理
     const getOnlineUserList = (params = {}) => {
@@ -165,5 +173,5 @@ export default function userMemberServer(){
         });
     }
 
-    return {state,getOnlineUserList,getMutedUserList,getKickedUserList,mutedUser,kickedUser};
+    return {state,setState,getOnlineUserList,getMutedUserList,getKickedUserList,mutedUser,kickedUser};
 }
