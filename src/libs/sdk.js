@@ -1194,17 +1194,16 @@
   var DocModule = /*#__PURE__*/function (_BaseModule) {
     _inherits(DocModule, _BaseModule);
 
-    var _super = _createSuper(DocModule);
+    _createSuper(DocModule);
 
-    function DocModule(options) {
+    function DocModule() {
       var _this;
 
       _classCallCheck(this, DocModule);
 
-      _this = _super.call(this, options);
       _this.instance = null;
       _this.children = [];
-      return _this;
+      return _possibleConstructorReturn(_this);
     }
 
     _createClass(DocModule, [{
@@ -1219,14 +1218,18 @@
           var onSuccess = function onSuccess() {
             console.log('saasSDK文档初始化成功');
             resolve();
+
+            _this2.$emit(CONST_VAL.DOC_SDK_READ, _this2.instance);
           };
 
-          var onFail = function onFail(failed) {
+          var onFail = function onFail() {
             console.error('saasSDK文档初始化失败', failed.msg);
             reject();
+
+            _this2.$emit(CONST_VAL.DOC_SDK_ERROR, failed.msg);
           };
 
-          _this2.instance = window.VHDocSDK.createInstance(options, onSuccess, onFail);
+          _this2.instance = VHDocSDK.createInstance(options, onSuccess, onFail);
 
           _this2.listenEvents();
         });
@@ -1253,7 +1256,7 @@
           // 是否是回放 必须
           client: window.VHDocSDK.Client.PC_WEB,
           // 客户端类型
-          token: ''
+          token: this.token
         };
         return defaultOptions;
       }
@@ -1695,6 +1698,8 @@
             videoNode: options.videoNode,
             // 必填，传入本地视频显示容器ID
             screen: true,
+            audio: options.audio || false,
+            // 桌面共享不采集麦克风防止回声
             speaker: options.speaker || false,
             // 桌面共享时是否分享桌面音频(如为true，则chrome浏览器弹框左下角将显示“分享音频”选框)，默认为false
             profile: options.profile || VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H,
@@ -2281,15 +2286,7 @@
     }, {
       key: "checkSystemRequirements",
       value: function checkSystemRequirements() {
-        var _this28 = this;
-
-        return new Promise(function (resolve, reject) {
-          _this28.instance.checkSystemRequirements().then(function (data) {
-            resolve(data.result);
-          })["catch"](function (error) {
-            reject(error);
-          });
-        });
+        return this.instance.checkSystemRequirements();
       }
       /**
        * 获取上下行丢包率
@@ -2299,10 +2296,10 @@
     }, {
       key: "getPacketLossRate",
       value: function getPacketLossRate() {
-        var _this29 = this;
+        var _this28 = this;
 
         return new Promise(function (resolve, reject) {
-          _this29.instance.getPacketLossRate().then(function (data) {
+          _this28.instance.getPacketLossRate().then(function (data) {
             resolve(data);
           })["catch"](function (error) {
             reject(error);
@@ -2317,11 +2314,11 @@
     }, {
       key: "getStreamPacketLoss",
       value: function getStreamPacketLoss() {
-        var _this30 = this;
+        var _this29 = this;
 
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         return new Promise(function (resolve, reject) {
-          _this30.instance.getStreamPacketLoss(options).then(function () {
+          _this29.instance.getStreamPacketLoss(options).then(function () {
             resolve();
           })["catch"](function (error) {
             reject(error);
@@ -2336,11 +2333,11 @@
     }, {
       key: "getAudioLevel",
       value: function getAudioLevel() {
-        var _this31 = this;
+        var _this30 = this;
 
         var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
         return new Promise(function (resolve, reject) {
-          _this31.instance.getAudioLevel({
+          _this30.instance.getAudioLevel({
             streamId: streamId
           }).then(function (data) {
             resolve(data);
@@ -2357,11 +2354,11 @@
     }, {
       key: "getStreamMute",
       value: function getStreamMute() {
-        var _this32 = this;
+        var _this31 = this;
 
         var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
         return new Promise(function (resolve, reject) {
-          _this32.instance.getStreamMute({
+          _this31.instance.getStreamMute({
             streamId: streamId
           }).then(function (data) {
             resolve(data);
@@ -12185,7 +12182,7 @@
   }(BaseModule);
 
   var initLoader = function initLoader() {
-    Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.1.6.js')]).then(function (res) {
+    Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js')]).then(function (res) {
     });
   };
 
@@ -12319,7 +12316,7 @@
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         return new Promise(function (resolve, reject) {
           var instance = new DocModule(options);
-          instance.init(options).then(function (res) {
+          instance.init(function (res) {
             resolve(instance);
           });
         });

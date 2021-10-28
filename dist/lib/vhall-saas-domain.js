@@ -350,12 +350,12 @@
          * 获取房间在线信息
          * @param {Object} params 分页参数
          * @returns {Promise}
-         */},{key:"getOnlineInfo",value:function getOnlineInfo(params){var _this5=this;var defaultParams={currPage:1,pageSize:200};var retParams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){_this5.instance.getOnlineInfo(retParams,resolve,reject);});}}]);return ChatModule;}(BaseModule);var DocModule=/*#__PURE__*/function(_BaseModule){_inherits(DocModule,_BaseModule);var _super=_createSuper(DocModule);function DocModule(options){var _this;_classCallCheck(this,DocModule);_this=_super.call(this,options);_this.instance=null;_this.children=[];return _this;}_createClass(DocModule,[{key:"init",value:function init(){var _this2=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var defaultOptions=this.initDefaultOptions();var options=merge.recursive({},defaultOptions,customOptions);return new Promise(function(resolve,reject){var onSuccess=function onSuccess(){console.log('saasSDK文档初始化成功');resolve();};var onFail=function onFail(failed){console.error('saasSDK文档初始化失败',failed.msg);reject();};_this2.instance=window.VHDocSDK.createInstance(options,onSuccess,onFail);_this2.listenEvents();});}},{key:"initDefaultOptions",value:function initDefaultOptions(){isPc();var _store$get=store.get('roomInitData'),paasInfo=_store$get.paasInfo,userInfo=_store$get.userInfo;var defaultOptions={accountId:userInfo.third_party_user_id,roomId:paasInfo.room_id,channelId:paasInfo.channel_id,// 频道id 必须
+         */},{key:"getOnlineInfo",value:function getOnlineInfo(params){var _this5=this;var defaultParams={currPage:1,pageSize:200};var retParams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){_this5.instance.getOnlineInfo(retParams,resolve,reject);});}}]);return ChatModule;}(BaseModule);var DocModule=/*#__PURE__*/function(_BaseModule){_inherits(DocModule,_BaseModule);_createSuper(DocModule);function DocModule(){var _this;_classCallCheck(this,DocModule);_this.instance=null;_this.children=[];return _possibleConstructorReturn(_this);}_createClass(DocModule,[{key:"init",value:function init(){var _this2=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var defaultOptions=this.initDefaultOptions();var options=merge.recursive({},defaultOptions,customOptions);return new Promise(function(resolve,reject){var onSuccess=function onSuccess(){console.log('saasSDK文档初始化成功');resolve();_this2.$emit(CONST_VAL.DOC_SDK_READ,_this2.instance);};var onFail=function onFail(){console.error('saasSDK文档初始化失败',failed.msg);reject();_this2.$emit(CONST_VAL.DOC_SDK_ERROR,failed.msg);};_this2.instance=VHDocSDK.createInstance(options,onSuccess,onFail);_this2.listenEvents();});}},{key:"initDefaultOptions",value:function initDefaultOptions(){isPc();var _store$get=store.get('roomInitData'),paasInfo=_store$get.paasInfo,userInfo=_store$get.userInfo;var defaultOptions={accountId:userInfo.third_party_user_id,roomId:paasInfo.room_id,channelId:paasInfo.channel_id,// 频道id 必须
   appId:paasInfo.paas_app_id,// appId 必须
   role:userInfo.role_name,// 角色 必须
   isVod:false,// 是否是回放 必须
   client:window.VHDocSDK.Client.PC_WEB,// 客户端类型
-  token:''};return defaultOptions;}},{key:"listenEvents",value:function listenEvents(){var _this3=this;// 创建容器事件
+  token:this.token};return defaultOptions;}},{key:"listenEvents",value:function listenEvents(){var _this3=this;// 创建容器事件
   this.instance.on(VHDocSDK.Event.CREATE_CONTAINER,function(data){_this3.$emit(VHDocSDK.Event.CREATE_CONTAINER,data);});// 选择容器
   this.instance.on(VHDocSDK.Event.SELECT_CONTAINER,function(data){_this3.$emit(VHDocSDK.Event.SELECT_CONTAINER,data);});// 当前文档加载完成
   this.instance.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE,function(data){_this3.$emit(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE,data);});// 开关变换
@@ -442,7 +442,8 @@
          * @return {Promise} - 创建成功后的promise 回调
          *
          */},{key:"createLocaldesktopStream",value:function createLocaldesktopStream(){var _this6=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var addConfig=arguments.length>1&&arguments[1]!==undefined?arguments[1]:{};return new Promise(function(resolve,reject){var defaultOptions={videoNode:options.videoNode,// 必填，传入本地视频显示容器ID
-  screen:true,speaker:options.speaker||false,// 桌面共享时是否分享桌面音频(如为true，则chrome浏览器弹框左下角将显示“分享音频”选框)，默认为false
+  screen:true,audio:options.audio||false,// 桌面共享不采集麦克风防止回声
+  speaker:options.speaker||false,// 桌面共享时是否分享桌面音频(如为true，则chrome浏览器弹框左下角将显示“分享音频”选框)，默认为false
   profile:options.profile||VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H,// 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
   streamType:3,//选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。
   attributes:JSON.stringify({roleName:store.get('roomInitData').userInfo.role_name,accountId:store.get('roomInitData').userInfo.third_party_user_id,nickName:store.get('roomInitData').userInfo.nickname})//选填，自定义信息，支持字符串类型
@@ -561,19 +562,19 @@
          */},{key:"isScreenShareSupported",value:function isScreenShareSupported(){return this.instance.isScreenShareSupported();}/**
          * 检查当前浏览器支持性
          * @returns Boolean
-         */},{key:"checkSystemRequirements",value:function checkSystemRequirements(){var _this28=this;return new Promise(function(resolve,reject){_this28.instance.checkSystemRequirements().then(function(data){resolve(data.result);})["catch"](function(error){reject(error);});});}/**
+         */},{key:"checkSystemRequirements",value:function checkSystemRequirements(){return this.instance.checkSystemRequirements();}/**
          * 获取上下行丢包率
          * @returns  data中有 upLossRate 上行丢包率   downLossRate 下行丢包率
-         */},{key:"getPacketLossRate",value:function getPacketLossRate(){var _this29=this;return new Promise(function(resolve,reject){_this29.instance.getPacketLossRate().then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}/**
+         */},{key:"getPacketLossRate",value:function getPacketLossRate(){var _this28=this;return new Promise(function(resolve,reject){_this28.instance.getPacketLossRate().then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}/**
          * 获取流上下行丢包率
          * @returns  data中有 
-         */},{key:"getStreamPacketLoss",value:function getStreamPacketLoss(){var _this30=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){_this30.instance.getStreamPacketLoss(options).then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
+         */},{key:"getStreamPacketLoss",value:function getStreamPacketLoss(){var _this29=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){_this29.instance.getStreamPacketLoss(options).then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
          * 获取流音频能量
          * @returns  
-         */},{key:"getAudioLevel",value:function getAudioLevel(){var _this31=this;var streamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this31.instance.getAudioLevel({streamId:streamId}).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}/**
+         */},{key:"getAudioLevel",value:function getAudioLevel(){var _this30=this;var streamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this30.instance.getAudioLevel({streamId:streamId}).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}/**
          * 获取流的mute状态
          * @returns  
-         */},{key:"getStreamMute",value:function getStreamMute(){var _this32=this;var streamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this32.instance.getStreamMute({streamId:streamId}).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}}]);return InteractiveModule;}(BaseModule);var lodash={exports:{}};(function(module,exports){(function(){/** Used as a safe reference for `undefined` in pre-ES5 environments. */var undefined$1;/** Used as the semantic version number. */var VERSION='4.17.21';/** Used as the size to enable large array optimizations. */var LARGE_ARRAY_SIZE=200;/** Error message constants. */var CORE_ERROR_TEXT='Unsupported core-js use. Try https://npms.io/search?q=ponyfill.',FUNC_ERROR_TEXT='Expected a function',INVALID_TEMPL_VAR_ERROR_TEXT='Invalid `variable` option passed into `_.template`';/** Used to stand-in for `undefined` hash values. */var HASH_UNDEFINED='__lodash_hash_undefined__';/** Used as the maximum memoize cache size. */var MAX_MEMOIZE_SIZE=500;/** Used as the internal argument placeholder. */var PLACEHOLDER='__lodash_placeholder__';/** Used to compose bitmasks for cloning. */var CLONE_DEEP_FLAG=1,CLONE_FLAT_FLAG=2,CLONE_SYMBOLS_FLAG=4;/** Used to compose bitmasks for value comparisons. */var COMPARE_PARTIAL_FLAG=1,COMPARE_UNORDERED_FLAG=2;/** Used to compose bitmasks for function metadata. */var WRAP_BIND_FLAG=1,WRAP_BIND_KEY_FLAG=2,WRAP_CURRY_BOUND_FLAG=4,WRAP_CURRY_FLAG=8,WRAP_CURRY_RIGHT_FLAG=16,WRAP_PARTIAL_FLAG=32,WRAP_PARTIAL_RIGHT_FLAG=64,WRAP_ARY_FLAG=128,WRAP_REARG_FLAG=256,WRAP_FLIP_FLAG=512;/** Used as default options for `_.truncate`. */var DEFAULT_TRUNC_LENGTH=30,DEFAULT_TRUNC_OMISSION='...';/** Used to detect hot functions by number of calls within a span of milliseconds. */var HOT_COUNT=800,HOT_SPAN=16;/** Used to indicate the type of lazy iteratees. */var LAZY_FILTER_FLAG=1,LAZY_MAP_FLAG=2,LAZY_WHILE_FLAG=3;/** Used as references for various `Number` constants. */var INFINITY=1/0,MAX_SAFE_INTEGER=9007199254740991,MAX_INTEGER=1.7976931348623157e+308,NAN=0/0;/** Used as references for the maximum length and index of an array. */var MAX_ARRAY_LENGTH=4294967295,MAX_ARRAY_INDEX=MAX_ARRAY_LENGTH-1,HALF_MAX_ARRAY_LENGTH=MAX_ARRAY_LENGTH>>>1;/** Used to associate wrap methods with their bit flags. */var wrapFlags=[['ary',WRAP_ARY_FLAG],['bind',WRAP_BIND_FLAG],['bindKey',WRAP_BIND_KEY_FLAG],['curry',WRAP_CURRY_FLAG],['curryRight',WRAP_CURRY_RIGHT_FLAG],['flip',WRAP_FLIP_FLAG],['partial',WRAP_PARTIAL_FLAG],['partialRight',WRAP_PARTIAL_RIGHT_FLAG],['rearg',WRAP_REARG_FLAG]];/** `Object#toString` result references. */var argsTag='[object Arguments]',arrayTag='[object Array]',asyncTag='[object AsyncFunction]',boolTag='[object Boolean]',dateTag='[object Date]',domExcTag='[object DOMException]',errorTag='[object Error]',funcTag='[object Function]',genTag='[object GeneratorFunction]',mapTag='[object Map]',numberTag='[object Number]',nullTag='[object Null]',objectTag='[object Object]',promiseTag='[object Promise]',proxyTag='[object Proxy]',regexpTag='[object RegExp]',setTag='[object Set]',stringTag='[object String]',symbolTag='[object Symbol]',undefinedTag='[object Undefined]',weakMapTag='[object WeakMap]',weakSetTag='[object WeakSet]';var arrayBufferTag='[object ArrayBuffer]',dataViewTag='[object DataView]',float32Tag='[object Float32Array]',float64Tag='[object Float64Array]',int8Tag='[object Int8Array]',int16Tag='[object Int16Array]',int32Tag='[object Int32Array]',uint8Tag='[object Uint8Array]',uint8ClampedTag='[object Uint8ClampedArray]',uint16Tag='[object Uint16Array]',uint32Tag='[object Uint32Array]';/** Used to match empty string literals in compiled template source. */var reEmptyStringLeading=/\b__p \+= '';/g,reEmptyStringMiddle=/\b(__p \+=) '' \+/g,reEmptyStringTrailing=/(__e\(.*?\)|\b__t\)) \+\n'';/g;/** Used to match HTML entities and HTML characters. */var reEscapedHtml=/&(?:amp|lt|gt|quot|#39);/g,reUnescapedHtml=/[&<>"']/g,reHasEscapedHtml=RegExp(reEscapedHtml.source),reHasUnescapedHtml=RegExp(reUnescapedHtml.source);/** Used to match template delimiters. */var reEscape=/<%-([\s\S]+?)%>/g,reEvaluate=/<%([\s\S]+?)%>/g,reInterpolate=/<%=([\s\S]+?)%>/g;/** Used to match property names within property paths. */var reIsDeepProp=/\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,reIsPlainProp=/^\w*$/,rePropName=/[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;/**
+         */},{key:"getStreamMute",value:function getStreamMute(){var _this31=this;var streamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this31.instance.getStreamMute({streamId:streamId}).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}}]);return InteractiveModule;}(BaseModule);var lodash={exports:{}};(function(module,exports){(function(){/** Used as a safe reference for `undefined` in pre-ES5 environments. */var undefined$1;/** Used as the semantic version number. */var VERSION='4.17.21';/** Used as the size to enable large array optimizations. */var LARGE_ARRAY_SIZE=200;/** Error message constants. */var CORE_ERROR_TEXT='Unsupported core-js use. Try https://npms.io/search?q=ponyfill.',FUNC_ERROR_TEXT='Expected a function',INVALID_TEMPL_VAR_ERROR_TEXT='Invalid `variable` option passed into `_.template`';/** Used to stand-in for `undefined` hash values. */var HASH_UNDEFINED='__lodash_hash_undefined__';/** Used as the maximum memoize cache size. */var MAX_MEMOIZE_SIZE=500;/** Used as the internal argument placeholder. */var PLACEHOLDER='__lodash_placeholder__';/** Used to compose bitmasks for cloning. */var CLONE_DEEP_FLAG=1,CLONE_FLAT_FLAG=2,CLONE_SYMBOLS_FLAG=4;/** Used to compose bitmasks for value comparisons. */var COMPARE_PARTIAL_FLAG=1,COMPARE_UNORDERED_FLAG=2;/** Used to compose bitmasks for function metadata. */var WRAP_BIND_FLAG=1,WRAP_BIND_KEY_FLAG=2,WRAP_CURRY_BOUND_FLAG=4,WRAP_CURRY_FLAG=8,WRAP_CURRY_RIGHT_FLAG=16,WRAP_PARTIAL_FLAG=32,WRAP_PARTIAL_RIGHT_FLAG=64,WRAP_ARY_FLAG=128,WRAP_REARG_FLAG=256,WRAP_FLIP_FLAG=512;/** Used as default options for `_.truncate`. */var DEFAULT_TRUNC_LENGTH=30,DEFAULT_TRUNC_OMISSION='...';/** Used to detect hot functions by number of calls within a span of milliseconds. */var HOT_COUNT=800,HOT_SPAN=16;/** Used to indicate the type of lazy iteratees. */var LAZY_FILTER_FLAG=1,LAZY_MAP_FLAG=2,LAZY_WHILE_FLAG=3;/** Used as references for various `Number` constants. */var INFINITY=1/0,MAX_SAFE_INTEGER=9007199254740991,MAX_INTEGER=1.7976931348623157e+308,NAN=0/0;/** Used as references for the maximum length and index of an array. */var MAX_ARRAY_LENGTH=4294967295,MAX_ARRAY_INDEX=MAX_ARRAY_LENGTH-1,HALF_MAX_ARRAY_LENGTH=MAX_ARRAY_LENGTH>>>1;/** Used to associate wrap methods with their bit flags. */var wrapFlags=[['ary',WRAP_ARY_FLAG],['bind',WRAP_BIND_FLAG],['bindKey',WRAP_BIND_KEY_FLAG],['curry',WRAP_CURRY_FLAG],['curryRight',WRAP_CURRY_RIGHT_FLAG],['flip',WRAP_FLIP_FLAG],['partial',WRAP_PARTIAL_FLAG],['partialRight',WRAP_PARTIAL_RIGHT_FLAG],['rearg',WRAP_REARG_FLAG]];/** `Object#toString` result references. */var argsTag='[object Arguments]',arrayTag='[object Array]',asyncTag='[object AsyncFunction]',boolTag='[object Boolean]',dateTag='[object Date]',domExcTag='[object DOMException]',errorTag='[object Error]',funcTag='[object Function]',genTag='[object GeneratorFunction]',mapTag='[object Map]',numberTag='[object Number]',nullTag='[object Null]',objectTag='[object Object]',promiseTag='[object Promise]',proxyTag='[object Proxy]',regexpTag='[object RegExp]',setTag='[object Set]',stringTag='[object String]',symbolTag='[object Symbol]',undefinedTag='[object Undefined]',weakMapTag='[object WeakMap]',weakSetTag='[object WeakSet]';var arrayBufferTag='[object ArrayBuffer]',dataViewTag='[object DataView]',float32Tag='[object Float32Array]',float64Tag='[object Float64Array]',int8Tag='[object Int8Array]',int16Tag='[object Int16Array]',int32Tag='[object Int32Array]',uint8Tag='[object Uint8Array]',uint8ClampedTag='[object Uint8ClampedArray]',uint16Tag='[object Uint16Array]',uint32Tag='[object Uint32Array]';/** Used to match empty string literals in compiled template source. */var reEmptyStringLeading=/\b__p \+= '';/g,reEmptyStringMiddle=/\b(__p \+=) '' \+/g,reEmptyStringTrailing=/(__e\(.*?\)|\b__t\)) \+\n'';/g;/** Used to match HTML entities and HTML characters. */var reEscapedHtml=/&(?:amp|lt|gt|quot|#39);/g,reUnescapedHtml=/[&<>"']/g,reHasEscapedHtml=RegExp(reEscapedHtml.source),reHasUnescapedHtml=RegExp(reUnescapedHtml.source);/** Used to match template delimiters. */var reEscape=/<%-([\s\S]+?)%>/g,reEvaluate=/<%([\s\S]+?)%>/g,reInterpolate=/<%=([\s\S]+?)%>/g;/** Used to match property names within property paths. */var reIsDeepProp=/\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,reIsPlainProp=/^\w*$/,rePropName=/[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;/**
        * Used to match `RegExp`
        * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
        */var reRegExpChar=/[\\^$.*+?()[\]{}|]/g,reHasRegExpChar=RegExp(reRegExpChar.source);/** Used to match leading whitespace. */var reTrimStart=/^\s+/;/** Used to match a single whitespace character. */var reWhitespace=/\s/;/** Used to match wrap detail comments. */var reWrapComment=/\{(?:\n\/\* \[wrapped with .+\] \*\/)?\n?/,reWrapDetails=/\{\n\/\* \[wrapped with (.+)\] \*/,reSplitDetails=/,? & /;/** Used to match words composed of alphanumeric characters. */var reAsciiWord=/[^\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\x7f]+/g;/**
@@ -10063,7 +10064,7 @@
   return this.instance.setPlaySpeed(val,failure);}},{key:"openControls",value:function openControls(isOpen){// 开关默认控制条
   return this.instance.openControls(isOpen);}},{key:"openUI",value:function openUI(isOpen){return this.instance.openUI(isOpen);}},{key:"setResetVideo",value:function setResetVideo(){var videoDom=document.getElementById(this.params.videoNode);if(videoDom&&this.instance){this.instance.setSize({width:videoDom.offsetWidth,height:videoDom.offsetHeight});}}},{key:"setBarrageInfo",value:function setBarrageInfo(option){return this.instance.setBarrageInfo(option,function(err){Vlog.error(err);});}},{key:"addBarrage",value:function addBarrage(content){return this.instance.addBarrage(content,function(err){Vlog.error(err);});}},{key:"toggleBarrage",value:function toggleBarrage(open){if(!this.instance)return;if(open){this.instance.openBarrage();}else {this.instance.closeBarrage();}}},{key:"toggleSubtitle",value:function toggleSubtitle(open){if(this.instance&&this.params.recordId){if(open){// 开启点播字幕(仅点播可用)
   this.instance.openSubtitle();}else {// 关闭点播字幕(仅点播可用)
-  this.instance.closeSubtitle();}}}}]);return PlayerModule;}(BaseModule);var initLoader=function initLoader(){Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.1.6.js')]).then(function(res){});};var VhallSaasSDK=/*#__PURE__*/function(){function VhallSaasSDK(){_classCallCheck(this,VhallSaasSDK);this.msgBus=null;this.request=requestApi;this.baseState=store;}_createClass(VhallSaasSDK,[{key:"init",value:function init(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{clientType:'send',receiveType:'standard'};this.setRequestConfig(options);this.setClientType(options.clientType);if(options.clientType==='send'){return this.initSendLive(options);}else {return this.initReceiveLive(options);}}},{key:"initSendLive",value:function initSendLive(options){var _this=this;return new Promise(function(resolve,reject){_this.request.live.initSendLive(options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"initReceiveLive",value:function initReceiveLive(options){var _this2=this;var receiveApi={standard:'initStandardReceiveLive',embed:'initEmbeddedReceiveLive',sdk:'initSdkReceiveLive'};return new Promise(function(resolve,reject){_this2.request.live[receiveApi[options.receiveType]](options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"setClientType",value:function setClientType(clientType){if(clientType!=='send'&&clientType!=='receive'){throw new TypeError('clientType is invalid');}store.set('clientType',clientType);}},{key:"setRequestConfig",value:function setRequestConfig(options){if(options.development){setBaseUrl('https://t-saas-dispatch.vhall.com');}else {setBaseUrl('https://saas-api.vhall.com');}setToken(options.token,options.liveToken);if(options.requestHeaders){setRequestHeaders(options.requestHeaders);}}},{key:"isReady",value:function isReady(){return loadSuccess===true;}},{key:"createPlayer",value:function createPlayer(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new PlayerModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createInteractive",value:function createInteractive(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new InteractiveModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createChat",value:function createChat(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new ChatModule();instance.init(options).then(function(res){resolve(instance);});});}},{key:"createDoc",value:function createDoc(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new DocModule(options);instance.init(options).then(function(res){resolve(instance);});});}}]);return VhallSaasSDK;}();VhallSaasSDK.requestApi=requestApi;initLoader();window.VhallSaasSDK=VhallSaasSDK;});
+  this.instance.closeSubtitle();}}}}]);return PlayerModule;}(BaseModule);var initLoader=function initLoader(){Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js')]).then(function(res){});};var VhallSaasSDK=/*#__PURE__*/function(){function VhallSaasSDK(){_classCallCheck(this,VhallSaasSDK);this.msgBus=null;this.request=requestApi;this.baseState=store;}_createClass(VhallSaasSDK,[{key:"init",value:function init(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{clientType:'send',receiveType:'standard'};this.setRequestConfig(options);this.setClientType(options.clientType);if(options.clientType==='send'){return this.initSendLive(options);}else {return this.initReceiveLive(options);}}},{key:"initSendLive",value:function initSendLive(options){var _this=this;return new Promise(function(resolve,reject){_this.request.live.initSendLive(options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"initReceiveLive",value:function initReceiveLive(options){var _this2=this;var receiveApi={standard:'initStandardReceiveLive',embed:'initEmbeddedReceiveLive',sdk:'initSdkReceiveLive'};return new Promise(function(resolve,reject){_this2.request.live[receiveApi[options.receiveType]](options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"setClientType",value:function setClientType(clientType){if(clientType!=='send'&&clientType!=='receive'){throw new TypeError('clientType is invalid');}store.set('clientType',clientType);}},{key:"setRequestConfig",value:function setRequestConfig(options){if(options.development){setBaseUrl('https://t-saas-dispatch.vhall.com');}else {setBaseUrl('https://saas-api.vhall.com');}setToken(options.token,options.liveToken);if(options.requestHeaders){setRequestHeaders(options.requestHeaders);}}},{key:"isReady",value:function isReady(){return loadSuccess===true;}},{key:"createPlayer",value:function createPlayer(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new PlayerModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createInteractive",value:function createInteractive(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new InteractiveModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createChat",value:function createChat(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new ChatModule();instance.init(options).then(function(res){resolve(instance);});});}},{key:"createDoc",value:function createDoc(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new DocModule(options);instance.init(function(res){resolve(instance);});});}}]);return VhallSaasSDK;}();VhallSaasSDK.requestApi=requestApi;initLoader();window.VhallSaasSDK=VhallSaasSDK;});
 
   function unwrapExports (x) {
   	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
@@ -10293,7 +10294,7 @@
       TOKEN && xhr.setRequestHeader('token', TOKEN);
     }
 
-    console.log('HEADERS', HEADERS);
+    console.log('HEADERS', HEADERS, TOKEN);
 
     if (HEADERS) {
       Object.getOwnPropertyNames(HEADERS).forEach(function (item) {
@@ -12221,9 +12222,8 @@
 
   function useDesktopShareServer() {
     var state = {
-      vhallSaasInstance: null
+      localDesktopStreamId: ''
     };
-    state.vhallSaasInstance = contextServer.get('roomInitGroupServer').state.vhallSaasInstance;
     var interactiveServer = contextServer.get('interactiveServer'); //检测浏览器是否支持桌面共享
 
     var browserDetection = function browserDetection() {
@@ -12233,11 +12233,11 @@
       var safariTest = ua.match(/Version\/([\d.]+).*Safari/);
       var safariVersion = safariTest ? safariTest[1].replace(/\./g, '') : 0; //浏览器是否支持桌面共享
 
-      var isSupport = !chromeVersion && (!safariVersion || Number(safariVersion) < 1304); //浏览器是否版本过低，需要安装插件支持
+      var isNotSupport = !chromeVersion && (!safariVersion || Number(safariVersion) < 1304); //浏览器是否版本过低，需要安装插件支持
 
       var needInstallPlugin = Number(chromeVersion) < 74;
       return {
-        isSupport: isSupport,
+        isNotSupport: isNotSupport,
         needInstallPlugin: needInstallPlugin,
         chromeTest: chromeTest,
         chromeVersion: chromeVersion,
@@ -12250,7 +12250,7 @@
     var shareScreenCheck = function shareScreenCheck() {
       return new Promise(function (resolve, reject) {
         interactiveServer.checkSystemRequirements().then(function (checkResult) {
-          console.log('result', checkResult.result, 'detail', checkResult.detail);
+          console.log('result', checkResult, checkResult.result, 'detail', checkResult.detail);
 
           if (checkResult.result || checkResult.detail.isScreenShareSupported) {
             resolve(true);
@@ -12259,12 +12259,58 @@
           }
         });
       });
+    }; // 开始桌面共享
+
+
+    var startShareScreen = function startShareScreen(options) {
+      var _contextServer$get = contextServer.get('roomBaseServer'),
+          roomBaseServerState = _contextServer$get.state;
+
+      var retOptions = {
+        videoNode: options.videoNode,
+        profile: options.profile,
+        audio: false,
+        // 桌面共享不采集麦克风防止回声
+        speaker: true // 桌面共享开启采集扬声器声音的入口
+
+      };
+      var addConfig = {
+        videoDevice: 'desktopScreen',
+        attributes: JSON.stringify({
+          nickName: roomBaseServerState.watchInitData.join_info.nickname,
+          role: roomBaseServerState.watchInitData.join_info.role_name
+        })
+      };
+      return interactiveServer.createLocaldesktopStream(retOptions, addConfig);
+    }; // 推桌面共享流
+
+
+    var publishDesktopShareStream = function publishDesktopShareStream(streamId) {
+      return new Promise(function (resolve, reject) {
+        interactiveServer.publishStream({
+          streamId: streamId
+        }).then(function (res) {
+          state.localDesktopStreamId = streamId;
+          resolve(res);
+        })["catch"](reject);
+      });
+    };
+    /**
+     * 停止桌面共享
+     * */
+
+
+    var stopShareScreen = function stopShareScreen(streamId) {
+      return interactiveServer.unpublishStream(streamId || state.localDesktopStreamId);
     };
 
     return {
       state: state,
       browserDetection: browserDetection,
-      shareScreenCheck: shareScreenCheck
+      shareScreenCheck: shareScreenCheck,
+      startShareScreen: startShareScreen,
+      publishDesktopShareStream: publishDesktopShareStream,
+      stopShareScreen: stopShareScreen
     };
   }
 
