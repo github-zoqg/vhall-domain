@@ -98,8 +98,6 @@ function json(params, success, fail) {
     }
 
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
-    const interact_token = sessionStorage.getItem('interact_token') || null;
-    interact_token && xhr.setRequestHeader('interact-token', interact_token)
     if (!LIVETOKEN) {
         TOKEN && xhr.setRequestHeader('token', TOKEN)
     }
