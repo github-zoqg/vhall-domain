@@ -1194,17 +1194,16 @@
   var DocModule = /*#__PURE__*/function (_BaseModule) {
     _inherits(DocModule, _BaseModule);
 
-    var _super = _createSuper(DocModule);
+    _createSuper(DocModule);
 
-    function DocModule(options) {
+    function DocModule() {
       var _this;
 
       _classCallCheck(this, DocModule);
 
-      _this = _super.call(this, options);
       _this.instance = null;
       _this.children = [];
-      return _this;
+      return _possibleConstructorReturn(_this);
     }
 
     _createClass(DocModule, [{
@@ -1219,14 +1218,18 @@
           var onSuccess = function onSuccess() {
             console.log('saasSDK文档初始化成功');
             resolve();
+
+            _this2.$emit(CONST_VAL.DOC_SDK_READ, _this2.instance);
           };
 
-          var onFail = function onFail(failed) {
+          var onFail = function onFail() {
             console.error('saasSDK文档初始化失败', failed.msg);
             reject();
+
+            _this2.$emit(CONST_VAL.DOC_SDK_ERROR, failed.msg);
           };
 
-          _this2.instance = window.VHDocSDK.createInstance(options, onSuccess, onFail);
+          _this2.instance = VHDocSDK.createInstance(options, onSuccess, onFail);
 
           _this2.listenEvents();
         });
@@ -1253,7 +1256,7 @@
           // 是否是回放 必须
           client: window.VHDocSDK.Client.PC_WEB,
           // 客户端类型
-          token: ''
+          token: this.token
         };
         return defaultOptions;
       }
@@ -1399,6 +1402,11 @@
       value: function setRemoteData(item) {
         return this.instance.setRemoteData(item);
       }
+    }, {
+      key: "setRole",
+      value: function setRole(val) {
+        return this.instance.setRole(val);
+      }
       /**
        * 
        * @param {*} child is cid-ret
@@ -1536,6 +1544,8 @@
 
         this.instance.on(VhallRTC.EVENT_REMOTESTREAM_ADD, function (e) {
           // 远端流加入事件
+          console.log('succcccccccessss');
+
           _this2.$emit('interactive_REMOTESTREAM_ADD', e);
         });
         this.instance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, function (e) {
@@ -12185,7 +12195,7 @@
   }(BaseModule);
 
   var initLoader = function initLoader() {
-    Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.1.6.js')]).then(function (res) {
+    Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js')]).then(function (res) {
     });
   };
 
@@ -12319,7 +12329,7 @@
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         return new Promise(function (resolve, reject) {
           var instance = new DocModule(options);
-          instance.init(options).then(function (res) {
+          instance.init(function (res) {
             resolve(instance);
           });
         });

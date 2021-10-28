@@ -350,12 +350,12 @@
          * 获取房间在线信息
          * @param {Object} params 分页参数
          * @returns {Promise}
-         */},{key:"getOnlineInfo",value:function getOnlineInfo(params){var _this5=this;var defaultParams={currPage:1,pageSize:200};var retParams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){_this5.instance.getOnlineInfo(retParams,resolve,reject);});}}]);return ChatModule;}(BaseModule);var DocModule=/*#__PURE__*/function(_BaseModule){_inherits(DocModule,_BaseModule);var _super=_createSuper(DocModule);function DocModule(options){var _this;_classCallCheck(this,DocModule);_this=_super.call(this,options);_this.instance=null;_this.children=[];return _this;}_createClass(DocModule,[{key:"init",value:function init(){var _this2=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var defaultOptions=this.initDefaultOptions();var options=merge.recursive({},defaultOptions,customOptions);return new Promise(function(resolve,reject){var onSuccess=function onSuccess(){console.log('saasSDK文档初始化成功');resolve();};var onFail=function onFail(failed){console.error('saasSDK文档初始化失败',failed.msg);reject();};_this2.instance=window.VHDocSDK.createInstance(options,onSuccess,onFail);_this2.listenEvents();});}},{key:"initDefaultOptions",value:function initDefaultOptions(){isPc();var _store$get=store.get('roomInitData'),paasInfo=_store$get.paasInfo,userInfo=_store$get.userInfo;var defaultOptions={accountId:userInfo.third_party_user_id,roomId:paasInfo.room_id,channelId:paasInfo.channel_id,// 频道id 必须
+         */},{key:"getOnlineInfo",value:function getOnlineInfo(params){var _this5=this;var defaultParams={currPage:1,pageSize:200};var retParams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){_this5.instance.getOnlineInfo(retParams,resolve,reject);});}}]);return ChatModule;}(BaseModule);var DocModule=/*#__PURE__*/function(_BaseModule){_inherits(DocModule,_BaseModule);_createSuper(DocModule);function DocModule(){var _this;_classCallCheck(this,DocModule);_this.instance=null;_this.children=[];return _possibleConstructorReturn(_this);}_createClass(DocModule,[{key:"init",value:function init(){var _this2=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var defaultOptions=this.initDefaultOptions();var options=merge.recursive({},defaultOptions,customOptions);return new Promise(function(resolve,reject){var onSuccess=function onSuccess(){console.log('saasSDK文档初始化成功');resolve();_this2.$emit(CONST_VAL.DOC_SDK_READ,_this2.instance);};var onFail=function onFail(){console.error('saasSDK文档初始化失败',failed.msg);reject();_this2.$emit(CONST_VAL.DOC_SDK_ERROR,failed.msg);};_this2.instance=VHDocSDK.createInstance(options,onSuccess,onFail);_this2.listenEvents();});}},{key:"initDefaultOptions",value:function initDefaultOptions(){isPc();var _store$get=store.get('roomInitData'),paasInfo=_store$get.paasInfo,userInfo=_store$get.userInfo;var defaultOptions={accountId:userInfo.third_party_user_id,roomId:paasInfo.room_id,channelId:paasInfo.channel_id,// 频道id 必须
   appId:paasInfo.paas_app_id,// appId 必须
   role:userInfo.role_name,// 角色 必须
   isVod:false,// 是否是回放 必须
   client:window.VHDocSDK.Client.PC_WEB,// 客户端类型
-  token:''};return defaultOptions;}},{key:"listenEvents",value:function listenEvents(){var _this3=this;// 创建容器事件
+  token:this.token};return defaultOptions;}},{key:"listenEvents",value:function listenEvents(){var _this3=this;// 创建容器事件
   this.instance.on(VHDocSDK.Event.CREATE_CONTAINER,function(data){_this3.$emit(VHDocSDK.Event.CREATE_CONTAINER,data);});// 选择容器
   this.instance.on(VHDocSDK.Event.SELECT_CONTAINER,function(data){_this3.$emit(VHDocSDK.Event.SELECT_CONTAINER,data);});// 当前文档加载完成
   this.instance.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE,function(data){_this3.$emit(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE,data);});// 开关变换
@@ -382,7 +382,7 @@
   stroke:'#000',// 颜色值
   strokeWidth:4// 正数 Number
   }),_defaultOptions);var options=merge.recursive({},defaultOptions,customOptions);return sdk.createDocument(options);// 返回promise
-  }},{key:"selectContainer",value:function selectContainer(id){this.instance.selectContainer({id:id});this.currentCid=id;}},{key:"getContainerInfo",value:function getContainerInfo(params){return this.instance.getContainerInfo(params);}},{key:"destroyContainer",value:function destroyContainer(val){return this.instance.destroyContainer(val);}},{key:"getVodAllCids",value:function getVodAllCids(){return this.instance.getVodAllCids();}},{key:"setRemoteData",value:function setRemoteData(item){return this.instance.setRemoteData(item);}/**
+  }},{key:"selectContainer",value:function selectContainer(id){this.instance.selectContainer({id:id});this.currentCid=id;}},{key:"getContainerInfo",value:function getContainerInfo(params){return this.instance.getContainerInfo(params);}},{key:"destroyContainer",value:function destroyContainer(val){return this.instance.destroyContainer(val);}},{key:"getVodAllCids",value:function getVodAllCids(){return this.instance.getVodAllCids();}},{key:"setRemoteData",value:function setRemoteData(item){return this.instance.setRemoteData(item);}},{key:"setRole",value:function setRole(val){return this.instance.setRole(val);}/**
          * 
          * @param {*} child is cid-ret
          */},{key:"addChild",value:function addChild(child){this.children.push(child);}},{key:"zoomIn",value:function zoomIn(){this.instance.zoomIn();}},{key:"zoomOut",value:function zoomOut(){this.instance.zoomOut();}},{key:"zoomReset",value:function zoomReset(){this.instance.zoomReset();}},{key:"move",value:function move(){this.instance.move();}},{key:"prevStep",value:function prevStep(){this.instance.prevStep();}},{key:"nextStep",value:function nextStep(){this.instance.nextStep();}}]);return DocModule;}(BaseModule);var InteractiveModule=/*#__PURE__*/function(_BaseModule){_inherits(InteractiveModule,_BaseModule);var _super=_createSuper(InteractiveModule);function InteractiveModule(customOptions){_classCallCheck(this,InteractiveModule);return _super.call(this,customOptions);}/**
@@ -406,7 +406,7 @@
   border:customOptions.border||{// 旁路边框属性
   width:2,color:'0x666666'}}:{}// 自动旁路   开启旁路直播方法所需参数
   };var options=merge.recursive({},defaultOptions,customOptions);console.log("optionssssssssssssssssssssssssssss",options);return new Promise(function(resolve,reject){var onSuccess=function onSuccess(event){_this.instance=event.vhallrtc;_this.listenEvents();console.log('init interactive sdk success:',event);successCb(event);resolve(event);};var onFail=function onFail(event){console.log('fail:',event);failCb(event);reject(event);};VhallRTC.createInstance(options,onSuccess,onFail);});}},{key:"listenEvents",value:function listenEvents(){var _this2=this;this.instance.on(VhallRTC.EVENT_REMOTESTREAM_ADD,function(e){// 远端流加入事件
-  _this2.$emit('interactive_REMOTESTREAM_ADD',e);});this.instance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED,function(e){// 远端流离开事件
+  console.log('succcccccccessss');_this2.$emit('interactive_REMOTESTREAM_ADD',e);});this.instance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED,function(e){// 远端流离开事件
   _this2.$emit('interactive_REMOTESTREAM_REMOVED',e);});this.instance.on(VhallRTC.EVENT_ROOM_EXCDISCONNECTED,function(e){// 房间信令异常断开事件
   _this2.$emit('interactive_ROOM_EXCDISCONNECTED',e);});this.instance.on(VhallRTC.EVENT_REMOTESTREAM_MUTE,function(e){// 远端流音视频状态改变事件
   _this2.$emit('interactive_REMOTESTREAM_MUTE',e);});this.instance.on(VhallRTC.EVENT_REMOTESTREAM_FAILED,function(e){// 本地推流或订阅远端流异常断开事件
@@ -10063,7 +10063,7 @@
   return this.instance.setPlaySpeed(val,failure);}},{key:"openControls",value:function openControls(isOpen){// 开关默认控制条
   return this.instance.openControls(isOpen);}},{key:"openUI",value:function openUI(isOpen){return this.instance.openUI(isOpen);}},{key:"setResetVideo",value:function setResetVideo(){var videoDom=document.getElementById(this.params.videoNode);if(videoDom&&this.instance){this.instance.setSize({width:videoDom.offsetWidth,height:videoDom.offsetHeight});}}},{key:"setBarrageInfo",value:function setBarrageInfo(option){return this.instance.setBarrageInfo(option,function(err){Vlog.error(err);});}},{key:"addBarrage",value:function addBarrage(content){return this.instance.addBarrage(content,function(err){Vlog.error(err);});}},{key:"toggleBarrage",value:function toggleBarrage(open){if(!this.instance)return;if(open){this.instance.openBarrage();}else {this.instance.closeBarrage();}}},{key:"toggleSubtitle",value:function toggleSubtitle(open){if(this.instance&&this.params.recordId){if(open){// 开启点播字幕(仅点播可用)
   this.instance.openSubtitle();}else {// 关闭点播字幕(仅点播可用)
-  this.instance.closeSubtitle();}}}}]);return PlayerModule;}(BaseModule);var initLoader=function initLoader(){Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.1.6.js')]).then(function(res){});};var VhallSaasSDK=/*#__PURE__*/function(){function VhallSaasSDK(){_classCallCheck(this,VhallSaasSDK);this.msgBus=null;this.request=requestApi;this.baseState=store;}_createClass(VhallSaasSDK,[{key:"init",value:function init(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{clientType:'send',receiveType:'standard'};this.setRequestConfig(options);this.setClientType(options.clientType);if(options.clientType==='send'){return this.initSendLive(options);}else {return this.initReceiveLive(options);}}},{key:"initSendLive",value:function initSendLive(options){var _this=this;return new Promise(function(resolve,reject){_this.request.live.initSendLive(options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"initReceiveLive",value:function initReceiveLive(options){var _this2=this;var receiveApi={standard:'initStandardReceiveLive',embed:'initEmbeddedReceiveLive',sdk:'initSdkReceiveLive'};return new Promise(function(resolve,reject){_this2.request.live[receiveApi[options.receiveType]](options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"setClientType",value:function setClientType(clientType){if(clientType!=='send'&&clientType!=='receive'){throw new TypeError('clientType is invalid');}store.set('clientType',clientType);}},{key:"setRequestConfig",value:function setRequestConfig(options){if(options.development){setBaseUrl('https://t-saas-dispatch.vhall.com');}else {setBaseUrl('https://saas-api.vhall.com');}setToken(options.token,options.liveToken);if(options.requestHeaders){setRequestHeaders(options.requestHeaders);}}},{key:"isReady",value:function isReady(){return loadSuccess===true;}},{key:"createPlayer",value:function createPlayer(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new PlayerModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createInteractive",value:function createInteractive(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new InteractiveModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createChat",value:function createChat(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new ChatModule();instance.init(options).then(function(res){resolve(instance);});});}},{key:"createDoc",value:function createDoc(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new DocModule(options);instance.init(options).then(function(res){resolve(instance);});});}}]);return VhallSaasSDK;}();VhallSaasSDK.requestApi=requestApi;initLoader();window.VhallSaasSDK=VhallSaasSDK;});
+  this.instance.closeSubtitle();}}}}]);return PlayerModule;}(BaseModule);var initLoader=function initLoader(){Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js')]).then(function(res){});};var VhallSaasSDK=/*#__PURE__*/function(){function VhallSaasSDK(){_classCallCheck(this,VhallSaasSDK);this.msgBus=null;this.request=requestApi;this.baseState=store;}_createClass(VhallSaasSDK,[{key:"init",value:function init(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{clientType:'send',receiveType:'standard'};this.setRequestConfig(options);this.setClientType(options.clientType);if(options.clientType==='send'){return this.initSendLive(options);}else {return this.initReceiveLive(options);}}},{key:"initSendLive",value:function initSendLive(options){var _this=this;return new Promise(function(resolve,reject){_this.request.live.initSendLive(options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"initReceiveLive",value:function initReceiveLive(options){var _this2=this;var receiveApi={standard:'initStandardReceiveLive',embed:'initEmbeddedReceiveLive',sdk:'initSdkReceiveLive'};return new Promise(function(resolve,reject){_this2.request.live[receiveApi[options.receiveType]](options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"setClientType",value:function setClientType(clientType){if(clientType!=='send'&&clientType!=='receive'){throw new TypeError('clientType is invalid');}store.set('clientType',clientType);}},{key:"setRequestConfig",value:function setRequestConfig(options){if(options.development){setBaseUrl('https://t-saas-dispatch.vhall.com');}else {setBaseUrl('https://saas-api.vhall.com');}setToken(options.token,options.liveToken);if(options.requestHeaders){setRequestHeaders(options.requestHeaders);}}},{key:"isReady",value:function isReady(){return loadSuccess===true;}},{key:"createPlayer",value:function createPlayer(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new PlayerModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createInteractive",value:function createInteractive(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new InteractiveModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createChat",value:function createChat(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new ChatModule();instance.init(options).then(function(res){resolve(instance);});});}},{key:"createDoc",value:function createDoc(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new DocModule(options);instance.init(function(res){resolve(instance);});});}}]);return VhallSaasSDK;}();VhallSaasSDK.requestApi=requestApi;initLoader();window.VhallSaasSDK=VhallSaasSDK;});
 
   function unwrapExports (x) {
   	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
@@ -11501,36 +11501,37 @@
   }
 
   function useDocServer() {
-    var init = function init(options) {
-      console.log('-----------------------initDocServer----------------------');
+    var state = {
+      docInstance: null
+    };
 
+    var on = function on(type, cb) {
+      if (!state.docInstance) return;
+      state.docInstance.$on(type, cb);
+    };
+
+    var destroy = function destroy() {
+      return state.docInstance.destroy();
+    };
+
+    var init = function init(options) {
       var _contextServer$get = contextServer.get('roomInitGroupServer'),
           roomInitGroupServer = _contextServer$get.state;
 
-      console.log(roomInitGroupServer.vhallSaasInstance.createDoc);
+      console.log('create doc', roomInitGroupServer.vhallSaasInstance.createDoc);
       return roomInitGroupServer.vhallSaasInstance.createDoc(options).then(function (instance) {
-        console.log('-----------------------initDocServer-------resolve---------------');
-        console.log(instance);
+        state.docInstance = instance;
         return instance;
       })["catch"](function (e) {
-        console.log('-----------------------initDocServerreject--------------', e);
         return e;
       });
-    }; // -- TypeError: Cannot set properties of undefined (setting 'instance')
-    // at new DocModule (context.server.js?b7c1:2)
-    // at eval (index.js?9e93:2)
-    // at new Promise (<anonymous>)
-    // at VhallSaasSDK.createDoc (index.js?9e93:2)
-    // at Object.init (player.server.js?4cd1:9)
-    // at VueComponent.initDocSDK (doc.js?3682:165)
-    // at Vue.eval (doc.js?3682:128)
-    // at invokeWithErrorHandling (vue.runtime.esm.js?9800:1863)
-    // at Vue.$emit (vue.runtime.esm.js?9800:3903)
-    // at Vue.<computed> [as $emit] (backend.js:1793)
-
+    };
 
     return {
-      init: init
+      state: state,
+      init: init,
+      on: on,
+      destroy: destroy
     };
   }
 
