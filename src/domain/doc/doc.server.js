@@ -2,21 +2,21 @@ import contextServer from '@/domain/common/context.server.js'
 
 export default function useDocServer() {
     const state = {
-        docInstance:null
+        docInstance: null
     }
 
-    const on = (type,cb)=>{
-        if(!state.docInstance)return;
-        state.docInstance.$on(type,cb)
+    const on = (type, cb) => {
+        if (!state.docInstance) return;
+        state.docInstance.$on(type, cb)
     }
 
-    const destroy = ()=>{
+    const destroy = () => {
         return state.docInstance.destroy()
     }
 
     const init = (options) => {
         const { state: roomInitGroupServer } = contextServer.get('roomInitGroupServer')
-        console.log('create doc',roomInitGroupServer.vhallSaasInstance.createDoc)
+        console.log('create doc', roomInitGroupServer.vhallSaasInstance.createDoc)
         return roomInitGroupServer.vhallSaasInstance.createDoc(options).then(instance => {
             state.docInstance = instance;
             return instance
@@ -25,5 +25,9 @@ export default function useDocServer() {
         })
 
     }
-    return { state,init,on,destroy }
+
+    const getVodAllCids = (val) => {
+        return state.docInstance.getVodAllCids(val)
+    }
+    return { state, init, on, destroy, getVodAllCids }
 }

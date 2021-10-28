@@ -4,7 +4,7 @@ import useMsgServer from '@/domain/common/msg.server.js';
 import useInteractiveServer from '@/domain/stream/interactive.server.js'
 import useMediaCheckServer from '@/domain/stream/mediaCheck.server.js'
 import usePlayerServer from '@/domain/player/player.server.js'
-import useDocServer from '@//domain/doc/doc.server.js'
+import useDocServer from '@/domain/doc/doc.server.js'
 
 import useRoomBaseServer from '@/domain/roombase/roombase.server.js'
 import useUserServer from '@/domain/user/user.server.js'
