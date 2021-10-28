@@ -36,8 +36,8 @@ export default function useDocServer() {
         return state.docInstance.createDocument(options)
     }
 
-    const selectContainer=(id)=>{
-        return state.docInstance.selectContainer(id)
+    const selectContainer=(option)=>{
+        return state.docInstance.selectContainer(option)
     }
 
     const switchOnContainer=(val)=>{
@@ -52,7 +52,7 @@ export default function useDocServer() {
         return state.docInstance.resetContainer()
     }
 
-    const getContainerInfo = options =>{
+    const getContainerInfo = async (options) =>{
         return state.docInstance.getContainerInfo(options)
     }
 

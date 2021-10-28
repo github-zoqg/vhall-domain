@@ -1814,6 +1814,8 @@
             videoNode: options.videoNode,
             // 必填，传入本地视频显示容器ID
             screen: true,
+            audio: options.audio || false,
+            // 桌面共享不采集麦克风防止回声
             speaker: options.speaker || false,
             // 桌面共享时是否分享桌面音频(如为true，则chrome浏览器弹框左下角将显示“分享音频”选框)，默认为false
             profile: options.profile || VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H,
@@ -2400,15 +2402,7 @@
     }, {
       key: "checkSystemRequirements",
       value: function checkSystemRequirements() {
-        var _this28 = this;
-
-        return new Promise(function (resolve, reject) {
-          _this28.instance.checkSystemRequirements().then(function (data) {
-            resolve(data.result);
-          })["catch"](function (error) {
-            reject(error);
-          });
-        });
+        return this.instance.checkSystemRequirements();
       }
       /**
        * 获取上下行丢包率
@@ -2418,10 +2412,10 @@
     }, {
       key: "getPacketLossRate",
       value: function getPacketLossRate() {
-        var _this29 = this;
+        var _this28 = this;
 
         return new Promise(function (resolve, reject) {
-          _this29.instance.getPacketLossRate().then(function (data) {
+          _this28.instance.getPacketLossRate().then(function (data) {
             resolve(data);
           })["catch"](function (error) {
             reject(error);
@@ -2436,11 +2430,11 @@
     }, {
       key: "getStreamPacketLoss",
       value: function getStreamPacketLoss() {
-        var _this30 = this;
+        var _this29 = this;
 
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         return new Promise(function (resolve, reject) {
-          _this30.instance.getStreamPacketLoss(options).then(function () {
+          _this29.instance.getStreamPacketLoss(options).then(function () {
             resolve();
           })["catch"](function (error) {
             reject(error);
@@ -2455,11 +2449,11 @@
     }, {
       key: "getAudioLevel",
       value: function getAudioLevel() {
-        var _this31 = this;
+        var _this30 = this;
 
         var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
         return new Promise(function (resolve, reject) {
-          _this31.instance.getAudioLevel({
+          _this30.instance.getAudioLevel({
             streamId: streamId
           }).then(function (data) {
             resolve(data);
@@ -2476,11 +2470,11 @@
     }, {
       key: "getStreamMute",
       value: function getStreamMute() {
-        var _this32 = this;
+        var _this31 = this;
 
         var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
         return new Promise(function (resolve, reject) {
-          _this32.instance.getStreamMute({
+          _this31.instance.getStreamMute({
             streamId: streamId
           }).then(function (data) {
             resolve(data);

@@ -374,14 +374,14 @@
   graphicType:VHDocSDK.GRAPHIC.PEN,// 选项请参考画笔预设值,
   stroke:'#000',// 颜色值
   strokeWidth:4// 正数 Number
-  }};var options=merge.recursive({},defaultOptions,customOptions);return this.instance.createBoard(options);}},{key:"createDocument",value:function createDocument(customOptions){var _defaultOptions;var elId=sdk.createUUID('document');// 容器id，必须用此方法创建，文档传入document，返回唯一id
+  }};var options=merge.recursive({},defaultOptions,customOptions);return this.instance.createBoard(options);}},{key:"createDocument",value:function createDocument(customOptions){var _defaultOptions;console.log('create Document success!');var elId=this.instance.createUUID('document');// 容器id，必须用此方法创建，文档传入document，返回唯一id
   var defaultOptions=(_defaultOptions={id:customOptions.id,docId:customOptions.docId,elId:elId,// div 容器 必须
   width:200,// div 宽度，像素单位，数值型不带px 必须
   height:200},_defineProperty(_defaultOptions,"docId",'yyy'),_defineProperty(_defaultOptions,"noDispatch",false),_defineProperty(_defaultOptions,"option",{// 非必填，画笔预设选项
   graphicType:VHDocSDK.GRAPHIC.PEN,// 选项请参考画笔预设值,
   stroke:'#000',// 颜色值
   strokeWidth:4// 正数 Number
-  }),_defaultOptions);var options=merge.recursive({},defaultOptions,customOptions);return sdk.createDocument(options);// 返回promise
+  }),_defaultOptions);var options=merge.recursive({},defaultOptions,customOptions);return this.instance.createDocument(options);// 返回promise
   }},{key:"selectContainer",value:function selectContainer(id){this.instance.selectContainer({id:id});this.currentCid=id;}},{key:"getContainerInfo",value:function getContainerInfo(params){return this.instance.getContainerInfo(params);}},{key:"destroyContainer",value:function destroyContainer(val){return this.instance.destroyContainer(val);}},{key:"getVodAllCids",value:function getVodAllCids(){return this.instance.getVodAllCids();}},{key:"setRemoteData",value:function setRemoteData(item){return this.instance.setRemoteData(item);}},{key:"addChild",value:function addChild(child){this.children.push(child);}},{key:"zoomIn",value:function zoomIn(){this.instance.zoomIn();}},{key:"zoomOut",value:function zoomOut(){this.instance.zoomOut();}},{key:"zoomReset",value:function zoomReset(){this.instance.zoomReset();}},{key:"cancelZoom",value:function cancelZoom(){return this.instance.cancelZoom();}},{key:"move",value:function move(){this.instance.move();}},{key:"prevStep",value:function prevStep(){this.instance.prevStep();}},{key:"nextStep",value:function nextStep(){this.instance.nextStep();}},{key:"switchOnContainer",value:function switchOnContainer(val){return this.instance.switchOnContainer(val);}},{key:"switchOffContainer",value:function switchOffContainer(val){return this.instance.switchOffContainer(val);}},{key:"resetContainer",value:function resetContainer(){return this.instance.resetContainer();}},{key:"setPlayMode",value:function setPlayMode(mode){return this.instance.setPlayMode(mode);}},{key:"setSize",value:function setSize(width,height,options){return this.instance.setSize(width,height,options);}},{key:"setControlStyle",value:function setControlStyle(style){return this.instance.setControlStyle(style);}},{key:"gotoPage",value:function gotoPage(options){return this.instance.gotoPage(options);}},{key:"setPen",value:function setPen(val){return this.instance.setPen(val);}},{key:"setEraser",value:function setEraser(val){return this.instance.setEraser(val);}},{key:"setStroke",value:function setStroke(options){return this.instance.setStroke(options);}},{key:"setStrokeWidth",value:function setStrokeWidth(options){return this.instance.setStrokeWidth(options);}},{key:"clear",value:function clear(){return this.instance.clear();}},{key:"cancelDrawable",value:function cancelDrawable(){return this.instance.cancelDrawable();}},{key:"setHighlighters",value:function setHighlighters(){return this.instance.setHighlighters();}},{key:"setText",value:function setText(val){return this.instance.setText(val);}},{key:"loadDoc",value:function loadDoc(options){return this.instance.loadDoc(options);}},{key:"start",value:function start(val,type){return this.instance.start(val,type);}},{key:"republish",value:function republish(){return this.instance.republish();}},{key:"setRole",value:function setRole(role){return this.instance.setRole(role);}},{key:"setAccountId",value:function setAccountId(role){return this.instance.setAccountId(role);}},{key:"setEditable",value:function setEditable(editable){return this.instance.setEditable(editable);}},{key:"getThumbnailList",value:function getThumbnailList(options){return this.instance.getThumbnailList(options);}}]);return DocModule;}(BaseModule);var InteractiveModule=/*#__PURE__*/function(_BaseModule){_inherits(InteractiveModule,_BaseModule);var _super=_createSuper(InteractiveModule);function InteractiveModule(customOptions){_classCallCheck(this,InteractiveModule);return _super.call(this,customOptions);}/**
        * 初始化互动sdk
        * @param {Object} customOptions 
@@ -439,7 +439,8 @@
          * @return {Promise} - 创建成功后的promise 回调
          *
          */},{key:"createLocaldesktopStream",value:function createLocaldesktopStream(){var _this6=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var addConfig=arguments.length>1&&arguments[1]!==undefined?arguments[1]:{};return new Promise(function(resolve,reject){var defaultOptions={videoNode:options.videoNode,// 必填，传入本地视频显示容器ID
-  screen:true,speaker:options.speaker||false,// 桌面共享时是否分享桌面音频(如为true，则chrome浏览器弹框左下角将显示“分享音频”选框)，默认为false
+  screen:true,audio:options.audio||false,// 桌面共享不采集麦克风防止回声
+  speaker:options.speaker||false,// 桌面共享时是否分享桌面音频(如为true，则chrome浏览器弹框左下角将显示“分享音频”选框)，默认为false
   profile:options.profile||VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H,// 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
   streamType:3,//选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。
   attributes:JSON.stringify({roleName:store.get('roomInitData').userInfo.role_name,accountId:store.get('roomInitData').userInfo.third_party_user_id,nickName:store.get('roomInitData').userInfo.nickname})//选填，自定义信息，支持字符串类型
@@ -558,19 +559,19 @@
          */},{key:"isScreenShareSupported",value:function isScreenShareSupported(){return this.instance.isScreenShareSupported();}/**
          * 检查当前浏览器支持性
          * @returns Boolean
-         */},{key:"checkSystemRequirements",value:function checkSystemRequirements(){var _this28=this;return new Promise(function(resolve,reject){_this28.instance.checkSystemRequirements().then(function(data){resolve(data.result);})["catch"](function(error){reject(error);});});}/**
+         */},{key:"checkSystemRequirements",value:function checkSystemRequirements(){return this.instance.checkSystemRequirements();}/**
          * 获取上下行丢包率
          * @returns  data中有 upLossRate 上行丢包率   downLossRate 下行丢包率
-         */},{key:"getPacketLossRate",value:function getPacketLossRate(){var _this29=this;return new Promise(function(resolve,reject){_this29.instance.getPacketLossRate().then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}/**
+         */},{key:"getPacketLossRate",value:function getPacketLossRate(){var _this28=this;return new Promise(function(resolve,reject){_this28.instance.getPacketLossRate().then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}/**
          * 获取流上下行丢包率
          * @returns  data中有 
-         */},{key:"getStreamPacketLoss",value:function getStreamPacketLoss(){var _this30=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){_this30.instance.getStreamPacketLoss(options).then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
+         */},{key:"getStreamPacketLoss",value:function getStreamPacketLoss(){var _this29=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){_this29.instance.getStreamPacketLoss(options).then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
          * 获取流音频能量
          * @returns  
-         */},{key:"getAudioLevel",value:function getAudioLevel(){var _this31=this;var streamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this31.instance.getAudioLevel({streamId:streamId}).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}/**
+         */},{key:"getAudioLevel",value:function getAudioLevel(){var _this30=this;var streamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this30.instance.getAudioLevel({streamId:streamId}).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}/**
          * 获取流的mute状态
          * @returns  
-         */},{key:"getStreamMute",value:function getStreamMute(){var _this32=this;var streamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this32.instance.getStreamMute({streamId:streamId}).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}}]);return InteractiveModule;}(BaseModule);var lodash={exports:{}};(function(module,exports){(function(){/** Used as a safe reference for `undefined` in pre-ES5 environments. */var undefined$1;/** Used as the semantic version number. */var VERSION='4.17.21';/** Used as the size to enable large array optimizations. */var LARGE_ARRAY_SIZE=200;/** Error message constants. */var CORE_ERROR_TEXT='Unsupported core-js use. Try https://npms.io/search?q=ponyfill.',FUNC_ERROR_TEXT='Expected a function',INVALID_TEMPL_VAR_ERROR_TEXT='Invalid `variable` option passed into `_.template`';/** Used to stand-in for `undefined` hash values. */var HASH_UNDEFINED='__lodash_hash_undefined__';/** Used as the maximum memoize cache size. */var MAX_MEMOIZE_SIZE=500;/** Used as the internal argument placeholder. */var PLACEHOLDER='__lodash_placeholder__';/** Used to compose bitmasks for cloning. */var CLONE_DEEP_FLAG=1,CLONE_FLAT_FLAG=2,CLONE_SYMBOLS_FLAG=4;/** Used to compose bitmasks for value comparisons. */var COMPARE_PARTIAL_FLAG=1,COMPARE_UNORDERED_FLAG=2;/** Used to compose bitmasks for function metadata. */var WRAP_BIND_FLAG=1,WRAP_BIND_KEY_FLAG=2,WRAP_CURRY_BOUND_FLAG=4,WRAP_CURRY_FLAG=8,WRAP_CURRY_RIGHT_FLAG=16,WRAP_PARTIAL_FLAG=32,WRAP_PARTIAL_RIGHT_FLAG=64,WRAP_ARY_FLAG=128,WRAP_REARG_FLAG=256,WRAP_FLIP_FLAG=512;/** Used as default options for `_.truncate`. */var DEFAULT_TRUNC_LENGTH=30,DEFAULT_TRUNC_OMISSION='...';/** Used to detect hot functions by number of calls within a span of milliseconds. */var HOT_COUNT=800,HOT_SPAN=16;/** Used to indicate the type of lazy iteratees. */var LAZY_FILTER_FLAG=1,LAZY_MAP_FLAG=2,LAZY_WHILE_FLAG=3;/** Used as references for various `Number` constants. */var INFINITY=1/0,MAX_SAFE_INTEGER=9007199254740991,MAX_INTEGER=1.7976931348623157e+308,NAN=0/0;/** Used as references for the maximum length and index of an array. */var MAX_ARRAY_LENGTH=4294967295,MAX_ARRAY_INDEX=MAX_ARRAY_LENGTH-1,HALF_MAX_ARRAY_LENGTH=MAX_ARRAY_LENGTH>>>1;/** Used to associate wrap methods with their bit flags. */var wrapFlags=[['ary',WRAP_ARY_FLAG],['bind',WRAP_BIND_FLAG],['bindKey',WRAP_BIND_KEY_FLAG],['curry',WRAP_CURRY_FLAG],['curryRight',WRAP_CURRY_RIGHT_FLAG],['flip',WRAP_FLIP_FLAG],['partial',WRAP_PARTIAL_FLAG],['partialRight',WRAP_PARTIAL_RIGHT_FLAG],['rearg',WRAP_REARG_FLAG]];/** `Object#toString` result references. */var argsTag='[object Arguments]',arrayTag='[object Array]',asyncTag='[object AsyncFunction]',boolTag='[object Boolean]',dateTag='[object Date]',domExcTag='[object DOMException]',errorTag='[object Error]',funcTag='[object Function]',genTag='[object GeneratorFunction]',mapTag='[object Map]',numberTag='[object Number]',nullTag='[object Null]',objectTag='[object Object]',promiseTag='[object Promise]',proxyTag='[object Proxy]',regexpTag='[object RegExp]',setTag='[object Set]',stringTag='[object String]',symbolTag='[object Symbol]',undefinedTag='[object Undefined]',weakMapTag='[object WeakMap]',weakSetTag='[object WeakSet]';var arrayBufferTag='[object ArrayBuffer]',dataViewTag='[object DataView]',float32Tag='[object Float32Array]',float64Tag='[object Float64Array]',int8Tag='[object Int8Array]',int16Tag='[object Int16Array]',int32Tag='[object Int32Array]',uint8Tag='[object Uint8Array]',uint8ClampedTag='[object Uint8ClampedArray]',uint16Tag='[object Uint16Array]',uint32Tag='[object Uint32Array]';/** Used to match empty string literals in compiled template source. */var reEmptyStringLeading=/\b__p \+= '';/g,reEmptyStringMiddle=/\b(__p \+=) '' \+/g,reEmptyStringTrailing=/(__e\(.*?\)|\b__t\)) \+\n'';/g;/** Used to match HTML entities and HTML characters. */var reEscapedHtml=/&(?:amp|lt|gt|quot|#39);/g,reUnescapedHtml=/[&<>"']/g,reHasEscapedHtml=RegExp(reEscapedHtml.source),reHasUnescapedHtml=RegExp(reUnescapedHtml.source);/** Used to match template delimiters. */var reEscape=/<%-([\s\S]+?)%>/g,reEvaluate=/<%([\s\S]+?)%>/g,reInterpolate=/<%=([\s\S]+?)%>/g;/** Used to match property names within property paths. */var reIsDeepProp=/\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,reIsPlainProp=/^\w*$/,rePropName=/[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;/**
+         */},{key:"getStreamMute",value:function getStreamMute(){var _this31=this;var streamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this31.instance.getStreamMute({streamId:streamId}).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}}]);return InteractiveModule;}(BaseModule);var lodash={exports:{}};(function(module,exports){(function(){/** Used as a safe reference for `undefined` in pre-ES5 environments. */var undefined$1;/** Used as the semantic version number. */var VERSION='4.17.21';/** Used as the size to enable large array optimizations. */var LARGE_ARRAY_SIZE=200;/** Error message constants. */var CORE_ERROR_TEXT='Unsupported core-js use. Try https://npms.io/search?q=ponyfill.',FUNC_ERROR_TEXT='Expected a function',INVALID_TEMPL_VAR_ERROR_TEXT='Invalid `variable` option passed into `_.template`';/** Used to stand-in for `undefined` hash values. */var HASH_UNDEFINED='__lodash_hash_undefined__';/** Used as the maximum memoize cache size. */var MAX_MEMOIZE_SIZE=500;/** Used as the internal argument placeholder. */var PLACEHOLDER='__lodash_placeholder__';/** Used to compose bitmasks for cloning. */var CLONE_DEEP_FLAG=1,CLONE_FLAT_FLAG=2,CLONE_SYMBOLS_FLAG=4;/** Used to compose bitmasks for value comparisons. */var COMPARE_PARTIAL_FLAG=1,COMPARE_UNORDERED_FLAG=2;/** Used to compose bitmasks for function metadata. */var WRAP_BIND_FLAG=1,WRAP_BIND_KEY_FLAG=2,WRAP_CURRY_BOUND_FLAG=4,WRAP_CURRY_FLAG=8,WRAP_CURRY_RIGHT_FLAG=16,WRAP_PARTIAL_FLAG=32,WRAP_PARTIAL_RIGHT_FLAG=64,WRAP_ARY_FLAG=128,WRAP_REARG_FLAG=256,WRAP_FLIP_FLAG=512;/** Used as default options for `_.truncate`. */var DEFAULT_TRUNC_LENGTH=30,DEFAULT_TRUNC_OMISSION='...';/** Used to detect hot functions by number of calls within a span of milliseconds. */var HOT_COUNT=800,HOT_SPAN=16;/** Used to indicate the type of lazy iteratees. */var LAZY_FILTER_FLAG=1,LAZY_MAP_FLAG=2,LAZY_WHILE_FLAG=3;/** Used as references for various `Number` constants. */var INFINITY=1/0,MAX_SAFE_INTEGER=9007199254740991,MAX_INTEGER=1.7976931348623157e+308,NAN=0/0;/** Used as references for the maximum length and index of an array. */var MAX_ARRAY_LENGTH=4294967295,MAX_ARRAY_INDEX=MAX_ARRAY_LENGTH-1,HALF_MAX_ARRAY_LENGTH=MAX_ARRAY_LENGTH>>>1;/** Used to associate wrap methods with their bit flags. */var wrapFlags=[['ary',WRAP_ARY_FLAG],['bind',WRAP_BIND_FLAG],['bindKey',WRAP_BIND_KEY_FLAG],['curry',WRAP_CURRY_FLAG],['curryRight',WRAP_CURRY_RIGHT_FLAG],['flip',WRAP_FLIP_FLAG],['partial',WRAP_PARTIAL_FLAG],['partialRight',WRAP_PARTIAL_RIGHT_FLAG],['rearg',WRAP_REARG_FLAG]];/** `Object#toString` result references. */var argsTag='[object Arguments]',arrayTag='[object Array]',asyncTag='[object AsyncFunction]',boolTag='[object Boolean]',dateTag='[object Date]',domExcTag='[object DOMException]',errorTag='[object Error]',funcTag='[object Function]',genTag='[object GeneratorFunction]',mapTag='[object Map]',numberTag='[object Number]',nullTag='[object Null]',objectTag='[object Object]',promiseTag='[object Promise]',proxyTag='[object Proxy]',regexpTag='[object RegExp]',setTag='[object Set]',stringTag='[object String]',symbolTag='[object Symbol]',undefinedTag='[object Undefined]',weakMapTag='[object WeakMap]',weakSetTag='[object WeakSet]';var arrayBufferTag='[object ArrayBuffer]',dataViewTag='[object DataView]',float32Tag='[object Float32Array]',float64Tag='[object Float64Array]',int8Tag='[object Int8Array]',int16Tag='[object Int16Array]',int32Tag='[object Int32Array]',uint8Tag='[object Uint8Array]',uint8ClampedTag='[object Uint8ClampedArray]',uint16Tag='[object Uint16Array]',uint32Tag='[object Uint32Array]';/** Used to match empty string literals in compiled template source. */var reEmptyStringLeading=/\b__p \+= '';/g,reEmptyStringMiddle=/\b(__p \+=) '' \+/g,reEmptyStringTrailing=/(__e\(.*?\)|\b__t\)) \+\n'';/g;/** Used to match HTML entities and HTML characters. */var reEscapedHtml=/&(?:amp|lt|gt|quot|#39);/g,reUnescapedHtml=/[&<>"']/g,reHasEscapedHtml=RegExp(reEscapedHtml.source),reHasUnescapedHtml=RegExp(reUnescapedHtml.source);/** Used to match template delimiters. */var reEscape=/<%-([\s\S]+?)%>/g,reEvaluate=/<%([\s\S]+?)%>/g,reInterpolate=/<%=([\s\S]+?)%>/g;/** Used to match property names within property paths. */var reIsDeepProp=/\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,reIsPlainProp=/^\w*$/,rePropName=/[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;/**
        * Used to match `RegExp`
        * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
        */var reRegExpChar=/[\\^$.*+?()[\]{}|]/g,reHasRegExpChar=RegExp(reRegExpChar.source);/** Used to match leading whitespace. */var reTrimStart=/^\s+/;/** Used to match a single whitespace character. */var reWhitespace=/\s/;/** Used to match wrap detail comments. */var reWrapComment=/\{(?:\n\/\* \[wrapped with .+\] \*\/)?\n?/,reWrapDetails=/\{\n\/\* \[wrapped with (.+)\] \*/,reSplitDetails=/,? & /;/** Used to match words composed of alphanumeric characters. */var reAsciiWord=/[^\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\x7f]+/g;/**
@@ -10830,6 +10831,65 @@
 
   };
 
+  // 获取文档列表(资料库所有文档)
+
+  var getAllDocList = function getAllDocList() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    return $fetch({
+      url: '/v3/interacts/document/get-shared-document-list',
+      type: 'GET',
+      data: params
+    });
+  }; // 获取文档列表(当前活动下)
+
+
+  var getWebinarDocList = function getWebinarDocList() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    return $fetch({
+      url: '/v3/interacts/document/get-webinar-document-list',
+      type: 'POST',
+      data: params
+    });
+  }; // 获取文档详情
+
+
+  var getDocDetail = function getDocDetail() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    return $fetch({
+      url: '/v3/interacts/document/get-shared-document-list',
+      type: 'GET',
+      data: params
+    });
+  }; // 同步文档
+
+
+  var syncDoc = function syncDoc() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    return $fetch({
+      url: '/v3/interacts/document/clone-from-shared-document',
+      type: 'GET',
+      data: params
+    });
+  }; // 删除文档(多选)
+
+
+  var delDocList = function delDocList() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    return $fetch({
+      url: '/v3/interacts/document/batch-remove-reference',
+      type: 'POST',
+      data: params
+    });
+  };
+
+  var doc = {
+    getAllDocList: getAllDocList,
+    getWebinarDocList: getWebinarDocList,
+    getDocDetail: getDocDetail,
+    syncDoc: syncDoc,
+    delDocList: delDocList
+  };
+
   var RequestApi = function RequestApi() {
     _classCallCheck(this, RequestApi);
 
@@ -10840,6 +10900,7 @@
     this.virtualClient = virtualClient;
     this.interactive = interactive;
     this.mic = mic;
+    this.doc = doc;
   };
 
   var requestApi = new RequestApi();
@@ -11497,8 +11558,9 @@
     };
   }
 
+  requestApi.doc;
   function useDocServer() {
-    var _ref;
+    var _ref2;
 
     var state = {
       docInstance: null
@@ -11534,13 +11596,42 @@
       return state.docInstance.createDocument(options);
     };
 
-    var selectContainer = function selectContainer(id) {
-      return state.docInstance.selectContainer(id);
+    var selectContainer = function selectContainer(option) {
+      return state.docInstance.selectContainer(option);
     };
 
-    var getContainerInfo = function getContainerInfo(options) {
-      return state.docInstance.getContainerInfo(options);
+    var switchOnContainer = function switchOnContainer(val) {
+      return state.docInstance.switchOnContainer(val);
     };
+
+    var switchOffContainer = function switchOffContainer(val) {
+      return state.docInstance.switchOffContainer(val);
+    };
+
+    var resetContainer = function resetContainer() {
+      return state.docInstance.resetContainer();
+    };
+
+    var getContainerInfo = /*#__PURE__*/function () {
+      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(options) {
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                return _context.abrupt("return", state.docInstance.getContainerInfo(options));
+
+              case 1:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee);
+      }));
+
+      return function getContainerInfo(_x) {
+        return _ref.apply(this, arguments);
+      };
+    }();
 
     var destroyContainer = function destroyContainer(val) {
       return state.docInstance.destroyContainer(val);
@@ -11564,6 +11655,10 @@
 
     var zoomReset = function zoomReset() {
       return state.docInstance.zoomReset();
+    };
+
+    var cancelZoom = function cancelZoom() {
+      return state.docInstance.cancelZoom();
     };
 
     var move = function move() {
@@ -11594,7 +11689,71 @@
       return state.docInstance.setControlStyle(style);
     };
 
-    return _ref = {
+    var gotoPage = function gotoPage(options) {
+      return state.docInstance.gotoPage(options);
+    };
+
+    var setPen = function setPen(val) {
+      return state.docInstance.setPen(val);
+    };
+
+    var setEraser = function setEraser(val) {
+      return state.docInstance.setEraser(val);
+    };
+
+    var setStroke = function setStroke(options) {
+      return state.docInstance.setStroke(options);
+    };
+
+    var setStrokeWidth = function setStrokeWidth(options) {
+      return state.docInstance.setStrokeWidth(options);
+    };
+
+    var clear = function clear() {
+      return state.docInstance.clear();
+    };
+
+    var cancelDrawable = function cancelDrawable() {
+      return state.docInstance.cancelDrawable();
+    };
+
+    var setHighlighters = function setHighlighters() {
+      return state.docInstance.setHighlighters();
+    };
+
+    var setText = function setText(val) {
+      return state.docInstance.setText(val);
+    };
+
+    var loadDoc = function loadDoc(options) {
+      return state.docInstance.loadDoc(options);
+    };
+
+    var start = function start(val, type) {
+      return state.docInstance.start(val, type);
+    };
+
+    var republish = function republish() {
+      return state.docInstance.republish();
+    };
+
+    var setRole = function setRole(role) {
+      return state.docInstance.setRole(role);
+    };
+
+    var setAccountId = function setAccountId(role) {
+      return state.docInstance.setAccountId(role);
+    };
+
+    var setEditable = function setEditable(editable) {
+      return state.docInstance.setEditable(editable);
+    };
+
+    var getThumbnailList = function getThumbnailList(options) {
+      return state.docInstance.getThumbnailList(options);
+    }; // 获取文档列表(资料库所有文档)
+
+    return _ref2 = {
       state: state,
       init: init,
       on: on,
@@ -11605,7 +11764,7 @@
       selectContainer: selectContainer,
       getContainerInfo: getContainerInfo,
       destroyContainer: destroyContainer
-    }, _defineProperty(_ref, "getVodAllCids", getVodAllCids), _defineProperty(_ref, "setRemoteData", setRemoteData), _defineProperty(_ref, "zoomIn", zoomIn), _defineProperty(_ref, "zoomOut", zoomOut), _defineProperty(_ref, "zoomReset", zoomReset), _defineProperty(_ref, "move", move), _defineProperty(_ref, "prevStep", prevStep), _defineProperty(_ref, "nextStep", nextStep), _defineProperty(_ref, "setPlayMode", setPlayMode), _defineProperty(_ref, "setSize", setSize), _defineProperty(_ref, "createUUID", createUUID), _defineProperty(_ref, "setControlStyle", setControlStyle), _ref;
+    }, _defineProperty(_ref2, "getVodAllCids", getVodAllCids), _defineProperty(_ref2, "setRemoteData", setRemoteData), _defineProperty(_ref2, "zoomIn", zoomIn), _defineProperty(_ref2, "zoomOut", zoomOut), _defineProperty(_ref2, "zoomReset", zoomReset), _defineProperty(_ref2, "move", move), _defineProperty(_ref2, "prevStep", prevStep), _defineProperty(_ref2, "nextStep", nextStep), _defineProperty(_ref2, "setPlayMode", setPlayMode), _defineProperty(_ref2, "setSize", setSize), _defineProperty(_ref2, "createUUID", createUUID), _defineProperty(_ref2, "setControlStyle", setControlStyle), _defineProperty(_ref2, "gotoPage", gotoPage), _defineProperty(_ref2, "cancelZoom", cancelZoom), _defineProperty(_ref2, "switchOnContainer", switchOnContainer), _defineProperty(_ref2, "switchOffContainer", switchOffContainer), _defineProperty(_ref2, "resetContainer", resetContainer), _defineProperty(_ref2, "setPen", setPen), _defineProperty(_ref2, "setEraser", setEraser), _defineProperty(_ref2, "setStroke", setStroke), _defineProperty(_ref2, "setStrokeWidth", setStrokeWidth), _defineProperty(_ref2, "clear", clear), _defineProperty(_ref2, "cancelDrawable", cancelDrawable), _defineProperty(_ref2, "setHighlighters", setHighlighters), _defineProperty(_ref2, "setText", setText), _defineProperty(_ref2, "loadDoc", loadDoc), _defineProperty(_ref2, "start", start), _defineProperty(_ref2, "republish", republish), _defineProperty(_ref2, "setRole", setRole), _defineProperty(_ref2, "setAccountId", setAccountId), _defineProperty(_ref2, "setEditable", setEditable), _defineProperty(_ref2, "getThumbnailList", getThumbnailList), _ref2;
   }
 
   function useEventEmitter() {
@@ -11679,7 +11838,7 @@
           state.inited = true;
           state.watchInitData = res.data;
           setRequestHeaders({
-            interact_token: res.data.interact.interact_token
+            'interact-token': res.data.interact.interact_token
           });
         } else {
           state.watchInitErrorData = res;
@@ -12954,7 +13113,10 @@
           state.totalPages = Math.ceil(res.data.total / state.pageInfo.limit);
         }
 
-        return res;
+        return {
+          backData: res,
+          state: state
+        };
       });
     }; //发送消息
 
