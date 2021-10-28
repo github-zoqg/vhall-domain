@@ -1402,11 +1402,6 @@
       value: function setRemoteData(item) {
         return this.instance.setRemoteData(item);
       }
-    }, {
-      key: "setRole",
-      value: function setRole(val) {
-        return this.instance.setRole(val);
-      }
       /**
        * 
        * @param {*} child is cid-ret
@@ -1544,37 +1539,37 @@
 
         this.instance.on(VhallRTC.EVENT_REMOTESTREAM_ADD, function (e) {
           // 远端流加入事件
-          console.log('succcccccccessss');
+          console.log('remote stream added');
 
-          _this2.$emit('interactive_REMOTESTREAM_ADD', e);
+          _this2.$emit(VhallRTC.EVENT_REMOTESTREAM_ADD, e);
         });
         this.instance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, function (e) {
           // 远端流离开事件
-          _this2.$emit('interactive_REMOTESTREAM_REMOVED', e);
+          _this2.$emit(VhallRTC.EVENT_REMOTESTREAM_REMOVED, e);
         });
         this.instance.on(VhallRTC.EVENT_ROOM_EXCDISCONNECTED, function (e) {
           // 房间信令异常断开事件
-          _this2.$emit('interactive_ROOM_EXCDISCONNECTED', e);
+          _this2.$emit(VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e);
         });
         this.instance.on(VhallRTC.EVENT_REMOTESTREAM_MUTE, function (e) {
           // 远端流音视频状态改变事件
-          _this2.$emit('interactive_REMOTESTREAM_MUTE', e);
+          _this2.$emit(VhallRTC.EVENT_REMOTESTREAM_MUTE, e);
         });
         this.instance.on(VhallRTC.EVENT_REMOTESTREAM_FAILED, function (e) {
           // 本地推流或订阅远端流异常断开事件
-          _this2.$emit('interactive_REMOTESTREAM_FAILED', e);
+          _this2.$emit(VhallRTC.EVENT_REMOTESTREAM_FAILED, e);
         });
         this.instance.on(VhallRTC.EVENT_STREAM_END, function (e) {
           // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
-          _this2.$emit('interactive_STREAM_END', e);
+          _this2.$emit(VhallRTC.EVENT_STREAM_END, e);
         });
         this.instance.on(VhallRTC.EVENT_STREAM_STUNK, function (e) {
           // 本地流视频发送帧率异常事件
-          _this2.$emit('interactive_STREAM_STUNK', e);
+          _this2.$emit(VhallRTC.EVENT_STREAM_STUNK, e);
         });
         this.instance.on(VhallRTC.EVENT_DEVICE_CHANGE, function (e) {
           // 新增设备或移除设备时触发
-          _this2.$emit('interactive_DEVICE_CHANGE', e);
+          _this2.$emit(VhallRTC.EVENT_DEVICE_CHANGE, e);
         });
       }
       /**
@@ -1705,8 +1700,6 @@
             videoNode: options.videoNode,
             // 必填，传入本地视频显示容器ID
             screen: true,
-            audio: options.audio || false,
-            // 桌面共享不采集麦克风防止回声
             speaker: options.speaker || false,
             // 桌面共享时是否分享桌面音频(如为true，则chrome浏览器弹框左下角将显示“分享音频”选框)，默认为false
             profile: options.profile || VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H,
@@ -2293,7 +2286,15 @@
     }, {
       key: "checkSystemRequirements",
       value: function checkSystemRequirements() {
-        return this.instance.checkSystemRequirements();
+        var _this28 = this;
+
+        return new Promise(function (resolve, reject) {
+          _this28.instance.checkSystemRequirements().then(function (data) {
+            resolve(data.result);
+          })["catch"](function (error) {
+            reject(error);
+          });
+        });
       }
       /**
        * 获取上下行丢包率
@@ -2303,10 +2304,10 @@
     }, {
       key: "getPacketLossRate",
       value: function getPacketLossRate() {
-        var _this28 = this;
+        var _this29 = this;
 
         return new Promise(function (resolve, reject) {
-          _this28.instance.getPacketLossRate().then(function (data) {
+          _this29.instance.getPacketLossRate().then(function (data) {
             resolve(data);
           })["catch"](function (error) {
             reject(error);
@@ -2321,11 +2322,11 @@
     }, {
       key: "getStreamPacketLoss",
       value: function getStreamPacketLoss() {
-        var _this29 = this;
+        var _this30 = this;
 
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         return new Promise(function (resolve, reject) {
-          _this29.instance.getStreamPacketLoss(options).then(function () {
+          _this30.instance.getStreamPacketLoss(options).then(function () {
             resolve();
           })["catch"](function (error) {
             reject(error);
@@ -2340,11 +2341,11 @@
     }, {
       key: "getAudioLevel",
       value: function getAudioLevel() {
-        var _this30 = this;
+        var _this31 = this;
 
         var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
         return new Promise(function (resolve, reject) {
-          _this30.instance.getAudioLevel({
+          _this31.instance.getAudioLevel({
             streamId: streamId
           }).then(function (data) {
             resolve(data);
@@ -2361,11 +2362,11 @@
     }, {
       key: "getStreamMute",
       value: function getStreamMute() {
-        var _this31 = this;
+        var _this32 = this;
 
         var streamId = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
         return new Promise(function (resolve, reject) {
-          _this31.instance.getStreamMute({
+          _this32.instance.getStreamMute({
             streamId: streamId
           }).then(function (data) {
             resolve(data);
@@ -2373,6 +2374,16 @@
             reject(error);
           });
         });
+      }
+      /**
+       * 获取当前流信息的方法
+       * @returns  array
+       */
+
+    }, {
+      key: "currentStreams",
+      value: function currentStreams() {
+        return this.instance.currentStreams;
       }
     }]);
 

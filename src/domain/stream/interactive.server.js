@@ -153,6 +153,10 @@ export default function useInteractiveServer() {
         return state.interactiveInstance.getStreamMute(streamId)
     }
 
+    // 获取当前流的信息,返回一个数组
+    const currentStreams = () => {
+        return state.interactiveInstance.currentStreams()
+    }
     // 上麦
     const speakOn=(data={})=>{
         return requestApi.mic.speakOn(data)
@@ -285,5 +289,5 @@ export default function useInteractiveServer() {
     muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
     getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate, getRoomStreams, remoteStreamList,
     listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel, on, getRoomInfo, getStreamMute, setBroadCastAdaptiveLayoutMode,speakOn,speakOff,speakUserOff,setMainScreen,
-    setSpeaker,setSpeaker,setRoomDevice,setHandsup,inviteMic,cancelApply,refuseInvite}
+    setSpeaker,setSpeaker,setRoomDevice,setHandsup,inviteMic,cancelApply,refuseInvite,currentStreams}
 }
