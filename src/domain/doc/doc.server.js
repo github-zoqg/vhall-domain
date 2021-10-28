@@ -1,4 +1,7 @@
 import contextServer from '@/domain/common/context.server.js'
+import requestApi from '../../request/index.js';
+
+const docApi = requestApi.doc
 
 export default function useDocServer() {
     const state = {
@@ -175,5 +178,15 @@ export default function useDocServer() {
     }
 
 
-    return { state, init, on, destroy, getVodAllCids,createBoard,createDocument,selectContainer,getContainerInfo,destroyContainer,getVodAllCids,setRemoteData,zoomIn,zoomOut,zoomReset,move,prevStep,nextStep ,setPlayMode,setSize,createUUID,setControlStyle}
+    return { state, init, on, destroy, getVodAllCids,
+        createBoard,createDocument,selectContainer,
+        getContainerInfo,destroyContainer,getVodAllCids,
+        setRemoteData,zoomIn,zoomOut,zoomReset,move,prevStep,
+        nextStep ,setPlayMode,setSize,createUUID,
+        setControlStyle,gotoPage,cancelZoom,switchOnContainer,switchOffContainer,resetContainer,
+        setPen,setEraser,setStroke,setStrokeWidth,clear,cancelDrawable,
+        setHighlighters,setText,loadDoc,start,republish,setRole,setAccountId,
+        setEditable,getThumbnailList,
+
+    }
 }

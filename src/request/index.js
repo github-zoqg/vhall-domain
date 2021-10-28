@@ -5,6 +5,8 @@ import insertFile from './insertFile.js'
 import virtualClient from './virtualClient.js'
 import interactive from './interactive.js'
 import mic from './mic.js'
+import doc from './doc.js'
+
 
 class RequestApi {
     constructor() {
@@ -15,6 +17,7 @@ class RequestApi {
         this.virtualClient = virtualClient
         this.interactive = interactive
         this.mic = mic
+        this.doc = doc
     }
 }
 
