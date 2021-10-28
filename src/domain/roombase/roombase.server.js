@@ -2,6 +2,7 @@
 import requestApi from '@/request/index.js';
 import contextServer from "@/domain/common/context.server.js"
 import useEventEmitter from '@/domain/common/eventEmitter.server.js';
+import { setRequestHeaders } from '@/utils/http.js';
 
 export default function useRoomBaseServer() {
     const state = {
@@ -26,6 +27,9 @@ export default function useRoomBaseServer() {
             if (res.code === 200) {
                 state.inited = true;
                 state.watchInitData = res.data;
+                setRequestHeaders({
+                    interact_token: res.data.interact.interact_token
+                })
             } else {
                 state.watchInitErrorData = res;
             }
@@ -40,7 +44,6 @@ export default function useRoomBaseServer() {
     const destroy = () => {
         eventEmitter.$destroy()
     }
-
 
     // 获取活动信息
     const getWebinarInfo = (data) => {

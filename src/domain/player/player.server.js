@@ -34,6 +34,7 @@ export default function usePlayerServer() {
         return state.playerInstance.pause()
     }
 
+
     const isPause = () => {
         return state.playerInstance.isPause()
     }
@@ -79,16 +80,16 @@ export default function usePlayerServer() {
         return state.playerInstance.getCurrentTime()
     }
 
-    const setCurrentTime = () => {
-        return state.playerInstance.setCurrentTime()
+    const setCurrentTime = (val) => {
+        return state.playerInstance.setCurrentTime(val)
     }
 
     const getUsableSpeed = () => {
         return state.playerInstance.getUsableSpeed()
     }
 
-    const setPlaySpeed = () => {
-        return state.playerInstance.setPlaySpeed()
+    const setPlaySpeed = (val) => {
+        return state.playerInstance.setPlaySpeed(val)
     }
 
     const openControls = (status) => {
@@ -99,12 +100,12 @@ export default function usePlayerServer() {
         return state.playerInstance.openUI(status)
     }
 
-    const setResetVideo = () => {
-        return state.playerInstance.setResetVideo()
+    const setResetVideo = (val) => {
+        return state.playerInstance.setResetVideo(val)
     }
 
-    const setBarrageInfo = () => {
-        return state.playerInstance.setBarrageInfo()
+    const setBarrageInfo = (val) => {
+        return state.playerInstance.setBarrageInfo(val)
     }
 
     const addBarrage = () => {

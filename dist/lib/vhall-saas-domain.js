@@ -573,7 +573,14 @@
          */},{key:"getAudioLevel",value:function getAudioLevel(){var _this31=this;var streamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this31.instance.getAudioLevel({streamId:streamId}).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}/**
          * 获取流的mute状态
          * @returns  
+<<<<<<< HEAD
          */},{key:"getStreamMute",value:function getStreamMute(){var _this32=this;var streamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this32.instance.getStreamMute({streamId:streamId}).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}}]);return InteractiveModule;}(BaseModule);var lodash={exports:{}};(function(module,exports){(function(){/** Used as a safe reference for `undefined` in pre-ES5 environments. */var undefined$1;/** Used as the semantic version number. */var VERSION='4.17.21';/** Used as the size to enable large array optimizations. */var LARGE_ARRAY_SIZE=200;/** Error message constants. */var CORE_ERROR_TEXT='Unsupported core-js use. Try https://npms.io/search?q=ponyfill.',FUNC_ERROR_TEXT='Expected a function',INVALID_TEMPL_VAR_ERROR_TEXT='Invalid `variable` option passed into `_.template`';/** Used to stand-in for `undefined` hash values. */var HASH_UNDEFINED='__lodash_hash_undefined__';/** Used as the maximum memoize cache size. */var MAX_MEMOIZE_SIZE=500;/** Used as the internal argument placeholder. */var PLACEHOLDER='__lodash_placeholder__';/** Used to compose bitmasks for cloning. */var CLONE_DEEP_FLAG=1,CLONE_FLAT_FLAG=2,CLONE_SYMBOLS_FLAG=4;/** Used to compose bitmasks for value comparisons. */var COMPARE_PARTIAL_FLAG=1,COMPARE_UNORDERED_FLAG=2;/** Used to compose bitmasks for function metadata. */var WRAP_BIND_FLAG=1,WRAP_BIND_KEY_FLAG=2,WRAP_CURRY_BOUND_FLAG=4,WRAP_CURRY_FLAG=8,WRAP_CURRY_RIGHT_FLAG=16,WRAP_PARTIAL_FLAG=32,WRAP_PARTIAL_RIGHT_FLAG=64,WRAP_ARY_FLAG=128,WRAP_REARG_FLAG=256,WRAP_FLIP_FLAG=512;/** Used as default options for `_.truncate`. */var DEFAULT_TRUNC_LENGTH=30,DEFAULT_TRUNC_OMISSION='...';/** Used to detect hot functions by number of calls within a span of milliseconds. */var HOT_COUNT=800,HOT_SPAN=16;/** Used to indicate the type of lazy iteratees. */var LAZY_FILTER_FLAG=1,LAZY_MAP_FLAG=2,LAZY_WHILE_FLAG=3;/** Used as references for various `Number` constants. */var INFINITY=1/0,MAX_SAFE_INTEGER=9007199254740991,MAX_INTEGER=1.7976931348623157e+308,NAN=0/0;/** Used as references for the maximum length and index of an array. */var MAX_ARRAY_LENGTH=4294967295,MAX_ARRAY_INDEX=MAX_ARRAY_LENGTH-1,HALF_MAX_ARRAY_LENGTH=MAX_ARRAY_LENGTH>>>1;/** Used to associate wrap methods with their bit flags. */var wrapFlags=[['ary',WRAP_ARY_FLAG],['bind',WRAP_BIND_FLAG],['bindKey',WRAP_BIND_KEY_FLAG],['curry',WRAP_CURRY_FLAG],['curryRight',WRAP_CURRY_RIGHT_FLAG],['flip',WRAP_FLIP_FLAG],['partial',WRAP_PARTIAL_FLAG],['partialRight',WRAP_PARTIAL_RIGHT_FLAG],['rearg',WRAP_REARG_FLAG]];/** `Object#toString` result references. */var argsTag='[object Arguments]',arrayTag='[object Array]',asyncTag='[object AsyncFunction]',boolTag='[object Boolean]',dateTag='[object Date]',domExcTag='[object DOMException]',errorTag='[object Error]',funcTag='[object Function]',genTag='[object GeneratorFunction]',mapTag='[object Map]',numberTag='[object Number]',nullTag='[object Null]',objectTag='[object Object]',promiseTag='[object Promise]',proxyTag='[object Proxy]',regexpTag='[object RegExp]',setTag='[object Set]',stringTag='[object String]',symbolTag='[object Symbol]',undefinedTag='[object Undefined]',weakMapTag='[object WeakMap]',weakSetTag='[object WeakSet]';var arrayBufferTag='[object ArrayBuffer]',dataViewTag='[object DataView]',float32Tag='[object Float32Array]',float64Tag='[object Float64Array]',int8Tag='[object Int8Array]',int16Tag='[object Int16Array]',int32Tag='[object Int32Array]',uint8Tag='[object Uint8Array]',uint8ClampedTag='[object Uint8ClampedArray]',uint16Tag='[object Uint16Array]',uint32Tag='[object Uint32Array]';/** Used to match empty string literals in compiled template source. */var reEmptyStringLeading=/\b__p \+= '';/g,reEmptyStringMiddle=/\b(__p \+=) '' \+/g,reEmptyStringTrailing=/(__e\(.*?\)|\b__t\)) \+\n'';/g;/** Used to match HTML entities and HTML characters. */var reEscapedHtml=/&(?:amp|lt|gt|quot|#39);/g,reUnescapedHtml=/[&<>"']/g,reHasEscapedHtml=RegExp(reEscapedHtml.source),reHasUnescapedHtml=RegExp(reUnescapedHtml.source);/** Used to match template delimiters. */var reEscape=/<%-([\s\S]+?)%>/g,reEvaluate=/<%([\s\S]+?)%>/g,reInterpolate=/<%=([\s\S]+?)%>/g;/** Used to match property names within property paths. */var reIsDeepProp=/\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,reIsPlainProp=/^\w*$/,rePropName=/[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;/**
+=======
+         */},{key:"getStreamMute",value:function getStreamMute(){var _this32=this;var streamId=arguments.length>0&&arguments[0]!==undefined?arguments[0]:'';return new Promise(function(resolve,reject){_this32.instance.getStreamMute({streamId:streamId}).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}/**
+         * 获取当前流信息的方法
+         * @returns  array
+         */},{key:"currentStreams",value:function currentStreams(){return this.instance.currentStreams;}}]);return InteractiveModule;}(BaseModule);var lodash={exports:{}};(function(module,exports){(function(){/** Used as a safe reference for `undefined` in pre-ES5 environments. */var undefined$1;/** Used as the semantic version number. */var VERSION='4.17.21';/** Used as the size to enable large array optimizations. */var LARGE_ARRAY_SIZE=200;/** Error message constants. */var CORE_ERROR_TEXT='Unsupported core-js use. Try https://npms.io/search?q=ponyfill.',FUNC_ERROR_TEXT='Expected a function',INVALID_TEMPL_VAR_ERROR_TEXT='Invalid `variable` option passed into `_.template`';/** Used to stand-in for `undefined` hash values. */var HASH_UNDEFINED='__lodash_hash_undefined__';/** Used as the maximum memoize cache size. */var MAX_MEMOIZE_SIZE=500;/** Used as the internal argument placeholder. */var PLACEHOLDER='__lodash_placeholder__';/** Used to compose bitmasks for cloning. */var CLONE_DEEP_FLAG=1,CLONE_FLAT_FLAG=2,CLONE_SYMBOLS_FLAG=4;/** Used to compose bitmasks for value comparisons. */var COMPARE_PARTIAL_FLAG=1,COMPARE_UNORDERED_FLAG=2;/** Used to compose bitmasks for function metadata. */var WRAP_BIND_FLAG=1,WRAP_BIND_KEY_FLAG=2,WRAP_CURRY_BOUND_FLAG=4,WRAP_CURRY_FLAG=8,WRAP_CURRY_RIGHT_FLAG=16,WRAP_PARTIAL_FLAG=32,WRAP_PARTIAL_RIGHT_FLAG=64,WRAP_ARY_FLAG=128,WRAP_REARG_FLAG=256,WRAP_FLIP_FLAG=512;/** Used as default options for `_.truncate`. */var DEFAULT_TRUNC_LENGTH=30,DEFAULT_TRUNC_OMISSION='...';/** Used to detect hot functions by number of calls within a span of milliseconds. */var HOT_COUNT=800,HOT_SPAN=16;/** Used to indicate the type of lazy iteratees. */var LAZY_FILTER_FLAG=1,LAZY_MAP_FLAG=2,LAZY_WHILE_FLAG=3;/** Used as references for various `Number` constants. */var INFINITY=1/0,MAX_SAFE_INTEGER=9007199254740991,MAX_INTEGER=1.7976931348623157e+308,NAN=0/0;/** Used as references for the maximum length and index of an array. */var MAX_ARRAY_LENGTH=4294967295,MAX_ARRAY_INDEX=MAX_ARRAY_LENGTH-1,HALF_MAX_ARRAY_LENGTH=MAX_ARRAY_LENGTH>>>1;/** Used to associate wrap methods with their bit flags. */var wrapFlags=[['ary',WRAP_ARY_FLAG],['bind',WRAP_BIND_FLAG],['bindKey',WRAP_BIND_KEY_FLAG],['curry',WRAP_CURRY_FLAG],['curryRight',WRAP_CURRY_RIGHT_FLAG],['flip',WRAP_FLIP_FLAG],['partial',WRAP_PARTIAL_FLAG],['partialRight',WRAP_PARTIAL_RIGHT_FLAG],['rearg',WRAP_REARG_FLAG]];/** `Object#toString` result references. */var argsTag='[object Arguments]',arrayTag='[object Array]',asyncTag='[object AsyncFunction]',boolTag='[object Boolean]',dateTag='[object Date]',domExcTag='[object DOMException]',errorTag='[object Error]',funcTag='[object Function]',genTag='[object GeneratorFunction]',mapTag='[object Map]',numberTag='[object Number]',nullTag='[object Null]',objectTag='[object Object]',promiseTag='[object Promise]',proxyTag='[object Proxy]',regexpTag='[object RegExp]',setTag='[object Set]',stringTag='[object String]',symbolTag='[object Symbol]',undefinedTag='[object Undefined]',weakMapTag='[object WeakMap]',weakSetTag='[object WeakSet]';var arrayBufferTag='[object ArrayBuffer]',dataViewTag='[object DataView]',float32Tag='[object Float32Array]',float64Tag='[object Float64Array]',int8Tag='[object Int8Array]',int16Tag='[object Int16Array]',int32Tag='[object Int32Array]',uint8Tag='[object Uint8Array]',uint8ClampedTag='[object Uint8ClampedArray]',uint16Tag='[object Uint16Array]',uint32Tag='[object Uint32Array]';/** Used to match empty string literals in compiled template source. */var reEmptyStringLeading=/\b__p \+= '';/g,reEmptyStringMiddle=/\b(__p \+=) '' \+/g,reEmptyStringTrailing=/(__e\(.*?\)|\b__t\)) \+\n'';/g;/** Used to match HTML entities and HTML characters. */var reEscapedHtml=/&(?:amp|lt|gt|quot|#39);/g,reUnescapedHtml=/[&<>"']/g,reHasEscapedHtml=RegExp(reEscapedHtml.source),reHasUnescapedHtml=RegExp(reUnescapedHtml.source);/** Used to match template delimiters. */var reEscape=/<%-([\s\S]+?)%>/g,reEvaluate=/<%([\s\S]+?)%>/g,reInterpolate=/<%=([\s\S]+?)%>/g;/** Used to match property names within property paths. */var reIsDeepProp=/\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,reIsPlainProp=/^\w*$/,rePropName=/[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;/**
+>>>>>>> dev
        * Used to match `RegExp`
        * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
        */var reRegExpChar=/[\\^$.*+?()[\]{}|]/g,reHasRegExpChar=RegExp(reRegExpChar.source);/** Used to match leading whitespace. */var reTrimStart=/^\s+/;/** Used to match a single whitespace character. */var reWhitespace=/\s/;/** Used to match wrap detail comments. */var reWrapComment=/\{(?:\n\/\* \[wrapped with .+\] \*\/)?\n?/,reWrapDetails=/\{\n\/\* \[wrapped with (.+)\] \*/,reSplitDetails=/,? & /;/** Used to match words composed of alphanumeric characters. */var reAsciiWord=/[^\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\x7f]+/g;/**
@@ -10295,7 +10302,7 @@
       TOKEN && xhr.setRequestHeader('token', TOKEN);
     }
 
-    console.log('HEADERS', HEADERS);
+    console.log('HEADERS', HEADERS, TOKEN);
 
     if (HEADERS) {
       Object.getOwnPropertyNames(HEADERS).forEach(function (item) {
@@ -11084,6 +11091,11 @@
 
     var getStreamMute = function getStreamMute(streamId) {
       return state.interactiveInstance.getStreamMute(streamId);
+    }; // 获取当前流的信息,返回一个数组
+
+
+    var currentStreams = function currentStreams() {
+      return state.interactiveInstance.currentStreams();
     }; // 上麦
 
 
@@ -11267,7 +11279,7 @@
       speakUserOff: speakUserOff,
       setMainScreen: setMainScreen,
       setSpeaker: setSpeaker
-    }, _defineProperty(_ref2, "setSpeaker", setSpeaker), _defineProperty(_ref2, "setRoomDevice", setRoomDevice), _defineProperty(_ref2, "setHandsup", setHandsup), _defineProperty(_ref2, "inviteMic", inviteMic), _defineProperty(_ref2, "cancelApply", cancelApply), _defineProperty(_ref2, "refuseInvite", refuseInvite), _ref2;
+    }, _defineProperty(_ref2, "setSpeaker", setSpeaker), _defineProperty(_ref2, "setRoomDevice", setRoomDevice), _defineProperty(_ref2, "setHandsup", setHandsup), _defineProperty(_ref2, "inviteMic", inviteMic), _defineProperty(_ref2, "cancelApply", cancelApply), _defineProperty(_ref2, "refuseInvite", refuseInvite), _defineProperty(_ref2, "currentStreams", currentStreams), _ref2;
   }
 
   function useMediaCheckServer() {
@@ -11417,16 +11429,16 @@
       return state.playerInstance.getCurrentTime();
     };
 
-    var setCurrentTime = function setCurrentTime() {
-      return state.playerInstance.setCurrentTime();
+    var setCurrentTime = function setCurrentTime(val) {
+      return state.playerInstance.setCurrentTime(val);
     };
 
     var getUsableSpeed = function getUsableSpeed() {
       return state.playerInstance.getUsableSpeed();
     };
 
-    var setPlaySpeed = function setPlaySpeed() {
-      return state.playerInstance.setPlaySpeed();
+    var setPlaySpeed = function setPlaySpeed(val) {
+      return state.playerInstance.setPlaySpeed(val);
     };
 
     var openControls = function openControls(status) {
@@ -11437,12 +11449,12 @@
       return state.playerInstance.openUI(status);
     };
 
-    var setResetVideo = function setResetVideo() {
-      return state.playerInstance.setResetVideo();
+    var setResetVideo = function setResetVideo(val) {
+      return state.playerInstance.setResetVideo(val);
     };
 
-    var setBarrageInfo = function setBarrageInfo() {
-      return state.playerInstance.setBarrageInfo();
+    var setBarrageInfo = function setBarrageInfo(val) {
+      return state.playerInstance.setBarrageInfo(val);
     };
 
     var addBarrage = function addBarrage() {
@@ -11497,6 +11509,41 @@
       addBarrage: addBarrage,
       toggleBarrage: toggleBarrage,
       toggleSubtitle: toggleSubtitle
+    };
+  }
+
+  function useDocServer() {
+    var state = {
+      docInstance: null
+    };
+
+    var on = function on(type, cb) {
+      if (!state.docInstance) return;
+      state.docInstance.$on(type, cb);
+    };
+
+    var destroy = function destroy() {
+      return state.docInstance.destroy();
+    };
+
+    var init = function init(options) {
+      var _contextServer$get = contextServer.get('roomInitGroupServer'),
+          roomInitGroupServer = _contextServer$get.state;
+
+      console.log('create doc', roomInitGroupServer.vhallSaasInstance.createDoc);
+      return roomInitGroupServer.vhallSaasInstance.createDoc(options).then(function (instance) {
+        state.docInstance = instance;
+        return instance;
+      })["catch"](function (e) {
+        return e;
+      });
+    };
+
+    return {
+      state: state,
+      init: init,
+      on: on,
+      destroy: destroy
     };
   }
 
@@ -11570,6 +11617,9 @@
         if (res.code === 200) {
           state.inited = true;
           state.watchInitData = res.data;
+          setRequestHeaders({
+            interact_token: res.data.interact.interact_token
+          });
         } else {
           state.watchInitErrorData = res;
         }
@@ -12251,9 +12301,8 @@
 
   function useDesktopShareServer() {
     var state = {
-      vhallSaasInstance: null
+      localDesktopStreamId: ''
     };
-    state.vhallSaasInstance = contextServer.get('roomInitGroupServer').state.vhallSaasInstance;
     var interactiveServer = contextServer.get('interactiveServer'); //检测浏览器是否支持桌面共享
 
     var browserDetection = function browserDetection() {
@@ -12263,11 +12312,11 @@
       var safariTest = ua.match(/Version\/([\d.]+).*Safari/);
       var safariVersion = safariTest ? safariTest[1].replace(/\./g, '') : 0; //浏览器是否支持桌面共享
 
-      var isSupport = !chromeVersion && (!safariVersion || Number(safariVersion) < 1304); //浏览器是否版本过低，需要安装插件支持
+      var isNotSupport = !chromeVersion && (!safariVersion || Number(safariVersion) < 1304); //浏览器是否版本过低，需要安装插件支持
 
       var needInstallPlugin = Number(chromeVersion) < 74;
       return {
-        isSupport: isSupport,
+        isNotSupport: isNotSupport,
         needInstallPlugin: needInstallPlugin,
         chromeTest: chromeTest,
         chromeVersion: chromeVersion,
@@ -12280,7 +12329,7 @@
     var shareScreenCheck = function shareScreenCheck() {
       return new Promise(function (resolve, reject) {
         interactiveServer.checkSystemRequirements().then(function (checkResult) {
-          console.log('result', checkResult.result, 'detail', checkResult.detail);
+          console.log('result', checkResult, checkResult.result, 'detail', checkResult.detail);
 
           if (checkResult.result || checkResult.detail.isScreenShareSupported) {
             resolve(true);
@@ -12289,12 +12338,58 @@
           }
         });
       });
+    }; // 开始桌面共享
+
+
+    var startShareScreen = function startShareScreen(options) {
+      var _contextServer$get = contextServer.get('roomBaseServer'),
+          roomBaseServerState = _contextServer$get.state;
+
+      var retOptions = {
+        videoNode: options.videoNode,
+        profile: options.profile,
+        audio: false,
+        // 桌面共享不采集麦克风防止回声
+        speaker: true // 桌面共享开启采集扬声器声音的入口
+
+      };
+      var addConfig = {
+        videoDevice: 'desktopScreen',
+        attributes: JSON.stringify({
+          nickName: roomBaseServerState.watchInitData.join_info.nickname,
+          role: roomBaseServerState.watchInitData.join_info.role_name
+        })
+      };
+      return interactiveServer.createLocaldesktopStream(retOptions, addConfig);
+    }; // 推桌面共享流
+
+
+    var publishDesktopShareStream = function publishDesktopShareStream(streamId) {
+      return new Promise(function (resolve, reject) {
+        interactiveServer.publishStream({
+          streamId: streamId
+        }).then(function (res) {
+          state.localDesktopStreamId = streamId;
+          resolve(res);
+        })["catch"](reject);
+      });
+    };
+    /**
+     * 停止桌面共享
+     * */
+
+
+    var stopShareScreen = function stopShareScreen(streamId) {
+      return interactiveServer.unpublishStream(streamId || state.localDesktopStreamId);
     };
 
     return {
       state: state,
       browserDetection: browserDetection,
-      shareScreenCheck: shareScreenCheck
+      shareScreenCheck: shareScreenCheck,
+      startShareScreen: startShareScreen,
+      publishDesktopShareStream: publishDesktopShareStream,
+      stopShareScreen: stopShareScreen
     };
   }
 
@@ -12533,13 +12628,15 @@
       roleName: ''
     }; //消息服务
 
-    var msgServer = contextServer.get('msgServer'); //基础服务
+    var msgServer = contextServer.get('msgServer'); //消息sdk
+
+    var msgInstance = msgServer.state.msgInstance; //基础服务
 
     var roomServer = contextServer.get('roomBaseServer');
     var _roomServer$state$wat = roomServer.state.watchInitData,
         _roomServer$state$wat2 = _roomServer$state$wat.roomId,
-        roomId = _roomServer$state$wat2 === void 0 ? '' : _roomServer$state$wat2,
-        roleName = _roomServer$state$wat.roleName;
+        roomId = _roomServer$state$wat2 === void 0 ? '' : _roomServer$state$wat2;
+        _roomServer$state$wat.roleName;
         _roomServer$state$wat.avatar;
    //接收聊天消息
 
@@ -12570,7 +12667,9 @@
                   item.data.image_urls && _handleImgUrl(item.data.image_urls); //处理私聊列表
 
                   if (item.context && Array.isArray(item.context.at_list) && item.context.at_list.length && item.data.text_content) {
-                    item.context.at_list = _handlePrivateChatList(item, item.context.at_list);
+                    item.context.at_list = _handlePrivateChatList(item, item.context.at_list); //发起端的特殊处理，可以考虑统一
+
+                    item.context.atList = item.context.at_list;
                   } //格式化消息
 
 
@@ -12620,46 +12719,29 @@
       return function getHistoryMsg() {
         return _ref.apply(this, arguments);
       };
-    }(); //发送聊天消息(这部分主要是提取自PC观看端)
+    }(); //发送聊天消息
 
 
     var sendMsg = function sendMsg() {
       var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      var inputValue = params.inputValue,
-          _params$needFilter = params.needFilter,
-          needFilter = _params$needFilter === void 0 ? true : _params$needFilter;
-      var data = {}; //组装内容也可考虑交由视图
-
-      if (inputValue) {
-        data.type = 'text';
-        data.barrageTxt = inputValue.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
-        data.text_content = inputValue;
-      }
-
-      var context = {
-        nickname: state.name,
-        // 昵称
-        avatar: state.avatar,
-        // 头像
-        role_name: state.roleName // 角色 1主持人2观众3助理4嘉宾
-
-      };
-      var filterStatus = true;
-
-      if (needFilter && state.keywordList.length) {
-        //只要找到一个敏感词，消息就不让发
-        filterStatus = !state.keywordList.some(function (item) {
-          return inputValue.includes(item.name);
-        });
-      }
+      params.inputValue;
+          params.needFilter;
+          var _params$data = params.data,
+          data = _params$data === void 0 ? {} : _params$data,
+          _params$context = params.context,
+          context = _params$context === void 0 ? {} : _params$context; // let filterStatus = checkHasKeyword(needFilter, inputValue);
+      // return new Promise((resolve, reject) => {
+      //     if (roleName != 2 || (roleName == 2 && filterStatus)) {
+      //         msgServer.$emit(data, context);
+      //         resolve();
+      //     } else {
+      //         reject();
+      //     }
+      // });
 
       return new Promise(function (resolve, reject) {
-        if (roleName != 2 || roleName == 2 && filterStatus) {
-          msgServer.$emit(data, context);
-          resolve();
-        } else {
-          reject();
-        }
+        msgInstance.emitTextChat(data, context);
+        resolve();
       });
     }; //发起请求，或者聊天记录数据
 
@@ -12682,6 +12764,22 @@
     var setKeywordList = function setKeywordList() {
       var list = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
       state.keywordList = list;
+    }; //检测是否包含敏感词
+
+
+    var checkHasKeyword = function checkHasKeyword() {
+      var needFilter = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+      var inputValue = arguments.length > 1 ? arguments[1] : undefined;
+      var filterStatus = true;
+
+      if (needFilter && state.keywordList.length) {
+        //只要找到一个敏感词，消息就不让发
+        filterStatus = !state.keywordList.some(function (item) {
+          return inputValue.includes(item.name);
+        });
+      }
+
+      return filterStatus;
     }; //私有方法，处理图片链接
 
 
@@ -12723,7 +12821,7 @@
       var from = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
       var params = {};
 
-      if (['观看端'].includes(from)) {
+      if (['观看端', '发起端'].includes(from)) {
         params = {
           type: item.data.type,
           avatar: item.avatar ? item.avatar : '',
@@ -12739,6 +12837,10 @@
           channel: item.channel_id,
           isHistoryMsg: true
         };
+
+        if (['发起端'].includes(from) && params.avatar === '') {
+          params.avatar = 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png';
+        }
       }
 
       if (['h5'].includes(from)) {
@@ -12784,7 +12886,96 @@
       getHistoryMsg: getHistoryMsg,
       sendMsg: sendMsg,
       fetchHistoryData: fetchHistoryData,
-      setKeywordList: setKeywordList
+      setKeywordList: setKeywordList,
+      checkHasKeyword: checkHasKeyword
+    };
+  }
+
+  function useNoticeServer() {
+    var state = {
+      //公告列表
+      noticeList: [],
+      //请求的分页参数
+      pageInfo: {
+        pos: 0,
+        limit: 10,
+        pageNum: 1
+      },
+      //总页数
+      totalPages: 1,
+      //总条数
+      total: 0
+    };
+    var roomServer = contextServer.get('roomBaseServer');
+    var _roomServer$state$wat = roomServer.state.watchInitData;
+        _roomServer$state$wat.roomId;
+        _roomServer$state$wat.channelId;
+   //从服务器获取消息记录
+
+    var fetchNoticeList = function fetchNoticeList(params) {
+      return $fetch({
+        url: '/v3/interacts/chat/get-announcement-list',
+        type: 'POST',
+        data: params
+      });
+    }; //获取消息记录
+
+
+    var getNoticeList = function getNoticeList(_ref) {
+      var _ref$flag = _ref.flag,
+          flag = _ref$flag === void 0 ? false : _ref$flag,
+          _ref$params = _ref.params,
+          params = _ref$params === void 0 ? {} : _ref$params;
+
+      if (!flag) {
+        state.noticeList = [];
+        state.pageInfo = {
+          pos: 0,
+          limit: 10,
+          pageNum: 1
+        };
+        state.totalPages = 1;
+        state.total = 0;
+      } else {
+        state.pageInfo.limit = params.limit;
+        state.pageInfo.pos = params.pos;
+        state.pageInfo.pageNum = params.pageNum;
+      }
+
+      return fetchNoticeList(params).then(function (res) {
+        if (res.code == 200 && res.data) {
+          state.total = res.data.total;
+
+          if (flag) {
+            var _state$noticeList;
+
+            (_state$noticeList = state.noticeList).push.apply(_state$noticeList, _toConsumableArray(res.data.list));
+          } else {
+            state.noticeList = res.data.list;
+          }
+
+          state.totalPages = Math.ceil(res.data.total / state.pageInfo.limit);
+        }
+
+        return res;
+      });
+    }; //发送消息
+
+
+    var sendNotice = function sendNotice() {
+      var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return $fetch({
+        url: '/v3/interacts/chat/send-notice-message',
+        type: 'POST',
+        data: params
+      });
+    };
+
+    return {
+      state: state,
+      sendNotice: sendNotice,
+      getNoticeList: getNoticeList,
+      fetchNoticeList: fetchNoticeList
     };
   }
 
@@ -12795,11 +12986,13 @@
   exports.setToken = setToken;
   exports.useChatServer = useChatServer;
   exports.useDesktopShareServer = useDesktopShareServer;
+  exports.useDocServer = useDocServer;
   exports.useInsertFileServer = useInsertFileServer;
   exports.useInteractiveServer = useInteractiveServer;
   exports.useMediaCheckServer = useMediaCheckServer;
   exports.useMicServer = useMicServer;
   exports.useMsgServer = useMsgServer;
+  exports.useNoticeServer = useNoticeServer;
   exports.usePlayerServer = usePlayerServer;
   exports.useRoomBaseServer = useRoomBaseServer;
   exports.useRoomInitGroupServer = useRoomInitGroupServer;
