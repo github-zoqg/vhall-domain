@@ -26,7 +26,6 @@ export default function useDocServer() {
         }).catch(e => {
             return e
         })
-
     }
 
     const createBoard = (options)=>{
@@ -176,7 +175,30 @@ export default function useDocServer() {
     const getThumbnailList=(options)=>{
         return state.docInstance.getThumbnailList(options)
     }
+    // 获取文档列表(资料库所有文档)
+    const getAllDocList = (params) =>{
+        return docApi.getAllDocList(params)
+    }
 
+    // 获取文档列表(当前活动下)
+    const getWebinarDocList = (params) => {
+        return docApi.getWebinarDocList(params)
+    }
+
+    // 获取文档详情
+    const getDocDetail = (params) => {
+        return docApi.getDocDetail(params)
+    }
+
+    // 同步文档
+    const syncDoc = (params) => {
+        return docApi.syncDoc(params)
+    }
+
+    // 删除文档(多选)
+    const delDocList = (params) => {
+        return docApi.delDocList(params)
+    }
 
     return { state, init, on, destroy, getVodAllCids,
         createBoard,createDocument,selectContainer,
