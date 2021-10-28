@@ -8,6 +8,32 @@ function useInsertFileServer() {
         isChrome88: isChrome88()
     }
 
+    const interactiveServer = contextServer.get('interactiveServer')
+
+    // 注册插播流加入事件
+    const onInsertFileStreamAdd = (cb) => {
+        interactiveServer.on('interactive_REMOTESTREAM_ADD', (e) => {
+            e.data.attributes = JSON.parse(e.data.attributes)
+            if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
+                cb(e)
+            }
+        })
+    }
+
+    // 注册插播流删除事件
+    const onInsertFileStreamDelete = (cb) => {
+        interactiveServer.on('interactive_REMOTESTREAM_REMOVED', (e) => {
+            cb(e)
+        })
+    }
+
+    // 插播流订阅失败
+    const onInsertFileStreamFaild = (cb) => {
+        interactiveServer.on('interactive_REMOTESTREAM_FAILED', (e) => {
+            cb(e)
+        })
+    }
+
     // 获取插播列表
     const getInsertFileList = (params = {}) => {
         return requestApi.insertFile.getInsertFileList(params)
@@ -195,7 +221,7 @@ function useInsertFileServer() {
         })
     }
 
-    // 订阅流
+    // 订阅插播流
     const subscribeInsertStream = (options = {}) => {
         const interactiveServer = contextServer.get('interactiveServer')
         return interactiveServer.subscribeStream(options)
@@ -218,7 +244,10 @@ function useInsertFileServer() {
         publishInsertStream,
         stopPublishInsertStream,
         subscribeInsertStream,
-        unsubscribeInsertStream
+        unsubscribeInsertStream,
+        onInsertFileStreamAdd,
+        onInsertFileStreamDelete,
+        onInsertFileStreamFaild
     }
 }
 
