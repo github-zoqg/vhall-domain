@@ -28,7 +28,7 @@ export default function useRoomBaseServer() {
                 state.inited = true;
                 state.watchInitData = res.data;
                 setRequestHeaders({
-                    interact_token: res.data.interact.interact_token
+                    'interact-token': res.data.interact.interact_token
                 })
             } else {
                 state.watchInitErrorData = res;
