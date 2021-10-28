@@ -1355,7 +1355,7 @@
       value: function createDocument(customOptions) {
         var _defaultOptions;
 
-        var elId = sdk.createUUID('document'); // 容器id，必须用此方法创建，文档传入document，返回唯一id
+        var elId = this.instance.createUUID('document'); // 容器id，必须用此方法创建，文档传入document，返回唯一id
 
         var defaultOptions = (_defaultOptions = {
           id: customOptions.id,
@@ -1375,7 +1375,7 @@
 
         }), _defaultOptions);
         var options = merge.recursive({}, defaultOptions, customOptions);
-        return sdk.createDocument(options); // 返回promise
+        return this.instance.createDocument(options); // 返回promise
       }
     }, {
       key: "selectContainer",
