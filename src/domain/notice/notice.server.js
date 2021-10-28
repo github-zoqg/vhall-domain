@@ -60,7 +60,7 @@ export default function useNoticeServer() {
                     }
                     state.totalPages = Math.ceil(res.data.total / state.pageInfo.limit);
                 }
-                return res;
+                return {backData:res,state};
             });
     }
 
