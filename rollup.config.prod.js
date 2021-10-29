@@ -13,7 +13,7 @@ const inputMapList = [
         input: 'src/index.js',
         output: [
             {
-                file: './dist/lib/vhall-saas-domain.dist.js',
+                file: './dist/lib/vhall-saas-domain.js',
                 format: 'umd',
                 name:'vhall-sass-domain',
                 sourcemap:true
