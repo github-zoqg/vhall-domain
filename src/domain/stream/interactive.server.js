@@ -299,5 +299,5 @@ export default function useInteractiveServer() {
     muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
     getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate, getRoomStreams, remoteStreamList,
     listenerSdk, setVideoProfile, getStreamPacketLoss, getAudioLevel, on, getRoomInfo, getStreamMute, setBroadCastAdaptiveLayoutMode,speakOn,speakOff,speakUserOff,setMainScreen,
-    setSpeaker,setSpeaker,setRoomDevice,setHandsup,inviteMic,cancelApply,refuseInvite,currentStreams}
+    setSpeaker,setRoomDevice,setHandsup,inviteMic,cancelApply,refuseInvite,currentStreams}
 }
