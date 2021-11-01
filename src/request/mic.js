@@ -7,7 +7,7 @@ const allowSpeak = (params = {}) => {
     const { state } = contextServer.get('roomBaseServer')
 
     let retParams = {
-        roomId: params.roomId || state.watchInitData.interact.room_id,
+        room_id: params.roomId || state.watchInitData.interact.room_id,
         receive_account_id: ''
     }
     retParams = Object.assign(retParams, params)
