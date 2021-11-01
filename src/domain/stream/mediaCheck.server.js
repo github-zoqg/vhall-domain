@@ -39,7 +39,7 @@ export default function useMediaCheckServer() {
             ...originalOpts,
             ...opts
         )
-        return interactiveServer.createLocalVideoStream(options).then(streamId => {
+        return interactiveServer.createLocalStream(options).then(streamId => {
             state.localStreamId = streamId
             return streamId
         })
@@ -48,7 +48,7 @@ export default function useMediaCheckServer() {
     // 结束视频预览
     const stopPreviewVideo = (streamId) => {
         const id = streamId || state.localStreamId
-        return interactiveServer.stopStream(id).then(() => {
+        return interactiveServer.destroyStream(id).then(() => {
             setVideoNode("");
             return state.localStreamId
         })
