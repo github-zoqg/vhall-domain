@@ -2,7 +2,7 @@ import requestApi from "../../request";
 
 export default function useMicServer() {
     const state = {}
-    
+
     // 上麦
     const speakOn=(data={})=>{
         return requestApi.mic.speakOn(data)
@@ -18,7 +18,7 @@ export default function useMicServer() {
     }
 
     // 允许举手
-    const setHandsup = (data={})=>{
+    const setHandsUp = (data={})=>{
         return requestApi.mic.setHandsUp(data)
     }
     // 允许上麦
@@ -38,5 +38,5 @@ export default function useMicServer() {
         return requestApi.mic.refuseInvite(data)
     }
 
-    return { state, speakOn, speakOff, speakUserOff,allowSpeak, setHandsup, inviteMic, cancelApply, refuseInvite}
+    return { state, speakOn, speakOff, speakUserOff,allowSpeak, setHandsUp, inviteMic, cancelApply, refuseInvite}
 }
