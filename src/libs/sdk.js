@@ -553,7 +553,7 @@
       live_token: params.live_token || '',
       nickname: params.nickname || '',
       email: params.email || '',
-      check_online: params.check_online || '',
+      check_online: params.check_online || 0,
       biz_id: params.biz_id || ''
     };
     return new Promise(function (resolve, reject) {
