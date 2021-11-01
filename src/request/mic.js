@@ -71,7 +71,7 @@ const speakUserOff = (params = {}) => {
 }
 
 // 允许举手
-const setHandsup = (params = {}) => {
+const setHandsUp = (params = {}) => {
     const { state } = contextServer.get('roomBaseServer')
 
     let retParams = {
@@ -82,7 +82,7 @@ const setHandsup = (params = {}) => {
     retParams = Object.assign(retParams, params)
 
     return $http({
-        url: '/v3/interacts/inav-user/nospeak',
+        url: '/v3/interacts/inav/set-handsup',
         type: 'POST',
         data: retParams
     })
@@ -91,7 +91,7 @@ const setHandsup = (params = {}) => {
 // 邀请上麦
 const inviteMic = (params = {}) => {
     const { state } = contextServer.get('roomBaseServer')
-    
+
     let retParams = {
         room_id: params.room_id || state.watchInitData.interact.room_id,
     }
@@ -142,7 +142,7 @@ export default {
     speakOff,// 用户下麦
     speakUserOff,// 设置其他人下麦
     inviteMic,// 邀请上麦
-    setHandsup,// 允许举手
+    setHandsUp,// 允许举手
     cancelApply,// 取消申请
     refuseInvite// 拒绝邀请上麦
 }
