@@ -36,8 +36,8 @@ export default function useMediaCheckServer() {
             profile: VhallRTC.RTC_VIDEO_PROFILE_240P_16x9_M
         }
         const options = Object.assign(
-            ...originalOpts,
-            ...opts
+            { ...originalOpts },
+            { ...opts }
         )
         return interactiveServer.createLocalStream(options).then(streamId => {
             state.localStreamId = streamId
