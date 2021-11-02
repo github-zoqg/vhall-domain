@@ -108,12 +108,27 @@ export default function usePlayerServer() {
         return state.playerInstance.setBarrageInfo(val)
     }
 
-    const addBarrage = () => {
-        return state.playerInstance.addBarrage()
+    const addBarrage = (val) => {
+        return state.playerInstance.addBarrage(val)
     }
 
     const toggleBarrage = () => {
         return state.playerInstance.toggleBarrage()
+    }
+
+    //开启弹幕显示
+    const openBarrage = () => {
+        return state.playerInstance.toggleBarrage(true);
+    }
+
+    //关闭弹幕显示
+    const closeBarrage = () => {
+        return state.playerInstance.toggleBarrage(false);
+    }
+
+    //清除弹幕显示
+    const clearBarrage = () => {
+        return state.playerInstance.clearBarrage();
     }
 
     const toggleSubtitle = () => {
@@ -132,35 +147,38 @@ export default function usePlayerServer() {
 
     }
 
-    return { 
-        state, 
+    return {
+        state,
         setType,
         init,
-        on, 
-        emit, 
-        destroy, 
-        play, 
-        pause, 
-        isPause, 
-        getQualitys, 
-        getCurrentQuality, 
-        setQuality, 
-        enterFullScreen, 
-        exitFullScreen, 
-        setMute, 
-        getVolume, 
-        setVolume, 
-        getDuration, 
-        getCurrentTime, 
-        setCurrentTime, 
-        getUsableSpeed, 
-        setPlaySpeed, 
-        openControls, 
-        openUI, 
-        setResetVideo, 
-        setBarrageInfo, 
-        addBarrage, 
-        toggleBarrage, 
+        on,
+        emit,
+        destroy,
+        play,
+        pause,
+        isPause,
+        getQualitys,
+        getCurrentQuality,
+        setQuality,
+        enterFullScreen,
+        exitFullScreen,
+        setMute,
+        getVolume,
+        setVolume,
+        getDuration,
+        getCurrentTime,
+        setCurrentTime,
+        getUsableSpeed,
+        setPlaySpeed,
+        openControls,
+        openUI,
+        setResetVideo,
+        setBarrageInfo,
+        addBarrage,
+        toggleBarrage,
+        openBarrage,
+        closeBarrage,
+        clearBarrage,
         toggleSubtitle
      }
 }
