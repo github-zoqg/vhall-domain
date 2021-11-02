@@ -46,6 +46,21 @@ export default function useRoomInitGroupServer(options = {}) {
         })
     }
 
+    // 初始化观看端互动直播
+    const initReceiveInteractiveRoom = () => {
+        // TODO: 创建互动实例
+    }
+
+    // 初始化观看端无延迟直播
+    const initReceiveNoDelayRoom = () => {
+        // TODO: 配置无延迟互动初始化参数并创建互动实例
+    }
+
+    // 初始化观看端分组直播
+    const initReceiveGroupRoom = () => {
+        // TODO: 根据情况初始化子房间互动和聊天实例   或者是初始化主房间互动实例
+    }
+
     const initSendLive = async (customOptions = {}) => {
         await initSdk()
         const defaultOptions = {
@@ -64,10 +79,8 @@ export default function useRoomInitGroupServer(options = {}) {
         setRequestConfig(options)
 
         await roomBaseServer.init(options);
-        await roomBaseServer.getWebinarInfo();
         await roomBaseServer.getConfigList();
         await msgServer.init();
-        await interactiveServer.init();
 
         return true;
     }
@@ -86,10 +99,18 @@ export default function useRoomInitGroupServer(options = {}) {
         setRequestConfig(options)
 
         await roomBaseServer.init(options)
-        await roomBaseServer.getWebinarInfo()
         await roomBaseServer.getConfigList()
         await msgServer.init();
-        await interactiveServer.init();
+
+        if (roomBaseServer.state.watchInitData.webinar.mode === 6 && roomBaseServer.state.watchInitData.webinar.type == 1) { // 如果是分组直播
+            roomBaseServer.setGroupStatus(true)
+            await roomBaseServer.getGroupInitData()
+            // initReceiveGroupRoom()
+        } else if (roomBaseServer.state.watchInitData.webinar.no_delay_webinar == 1) { // 如果是无延迟直播
+            // initReceiveNoDelayRoom()
+        } else if (roomBaseServer.state.watchInitData.webinar.mode === 3 && roomBaseServer.state.watchInitData.webinar.type == 1) { // 如果是互动直播
+            // initReceiveInteractiveRoom()
+        }
 
         return true;
     }
