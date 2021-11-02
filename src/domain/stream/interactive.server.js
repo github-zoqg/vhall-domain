@@ -126,7 +126,7 @@ export default function useInteractiveServer() {
     }
     // 获取设备的分辨率
     const getVideoConstraints = (deviceId = '') => {
-        return state.interactiveInstance.getSpeakers(deviceId)
+        return state.interactiveInstance.getVideoConstraints(deviceId)
     }
     // 配置本地流视频质量参数
     const setVideoProfile = (options = {}) => {
