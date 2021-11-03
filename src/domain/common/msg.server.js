@@ -21,6 +21,15 @@ export default function useMsgServer() {
         LEFT: []
     }
 
+    // 发送房间消息
+    const sendRoomMsg = (data) => {
+        if (state.groupMsgInstance) {
+            state.groupMsgInstance.emitRoomMsg(data)
+        } else {
+            state.msgInstance.emitRoomMsg(data)
+        }
+    }
+
     // 为聊天实例注册事件
     const _addListeners = (instance) => {
         for (let eventType in _eventhandlers) {
@@ -207,5 +216,5 @@ export default function useMsgServer() {
     }
 
     return { state, init, initGroupMsg, destroy, destroyGroupMsg, $on, $off,
-        getGroupDefaultOptions, getDefaultOptions, setMainChannelMute }
+        getGroupDefaultOptions, getDefaultOptions, setMainChannelMute, sendRoomMsg }
 }
