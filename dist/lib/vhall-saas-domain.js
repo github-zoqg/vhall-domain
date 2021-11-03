@@ -100,6 +100,22 @@
     }
   }
 
+  function _defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  function _createClass(Constructor, protoProps, staticProps) {
+    if (protoProps) _defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) _defineProperties(Constructor, staticProps);
+    return Constructor;
+  }
+
   function _defineProperty(obj, key, value) {
     if (key in obj) {
       Object.defineProperty(obj, key, {
@@ -10036,7 +10052,7 @@
   if(freeModule){// Export for Node.js.
   (freeModule.exports=_)._=_;// Export for CommonJS support.
   freeExports._=_;}else {// Export to the global object.
-  root._=_;}}).call(commonjsGlobal);})(lodash,lodash.exports);var PlayerModule=/*#__PURE__*/function(_BaseModule){_inherits(PlayerModule,_BaseModule);var _super=_createSuper(PlayerModule);function PlayerModule(customOptions){var _this;_classCallCheck(this,PlayerModule);_this=_super.call(this,customOptions);_this.isPlaying=false;return _this;}_createClass(PlayerModule,[{key:"init",value:function init(){var _this2=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{type:'live'};return new Promise(function(resolve,reject){if(customOptions.type==='live'){_this2.initLivePlayer(customOptions,function(instance){resolve(instance);},function(err){return [reject(err)];});}if(customOptions.type==='vod'){_this2.initVodPlayer(customOptions,function(instance){resolve(instance);},function(err){reject(err);});}});}},{key:"createInstance",value:function createInstance(){var _roomInitData$paasInf,_roomInitData$userInf,_roomInitData$paasInf2,_this3=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var successCb=arguments.length>1&&arguments[1]!==undefined?arguments[1]:function(){};var failCb=arguments.length>2&&arguments[2]!==undefined?arguments[2]:function(){};var roomInitData=store.get('roomInitData');var defaultOptions={appId:(roomInitData===null||roomInitData===void 0?void 0:(_roomInitData$paasInf=roomInitData.paasInfo)===null||_roomInitData$paasInf===void 0?void 0:_roomInitData$paasInf.paas_app_id)||'',accountId:(roomInitData===null||roomInitData===void 0?void 0:(_roomInitData$userInf=roomInitData.userInfo)===null||_roomInitData$userInf===void 0?void 0:_roomInitData$userInf.third_party_user_id)||'',token:(roomInitData===null||roomInitData===void 0?void 0:(_roomInitData$paasInf2=roomInitData.paasInfo)===null||_roomInitData$paasInf2===void 0?void 0:_roomInitData$paasInf2.paas_access_token)||'',type:'live'};var options=merge.recursive({},defaultOptions,customOptions);console.log('options:',options);var onSuccess=function onSuccess(event){_this3.instance=event.vhallplayer;_this3.markPoints=event.markPoints;_this3.listenEvents();successCb(event);};var onFail=function onFail(event){console.log('fail:',event);failCb(event);};VhallPlayer.createInstance(options,onSuccess,onFail);}},{key:"initLivePlayer",value:function initLivePlayer(){var _roomInitData$paasInf3;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var successCb=arguments.length>1&&arguments[1]!==undefined?arguments[1]:function(){};var failCb=arguments.length>2&&arguments[2]!==undefined?arguments[2]:function(){};var roomInitData=store.get('roomInitData');var defaultOptions={type:'live',language:'zh',liveOption:{roomId:(roomInitData===null||roomInitData===void 0?void 0:(_roomInitData$paasInf3=roomInitData.paasInfo)===null||_roomInitData$paasInf3===void 0?void 0:_roomInitData$paasInf3.room_id)||'',forceMSE:true,type:'flv'}};var options=merge.recursive({},defaultOptions,customOptions);this.createInstance(options,successCb,failCb);}},{key:"initVodPlayer",value:function initVodPlayer(){var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var successCb=arguments.length>1&&arguments[1]!==undefined?arguments[1]:function(){};var failCb=arguments.length>2&&arguments[2]!==undefined?arguments[2]:function(){};var defaultOptions={appId:'',accountId:'',token:'',type:'live',vodOption:{forceMSE:true,recordId:''}};var options=merge.recursive({},defaultOptions,customOptions);this.createInstance(options,successCb,failCb);}},{key:"listenEvents",value:function listenEvents(){var _this4=this;this.instance.on(VhallPlayer.CURRENTTIME_CHANGE,function(e){// 当前时间改变
+  root._=_;}}).call(commonjsGlobal);})(lodash,lodash.exports);var PlayerModule=/*#__PURE__*/function(_BaseModule){_inherits(PlayerModule,_BaseModule);var _super=_createSuper(PlayerModule);function PlayerModule(customOptions){var _this;_classCallCheck(this,PlayerModule);_this=_super.call(this,customOptions);_this.isPlaying=false;return _this;}_createClass(PlayerModule,[{key:"init",value:function init(){var _this2=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{type:'live'};return new Promise(function(resolve,reject){if(customOptions.type==='live'){_this2.initLivePlayer(customOptions,function(instance){resolve(instance);},function(err){return [reject(err)];});}if(customOptions.type==='vod'){_this2.initVodPlayer(customOptions,function(instance){resolve(instance);},function(err){reject(err);});}});}},{key:"createInstance",value:function createInstance(){var _this3=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var successCb=arguments.length>1&&arguments[1]!==undefined?arguments[1]:function(){};var failCb=arguments.length>2&&arguments[2]!==undefined?arguments[2]:function(){};var _store$get=store.get('roomInitData'),paasInfo=_store$get.paasInfo,userInfo=_store$get.userInfo;var defaultOptions={appId:paasInfo.paas_app_id,accountId:userInfo.third_party_user_id,token:paasInfo.paas_access_token,type:'live'};var options=merge.recursive({},defaultOptions,customOptions);console.log('options:',options);var onSuccess=function onSuccess(event){_this3.instance=event.vhallplayer;_this3.markPoints=event.markPoints;_this3.listenEvents();successCb(event);};var onFail=function onFail(event){console.log('fail:',event);failCb(event);};VhallPlayer.createInstance(options,onSuccess,onFail);}},{key:"initLivePlayer",value:function initLivePlayer(){var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var successCb=arguments.length>1&&arguments[1]!==undefined?arguments[1]:function(){};var failCb=arguments.length>2&&arguments[2]!==undefined?arguments[2]:function(){};var _store$get2=store.get('roomInitData'),paasInfo=_store$get2.paasInfo;_store$get2.userInfo;var defaultOptions={type:'live',language:'zh',liveOption:{roomId:paasInfo.room_id,forceMSE:true,type:'flv'}};var options=merge.recursive({},defaultOptions,customOptions);this.createInstance(options,successCb,failCb);}},{key:"initVodPlayer",value:function initVodPlayer(){var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var successCb=arguments.length>1&&arguments[1]!==undefined?arguments[1]:function(){};var failCb=arguments.length>2&&arguments[2]!==undefined?arguments[2]:function(){};var defaultOptions={appId:'',accountId:'',token:'',type:'live',vodOption:{forceMSE:true,recordId:''}};var options=merge.recursive({},defaultOptions,customOptions);this.createInstance(options,successCb,failCb);}},{key:"listenEvents",value:function listenEvents(){var _this4=this;this.instance.on(VhallPlayer.CURRENTTIME_CHANGE,function(e){// 当前时间改变
   _this4.$emit(VhallPlayer.CURRENTTIME_CHANGE,e);});this.instance.on(VhallPlayer.TIMEUPDATE,function(e){// 播放时间改变时触发
   _this4.$emit(VhallPlayer.TIMEUPDATE,e);});this.instance.on(VhallPlayer.ENDED,function(e){// 播放完毕
   _this4.$emit(VhallPlayer.ENDED,e);});this.instance.on(VhallPlayer.ERROR,function(e){// 播放器自身出现错误时触发
@@ -12853,56 +12869,193 @@
   };
 
   var count = 0;
+  var count2 = 0;
+  var count3 = 0;
 
-  var Msg = function Msg(_ref) {
-    var _ref$avatar = _ref.avatar,
-        avatar = _ref$avatar === void 0 ? '' : _ref$avatar,
-        _ref$sendId = _ref.sendId,
-        sendId = _ref$sendId === void 0 ? '' : _ref$sendId,
-        _ref$nickName = _ref.nickName,
-        nickName = _ref$nickName === void 0 ? '' : _ref$nickName,
-        _ref$type = _ref.type,
-        type = _ref$type === void 0 ? 'text' : _ref$type,
-        _ref$showTime = _ref.showTime,
-        showTime = _ref$showTime === void 0 ? '' : _ref$showTime,
-        _ref$roleName = _ref.roleName,
-        roleName = _ref$roleName === void 0 ? '' : _ref$roleName,
-        _ref$content = _ref.content,
-        content = _ref$content === void 0 ? {} : _ref$content,
-        _ref$sendTime = _ref.sendTime,
-        sendTime = _ref$sendTime === void 0 ? '' : _ref$sendTime,
-        _ref$client = _ref.client,
-        client = _ref$client === void 0 ? '' : _ref$client,
-        _ref$self = _ref.self,
-        self = _ref$self === void 0 ? false : _ref$self,
-        _ref$replyMsg = _ref.replyMsg,
-        replyMsg = _ref$replyMsg === void 0 ? {} : _ref$replyMsg,
-        _ref$atList = _ref.atList,
-        atList = _ref$atList === void 0 ? [] : _ref$atList,
-        _ref$context = _ref.context,
-        context = _ref$context === void 0 ? {} : _ref$context,
-        _ref$source = _ref.source,
-        source = _ref$source === void 0 ? 'mobile' : _ref$source;
+  var Msg = /*#__PURE__*/function () {
+    function Msg(params) {
+      var type = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
-    _classCallCheck(this, Msg);
+      _classCallCheck(this, Msg);
 
-    // 用户id
-    this.type = type;
-    this.avatar = avatar;
-    this.sendId = sendId;
-    this.nickName = nickName;
-    this.roleName = roleName;
-    this.content = content;
-    this.showTime = showTime;
-    this.sendTime = sendTime;
-    this.client = client;
-    this.count = count++;
-    this.self = self;
-    this.replyMsg = replyMsg;
-    this.atList = atList;
-    this.context = context;
-    this.source = source;
-  };
+      switch (type) {
+        case '发起端':
+          this.generateLiveMsg(params);
+          break;
+
+        case '观看端':
+          this.generateWatchMsg(params);
+          break;
+
+        case 'h5':
+          this.generateH5Msg(params);
+          break;
+      }
+    } //组装发起端消息
+
+
+    _createClass(Msg, [{
+      key: "generateLiveMsg",
+      value: function generateLiveMsg() {
+        var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var _params$avatar = params.avatar,
+            avatar = _params$avatar === void 0 ? '' : _params$avatar,
+            _params$sendId = params.sendId,
+            sendId = _params$sendId === void 0 ? '' : _params$sendId,
+            _params$nickName = params.nickName,
+            nickName = _params$nickName === void 0 ? '' : _params$nickName,
+            _params$type = params.type,
+            type = _params$type === void 0 ? 'text' : _params$type,
+            _params$showTime = params.showTime,
+            showTime = _params$showTime === void 0 ? '' : _params$showTime,
+            _params$roleName = params.roleName,
+            roleName = _params$roleName === void 0 ? '' : _params$roleName,
+            _params$content = params.content,
+            content = _params$content === void 0 ? {} : _params$content,
+            _params$sendTime = params.sendTime,
+            sendTime = _params$sendTime === void 0 ? '' : _params$sendTime,
+            _params$client = params.client,
+            client = _params$client === void 0 ? '' : _params$client,
+            _params$replyMsg = params.replyMsg,
+            replyMsg = _params$replyMsg === void 0 ? {} : _params$replyMsg,
+            _params$msgId = params.msgId,
+            msgId = _params$msgId === void 0 ? '' : _params$msgId,
+            _params$channel = params.channel,
+            channel = _params$channel === void 0 ? '' : _params$channel,
+            _params$atList = params.atList,
+            atList = _params$atList === void 0 ? [] : _params$atList,
+            _params$isHistoryMsg = params.isHistoryMsg,
+            isHistoryMsg = _params$isHistoryMsg === void 0 ? false : _params$isHistoryMsg; // 用户id
+
+        this.type = type;
+        this.avatar = avatar;
+        this.sendId = sendId;
+        this.nickName = nickName;
+        this.roleName = roleName;
+        this.content = content;
+        this.showTime = showTime;
+        this.sendTime = sendTime;
+        this.client = client;
+        this.count = count++;
+        this.replyMsg = replyMsg;
+        this.msgId = msgId;
+        this.channel = channel;
+        this.atList = atList;
+        this.isHistoryMsg = isHistoryMsg;
+      } //组装观看端消息
+
+    }, {
+      key: "generateWatchMsg",
+      value: function generateWatchMsg() {
+        var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var _params$avatar2 = params.avatar,
+            avatar = _params$avatar2 === void 0 ? '' : _params$avatar2,
+            _params$sendId2 = params.sendId,
+            sendId = _params$sendId2 === void 0 ? '' : _params$sendId2,
+            _params$nickName2 = params.nickName,
+            nickName = _params$nickName2 === void 0 ? '' : _params$nickName2,
+            _params$type2 = params.type,
+            type = _params$type2 === void 0 ? 'text' : _params$type2,
+            _params$showTime2 = params.showTime,
+            showTime = _params$showTime2 === void 0 ? '' : _params$showTime2,
+            _params$roleName2 = params.roleName,
+            roleName = _params$roleName2 === void 0 ? '' : _params$roleName2,
+            _params$content2 = params.content,
+            content = _params$content2 === void 0 ? {} : _params$content2,
+            _params$sendTime2 = params.sendTime,
+            sendTime = _params$sendTime2 === void 0 ? '' : _params$sendTime2,
+            _params$client2 = params.client,
+            client = _params$client2 === void 0 ? '' : _params$client2,
+            _params$replyMsg2 = params.replyMsg,
+            replyMsg = _params$replyMsg2 === void 0 ? {} : _params$replyMsg2,
+            _params$msgId2 = params.msgId,
+            msgId = _params$msgId2 === void 0 ? '' : _params$msgId2,
+            _params$channel2 = params.channel,
+            channel = _params$channel2 === void 0 ? '' : _params$channel2,
+            _params$atList2 = params.atList,
+            atList = _params$atList2 === void 0 ? [] : _params$atList2,
+            _params$isHistoryMsg2 = params.isHistoryMsg,
+            isHistoryMsg = _params$isHistoryMsg2 === void 0 ? false : _params$isHistoryMsg2,
+            _params$interactStatu = params.interactStatus,
+            interactStatus = _params$interactStatu === void 0 ? false : _params$interactStatu,
+            _params$isCheck = params.isCheck,
+            isCheck = _params$isCheck === void 0 ? false : _params$isCheck,
+            _params$interactTools = params.interactToolsStatus,
+            interactToolsStatus = _params$interactTools === void 0 ? false : _params$interactTools; // 用户id
+
+        this.type = type;
+        this.avatar = avatar;
+        this.sendId = sendId;
+        this.nickName = nickName;
+        this.roleName = roleName;
+        this.content = content;
+        this.showTime = showTime;
+        this.sendTime = sendTime;
+        this.client = client;
+        this.count = count2++;
+        this.replyMsg = replyMsg;
+        this.msgId = msgId;
+        this.channel = channel;
+        this.atList = atList;
+        this.isHistoryMsg = isHistoryMsg;
+        this.interactStatus = interactStatus;
+        this.isCheck = isCheck;
+        this.interactToolsStatus = interactToolsStatus;
+      } //组装wap端消息
+
+    }, {
+      key: "generateH5Msg",
+      value: function generateH5Msg() {
+        var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+        var _params$avatar3 = params.avatar,
+            avatar = _params$avatar3 === void 0 ? '' : _params$avatar3,
+            _params$sendId3 = params.sendId,
+            sendId = _params$sendId3 === void 0 ? '' : _params$sendId3,
+            _params$nickName3 = params.nickName,
+            nickName = _params$nickName3 === void 0 ? '' : _params$nickName3,
+            _params$type3 = params.type,
+            type = _params$type3 === void 0 ? 'text' : _params$type3,
+            _params$showTime3 = params.showTime,
+            showTime = _params$showTime3 === void 0 ? '' : _params$showTime3,
+            _params$roleName3 = params.roleName,
+            roleName = _params$roleName3 === void 0 ? '' : _params$roleName3,
+            _params$content3 = params.content,
+            content = _params$content3 === void 0 ? {} : _params$content3,
+            _params$sendTime3 = params.sendTime,
+            sendTime = _params$sendTime3 === void 0 ? '' : _params$sendTime3,
+            _params$client3 = params.client,
+            client = _params$client3 === void 0 ? '' : _params$client3,
+            _params$self = params.self,
+            self = _params$self === void 0 ? false : _params$self,
+            _params$replyMsg3 = params.replyMsg,
+            replyMsg = _params$replyMsg3 === void 0 ? {} : _params$replyMsg3,
+            _params$atList3 = params.atList,
+            atList = _params$atList3 === void 0 ? [] : _params$atList3,
+            _params$context = params.context,
+            context = _params$context === void 0 ? {} : _params$context,
+            _params$source = params.source,
+            source = _params$source === void 0 ? 'mobile' : _params$source; // 用户id
+
+        this.type = type;
+        this.avatar = avatar;
+        this.sendId = sendId;
+        this.nickName = nickName;
+        this.roleName = roleName;
+        this.content = content;
+        this.showTime = showTime;
+        this.sendTime = sendTime;
+        this.client = client;
+        this.count = count3++;
+        this.self = self;
+        this.replyMsg = replyMsg;
+        this.atList = atList;
+        this.context = context;
+        this.source = source;
+      }
+    }]);
+
+    return Msg;
+  }();
 
   function useChatServer() {
     var state = {
@@ -13156,7 +13309,7 @@
         };
       }
 
-      var resultMsg = new Msg(params);
+      var resultMsg = new Msg(params, from);
 
       if (item.data.event_type) {
         resultMsg = _objectSpread2(_objectSpread2({}, resultMsg), {}, {
