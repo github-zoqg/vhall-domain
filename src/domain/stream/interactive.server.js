@@ -12,7 +12,7 @@ export default function useInteractiveServer() {
     const init = (option) => {
         const roomInitGroupServer = contextServer.get('roomInitGroupServer');
         state.vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
-        return state.vhallSaasInstance.createInteractive().then(interactives => {
+        return state.vhallSaasInstance.createInteractive(option).then(interactives => {
             console.log('5555555555555createInteractive');
             state.interactiveInstance = interactives
             // setTimeout(()=>{
