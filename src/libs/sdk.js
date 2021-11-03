@@ -1239,17 +1239,19 @@
         isPc();
 
         var _store$get = store.get('roomInitData'),
-            paasInfo = _store$get.paasInfo,
-            userInfo = _store$get.userInfo;
+            _store$get$paasInfo = _store$get.paasInfo,
+            paasInfo = _store$get$paasInfo === void 0 ? {} : _store$get$paasInfo,
+            _store$get$userInfo = _store$get.userInfo,
+            userInfo = _store$get$userInfo === void 0 ? {} : _store$get$userInfo;
 
         var defaultOptions = {
-          accountId: userInfo.third_party_user_id,
-          roomId: paasInfo.room_id,
-          channelId: paasInfo.channel_id,
+          accountId: userInfo === null || userInfo === void 0 ? void 0 : userInfo.third_party_user_id,
+          roomId: paasInfo === null || paasInfo === void 0 ? void 0 : paasInfo.room_id,
+          channelId: paasInfo === null || paasInfo === void 0 ? void 0 : paasInfo.channel_id,
           // 频道id 必须
-          appId: paasInfo.paas_app_id,
+          appId: paasInfo === null || paasInfo === void 0 ? void 0 : paasInfo.paas_app_id,
           // appId 必须
-          role: userInfo.role_name,
+          role: userInfo === null || userInfo === void 0 ? void 0 : userInfo.role_name,
           // 角色 必须
           isVod: false,
           // 是否是回放 必须
@@ -1274,6 +1276,8 @@
         }); // 当前文档加载完成
 
         this.instance.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE, function (data) {
+          console.log('doc 加载完成');
+
           _this3.$emit(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE, data);
         }); // 开关变换
 
@@ -1285,7 +1289,9 @@
           _this3.$emit(VHDocSDK.Event.DELETE_CONTAINER, data);
         }); // 所有的文档准备完成
 
-        this.instance.on(VHDocSDK.Event.ALL_COMPLETE, function (data) {
+        this.instance.on(VHDocSDK.Event.ALL_COMPLETE, function (data, s1, s2) {
+          console.log('doc 所有文档加载完成', data, s1, s2);
+
           _this3.$emit(VHDocSDK.Event.ALL_COMPLETE, data);
         }); // 正在演示的文档被删除(文档不存在)
 
@@ -1303,8 +1309,18 @@
           _this3.$emit(VHDocSDK.Event.PAGE_CHANGE, event);
         }); // 回放文件加载完成
 
-        this.instance.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, function (event) {
+        this.instance.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, function (event, s1, s2) {
+          console.log('doc 回放文件加载完成', event, s1, s2);
+
           _this3.$emit(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, event);
+        }); // 回放时间更新
+
+        this.instance.on(VHDocSDK.Event.VOD_TIME_UPDATE, function (event) {
+          _this3.$emit(VHDocSDK.Event.VOD_TIME_UPDATE, event);
+        }); // error
+
+        this.instance.on(VHDocSDK.Event.ERROR, function (event) {
+          _this3.$emit(VHDocSDK.Event.ERROR, event);
         }); // ppt文档加载完毕
 
         this.instance.on(VHDocSDK.Event.PLAYBACKCOMPLETE, function (event) {
@@ -12013,20 +12029,19 @@
     }, {
       key: "createInstance",
       value: function createInstance() {
-        var _this3 = this;
+        var _roomInitData$paasInf,
+            _roomInitData$userInf,
+            _roomInitData$paasInf2,
+            _this3 = this;
 
         var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         var successCb = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
         var failCb = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
-
-        var _store$get = store.get('roomInitData'),
-            paasInfo = _store$get.paasInfo,
-            userInfo = _store$get.userInfo;
-
+        var roomInitData = store.get('roomInitData');
         var defaultOptions = {
-          appId: paasInfo.paas_app_id,
-          accountId: userInfo.third_party_user_id,
-          token: paasInfo.paas_access_token,
+          appId: (roomInitData === null || roomInitData === void 0 ? void 0 : (_roomInitData$paasInf = roomInitData.paasInfo) === null || _roomInitData$paasInf === void 0 ? void 0 : _roomInitData$paasInf.paas_app_id) || '',
+          accountId: (roomInitData === null || roomInitData === void 0 ? void 0 : (_roomInitData$userInf = roomInitData.userInfo) === null || _roomInitData$userInf === void 0 ? void 0 : _roomInitData$userInf.third_party_user_id) || '',
+          token: (roomInitData === null || roomInitData === void 0 ? void 0 : (_roomInitData$paasInf2 = roomInitData.paasInfo) === null || _roomInitData$paasInf2 === void 0 ? void 0 : _roomInitData$paasInf2.paas_access_token) || '',
           type: 'live'
         };
         var options = merge.recursive({}, defaultOptions, customOptions);
@@ -12051,19 +12066,17 @@
     }, {
       key: "initLivePlayer",
       value: function initLivePlayer() {
+        var _roomInitData$paasInf3;
+
         var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         var successCb = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : function () {};
         var failCb = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
-
-        var _store$get2 = store.get('roomInitData'),
-            paasInfo = _store$get2.paasInfo;
-            _store$get2.userInfo;
-
+        var roomInitData = store.get('roomInitData');
         var defaultOptions = {
           type: 'live',
           language: 'zh',
           liveOption: {
-            roomId: paasInfo.room_id,
+            roomId: (roomInitData === null || roomInitData === void 0 ? void 0 : (_roomInitData$paasInf3 = roomInitData.paasInfo) === null || _roomInitData$paasInf3 === void 0 ? void 0 : _roomInitData$paasInf3.room_id) || '',
             forceMSE: true,
             type: 'flv'
           }

@@ -13,7 +13,11 @@ export default function usePlayerServer() {
 
     const init = (options) => {
         const roomInitGroupServer = contextServer.get('roomInitGroupServer')
-        vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance
+        if(roomInitGroupServer){
+            vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance
+        }else {
+            vhallSaasInstance = new window.VhallSaasSDK()
+        }
 
         return vhallSaasInstance.createPlayer(options).then((instance)=>{
             state.playerInstance = instance;
