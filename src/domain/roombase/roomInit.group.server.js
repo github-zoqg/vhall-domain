@@ -55,6 +55,7 @@ export default function useRoomInitGroupServer(options = {}) {
                 platform: 7
             }
         }
+        roomBaseServer.setClientType('send')
 
         if (customOptions.liveToken) {
             state.live_token = customOptions.liveToken
@@ -64,8 +65,11 @@ export default function useRoomInitGroupServer(options = {}) {
         setRequestConfig(options)
 
         await roomBaseServer.init(options);
+        if (roomBaseServer.state.watchInitData.webinar.mode === 6) { // 如果是分组直播
+            roomBaseServer.setGroupStatus(true)
+            await roomBaseServer.getGroupInitData()
+        }
         await roomBaseServer.getConfigList();
-        await msgServer.init();
 
         return true;
     }
@@ -80,6 +84,8 @@ export default function useRoomInitGroupServer(options = {}) {
             },
             receiveType: 'standard'
         }
+        roomBaseServer.setClientType('receive')
+
         const options = Object.assign({}, defaultOptions, customOptions)
         setRequestConfig(options)
 

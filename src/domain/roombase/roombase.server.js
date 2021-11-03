@@ -9,14 +9,20 @@ export default function useRoomBaseServer() {
         inited: false,
         isLiveOver: false,
         webinarVo: {},
-        watchInitData: {},
-        groupInitData: {},
+        watchInitData: {}, // 活动信息
+        groupInitData: {}, // 分组信息
         watchInitErrorData: undefined,// 默认undefined，如果为其他值将触发特殊逻辑
         configList: {},
-        isGroupWebinar: false
+        isGroupWebinar: false, // 是否是分组直播
+        clientType: 'send'
     }
 
     const eventEmitter = useEventEmitter()
+
+    // 设置当前房间是发起端还是观看端
+    const setClientType = (type) => {
+        state.clientType = type
+    }
 
     // 初始化房间信息,包含发起/观看(嵌入/标品)
     const getWatchInitData = (options) => {
@@ -123,6 +129,6 @@ export default function useRoomBaseServer() {
 
     return { state, init, on, destroy, getWatchInitData, getWebinarInfo, getConfigList,
         startLive, endLive, setDevice, startRecord, pauseRecord, endRecord,
-        getGroupInitData, setGroupStatus }
+        getGroupInitData, setGroupStatus, setClientType }
 
 }

@@ -20,7 +20,7 @@ export default function useInteractiveServer() {
             //     state.interactiveInstance.listenEvents()
             // },2000)
             console.log('5555state.interactiveInstance',interactives,interactives.getRoomInfo())
-            return true
+            return interactives
         })
     }
 

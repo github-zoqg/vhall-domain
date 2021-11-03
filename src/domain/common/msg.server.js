@@ -1,10 +1,11 @@
 import contextServer from '@/domain/common/context.server.js'
-import { isPc, merge, isPropertityExist } from '@utils/index.js'
+import { isPc, merge, randomNumGenerator } from '@/utils/index.js'
 
 export default function useMsgServer() {
     const state = {
         msgInstance: null,
-        eventsPool: []
+        eventsPool: [],
+        msgSdkInitOptions: {}
     }
 
     const groupMsgInstance = null
@@ -22,7 +23,7 @@ export default function useMsgServer() {
 
     // 为聊天实例注册事件
     const _addListeners = (instance) => {
-        for (eventType in _eventhandlers) {
+        for (let eventType in _eventhandlers) {
             instance.$on(eventType, (msg) => {
                 if (_eventhandlers[eventType].length) {
                     _eventhandlers[eventType].forEach((handler) => {
@@ -35,7 +36,7 @@ export default function useMsgServer() {
 
     // 为聊天实例注销事件
     const _removeListeners = (instance) => {
-        for (eventType in _eventhandlers) {
+        for (let eventType in _eventhandlers) {
             instance.$off(eventType)
         }
     }
@@ -58,11 +59,52 @@ export default function useMsgServer() {
         }
     })
 
+    // 获取主房间聊天sdk初始化默认参数
+    const getDefaultOptions = () => {
+        const { state: roomBaseServerState } = contextServer.get('roomBaseServer')
+
+        const isPcClient = isPc()
+
+        const { watchInitData } = roomBaseServerState
+
+        const defaultContext = {
+            nickname: watchInitData.join_info.nickname,
+            avatar: watchInitData.join_info.avatar,
+            pv: watchInitData.pv.num2 || watchInitData.pv.real, // pv
+            uv: watchInitData.online.num || watchInitData.online.virtual,
+            role_name: watchInitData.join_info.role_name,
+            device_type: isPcClient ? '2' : '1', // 设备类型 1手机端 2PC 0未检测
+            device_status: '0', // 设备状态  0未检测 1可以上麦 2不可以上麦
+            audience: roomBaseServerState.clientType === 'send',
+            kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
+            privacies: watchInitData.join_info.privacies || '',
+        }
+
+        const defaultOptions = {
+            context: defaultContext,
+            appId: watchInitData.interact.paas_app_id,
+            accountId: watchInitData.join_info.third_party_user_id,
+            channelId: watchInitData.interact.channel_id,
+            token: watchInitData.interact.paas_access_token,
+            hide: false, // 是否隐身
+        }
+
+        return defaultOptions
+    }
+
     // 初始化主房间聊天sdk
-    const init = () => {
+    const init = (customOptions = {}) => {
         if (!contextServer.get('roomInitGroupServer')) return
         const { state: roomInitGroupServerState } = contextServer.get('roomInitGroupServer')
-        return roomInitGroupServerState.vhallSaasInstance.createChat().then(res => {
+
+        const defaultOptions = getDefaultOptions()
+
+        const options = merge.recursive({}, defaultOptions, customOptions)
+        console.log('聊天初始化参数', options)
+
+        state.msgSdkInitOptions = options
+
+        return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(res => {
             state.msgInstance = res
             _addListeners(res)
             return res
@@ -117,6 +159,8 @@ export default function useMsgServer() {
 
         const options = merge.recursive({}, defaultOptions, customOptions)
 
+        state.groupMsgSdkInitOptions = options
+
         return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(res => {
             state.groupMsgInstance = res
             _addListeners(res)
@@ -163,5 +207,5 @@ export default function useMsgServer() {
     }
 
     return { state, init, initGroupMsg, destroy, destroyGroupMsg, $on, $off,
-        getGroupDefaultOptions, setMainChannelMute }
+        getGroupDefaultOptions, getDefaultOptions, setMainChannelMute }
 }
