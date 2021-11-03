@@ -229,7 +229,7 @@ export default function useChatServer() {
             };
         }
 
-        let resultMsg = new Msg(params);
+        let resultMsg = new Msg(params,from);
         if (item.data.event_type) {
             resultMsg = {
                 ...resultMsg,
