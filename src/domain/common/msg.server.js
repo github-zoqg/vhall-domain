@@ -8,7 +8,7 @@ export default function useMsgServer() {
         msgSdkInitOptions: {}
     }
 
-    const groupMsgInstance = null
+    let groupMsgInstance = null
 
     const _eventhandlers = {
         ROOM_MSG: [],
@@ -161,7 +161,7 @@ export default function useMsgServer() {
             appId: watchInitData.interact.paas_app_id,
             accountId: watchInitData.join_info.third_party_user_id,
             channelId: groupInitData.channel_id,
-            token: groupInitData.access_token,
+            token: groupInitData.paas_access_token,
             hide: false, // 是否隐身
         }
 
@@ -178,7 +178,7 @@ export default function useMsgServer() {
         const options = merge.recursive({}, defaultOptions, customOptions)
 
         state.groupMsgSdkInitOptions = options
-
+        console.log('创建子房间聊天实例', options)
         return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(res => {
             state.groupMsgInstance = res
             _addListeners(res)

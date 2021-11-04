@@ -917,6 +917,7 @@
         var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         var defaultOptions = this.initDefaultOptions();
         var options = merge.recursive({}, defaultOptions, customOptions);
+        options.context = JSON.stringify(options.context);
         return new Promise(function (resolve, reject) {
           VhallChat.createInstance(options, function (event) {
             _this.instance = event.message;
@@ -989,7 +990,7 @@
           // 房间消息（不对外）
           _this2.$emit('ROOM_MSG', msg);
         });
-        this.instance.onChat(function (msg) {
+        this.instance.on(function (msg) {
           // 聊天消息
           _this2.$emit('CHAT', msg);
         });
@@ -12392,9 +12393,9 @@
       key: "setRequestConfig",
       value: function setRequestConfig(options) {
         if (options.development) {
-          setBaseUrl('https://test-zt-api.vhall.com');
+          setBaseUrl('https://test-saas-api.vhall.com');
         } else {
-          setBaseUrl('https://test-zt-api.vhall.com');
+          setBaseUrl('https://test-saas-api.vhall.com');
         }
 
         setToken(options.token, options.liveToken);
@@ -12423,11 +12424,9 @@
       key: "createInteractive",
       value: function createInteractive() {
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-        return new Promise(function (resolve, reject) {
-          var instance = new InteractiveModule(options);
-          instance.init(options).then(function (res) {
-            resolve(instance);
-          });
+        var instance = new InteractiveModule(options);
+        return instance.init(options).then(function (res) {
+          return instance;
         });
       }
     }, {

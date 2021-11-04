@@ -202,45 +202,402 @@
 
   var contextServer = useContextServer();
 
+  function unwrapExports (x) {
+  	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+  }
+
+  function createCommonjsModule(fn, module) {
+  	return module = { exports: {} }, fn(module, module.exports), module.exports;
+  }
+
+  var src = createCommonjsModule(function (module, exports) {
+  Object.defineProperty(exports, "__esModule", { value: true });
+  exports.isPlainObject = exports.clone = exports.recursive = exports.merge = exports.main = void 0;
+  module.exports = exports = main;
+  exports.default = main;
+  function main() {
+      var items = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+          items[_i] = arguments[_i];
+      }
+      return merge.apply(void 0, items);
+  }
+  exports.main = main;
+  main.clone = clone;
+  main.isPlainObject = isPlainObject;
+  main.recursive = recursive;
+  function merge() {
+      var items = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+          items[_i] = arguments[_i];
+      }
+      return _merge(items[0] === true, false, items);
+  }
+  exports.merge = merge;
+  function recursive() {
+      var items = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+          items[_i] = arguments[_i];
+      }
+      return _merge(items[0] === true, true, items);
+  }
+  exports.recursive = recursive;
+  function clone(input) {
+      if (Array.isArray(input)) {
+          var output = [];
+          for (var index = 0; index < input.length; ++index)
+              output.push(clone(input[index]));
+          return output;
+      }
+      else if (isPlainObject(input)) {
+          var output = {};
+          for (var index in input)
+              output[index] = clone(input[index]);
+          return output;
+      }
+      else {
+          return input;
+      }
+  }
+  exports.clone = clone;
+  function isPlainObject(input) {
+      return input && typeof input === 'object' && !Array.isArray(input);
+  }
+  exports.isPlainObject = isPlainObject;
+  function _recursiveMerge(base, extend) {
+      if (!isPlainObject(base))
+          return extend;
+      for (var key in extend) {
+          if (key === '__proto__' || key === 'constructor' || key === 'prototype')
+              continue;
+          base[key] = (isPlainObject(base[key]) && isPlainObject(extend[key])) ?
+              _recursiveMerge(base[key], extend[key]) :
+              extend[key];
+      }
+      return base;
+  }
+  function _merge(isClone, isRecursive, items) {
+      var result;
+      if (isClone || !isPlainObject(result = items.shift()))
+          result = {};
+      for (var index = 0; index < items.length; ++index) {
+          var item = items[index];
+          if (!isPlainObject(item))
+              continue;
+          for (var key in item) {
+              if (key === '__proto__' || key === 'constructor' || key === 'prototype')
+                  continue;
+              var value = isClone ? clone(item[key]) : item[key];
+              result[key] = isRecursive ? _recursiveMerge(result[key], value) : value;
+          }
+      }
+      return result;
+  }
+  });
+
+  var merge = unwrapExports(src);
+  src.isPlainObject;
+  src.clone;
+  src.recursive;
+  src.merge;
+  src.main;
+
+  function isPc() {
+    var userAgentInfo = navigator.userAgent;
+    var Agents = ["Android", "iPhone", "SymbianOS", "Windows Phone", "iPad", "iPod"];
+    var flag = true;
+
+    for (var v = 0; v < Agents.length; v++) {
+      if (userAgentInfo.indexOf(Agents[v]) > 0) {
+        flag = false;
+        break;
+      }
+    }
+
+    return flag;
+  } // 上传文件
+
+
+  function uploadFile(options, onChange) {
+    var inputObj = document.createElement('input');
+    inputObj.setAttribute('id', 'file');
+    inputObj.setAttribute('type', 'file');
+    inputObj.setAttribute('name', 'file');
+    inputObj.setAttribute("style", 'height:0px; position: absolute;');
+    inputObj.setAttribute("accept", options.accept);
+    document.body.appendChild(inputObj);
+    inputObj.value;
+    inputObj.click();
+    inputObj.addEventListener('change', function (e) {
+      onChange && onChange(e);
+      document.body.removeChild(this);
+    });
+  } // 判断浏览器是否是 chrome88 以上版本
+
+
+  function isChrome88() {
+    var chromeReg = /Chrome\/(\d{2})[.\d]+\sSafari\/[.\d]+$/gi;
+    var chromeResult = chromeReg.exec(navigator.userAgent);
+    return chromeResult && chromeResult.length > 0 && chromeResult[1] > 87;
+  }
+
+  function randomNumGenerator() {
+    return 'xxxxxxyxxx'.replace(/[xy]/g, function (c) {
+      var r = Math.random() * 16 | 0;
+      var v = c === 'x' ? r : r & 0x3 | 0x8;
+      return v.toString(16);
+    });
+  }
+
   function useMsgServer() {
     var state = {
-      msgInstance: null
+      msgInstance: null,
+      eventsPool: [],
+      msgSdkInitOptions: {}
     };
+    var groupMsgInstance = null;
+    var _eventhandlers = {
+      ROOM_MSG: [],
+      CHAT: [],
+      CUSTOM_MSG: [],
+      OFFLINE: [],
+      ONLINE: [],
+      DOC_MSG: [],
+      JOIN: [],
+      LEFT: []
+    }; // 发送房间消息
+
+    var sendChatMsg = function sendChatMsg(data, context) {
+      if (state.groupMsgInstance) {
+        state.groupMsgInstance.emitTextChat(data, context);
+      } else {
+        state.msgInstance.emitTextChat(data, context);
+      }
+    }; // 发送房间消息
+
+
+    var sendRoomMsg = function sendRoomMsg(data) {
+      if (state.groupMsgInstance) {
+        state.groupMsgInstance.emitRoomMsg(data);
+      } else {
+        state.msgInstance.emitRoomMsg(data);
+      }
+    }; // 为聊天实例注册事件
+
+
+    var _addListeners = function _addListeners(instance) {
+      var _loop = function _loop(eventType) {
+        instance.$on(eventType, function (msg) {
+          if (_eventhandlers[eventType].length) {
+            _eventhandlers[eventType].forEach(function (handler) {
+              handler(msg);
+            });
+          }
+        });
+      };
+
+      for (var eventType in _eventhandlers) {
+        _loop(eventType);
+      }
+    }; // 为聊天实例注销事件
+
+
+    var _removeListeners = function _removeListeners(instance) {
+      for (var eventType in _eventhandlers) {
+        instance.$off(eventType);
+      }
+    };
+
+    Object.defineProperty(state, 'groupMsgInstance', {
+      get: function get() {
+        return groupMsgInstance;
+      },
+      set: function set(newVal) {
+        // 如果新值旧值都为假，或者新值旧值相同，直接 return
+        if (!newVal && !groupMsgInstance || newVal === groupMsgInstance) return;
+
+        if (!newVal) {
+          // 如果是销毁子房间实例，重新注册主房间事件
+          _addListeners(state.msgInstance);
+        } else {
+          // 如果是新创建子房间实例，注销主房间事件
+          _removeListeners(state.msgInstance);
+        }
+
+        groupMsgInstance = newVal;
+      }
+    }); // 获取主房间聊天sdk初始化默认参数
+
+    var getDefaultOptions = function getDefaultOptions() {
+      var _contextServer$get = contextServer.get('roomBaseServer'),
+          roomBaseServerState = _contextServer$get.state;
+
+      var isPcClient = isPc();
+      var watchInitData = roomBaseServerState.watchInitData;
+      var defaultContext = {
+        nickname: watchInitData.join_info.nickname,
+        avatar: watchInitData.join_info.avatar,
+        pv: watchInitData.pv.num2 || watchInitData.pv.real,
+        // pv
+        uv: watchInitData.online.num || watchInitData.online.virtual,
+        role_name: watchInitData.join_info.role_name,
+        device_type: isPcClient ? '2' : '1',
+        // 设备类型 1手机端 2PC 0未检测
+        device_status: '0',
+        // 设备状态  0未检测 1可以上麦 2不可以上麦
+        audience: roomBaseServerState.clientType === 'send',
+        kick_mark: "".concat(randomNumGenerator()).concat(watchInitData.webinar.id),
+        privacies: watchInitData.join_info.privacies || ''
+      };
+      var defaultOptions = {
+        context: defaultContext,
+        appId: watchInitData.interact.paas_app_id,
+        accountId: watchInitData.join_info.third_party_user_id,
+        channelId: watchInitData.interact.channel_id,
+        token: watchInitData.interact.paas_access_token,
+        hide: false // 是否隐身
+
+      };
+      return defaultOptions;
+    }; // 初始化主房间聊天sdk
+
 
     var init = function init() {
+      var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       if (!contextServer.get('roomInitGroupServer')) return;
 
-      var _contextServer$get = contextServer.get('roomInitGroupServer'),
-          roomInitGroupServer = _contextServer$get.state;
+      var _contextServer$get2 = contextServer.get('roomInitGroupServer'),
+          roomInitGroupServerState = _contextServer$get2.state;
 
-      return roomInitGroupServer.vhallSaasInstance.createChat().then(function (res) {
+      var defaultOptions = getDefaultOptions();
+      var options = merge.recursive({}, defaultOptions, customOptions);
+      console.log('聊天初始化参数', options);
+      state.msgSdkInitOptions = options;
+      return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(function (res) {
         state.msgInstance = res;
+
+        _addListeners(res);
+
         return res;
       });
-    };
+    }; // 设置主频道静默状态
+
+
+    var setMainChannelMute = function setMainChannelMute(mute) {
+      if (mute) {
+        _removeListeners(state.msgInstance);
+      } else {
+        _addListeners(state.msgInstance);
+      }
+    }; // 获取子房间聊天sdk初始化默认参数
+
+
+    var getGroupDefaultOptions = function getGroupDefaultOptions() {
+      var _contextServer$get3 = contextServer.get('roomBaseServer'),
+          roomBaseServerState = _contextServer$get3.state;
+
+      var isPcClient = isPc();
+      var watchInitData = roomBaseServerState.watchInitData,
+          groupInitData = roomBaseServerState.groupInitData;
+      var defaultContext = {
+        nick_name: watchInitData.join_info.nickname,
+        avatar: watchInitData.join_info.avatar,
+        role_name: watchInitData.join_info.role_name,
+        device_type: isPcClient ? '2' : '1',
+        // 设备类型 1手机端 2PC 0未检测
+        device_status: '0',
+        // 设备状态  0未检测 1可以上麦 2不可以上麦
+        is_banned: groupInitData.is_banned,
+        // 是否禁言 1是 0否
+        watch_type: isPcClient ? '1' : '2' // 1 pc  2 h5  3 app  4 是客户端
+
+      };
+      var defaultOptions = {
+        context: defaultContext,
+        appId: watchInitData.interact.paas_app_id,
+        accountId: watchInitData.join_info.third_party_user_id,
+        channelId: groupInitData.channel_id,
+        token: groupInitData.paas_access_token,
+        hide: false // 是否隐身
+
+      };
+      return defaultOptions;
+    }; // 初始化子房间聊天sdk
+
+
+    var initGroupMsg = function initGroupMsg() {
+      var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      if (!contextServer.get('roomInitGroupServer')) return;
+
+      var _contextServer$get4 = contextServer.get('roomInitGroupServer'),
+          roomInitGroupServerState = _contextServer$get4.state;
+
+      var defaultOptions = getGroupDefaultOptions();
+      var options = merge.recursive({}, defaultOptions, customOptions);
+      state.groupMsgSdkInitOptions = options;
+      console.log('创建子房间聊天实例', options);
+      return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(function (res) {
+        state.groupMsgInstance = res;
+
+        _addListeners(res);
+
+        return res;
+      });
+    }; // 注册事件
+
 
     var $on = function $on(eventType, fn) {
-      if (!state.msgInstance) return;
-      state.msgInstance.$on(eventType, fn);
-    };
+      if (!_eventhandlers.hasOwnProperty(eventType)) {
+        throw new TypeError('Invalid eventType');
+      }
 
-    var $emit = function $emit(eventType, params) {
-      if (!state.msgInstance) return;
-      state.msgInstance.$emit(eventType, params);
-    };
+      _eventhandlers[eventType].push(fn);
+    }; // 注销事件
+
+
+    var $off = function $off(eventType, fn) {
+      if (!isPropertityExist(_eventhandlers, eventType)) {
+        throw new TypeError('Invalid eventType');
+      }
+
+      if (!fn) {
+        _eventhandlers[eventType] = [];
+      }
+
+      var index = _eventhandlers[eventType].indexOf(fn);
+
+      if (index > -1) {
+        _eventhandlers.splice(index, 1);
+      }
+    }; // 销毁子房间聊天实例
+
+
+    var destroyGroupMsg = function destroyGroupMsg() {
+      if (!state.groupMsgInstance) return;
+      state.groupMsgInstance.destroy();
+      state.groupMsgInstance = null;
+    }; // 销毁主房间聊天实例
+
 
     var destroy = function destroy() {
       if (!state.msgInstance) return;
-      state.msgInstance.destroy;
+      state.msgInstance.destroy();
       state.msgInstance = null;
     };
 
     return {
       state: state,
       init: init,
+      initGroupMsg: initGroupMsg,
       destroy: destroy,
+      destroyGroupMsg: destroyGroupMsg,
       $on: $on,
-      $emit: $emit
+      $off: $off,
+      getGroupDefaultOptions: getGroupDefaultOptions,
+      getDefaultOptions: getDefaultOptions,
+      setMainChannelMute: setMainChannelMute,
+      sendRoomMsg: sendRoomMsg,
+      sendChatMsg: sendChatMsg
     };
   }
 
@@ -304,7 +661,7 @@
   this.handlers[type].splice(idx,1);if(this.handlers[type].length===0){delete this.handlers[type];}}}}]);return BaseModule;}();var ChatModule=/*#__PURE__*/function(_BaseModule){_inherits(ChatModule,_BaseModule);var _super=_createSuper(ChatModule);function ChatModule(){_classCallCheck(this,ChatModule);return _super.call(this);}/**
        * 初始化聊天 SDK
        * @param {Object} customOptions 用户自定义参数
-       */_createClass(ChatModule,[{key:"init",value:function init(){var _this=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var defaultOptions=this.initDefaultOptions();var options=merge.recursive({},defaultOptions,customOptions);return new Promise(function(resolve,reject){VhallChat.createInstance(options,function(event){_this.instance=event.message;_this.listenEvents();resolve(event);},reject);});}/**
+       */_createClass(ChatModule,[{key:"init",value:function init(){var _this=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var defaultOptions=this.initDefaultOptions();var options=merge.recursive({},defaultOptions,customOptions);options.context=JSON.stringify(options.context);return new Promise(function(resolve,reject){VhallChat.createInstance(options,function(event){_this.instance=event.message;_this.listenEvents();resolve(event);},reject);});}/**
          * 销毁聊天实例
          */},{key:"destroy",value:function destroy(){this.instance.destroy();this.instance=null;}/**
          * 获取实例化聊天的默认参数
@@ -317,7 +674,7 @@
   };return defaultOptions;}/**
          * 注册聊天事件
          */},{key:"listenEvents",value:function listenEvents(){var _this2=this;this.instance.onRoomMsg(function(msg){// 房间消息（不对外）
-  _this2.$emit('ROOM_MSG',msg);});this.instance.onChat(function(msg){// 聊天消息
+  _this2.$emit('ROOM_MSG',msg);});this.instance.on(function(msg){// 聊天消息
   _this2.$emit('CHAT',msg);});this.instance.onCustomMsg(function(msg){// 自定义消息
   _this2.$emit('CUSTOM_MSG',msg);});this.instance.onOffLine(function(){// 连接断开
   _this2.$emit('OFFLINE');});this.instance.onOnLine(function(){// 连接连接上了
@@ -10080,130 +10437,7 @@
   return this.instance.setPlaySpeed(val,failure);}},{key:"openControls",value:function openControls(isOpen){// 开关默认控制条
   return this.instance.openControls(isOpen);}},{key:"openUI",value:function openUI(isOpen){return this.instance.openUI(isOpen);}},{key:"setResetVideo",value:function setResetVideo(){var videoDom=document.getElementById(this.params.videoNode);if(videoDom&&this.instance){this.instance.setSize({width:videoDom.offsetWidth,height:videoDom.offsetHeight});}}},{key:"setBarrageInfo",value:function setBarrageInfo(option){return this.instance.setBarrageInfo(option,function(err){Vlog.error(err);});}},{key:"addBarrage",value:function addBarrage(content){return this.instance.addBarrage(content,function(err){Vlog.error(err);});}},{key:"toggleBarrage",value:function toggleBarrage(open){if(!this.instance)return;if(open){this.instance.openBarrage();}else {this.instance.closeBarrage();}}},{key:"toggleSubtitle",value:function toggleSubtitle(open){if(this.instance&&this.params.recordId){if(open){// 开启点播字幕(仅点播可用)
   this.instance.openSubtitle();}else {// 关闭点播字幕(仅点播可用)
-  this.instance.closeSubtitle();}}}}]);return PlayerModule;}(BaseModule);var initLoader=function initLoader(){Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.1.6.js')]).then(function(res){});};var VhallSaasSDK=/*#__PURE__*/function(){function VhallSaasSDK(){_classCallCheck(this,VhallSaasSDK);this.msgBus=null;this.request=requestApi;this.baseState=store;}_createClass(VhallSaasSDK,[{key:"init",value:function init(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{clientType:'send',receiveType:'standard'};this.setRequestConfig(options);this.setClientType(options.clientType);if(options.clientType==='send'){return this.initSendLive(options);}else {return this.initReceiveLive(options);}}},{key:"initSendLive",value:function initSendLive(options){var _this=this;return new Promise(function(resolve,reject){_this.request.live.initSendLive(options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"initReceiveLive",value:function initReceiveLive(options){var _this2=this;var receiveApi={standard:'initStandardReceiveLive',embed:'initEmbeddedReceiveLive',sdk:'initSdkReceiveLive'};return new Promise(function(resolve,reject){_this2.request.live[receiveApi[options.receiveType]](options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"setClientType",value:function setClientType(clientType){if(clientType!=='send'&&clientType!=='receive'){throw new TypeError('clientType is invalid');}store.set('clientType',clientType);}},{key:"setRequestConfig",value:function setRequestConfig(options){if(options.development){setBaseUrl('https://test-zt-api.vhall.com');}else {setBaseUrl('https://test-zt-api.vhall.com');}setToken(options.token,options.liveToken);if(options.requestHeaders){setRequestHeaders(options.requestHeaders);}}},{key:"isReady",value:function isReady(){return loadSuccess===true;}},{key:"createPlayer",value:function createPlayer(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new PlayerModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createInteractive",value:function createInteractive(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new InteractiveModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createChat",value:function createChat(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new ChatModule();instance.init(options).then(function(res){resolve(instance);});});}},{key:"createDoc",value:function createDoc(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new DocModule(options);instance.init(options).then(function(res){resolve(instance);});});}}]);return VhallSaasSDK;}();VhallSaasSDK.requestApi=requestApi;initLoader();window.VhallSaasSDK=VhallSaasSDK;});
-
-  function unwrapExports (x) {
-  	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
-  }
-
-  function createCommonjsModule(fn, module) {
-  	return module = { exports: {} }, fn(module, module.exports), module.exports;
-  }
-
-  var src = createCommonjsModule(function (module, exports) {
-  Object.defineProperty(exports, "__esModule", { value: true });
-  exports.isPlainObject = exports.clone = exports.recursive = exports.merge = exports.main = void 0;
-  module.exports = exports = main;
-  exports.default = main;
-  function main() {
-      var items = [];
-      for (var _i = 0; _i < arguments.length; _i++) {
-          items[_i] = arguments[_i];
-      }
-      return merge.apply(void 0, items);
-  }
-  exports.main = main;
-  main.clone = clone;
-  main.isPlainObject = isPlainObject;
-  main.recursive = recursive;
-  function merge() {
-      var items = [];
-      for (var _i = 0; _i < arguments.length; _i++) {
-          items[_i] = arguments[_i];
-      }
-      return _merge(items[0] === true, false, items);
-  }
-  exports.merge = merge;
-  function recursive() {
-      var items = [];
-      for (var _i = 0; _i < arguments.length; _i++) {
-          items[_i] = arguments[_i];
-      }
-      return _merge(items[0] === true, true, items);
-  }
-  exports.recursive = recursive;
-  function clone(input) {
-      if (Array.isArray(input)) {
-          var output = [];
-          for (var index = 0; index < input.length; ++index)
-              output.push(clone(input[index]));
-          return output;
-      }
-      else if (isPlainObject(input)) {
-          var output = {};
-          for (var index in input)
-              output[index] = clone(input[index]);
-          return output;
-      }
-      else {
-          return input;
-      }
-  }
-  exports.clone = clone;
-  function isPlainObject(input) {
-      return input && typeof input === 'object' && !Array.isArray(input);
-  }
-  exports.isPlainObject = isPlainObject;
-  function _recursiveMerge(base, extend) {
-      if (!isPlainObject(base))
-          return extend;
-      for (var key in extend) {
-          if (key === '__proto__' || key === 'constructor' || key === 'prototype')
-              continue;
-          base[key] = (isPlainObject(base[key]) && isPlainObject(extend[key])) ?
-              _recursiveMerge(base[key], extend[key]) :
-              extend[key];
-      }
-      return base;
-  }
-  function _merge(isClone, isRecursive, items) {
-      var result;
-      if (isClone || !isPlainObject(result = items.shift()))
-          result = {};
-      for (var index = 0; index < items.length; ++index) {
-          var item = items[index];
-          if (!isPlainObject(item))
-              continue;
-          for (var key in item) {
-              if (key === '__proto__' || key === 'constructor' || key === 'prototype')
-                  continue;
-              var value = isClone ? clone(item[key]) : item[key];
-              result[key] = isRecursive ? _recursiveMerge(result[key], value) : value;
-          }
-      }
-      return result;
-  }
-  });
-
-  unwrapExports(src);
-  src.isPlainObject;
-  src.clone;
-  src.recursive;
-  src.merge;
-  src.main;
-
-  function uploadFile(options, onChange) {
-    var inputObj = document.createElement('input');
-    inputObj.setAttribute('id', 'file');
-    inputObj.setAttribute('type', 'file');
-    inputObj.setAttribute('name', 'file');
-    inputObj.setAttribute("style", 'height:0px; position: absolute;');
-    inputObj.setAttribute("accept", options.accept);
-    document.body.appendChild(inputObj);
-    inputObj.value;
-    inputObj.click();
-    inputObj.addEventListener('change', function (e) {
-      onChange && onChange(e);
-      document.body.removeChild(this);
-    });
-  } // 判断浏览器是否是 chrome88 以上版本
-
-
-  function isChrome88() {
-    var chromeReg = /Chrome\/(\d{2})[.\d]+\sSafari\/[.\d]+$/gi;
-    var chromeResult = chromeReg.exec(navigator.userAgent);
-    return chromeResult && chromeResult.length > 0 && chromeResult[1] > 87;
-  }
+  this.instance.closeSubtitle();}}}}]);return PlayerModule;}(BaseModule);var initLoader=function initLoader(){Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.1.6.js')]).then(function(res){});};var VhallSaasSDK=/*#__PURE__*/function(){function VhallSaasSDK(){_classCallCheck(this,VhallSaasSDK);this.msgBus=null;this.request=requestApi;this.baseState=store;}_createClass(VhallSaasSDK,[{key:"init",value:function init(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{clientType:'send',receiveType:'standard'};this.setRequestConfig(options);this.setClientType(options.clientType);if(options.clientType==='send'){return this.initSendLive(options);}else {return this.initReceiveLive(options);}}},{key:"initSendLive",value:function initSendLive(options){var _this=this;return new Promise(function(resolve,reject){_this.request.live.initSendLive(options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"initReceiveLive",value:function initReceiveLive(options){var _this2=this;var receiveApi={standard:'initStandardReceiveLive',embed:'initEmbeddedReceiveLive',sdk:'initSdkReceiveLive'};return new Promise(function(resolve,reject){_this2.request.live[receiveApi[options.receiveType]](options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"setClientType",value:function setClientType(clientType){if(clientType!=='send'&&clientType!=='receive'){throw new TypeError('clientType is invalid');}store.set('clientType',clientType);}},{key:"setRequestConfig",value:function setRequestConfig(options){if(options.development){setBaseUrl('https://test-saas-api.vhall.com');}else {setBaseUrl('https://test-saas-api.vhall.com');}setToken(options.token,options.liveToken);if(options.requestHeaders){setRequestHeaders(options.requestHeaders);}}},{key:"isReady",value:function isReady(){return loadSuccess===true;}},{key:"createPlayer",value:function createPlayer(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new PlayerModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createInteractive",value:function createInteractive(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var instance=new InteractiveModule(options);return instance.init(options).then(function(res){return instance;});}},{key:"createChat",value:function createChat(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new ChatModule();instance.init(options).then(function(res){resolve(instance);});});}},{key:"createDoc",value:function createDoc(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new DocModule(options);instance.init(options).then(function(res){resolve(instance);});});}}]);return VhallSaasSDK;}();VhallSaasSDK.requestApi=requestApi;initLoader();window.VhallSaasSDK=VhallSaasSDK;});
 
   /**
    * ajax请求 jsonp处理
@@ -10452,11 +10686,28 @@
     });
   };
 
+  var getGroupInitData = function getGroupInitData() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+    var _contextServer$get6 = contextServer.get('roomBaseServer'),
+        state = _contextServer$get6.state;
+
+    var retParmams = {
+      'interact-token': params.interact_token || state.watchInitData.interact.interact_token
+    };
+    return $fetch({
+      url: '/v3/interacts/group/init',
+      type: 'POST',
+      data: retParmams
+    });
+  };
+
   var roomBase = {
     getWebinarInfo: getWebinarInfo,
     getConfigList: getConfigList,
     setDevice: setDevice,
-    recordApi: recordApi
+    recordApi: recordApi,
+    getGroupInitData: getGroupInitData
   };
 
   var loginInfo = function loginInfo() {
@@ -10937,7 +11188,7 @@
     var init = function init(option) {
       var roomInitGroupServer = contextServer.get('roomInitGroupServer');
       state.vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
-      return state.vhallSaasInstance.createInteractive().then(function (interactives) {
+      return state.vhallSaasInstance.createInteractive(option).then(function (interactives) {
         console.log('5555555555555createInteractive');
         state.interactiveInstance = interactives; // setTimeout(()=>{
         //     console.log('555888888createInteractive');
@@ -10945,7 +11196,7 @@
         // },2000)
 
         console.log('5555state.interactiveInstance', interactives, interactives.getRoomInfo());
-        return true;
+        return interactives;
       });
     }; // 监听事件
 
@@ -11871,16 +12122,38 @@
   }
 
   function useRoomBaseServer() {
+    var _this = this;
+
     var state = {
       inited: false,
       isLiveOver: false,
       webinarVo: {},
       watchInitData: {},
+      // 活动信息
+      groupInitData: {
+        event_type: 'start_discussion',
+        room_id: "lss_ce8a7661",
+        channel_id: "ch_yyu9KJ1t",
+        inav_id: "inav_d52f8094",
+        interact_token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqaWQiOjE5MjE3MzQsInVpZCI6MCwidmlkIjoidjE0NTU4MzMzOTgzMjg5NTg5NzciLCJ0cHVpZCI6InZpc2l0X3YxNDU1ODMzMzk4MzI4OTU4OTc3Iiwid2lkIjoxMzU0NDExOTYsInJvb21faWQiOiJsc3NfY2U4YTc2NjEiLCJjdCI6MTYzNTk1NTM5Nn0.M8Nufk_g46x-ZC4sakc0xf-WYRd-i6L3aWhxkWoIYf8",
+        paas_app_id: "fd8d3653",
+        paas_access_token: "access:fd8d3653:325acccabcaf50f6",
+        subscribe_paas_access_token: ""
+      },
+      // 分组信息
       watchInitErrorData: undefined,
       // 默认undefined，如果为其他值将触发特殊逻辑
-      configList: {}
+      configList: {},
+      isGroupWebinar: false,
+      // 是否是分组直播
+      clientType: 'send'
     };
-    var eventEmitter = useEventEmitter(); // 初始化房间信息,包含发起/观看(嵌入/标品)
+    var eventEmitter = useEventEmitter(); // 设置当前房间是发起端还是观看端
+
+    var setClientType = function setClientType(type) {
+      state.clientType = type;
+    }; // 初始化房间信息,包含发起/观看(嵌入/标品)
+
 
     var getWatchInitData = function getWatchInitData(options) {
       console.log(contextServer.get('useRoomInitGroupServer'));
@@ -11910,6 +12183,19 @@
 
     var destroy = function destroy() {
       eventEmitter.$destroy();
+    }; // 设置活动是否为分组活动
+
+
+    var setGroupStatus = function setGroupStatus(status) {
+      _this.isGroupWebinar = status;
+    }; // 获取分组初始化信息
+
+
+    var getGroupInitData = function getGroupInitData(data) {
+      return requestApi.roomBase.getGroupInitData(data).then(function (res) {
+        state.groupInitData = res.data;
+        return res;
+      });
     }; // 获取活动信息
 
 
@@ -11985,7 +12271,10 @@
       setDevice: setDevice,
       startRecord: startRecord,
       pauseRecord: pauseRecord,
-      endRecord: endRecord
+      endRecord: endRecord,
+      getGroupInitData: getGroupInitData,
+      setGroupStatus: setGroupStatus,
+      setClientType: setClientType
     };
   }
 
@@ -12182,11 +12471,20 @@
 
 
     var captureStreamByCanvas = function captureStreamByCanvas() {
+      //先做检测，存在没有video引用的情况
+      if (!state._videoElement) {
+        state._videoElement = document.createElement('video');
+
+        state._videoElement.setAttribute("width", "100%");
+
+        state._videoElement.setAttribute("height", "100%");
+      }
+
       var videoElement = state._videoElement;
       var chrome88Canvas = document.createElement('canvas');
       var chrome88canvasContext = chrome88Canvas.getContext('2d'); // 将video播放器的画面绘制至canvas上
 
-      clearInterval(state._canvasInterval);
+      state._canvasInterval && clearInterval(state._canvasInterval);
 
       function drawVideoCanvas() {
         chrome88canvasContext.drawImage(videoElement, 0, 0, chrome88Canvas.width, chrome88Canvas.height);
@@ -12490,6 +12788,7 @@
                     platform: 7
                   }
                 };
+                roomBaseServer.setClientType('send');
 
                 if (customOptions.liveToken) {
                   state.live_token = customOptions.liveToken;
@@ -12497,29 +12796,28 @@
 
                 options = Object.assign({}, defaultOptions, customOptions);
                 setRequestConfig(options);
-                _context2.next = 9;
+                _context2.next = 10;
                 return roomBaseServer.init(options);
 
-              case 9:
-                _context2.next = 11;
-                return roomBaseServer.getWebinarInfo();
+              case 10:
+                if (!(roomBaseServer.state.watchInitData.webinar.mode === 6)) {
+                  _context2.next = 14;
+                  break;
+                }
 
-              case 11:
-                _context2.next = 13;
+                // 如果是分组直播
+                roomBaseServer.setGroupStatus(true);
+                _context2.next = 14;
+                return roomBaseServer.getGroupInitData();
+
+              case 14:
+                _context2.next = 16;
                 return roomBaseServer.getConfigList();
 
-              case 13:
-                _context2.next = 15;
-                return msgServer.init();
-
-              case 15:
-                _context2.next = 17;
-                return interactiveServer.init();
-
-              case 17:
+              case 16:
                 return _context2.abrupt("return", true);
 
-              case 18:
+              case 17:
               case "end":
                 return _context2.stop();
             }
@@ -12552,31 +12850,31 @@
                   },
                   receiveType: 'standard'
                 };
+                roomBaseServer.setClientType('receive');
                 options = Object.assign({}, defaultOptions, customOptions);
                 setRequestConfig(options);
-                _context3.next = 7;
+                _context3.next = 8;
                 return roomBaseServer.init(options);
 
-              case 7:
-                _context3.next = 9;
-                return roomBaseServer.getWebinarInfo();
+              case 8:
+                if (!(roomBaseServer.state.watchInitData.webinar.mode === 6 && roomBaseServer.state.watchInitData.webinar.type == 1)) {
+                  _context3.next = 12;
+                  break;
+                }
 
-              case 9:
-                _context3.next = 11;
+                // 如果是分组直播
+                roomBaseServer.setGroupStatus(true);
+                _context3.next = 12;
+                return roomBaseServer.getGroupInitData();
+
+              case 12:
+                _context3.next = 14;
                 return roomBaseServer.getConfigList();
 
-              case 11:
-                _context3.next = 13;
-                return msgServer.init();
-
-              case 13:
-                _context3.next = 15;
-                return interactiveServer.init();
-
-              case 15:
+              case 14:
                 return _context3.abrupt("return", true);
 
-              case 16:
+              case 15:
               case "end":
                 return _context3.stop();
             }
@@ -13075,7 +13373,7 @@
 
     var msgServer = contextServer.get('msgServer'); //消息sdk
 
-    var msgInstance = msgServer.state.msgInstance; //基础服务
+    msgServer.state.msgInstance; //基础服务
 
     var roomServer = contextServer.get('roomBaseServer');
     var _roomServer$state$wat = roomServer.state.watchInitData,
@@ -13190,7 +13488,7 @@
       // });
 
       return new Promise(function (resolve, reject) {
-        msgInstance.emitTextChat(data, context);
+        msgServer.sendChatMsg(data, context);
         resolve();
       });
     }; //发起请求，或者聊天记录数据
