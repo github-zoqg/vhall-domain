@@ -22,6 +22,15 @@ export default function useMsgServer() {
     }
 
     // 发送房间消息
+    const sendChatMsg = (data, context) => {
+        if (state.groupMsgInstance) {
+            state.groupMsgInstance.emitTextChat(data, context)
+        } else {
+            state.msgInstance.emitTextChat(data, context)
+        }
+    }
+
+    // 发送房间消息
     const sendRoomMsg = (data) => {
         if (state.groupMsgInstance) {
             state.groupMsgInstance.emitRoomMsg(data)
@@ -216,5 +225,6 @@ export default function useMsgServer() {
     }
 
     return { state, init, initGroupMsg, destroy, destroyGroupMsg, $on, $off,
-        getGroupDefaultOptions, getDefaultOptions, setMainChannelMute, sendRoomMsg }
+        getGroupDefaultOptions, getDefaultOptions, setMainChannelMute, sendRoomMsg,
+        sendChatMsg }
 }

@@ -111,7 +111,7 @@ export default function useChatServer() {
         // });
 
         return  new Promise((resolve,reject)=>{
-            msgInstance.emitTextChat(data,context);
+            msgServer.sendChatMsg(data,context)
             resolve();
         });
 
