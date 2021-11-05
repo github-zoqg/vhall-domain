@@ -50,7 +50,10 @@ export default function useRoomInitGroupServer(options = {}) {
         await initSdk()
         const defaultOptions = {
             clientType: 'send',
-            development: true
+            development: true,
+            requestHeaders: {
+                platform: 7
+            }
         }
 
         if (customOptions.liveToken) {
@@ -74,6 +77,9 @@ export default function useRoomInitGroupServer(options = {}) {
         const defaultOptions = {
             clientType: 'receive',
             development: true,
+            requestHeaders: {
+                platform: 7
+            },
             receiveType: 'standard'
         }
         const options = Object.assign({}, defaultOptions, customOptions)
