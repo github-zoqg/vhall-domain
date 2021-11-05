@@ -100,12 +100,38 @@ export default function useRoomBaseServer() {
         })
     }
 
+    //初始化回放录制
+    const initReplayRecord = (params={})=>{
+        return requestApi.roomBase.initRecordApi(params);
+    }
+
+    //获取房间内各工具的状态
+    const getRoomToolStatus = (params={})=>{
+        return requestApi.roomBase.getRoomToolStatus(params);
+    }
+
     const init = (option) => {
         return getWatchInitData(option)
     }
 
 
 
-    return { state, init, on, destroy, getWatchInitData, getWebinarInfo, getConfigList, startLive, endLive, setDevice, startRecord, pauseRecord, endRecord }
+    return {
+        state,
+        init,
+        on,
+        destroy,
+        getWatchInitData,
+        getWebinarInfo,
+        getConfigList,
+        startLive,
+        endLive,
+        setDevice,
+        startRecord,
+        pauseRecord,
+        endRecord,
+        initReplayRecord,
+        getRoomToolStatus
+    }
 
 }
