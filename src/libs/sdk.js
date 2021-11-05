@@ -1613,7 +1613,7 @@
           autoStartBroadcast: store.get('roomInitData').userInfo.role_name == 1,
           // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
           broadcastConfig: store.get('roomInitData').userInfo.role_name == 1 ? {
-            layout: customOptions.layout,
+            layout: customOptions.layout || VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE,
             // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
             profile: customOptions.profile || VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1,
             // 旁路直播视频质量参数
@@ -2147,7 +2147,7 @@
         var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
         return new Promise(function (resolve, reject) {
           var defaultOptions = {
-            layout: options.layout,
+            layout: options.layout || VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE,
             // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
             profile: options.profile || VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1,
             // 旁路直播视频质量参数
@@ -2200,7 +2200,7 @@
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         return new Promise(function (resolve, reject) {
           _this20.instance.setBroadCastLayout({
-            layout: options.layout
+            layout: options.layout || VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE
           }).then(function () {
             resolve();
           })["catch"](function (error) {
