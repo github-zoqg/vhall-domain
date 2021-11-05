@@ -1094,7 +1094,7 @@
     }, {
       key: "setUserDisable",
       value: function setUserDisable(accountId) {
-        return new Peomise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
           var param = {
             type: VhallChat.TYPE_DISABLE,
             targetId: accountId
@@ -1111,7 +1111,7 @@
     }, {
       key: "setUserPermit",
       value: function setUserPermit(accountId) {
-        return new Peomise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
           var param = {
             type: VhallChat.TYPE_PERMIT,
             targetId: accountId
@@ -1127,7 +1127,7 @@
     }, {
       key: "setChannelDisable",
       value: function setChannelDisable() {
-        return new Peomise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
           var param = {
             type: VhallChat.TYPE_DISABLE_ALL
           };

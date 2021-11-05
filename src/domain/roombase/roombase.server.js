@@ -10,16 +10,7 @@ export default function useRoomBaseServer() {
         isLiveOver: false,
         webinarVo: {},
         watchInitData: {}, // 活动信息
-        groupInitData: {
-            event_type: 'start_discussion',
-            room_id: "lss_ce8a7661",
-            channel_id: "ch_yyu9KJ1t",
-            inav_id: "inav_d52f8094",
-            interact_token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqaWQiOjE5MjE3MzQsInVpZCI6MCwidmlkIjoidjE0NTU4MzMzOTgzMjg5NTg5NzciLCJ0cHVpZCI6InZpc2l0X3YxNDU1ODMzMzk4MzI4OTU4OTc3Iiwid2lkIjoxMzU0NDExOTYsInJvb21faWQiOiJsc3NfY2U4YTc2NjEiLCJjdCI6MTYzNTk1NTM5Nn0.M8Nufk_g46x-ZC4sakc0xf-WYRd-i6L3aWhxkWoIYf8",
-            paas_app_id: "fd8d3653",
-            paas_access_token: "access:fd8d3653:325acccabcaf50f6",
-            subscribe_paas_access_token: ""
-        }, // 分组信息
+        groupInitData: {}, // 分组信息
         watchInitErrorData: undefined,// 默认undefined，如果为其他值将触发特殊逻辑
         configList: {},
         isGroupWebinar: false, // 是否是分组直播
@@ -64,7 +55,7 @@ export default function useRoomBaseServer() {
 
     // 设置活动是否为分组活动
     const setGroupStatus = (status) => {
-        this.isGroupWebinar = status
+        state.isGroupWebinar = status
     }
 
     // 获取分组初始化信息

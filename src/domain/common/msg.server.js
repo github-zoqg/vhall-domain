@@ -161,7 +161,7 @@ export default function useMsgServer() {
             appId: watchInitData.interact.paas_app_id,
             accountId: watchInitData.join_info.third_party_user_id,
             channelId: groupInitData.channel_id,
-            token: groupInitData.paas_access_token,
+            token: groupInitData.access_token,
             hide: false, // 是否隐身
         }
 

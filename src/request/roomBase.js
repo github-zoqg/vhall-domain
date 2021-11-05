@@ -76,7 +76,7 @@ const getGroupInitData = (params = {}) => {
     const { state } = contextServer.get('roomBaseServer')
 
     const retParmams = {
-        'interact-token': params.interact_token || state.watchInitData.interact.interact_token
+        'room_id': params.room_id || state.watchInitData.interact.room_id
     }
 
     return $http({

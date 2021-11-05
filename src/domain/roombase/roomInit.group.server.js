@@ -17,13 +17,10 @@ export default function useRoomInitGroupServer(options = {}) {
     let interactiveServer = useInteractiveServer()
     let micServer = useMicServer()
 
-
-    setTimeout(() => {
-        contextServer.set('roomBaseServer', roomBaseServer)
-        contextServer.set('msgServer', msgServer)
-        contextServer.set('interactiveServer', interactiveServer)
-        contextServer.set('micServer', micServer)
-    }, 100)
+    contextServer.set('roomBaseServer', roomBaseServer)
+    contextServer.set('msgServer', msgServer)
+    contextServer.set('interactiveServer', interactiveServer)
+    contextServer.set('micServer', micServer)
 
     const reload = async () => {
         msgServer.destroy();

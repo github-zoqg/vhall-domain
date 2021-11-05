@@ -517,7 +517,7 @@
         appId: watchInitData.interact.paas_app_id,
         accountId: watchInitData.join_info.third_party_user_id,
         channelId: groupInitData.channel_id,
-        token: groupInitData.paas_access_token,
+        token: groupInitData.access_token,
         hide: false // 是否隐身
 
       };
@@ -706,14 +706,14 @@
          * 禁言某个用户
          * @param {Object} accountId 用户 id 
          * @returns {Promise}
-         */},{key:"setUserDisable",value:function setUserDisable(accountId){return new Peomise(function(resolve,reject){var param={type:VhallChat.TYPE_DISABLE,targetId:accountId};chat.setDisable(param,resolve,reject);});}/**
+         */},{key:"setUserDisable",value:function setUserDisable(accountId){return new Promise(function(resolve,reject){var param={type:VhallChat.TYPE_DISABLE,targetId:accountId};chat.setDisable(param,resolve,reject);});}/**
          * 取消禁言某个用户
          * @param {Object} accountId 用户 id 
          * @returns {Promise}
-         */},{key:"setUserPermit",value:function setUserPermit(accountId){return new Peomise(function(resolve,reject){var param={type:VhallChat.TYPE_PERMIT,targetId:accountId};chat.setDisable(param,resolve,reject);});}/**
+         */},{key:"setUserPermit",value:function setUserPermit(accountId){return new Promise(function(resolve,reject){var param={type:VhallChat.TYPE_PERMIT,targetId:accountId};chat.setDisable(param,resolve,reject);});}/**
          * 禁言频道
          * @returns {Promise}
-         */},{key:"setChannelDisable",value:function setChannelDisable(){return new Peomise(function(resolve,reject){var param={type:VhallChat.TYPE_DISABLE_ALL};chat.setDisable(param,resolve,reject);});}/**
+         */},{key:"setChannelDisable",value:function setChannelDisable(){return new Promise(function(resolve,reject){var param={type:VhallChat.TYPE_DISABLE_ALL};chat.setDisable(param,resolve,reject);});}/**
          * 取消禁言频道
          * @returns {Promise}
          */},{key:"setChannelPermit",value:function setChannelPermit(){return new Peomise(function(resolve,reject){var param={type:VhallChat.TYPE_PERMIT_ALL};chat.setDisable(param,resolve,reject);});}/**
@@ -10693,7 +10693,7 @@
         state = _contextServer$get6.state;
 
     var retParmams = {
-      'interact-token': params.interact_token || state.watchInitData.interact.interact_token
+      'room_id': params.room_id || state.watchInitData.interact.room_id
     };
     return $fetch({
       url: '/v3/interacts/group/init',
@@ -12122,24 +12122,13 @@
   }
 
   function useRoomBaseServer() {
-    var _this = this;
-
     var state = {
       inited: false,
       isLiveOver: false,
       webinarVo: {},
       watchInitData: {},
       // 活动信息
-      groupInitData: {
-        event_type: 'start_discussion',
-        room_id: "lss_ce8a7661",
-        channel_id: "ch_yyu9KJ1t",
-        inav_id: "inav_d52f8094",
-        interact_token: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqaWQiOjE5MjE3MzQsInVpZCI6MCwidmlkIjoidjE0NTU4MzMzOTgzMjg5NTg5NzciLCJ0cHVpZCI6InZpc2l0X3YxNDU1ODMzMzk4MzI4OTU4OTc3Iiwid2lkIjoxMzU0NDExOTYsInJvb21faWQiOiJsc3NfY2U4YTc2NjEiLCJjdCI6MTYzNTk1NTM5Nn0.M8Nufk_g46x-ZC4sakc0xf-WYRd-i6L3aWhxkWoIYf8",
-        paas_app_id: "fd8d3653",
-        paas_access_token: "access:fd8d3653:325acccabcaf50f6",
-        subscribe_paas_access_token: ""
-      },
+      groupInitData: {},
       // 分组信息
       watchInitErrorData: undefined,
       // 默认undefined，如果为其他值将触发特殊逻辑
@@ -12187,7 +12176,7 @@
 
 
     var setGroupStatus = function setGroupStatus(status) {
-      _this.isGroupWebinar = status;
+      state.isGroupWebinar = status;
     }; // 获取分组初始化信息
 
 
@@ -12720,12 +12709,10 @@
     var msgServer = useMsgServer();
     var interactiveServer = useInteractiveServer();
     var micServer = useMicServer();
-    setTimeout(function () {
-      contextServer.set('roomBaseServer', roomBaseServer);
-      contextServer.set('msgServer', msgServer);
-      contextServer.set('interactiveServer', interactiveServer);
-      contextServer.set('micServer', micServer);
-    }, 100);
+    contextServer.set('roomBaseServer', roomBaseServer);
+    contextServer.set('msgServer', msgServer);
+    contextServer.set('interactiveServer', interactiveServer);
+    contextServer.set('micServer', micServer);
 
     var reload = /*#__PURE__*/function () {
       var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
