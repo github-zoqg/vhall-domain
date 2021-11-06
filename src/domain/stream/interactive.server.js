@@ -10,19 +10,21 @@ export default function useInteractiveServer() {
     }
 
     const init = (option) => {
-        const roomInitGroupServer = contextServer.get('roomInitGroupServer');
-        state.vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
-        return state.vhallSaasInstance.createInteractive().then(interactives => {
-            console.log('5555555555555createInteractive');
-            state.interactiveInstance = interactives
-            // setTimeout(()=>{
-            //     console.log('555888888createInteractive');
-            //     state.interactiveInstance.listenEvents()
-            // },2000)
-            console.log('5555state.interactiveInstance',interactives,interactives.getRoomInfo())
-            return true
-        })
-    }
+        return new Promise((resolve, reject) => {
+            const roomInitGroupServer = contextServer.get('roomInitGroupServer');
+            state.vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
+            state.vhallSaasInstance.createInteractive()
+                 .then(interactives => {
+                    console.log('5555555555555createInteractive');
+                    state.interactiveInstance = interactives
+                    console.log('5555state.interactiveInstance',interactives,interactives.getRoomInfo())
+                    resolve(state.interactiveInstance)
+                })
+                .catch((error) => {
+                    reject(error)
+                })
+            })
+        }
 
     // 监听事件
     const on = (type,callback) => {
