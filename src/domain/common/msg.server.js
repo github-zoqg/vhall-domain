@@ -68,9 +68,9 @@ export default function useMsgServer() {
             if (!newVal && !groupMsgInstance || newVal === groupMsgInstance) return
 
             if (!newVal) { // 如果是销毁子房间实例，重新注册主房间事件
-                _addListeners(state.msgInstance)
+                state.msgInstance && _addListeners(state.msgInstance)
             } else { // 如果是新创建子房间实例，注销主房间事件
-                _removeListeners(state.msgInstance)
+                state.msgInstance && _removeListeners(state.msgInstance)
             }
 
             groupMsgInstance = newVal
@@ -124,7 +124,9 @@ export default function useMsgServer() {
 
         return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(res => {
             state.msgInstance = res
-            _addListeners(res)
+            if (!state.groupMsgInstance) {
+                _addListeners(res)
+            }
             return res
         })
     }

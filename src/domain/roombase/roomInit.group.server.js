@@ -63,7 +63,7 @@ export default function useRoomInitGroupServer(options = {}) {
 
         await roomBaseServer.init(options);
         if (roomBaseServer.state.watchInitData.webinar.mode === 6) { // 如果是分组直播
-            roomBaseServer.setGroupStatus(true)
+            roomBaseServer.setGroupType(true)
             await roomBaseServer.getGroupInitData()
         }
         await roomBaseServer.getConfigList();
@@ -88,7 +88,7 @@ export default function useRoomInitGroupServer(options = {}) {
 
         await roomBaseServer.init(options)
         if (roomBaseServer.state.watchInitData.webinar.mode === 6 && roomBaseServer.state.watchInitData.webinar.type == 1) { // 如果是分组直播
-            roomBaseServer.setGroupStatus(true)
+            roomBaseServer.setGroupType(true)
             await roomBaseServer.getGroupInitData()
         }
         await roomBaseServer.getConfigList()

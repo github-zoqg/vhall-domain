@@ -418,10 +418,10 @@
 
         if (!newVal) {
           // 如果是销毁子房间实例，重新注册主房间事件
-          _addListeners(state.msgInstance);
+          state.msgInstance && _addListeners(state.msgInstance);
         } else {
           // 如果是新创建子房间实例，注销主房间事件
-          _removeListeners(state.msgInstance);
+          state.msgInstance && _removeListeners(state.msgInstance);
         }
 
         groupMsgInstance = newVal;
@@ -476,7 +476,9 @@
       return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(function (res) {
         state.msgInstance = res;
 
-        _addListeners(res);
+        if (!state.groupMsgInstance) {
+          _addListeners(res);
+        }
 
         return res;
       });
@@ -679,7 +681,7 @@
   _this2.$emit('CUSTOM_MSG',msg);});this.instance.onOffLine(function(){// 连接断开
   _this2.$emit('OFFLINE');});this.instance.onOnLine(function(){// 连接连接上了
   _this2.$emit('ONLINE');});this.instance.onDocMsg(function(msg){// 文档消息（不对外）
-  _this2.$emit('DOC_MSG');});this.instance.join(function(msg){// 用户加入
+  _this2.$emit('DOC_MSG',msg);});this.instance.join(function(msg){// 用户加入
   _this2.$emit('JOIN',msg);});this.instance.leave(function(msg){// 用户离开
   _this2.$emit('LEFT',msg);});}/**
          * 发送聊天消息
@@ -716,7 +718,7 @@
          */},{key:"setChannelDisable",value:function setChannelDisable(){return new Promise(function(resolve,reject){var param={type:VhallChat.TYPE_DISABLE_ALL};chat.setDisable(param,resolve,reject);});}/**
          * 取消禁言频道
          * @returns {Promise}
-         */},{key:"setChannelPermit",value:function setChannelPermit(){return new Peomise(function(resolve,reject){var param={type:VhallChat.TYPE_PERMIT_ALL};chat.setDisable(param,resolve,reject);});}/**
+         */},{key:"setChannelPermit",value:function setChannelPermit(){return new Promise(function(resolve,reject){var param={type:VhallChat.TYPE_PERMIT_ALL};chat.setDisable(param,resolve,reject);});}/**
          * 获取历史聊天消息
          * @returns {Promise}
          */},{key:"getHistoryList",value:function getHistoryList(params){var _this4=this;var defaultParams={currPage:1,pageSize:200};var retParams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){_this4.instance.getHistoryList(retParams,resolve,reject);});}/**
@@ -12128,7 +12130,9 @@
       webinarVo: {},
       watchInitData: {},
       // 活动信息
-      groupInitData: {},
+      groupInitData: {
+        discussState: false
+      },
       // 分组信息
       watchInitErrorData: undefined,
       // 默认undefined，如果为其他值将触发特殊逻辑
@@ -12175,14 +12179,21 @@
     }; // 设置活动是否为分组活动
 
 
-    var setGroupStatus = function setGroupStatus(status) {
-      state.isGroupWebinar = status;
+    var setGroupType = function setGroupType(type) {
+      state.isGroupWebinar = type;
+    }; // 设置分组讨论是否正在讨论中
+
+
+    var setGroupDiscussState = function setGroupDiscussState(type) {
+      state.groupInitData.discussState = type;
     }; // 获取分组初始化信息
 
 
     var getGroupInitData = function getGroupInitData(data) {
       return requestApi.roomBase.getGroupInitData(data).then(function (res) {
-        state.groupInitData = res.data;
+        state.groupInitData = _objectSpread2(_objectSpread2(_objectSpread2({}, state.groupInitData), res.data), {}, {
+          isInGroup: res.code !== 513325
+        });
         return res;
       });
     }; // 获取活动信息
@@ -12262,7 +12273,8 @@
       pauseRecord: pauseRecord,
       endRecord: endRecord,
       getGroupInitData: getGroupInitData,
-      setGroupStatus: setGroupStatus,
+      setGroupType: setGroupType,
+      setGroupDiscussState: setGroupDiscussState,
       setClientType: setClientType
     };
   }
@@ -12793,7 +12805,7 @@
                 }
 
                 // 如果是分组直播
-                roomBaseServer.setGroupStatus(true);
+                roomBaseServer.setGroupType(true);
                 _context2.next = 14;
                 return roomBaseServer.getGroupInitData();
 
@@ -12850,7 +12862,7 @@
                 }
 
                 // 如果是分组直播
-                roomBaseServer.setGroupStatus(true);
+                roomBaseServer.setGroupType(true);
                 _context3.next = 12;
                 return roomBaseServer.getGroupInitData();
 

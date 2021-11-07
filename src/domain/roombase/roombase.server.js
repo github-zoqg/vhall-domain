@@ -10,7 +10,9 @@ export default function useRoomBaseServer() {
         isLiveOver: false,
         webinarVo: {},
         watchInitData: {}, // 活动信息
-        groupInitData: {}, // 分组信息
+        groupInitData: {
+            discussState: false
+        }, // 分组信息
         watchInitErrorData: undefined,// 默认undefined，如果为其他值将触发特殊逻辑
         configList: {},
         isGroupWebinar: false, // 是否是分组直播
@@ -54,14 +56,23 @@ export default function useRoomBaseServer() {
     }
 
     // 设置活动是否为分组活动
-    const setGroupStatus = (status) => {
-        state.isGroupWebinar = status
+    const setGroupType = (type) => {
+        state.isGroupWebinar = type
+    }
+
+    // 设置分组讨论是否正在讨论中
+    const setGroupDiscussState = (type) => {
+        state.groupInitData.discussState = type
     }
 
     // 获取分组初始化信息
     const getGroupInitData = (data) => {
         return requestApi.roomBase.getGroupInitData(data).then(res => {
-            state.groupInitData = res.data;
+            state.groupInitData = {
+                ...state.groupInitData,
+                ...res.data,
+                isInGroup: res.code !== 513325
+            };
             return res;
         })
     }
@@ -129,6 +140,6 @@ export default function useRoomBaseServer() {
 
     return { state, init, on, destroy, getWatchInitData, getWebinarInfo, getConfigList,
         startLive, endLive, setDevice, startRecord, pauseRecord, endRecord,
-        getGroupInitData, setGroupStatus, setClientType }
+        getGroupInitData, setGroupType, setGroupDiscussState, setClientType }
 
 }

@@ -1008,7 +1008,7 @@
         });
         this.instance.onDocMsg(function (msg) {
           // 文档消息（不对外）
-          _this2.$emit('DOC_MSG');
+          _this2.$emit('DOC_MSG', msg);
         });
         this.instance.join(function (msg) {
           // 用户加入
@@ -1142,7 +1142,7 @@
     }, {
       key: "setChannelPermit",
       value: function setChannelPermit() {
-        return new Peomise(function (resolve, reject) {
+        return new Promise(function (resolve, reject) {
           var param = {
             type: VhallChat.TYPE_PERMIT_ALL
           };
