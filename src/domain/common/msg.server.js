@@ -83,7 +83,7 @@ export default function useMsgServer() {
 
         const isPcClient = isPc()
 
-        const { watchInitData } = roomBaseServerState
+        const { watchInitData, groupInitData } = roomBaseServerState
 
         const defaultContext = {
             nickname: watchInitData.join_info.nickname,
@@ -96,6 +96,7 @@ export default function useMsgServer() {
             audience: roomBaseServerState.clientType === 'send',
             kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
             privacies: watchInitData.join_info.privacies || '',
+            group_id: groupInitData.group_id || null
         }
 
         const defaultOptions = {
