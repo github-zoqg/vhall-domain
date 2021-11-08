@@ -101,19 +101,27 @@ function useInsertFileServer() {
 
     // 使用canvas抓流
     const captureStreamByCanvas = () => {
-        const videoElement = state._videoElement
-        const chrome88Canvas = document.createElement('canvas')
-        const chrome88canvasContext = chrome88Canvas.getContext('2d')
+
+        //先做检测，存在没有video引用的情况
+        if(!state._videoElement){
+            state._videoElement = document.createElement('video');
+            state._videoElement.setAttribute("width", "100%");
+            state._videoElement.setAttribute("height", "100%");
+        }
+
+        const videoElement = state._videoElement;
+        const chrome88Canvas = document.createElement('canvas');
+        const chrome88canvasContext = chrome88Canvas.getContext('2d');
 
         // 将video播放器的画面绘制至canvas上
-        clearInterval(state._canvasInterval)
+        state._canvasInterval && clearInterval(state._canvasInterval);
         function drawVideoCanvas() {
-            chrome88canvasContext.drawImage(videoElement, 0, 0, chrome88Canvas.width, chrome88Canvas.height)
+            chrome88canvasContext.drawImage(videoElement, 0, 0, chrome88Canvas.width, chrome88Canvas.height);
         }
         chrome88Canvas.width = videoElement.videoWidth;
         chrome88Canvas.height = videoElement.videoHeight;
         drawVideoCanvas();
-        state._canvasInterval = setInterval(drawVideoCanvas, 40)
+        state._canvasInterval = setInterval(drawVideoCanvas, 40);
 
         // 从canvas中抓取MediaStream
         const canvasStream = chrome88Canvas.captureStream()

@@ -13,6 +13,7 @@ const inputMapList = [
         output: [
             {
                 file: './dist/lib/vhall-saas-domain.js',
+                // file: '../saas-v3-watchs/packages/vhall-live-watch/src/domain/sdk/vhall-saas-domain.js',
                 format: 'umd',
                 name:'vhall-sass-domain',
                 sourcemap:true

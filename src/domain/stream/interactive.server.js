@@ -12,7 +12,7 @@ export default function useInteractiveServer() {
     const init = (option) => {
         const roomInitGroupServer = contextServer.get('roomInitGroupServer');
         state.vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
-        return state.vhallSaasInstance.createInteractive().then(interactives => {
+        return state.vhallSaasInstance.createInteractive(option).then(interactives => {
             console.log('5555555555555createInteractive');
             state.interactiveInstance = interactives
             // setTimeout(()=>{
@@ -20,7 +20,7 @@ export default function useInteractiveServer() {
             //     state.interactiveInstance.listenEvents()
             // },2000)
             console.log('5555state.interactiveInstance',interactives,interactives.getRoomInfo())
-            return true
+            return interactives
         })
     }
 
@@ -126,7 +126,7 @@ export default function useInteractiveServer() {
     }
     // 获取设备的分辨率
     const getVideoConstraints = (deviceId = '') => {
-        return state.interactiveInstance.getSpeakers(deviceId)
+        return state.interactiveInstance.getVideoConstraints(deviceId)
     }
     // 配置本地流视频质量参数
     const setVideoProfile = (options = {}) => {

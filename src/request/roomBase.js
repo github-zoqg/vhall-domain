@@ -72,11 +72,26 @@ const recordApi = (params = {}) => {
     })
 }
 
+const getGroupInitData = (params = {}) => {
+    const { state } = contextServer.get('roomBaseServer')
+
+    const retParmams = {
+        'room_id': params.room_id || state.watchInitData.interact.room_id
+    }
+
+    return $http({
+        url: '/v3/interacts/group/init',
+        type: 'POST',
+        data: retParmams
+    })
+}
+
 const roomBase = {
     getWebinarInfo,
     getConfigList,
     setDevice,
-    recordApi
+    recordApi,
+    getGroupInitData
 }
 
 export default roomBase

@@ -45,4 +45,13 @@ function isChrome88() {
     return chromeResult && chromeResult.length > 0 && chromeResult[1] > 87
 }
 
-export { merge, isPc, uploadFile, isChrome88 };
+
+function randomNumGenerator() {
+    return 'xxxxxxyxxx'.replace(/[xy]/g, function(c) {
+        const r = (Math.random() * 16) | 0
+        const v = c === 'x' ? r : (r & 0x3) | 0x8
+        return v.toString(16)
+    })
+}
+
+export { merge, isPc, uploadFile, isChrome88, randomNumGenerator };

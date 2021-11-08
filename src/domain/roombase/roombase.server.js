@@ -9,12 +9,22 @@ export default function useRoomBaseServer() {
         inited: false,
         isLiveOver: false,
         webinarVo: {},
-        watchInitData: {},
+        watchInitData: {}, // 活动信息
+        groupInitData: {
+            discussState: false
+        }, // 分组信息
         watchInitErrorData: undefined,// 默认undefined，如果为其他值将触发特殊逻辑
-        configList: {}
+        configList: {},
+        isGroupWebinar: false, // 是否是分组直播
+        clientType: 'send'
     }
 
     const eventEmitter = useEventEmitter()
+
+    // 设置当前房间是发起端还是观看端
+    const setClientType = (type) => {
+        state.clientType = type
+    }
 
     // 初始化房间信息,包含发起/观看(嵌入/标品)
     const getWatchInitData = (options) => {
@@ -43,6 +53,28 @@ export default function useRoomBaseServer() {
 
     const destroy = () => {
         eventEmitter.$destroy()
+    }
+
+    // 设置活动是否为分组活动
+    const setGroupType = (type) => {
+        state.isGroupWebinar = type
+    }
+
+    // 设置分组讨论是否正在讨论中
+    const setGroupDiscussState = (type) => {
+        state.groupInitData.discussState = type
+    }
+
+    // 获取分组初始化信息
+    const getGroupInitData = (data) => {
+        return requestApi.roomBase.getGroupInitData(data).then(res => {
+            state.groupInitData = {
+                ...state.groupInitData,
+                ...res.data,
+                isInGroup: res.code !== 513325
+            };
+            return res;
+        })
     }
 
     // 获取活动信息
@@ -106,6 +138,8 @@ export default function useRoomBaseServer() {
 
 
 
-    return { state, init, on, destroy, getWatchInitData, getWebinarInfo, getConfigList, startLive, endLive, setDevice, startRecord, pauseRecord, endRecord }
+    return { state, init, on, destroy, getWatchInitData, getWebinarInfo, getConfigList,
+        startLive, endLive, setDevice, startRecord, pauseRecord, endRecord,
+        getGroupInitData, setGroupType, setGroupDiscussState, setClientType }
 
 }

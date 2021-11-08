@@ -21,7 +21,8 @@ export default function useChatServer() {
 
         roomId: '',
         avatar: '',
-        roleName: ''
+        roleName: '',
+        defaultAvatar:''
     };
 
     //消息服务
@@ -34,6 +35,11 @@ export default function useChatServer() {
     const roomServer = contextServer.get('roomBaseServer');
 
     const {roomId = '', roleName, avatar = ''} = roomServer.state.watchInitData;
+
+    //setSate
+    const setState = (key,value)=>{
+        state[key] = value;
+    }
 
     //接收聊天消息
     const getHistoryMsg = async (params = {}, from = '观看端') => {
@@ -105,7 +111,7 @@ export default function useChatServer() {
         // });
 
         return  new Promise((resolve,reject)=>{
-            msgInstance.emitTextChat(data,context);
+            msgServer.sendChatMsg(data,context)
             resolve();
         });
 
@@ -188,7 +194,7 @@ export default function useChatServer() {
         if (['观看端','发起端'].includes(from)) {
             params = {
                 type: item.data.type,
-                avatar: item.avatar ? item.avatar : '',
+                avatar: item.avatar ? item.avatar : state.defaultAvatar,
                 sendId: item.sender_id,
                 showTime: item.showTime,
                 nickName: item.nickname,
@@ -210,7 +216,7 @@ export default function useChatServer() {
         if (['h5'].includes(from)) {
             params = {
                 type: item.data.type,
-                avatar: item.avatar ? item.avatar : defaultAvatar,
+                avatar: item.avatar ? item.avatar : state.defaultAvatar,
                 sendId: item.sender_id,
                 showTime: item.show_time,
                 nickName: item.nickname,
@@ -223,7 +229,7 @@ export default function useChatServer() {
             };
         }
 
-        let resultMsg = new Msg(params);
+        let resultMsg = new Msg(params,from);
         if (item.data.event_type) {
             resultMsg = {
                 ...resultMsg,
@@ -243,5 +249,5 @@ export default function useChatServer() {
         return resultMsg;
     }
 
-    return {state, getHistoryMsg, sendMsg, fetchHistoryData, setKeywordList,checkHasKeyword};
+    return {state, setState, getHistoryMsg, sendMsg, fetchHistoryData, setKeywordList, checkHasKeyword};
 }
