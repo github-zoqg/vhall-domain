@@ -433,7 +433,8 @@
           roomBaseServerState = _contextServer$get.state;
 
       var isPcClient = isPc();
-      var watchInitData = roomBaseServerState.watchInitData;
+      var watchInitData = roomBaseServerState.watchInitData,
+          groupInitData = roomBaseServerState.groupInitData;
       var defaultContext = {
         nickname: watchInitData.join_info.nickname,
         avatar: watchInitData.join_info.avatar,
@@ -447,7 +448,8 @@
         // 设备状态  0未检测 1可以上麦 2不可以上麦
         audience: roomBaseServerState.clientType === 'send',
         kick_mark: "".concat(randomNumGenerator()).concat(watchInitData.webinar.id),
-        privacies: watchInitData.join_info.privacies || ''
+        privacies: watchInitData.join_info.privacies || '',
+        group_id: groupInitData.group_id || null
       };
       var defaultOptions = {
         context: defaultContext,
@@ -558,10 +560,6 @@
 
 
     var $off = function $off(eventType, fn) {
-      if (!isPropertityExist(_eventhandlers, eventType)) {
-        throw new TypeError('Invalid eventType');
-      }
-
       if (!fn) {
         _eventhandlers[eventType] = [];
       }
@@ -569,7 +567,7 @@
       var index = _eventhandlers[eventType].indexOf(fn);
 
       if (index > -1) {
-        _eventhandlers.splice(index, 1);
+        _eventhandlers[eventType].splice(index, 1);
       }
     }; // 销毁子房间聊天实例
 
@@ -11866,7 +11864,7 @@
     };
   }
 
-  requestApi.doc;
+  var docApi = requestApi.doc;
   function useDocServer() {
     var _ref2;
 
@@ -11884,10 +11882,10 @@
     };
 
     var init = function init(options) {
-      var _contextServer$get = contextServer.get('roomInitGroupServer'),
+      var _contextServer$get = contextServer.get("roomInitGroupServer"),
           roomInitGroupServer = _contextServer$get.state;
 
-      console.log('create doc', roomInitGroupServer.vhallSaasInstance.createDoc);
+      console.log("create doc", roomInitGroupServer.vhallSaasInstance.createDoc);
       return roomInitGroupServer.vhallSaasInstance.createDoc(options).then(function (instance) {
         state.docInstance = instance;
         return instance;
@@ -11905,7 +11903,7 @@
     };
 
     var selectContainer = function selectContainer(option) {
-      console.log('select container:', option);
+      console.log("select container:", option);
       return state.docInstance.selectContainer(option);
     };
 
@@ -12062,6 +12060,31 @@
       return state.docInstance.getThumbnailList(options);
     }; // 获取文档列表(资料库所有文档)
 
+
+    var getAllDocList = function getAllDocList(params) {
+      return docApi.getAllDocList(params);
+    }; // 获取文档列表(当前活动下)
+
+
+    var getWebinarDocList = function getWebinarDocList(params) {
+      return docApi.getWebinarDocList(params);
+    }; // 获取文档详情
+
+
+    var getDocDetail = function getDocDetail(params) {
+      return docApi.getDocDetail(params);
+    }; // 同步文档
+
+
+    var syncDoc = function syncDoc(params) {
+      return docApi.syncDoc(params);
+    }; // 删除文档(多选)
+
+
+    var delDocList = function delDocList(params) {
+      return docApi.delDocList(params);
+    };
+
     return _ref2 = {
       state: state,
       init: init,
@@ -12073,7 +12096,7 @@
       selectContainer: selectContainer,
       getContainerInfo: getContainerInfo,
       destroyContainer: destroyContainer
-    }, _defineProperty(_ref2, "getVodAllCids", getVodAllCids), _defineProperty(_ref2, "setRemoteData", setRemoteData), _defineProperty(_ref2, "zoomIn", zoomIn), _defineProperty(_ref2, "zoomOut", zoomOut), _defineProperty(_ref2, "zoomReset", zoomReset), _defineProperty(_ref2, "move", move), _defineProperty(_ref2, "prevStep", prevStep), _defineProperty(_ref2, "nextStep", nextStep), _defineProperty(_ref2, "setPlayMode", setPlayMode), _defineProperty(_ref2, "setSize", setSize), _defineProperty(_ref2, "createUUID", createUUID), _defineProperty(_ref2, "setControlStyle", setControlStyle), _defineProperty(_ref2, "gotoPage", gotoPage), _defineProperty(_ref2, "cancelZoom", cancelZoom), _defineProperty(_ref2, "switchOnContainer", switchOnContainer), _defineProperty(_ref2, "switchOffContainer", switchOffContainer), _defineProperty(_ref2, "resetContainer", resetContainer), _defineProperty(_ref2, "setPen", setPen), _defineProperty(_ref2, "setEraser", setEraser), _defineProperty(_ref2, "setStroke", setStroke), _defineProperty(_ref2, "setStrokeWidth", setStrokeWidth), _defineProperty(_ref2, "clear", clear), _defineProperty(_ref2, "cancelDrawable", cancelDrawable), _defineProperty(_ref2, "setHighlighters", setHighlighters), _defineProperty(_ref2, "setText", setText), _defineProperty(_ref2, "loadDoc", loadDoc), _defineProperty(_ref2, "start", start), _defineProperty(_ref2, "republish", republish), _defineProperty(_ref2, "setRole", setRole), _defineProperty(_ref2, "setAccountId", setAccountId), _defineProperty(_ref2, "setEditable", setEditable), _defineProperty(_ref2, "getThumbnailList", getThumbnailList), _ref2;
+    }, _defineProperty(_ref2, "getVodAllCids", getVodAllCids), _defineProperty(_ref2, "setRemoteData", setRemoteData), _defineProperty(_ref2, "zoomIn", zoomIn), _defineProperty(_ref2, "zoomOut", zoomOut), _defineProperty(_ref2, "zoomReset", zoomReset), _defineProperty(_ref2, "move", move), _defineProperty(_ref2, "prevStep", prevStep), _defineProperty(_ref2, "nextStep", nextStep), _defineProperty(_ref2, "setPlayMode", setPlayMode), _defineProperty(_ref2, "setSize", setSize), _defineProperty(_ref2, "createUUID", createUUID), _defineProperty(_ref2, "setControlStyle", setControlStyle), _defineProperty(_ref2, "gotoPage", gotoPage), _defineProperty(_ref2, "cancelZoom", cancelZoom), _defineProperty(_ref2, "switchOnContainer", switchOnContainer), _defineProperty(_ref2, "switchOffContainer", switchOffContainer), _defineProperty(_ref2, "resetContainer", resetContainer), _defineProperty(_ref2, "setPen", setPen), _defineProperty(_ref2, "setEraser", setEraser), _defineProperty(_ref2, "setStroke", setStroke), _defineProperty(_ref2, "setStrokeWidth", setStrokeWidth), _defineProperty(_ref2, "clear", clear), _defineProperty(_ref2, "cancelDrawable", cancelDrawable), _defineProperty(_ref2, "setHighlighters", setHighlighters), _defineProperty(_ref2, "setText", setText), _defineProperty(_ref2, "loadDoc", loadDoc), _defineProperty(_ref2, "start", start), _defineProperty(_ref2, "republish", republish), _defineProperty(_ref2, "setRole", setRole), _defineProperty(_ref2, "setAccountId", setAccountId), _defineProperty(_ref2, "setEditable", setEditable), _defineProperty(_ref2, "getThumbnailList", getThumbnailList), _defineProperty(_ref2, "getAllDocList", getAllDocList), _defineProperty(_ref2, "getWebinarDocList", getWebinarDocList), _defineProperty(_ref2, "getDocDetail", getDocDetail), _defineProperty(_ref2, "syncDoc", syncDoc), _defineProperty(_ref2, "delDocList", delDocList), _ref2;
   }
 
   function useEventEmitter() {

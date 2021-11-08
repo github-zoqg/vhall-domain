@@ -199,9 +199,6 @@ export default function useMsgServer() {
 
     // 注销事件
     const $off = (eventType, fn) => {
-        if (!isPropertityExist(_eventhandlers, eventType)) {
-            throw new TypeError('Invalid eventType')
-        }
 
         if (!fn) {
             _eventhandlers[eventType] = []
@@ -209,7 +206,7 @@ export default function useMsgServer() {
 
         const index = _eventhandlers[eventType].indexOf(fn)
         if (index > -1) {
-            _eventhandlers.splice(index, 1)
+            _eventhandlers[eventType].splice(index, 1)
         }
     }
 
