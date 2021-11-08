@@ -18,7 +18,7 @@ export default function useInteractiveServer() {
                     console.log('5555555555555createInteractive');
                     state.interactiveInstance = interactives
                     console.log('5555state.interactiveInstance',interactives,interactives.getRoomInfo())
-                    resolve(state.interactiveInstance)
+                    resolve(interactives)
                 })
                 .catch((error) => {
                     reject(error)
@@ -28,7 +28,7 @@ export default function useInteractiveServer() {
 
     // 监听事件
     const on = (type,callback) => {
-        console.log('ON INTERACTIVE REGSITER SUCCESS',type);
+        // console.log('ON INTERACTIVE REGSITER SUCCESS',type);
 
         return state.interactiveInstance.$on(type, callback)
     }
@@ -44,6 +44,7 @@ export default function useInteractiveServer() {
     }
     // 创建摄像头视频流
     const createLocalVideoStream = (options = {}, addConfig = {}) => {
+        console.error('cxs...........1',options, addConfig, state.interactiveInstance);
         return state.interactiveInstance.createLocalVideoStream(options, addConfig)
     }
     // 创建桌面共享流

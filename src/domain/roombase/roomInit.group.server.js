@@ -67,7 +67,7 @@ export default function useRoomInitGroupServer(options = {}) {
         await roomBaseServer.getWebinarInfo();
         await roomBaseServer.getConfigList();
         await msgServer.init();
-        // await interactiveServer.init();
+        await interactiveServer.init();
 
         return true;
     }
@@ -90,7 +90,6 @@ export default function useRoomInitGroupServer(options = {}) {
         await roomBaseServer.getConfigList()
         await msgServer.init();
         // await interactiveServer.init();
-
         return true;
     }
 

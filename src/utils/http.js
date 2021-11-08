@@ -101,7 +101,7 @@ function json(params, success, fail) {
     if (!LIVETOKEN) {
         TOKEN && xhr.setRequestHeader('token', TOKEN)
     }
-    console.log('HEADERS', HEADERS, TOKEN)
+    // console.log('HEADERS', HEADERS, TOKEN)
     if (HEADERS) {
         Object.getOwnPropertyNames(HEADERS).forEach(item => {
             xhr.setRequestHeader(item, HEADERS[item])

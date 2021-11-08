@@ -1637,7 +1637,7 @@
             _this2.listenEvents();
 
             console.log('init interactive sdk success:', event);
-            window.interactiveSdk = _this2.instance;
+            window.interactiveSdk = event;
             successCb(event);
             resolve(event);
           };
@@ -1919,7 +1919,13 @@
             audio: true,
             video: true,
             //如参会者没有摄像头，则传入false
-            videoTrack: options.videoTrack //MediaStreamTrack对象
+            videoTrack: options.videoTrack,
+            //MediaStreamTrack对象
+            attributes: JSON.stringify({
+              roleName: store.get('roomInitData').userInfo.role_name,
+              accountId: store.get('roomInitData').userInfo.third_party_user_id,
+              nickName: store.get('roomInitData').userInfo.nickname
+            }) //选填，自定义信息，支持字符串类型
 
           };
           var params = merge.recursive({}, defaultOptions, addConfig);
