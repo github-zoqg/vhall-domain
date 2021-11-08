@@ -1788,9 +1788,9 @@
             if (store.get('roomInitData').userInfo.role_name != 1) {
               //上麦人员无法创建本地流上麦，向外抛出信息
               var toSpeakInfo = _objectSpread2({
-                roleName: store.get('roomInfo').roleName,
-                accountId: store.get('roomInfo').accountId,
-                nickName: store.get('roomInfo').nickName
+                roleName: store.get('roomInitData').userInfo.role_name,
+                accountId: store.get('roomInitData').userInfo.third_party_user_id,
+                nickName: store.get('roomInitData').userInfo.nickname
               }, error);
 
               reject(toSpeakInfo);
@@ -1881,9 +1881,9 @@
             showControls: false,
             // 选填，是否开启视频原生控制条，默认为false
             attributes: JSON.stringify({
-              account_id: store.get('roomInfo').accountId,
-              nick_name: store.get('roomInfo').nickName,
-              role_name: store.get('roomInfo').roleName
+              roleName: store.get('roomInitData').userInfo.role_name,
+              accountId: store.get('roomInitData').userInfo.third_party_user_id,
+              nickName: store.get('roomInitData').userInfo.nickname
             }),
             //选填，自定义信息，支持字符串类型
             streamType: 0 //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。
@@ -2200,7 +2200,7 @@
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         return new Promise(function (resolve, reject) {
           _this20.instance.setBroadCastLayout({
-            layout: options.layout || VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE
+            layout: options.layout
           }).then(function () {
             resolve();
           })["catch"](function (error) {
