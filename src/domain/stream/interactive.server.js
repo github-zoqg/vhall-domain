@@ -296,7 +296,7 @@ export default function useInteractiveServer() {
             // state.remoteStreams.filter(item => item.streamId == e.streamId)
         })
     }
-    return { state, startPushStream ,init, destroyInit, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
+    return { state, init, destroyInit, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
     createLocalPhotoStream, destroyStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
     muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
     getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate, getRoomStreams, remoteStreamList,
