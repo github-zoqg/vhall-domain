@@ -93,7 +93,7 @@ export default function useMsgServer() {
             role_name: watchInitData.join_info.role_name,
             device_type: isPcClient ? '2' : '1', // 设备类型 1手机端 2PC 0未检测
             device_status: '0', // 设备状态  0未检测 1可以上麦 2不可以上麦
-            audience: roomBaseServerState.clientType === 'send',
+            audience: roomBaseServerState.clientType !== 'send',
             kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
             privacies: watchInitData.join_info.privacies || '',
             group_id: groupInitData.group_id || null
@@ -199,17 +199,13 @@ export default function useMsgServer() {
 
     // 注销事件
     const $off = (eventType, fn) => {
-        if (!isPropertityExist(_eventhandlers, eventType)) {
-            throw new TypeError('Invalid eventType')
-        }
-
         if (!fn) {
             _eventhandlers[eventType] = []
         }
 
         const index = _eventhandlers[eventType].indexOf(fn)
         if (index > -1) {
-            _eventhandlers.splice(index, 1)
+            _eventhandlers[eventType].splice(index, 1)
         }
     }
 
