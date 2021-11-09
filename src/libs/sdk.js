@@ -1619,6 +1619,7 @@
             // 旁路直播视频质量参数
             paneAspectRatio: VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9,
             //旁路混流窗格指定高宽比。  v2.3.2及以上
+            precastPic: false,
             border: customOptions.border || {
               // 旁路边框属性
               width: 2,
@@ -1917,7 +1918,7 @@
             videoNode: options.videoNode,
             // 传入本地视频显示容器，必填
             audio: true,
-            video: true,
+            video: false,
             //如参会者没有摄像头，则传入false
             videoTrack: options.videoTrack,
             //MediaStreamTrack对象
