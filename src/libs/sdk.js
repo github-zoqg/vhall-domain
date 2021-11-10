@@ -1008,7 +1008,7 @@
         });
         this.instance.onDocMsg(function (msg) {
           // 文档消息（不对外）
-          _this2.$emit('DOC_MSG', msg);
+          _this2.$emit('DOC_MSG');
         });
         this.instance.join(function (msg) {
           // 用户加入
