@@ -204,6 +204,7 @@ export default function useMsgServer() {
 
     // 注销事件
     const $off = (eventType, fn) => {
+
         if (!fn) {
             _eventhandlers[eventType] = []
         }
