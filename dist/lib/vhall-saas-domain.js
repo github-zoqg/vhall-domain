@@ -433,7 +433,8 @@
           roomBaseServerState = _contextServer$get.state;
 
       var isPcClient = isPc();
-      var watchInitData = roomBaseServerState.watchInitData;
+      var watchInitData = roomBaseServerState.watchInitData,
+          groupInitData = roomBaseServerState.groupInitData;
       var defaultContext = {
         nickname: watchInitData.join_info.nickname,
         avatar: watchInitData.join_info.avatar,
@@ -445,9 +446,10 @@
         // 设备类型 1手机端 2PC 0未检测
         device_status: '0',
         // 设备状态  0未检测 1可以上麦 2不可以上麦
-        audience: roomBaseServerState.clientType === 'send',
+        audience: roomBaseServerState.clientType !== 'send',
         kick_mark: "".concat(randomNumGenerator()).concat(watchInitData.webinar.id),
-        privacies: watchInitData.join_info.privacies || ''
+        privacies: watchInitData.join_info.privacies || '',
+        group_id: groupInitData.group_id || null
       };
       var defaultOptions = {
         context: defaultContext,
@@ -529,7 +531,10 @@
 
     var initGroupMsg = function initGroupMsg() {
       var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      if (!contextServer.get('roomInitGroupServer')) return;
+      if (!contextServer.get('roomInitGroupServer')) return; // 每次初始化子房间聊天都需要清空原有房间聊天消息然后重新拉取
+
+      var chatServer = contextServer.get('chatServer');
+      chatServer && chatServer.clearHistoryMsg();
 
       var _contextServer$get4 = contextServer.get('roomInitGroupServer'),
           roomInitGroupServerState = _contextServer$get4.state;
@@ -558,10 +563,6 @@
 
 
     var $off = function $off(eventType, fn) {
-      if (!isPropertityExist(_eventhandlers, eventType)) {
-        throw new TypeError('Invalid eventType');
-      }
-
       if (!fn) {
         _eventhandlers[eventType] = [];
       }
@@ -569,7 +570,7 @@
       var index = _eventhandlers[eventType].indexOf(fn);
 
       if (index > -1) {
-        _eventhandlers.splice(index, 1);
+        _eventhandlers[eventType].splice(index, 1);
       }
     }; // 销毁子房间聊天实例
 
@@ -681,7 +682,7 @@
   _this2.$emit('CUSTOM_MSG',msg);});this.instance.onOffLine(function(){// 连接断开
   _this2.$emit('OFFLINE');});this.instance.onOnLine(function(){// 连接连接上了
   _this2.$emit('ONLINE');});this.instance.onDocMsg(function(msg){// 文档消息（不对外）
-  _this2.$emit('DOC_MSG',msg);});this.instance.join(function(msg){// 用户加入
+  _this2.$emit('DOC_MSG');});this.instance.join(function(msg){// 用户加入
   _this2.$emit('JOIN',msg);});this.instance.leave(function(msg){// 用户离开
   _this2.$emit('LEFT',msg);});}/**
          * 发送聊天消息
@@ -10714,72 +10715,50 @@
 
   var loginInfo = function loginInfo() {
     var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    // const { state } = contextServer.get('roomInitGroupServer') || {}
-    var retParmams = params;
-    retParmams.biz_id = 2;
     return $fetch({
       url: '/v3/users/user-consumer/login',
       type: 'POST',
-      data: retParmams
+      data: params
     });
   }; // 第三方授权
 
 
   var callbackUserInfo = function callbackUserInfo() {
     var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-    // const { state } = contextServer.get('roomBaseServer')
-    var retParmams = params;
     return $fetch({
       url: '/v3/users/oauth/callback',
       type: 'POST',
-      data: retParmams
+      data: params
     });
   }; // 注册
 
 
   var register = function register() {
     var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-    // const { state } = contextServer.get('roomBaseServer')
-    var retParmams = _objectSpread2({}, params);
-
     return $fetch({
       url: '/v3/users/user-consumer/register',
       type: 'POST',
-      data: retParmams
+      data: params
     });
   }; // 手机||邮箱验证码
 
 
   var codeCheck = function codeCheck() {
     var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-    var _contextServer$get = contextServer.get('roomBaseServer');
-        _contextServer$get.state;
-
-    var retParmams = _objectSpread2({}, params);
-
     return $fetch({
       url: '/v3/users/code-consumer/check',
       type: 'POST',
-      data: retParmams
+      data: params
     });
   }; // 密码重置
 
 
   var resetPassword = function resetPassword() {
     var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-
-    var _contextServer$get2 = contextServer.get('roomInitGroupServer'),
-        state = _contextServer$get2.state;
-
-    var retParmams = Object.assign({}, params, {
-      biz_id: state.biz_id || 2
-    });
     return $fetch({
       url: '/v3/users/user-consumer/reset-password',
       type: 'POST',
-      data: retParmams
+      data: params
     });
   };
 
@@ -11866,7 +11845,7 @@
     };
   }
 
-  requestApi.doc;
+  var docApi = requestApi.doc;
   function useDocServer() {
     var _ref2;
 
@@ -11884,10 +11863,10 @@
     };
 
     var init = function init(options) {
-      var _contextServer$get = contextServer.get('roomInitGroupServer'),
+      var _contextServer$get = contextServer.get("roomInitGroupServer"),
           roomInitGroupServer = _contextServer$get.state;
 
-      console.log('create doc', roomInitGroupServer.vhallSaasInstance.createDoc);
+      console.log("create doc", roomInitGroupServer.vhallSaasInstance.createDoc);
       return roomInitGroupServer.vhallSaasInstance.createDoc(options).then(function (instance) {
         state.docInstance = instance;
         return instance;
@@ -11905,7 +11884,7 @@
     };
 
     var selectContainer = function selectContainer(option) {
-      console.log('select container:', option);
+      console.log("select container:", option);
       return state.docInstance.selectContainer(option);
     };
 
@@ -12062,6 +12041,31 @@
       return state.docInstance.getThumbnailList(options);
     }; // 获取文档列表(资料库所有文档)
 
+
+    var getAllDocList = function getAllDocList(params) {
+      return docApi.getAllDocList(params);
+    }; // 获取文档列表(当前活动下)
+
+
+    var getWebinarDocList = function getWebinarDocList(params) {
+      return docApi.getWebinarDocList(params);
+    }; // 获取文档详情
+
+
+    var getDocDetail = function getDocDetail(params) {
+      return docApi.getDocDetail(params);
+    }; // 同步文档
+
+
+    var syncDoc = function syncDoc(params) {
+      return docApi.syncDoc(params);
+    }; // 删除文档(多选)
+
+
+    var delDocList = function delDocList(params) {
+      return docApi.delDocList(params);
+    };
+
     return _ref2 = {
       state: state,
       init: init,
@@ -12073,7 +12077,7 @@
       selectContainer: selectContainer,
       getContainerInfo: getContainerInfo,
       destroyContainer: destroyContainer
-    }, _defineProperty(_ref2, "getVodAllCids", getVodAllCids), _defineProperty(_ref2, "setRemoteData", setRemoteData), _defineProperty(_ref2, "zoomIn", zoomIn), _defineProperty(_ref2, "zoomOut", zoomOut), _defineProperty(_ref2, "zoomReset", zoomReset), _defineProperty(_ref2, "move", move), _defineProperty(_ref2, "prevStep", prevStep), _defineProperty(_ref2, "nextStep", nextStep), _defineProperty(_ref2, "setPlayMode", setPlayMode), _defineProperty(_ref2, "setSize", setSize), _defineProperty(_ref2, "createUUID", createUUID), _defineProperty(_ref2, "setControlStyle", setControlStyle), _defineProperty(_ref2, "gotoPage", gotoPage), _defineProperty(_ref2, "cancelZoom", cancelZoom), _defineProperty(_ref2, "switchOnContainer", switchOnContainer), _defineProperty(_ref2, "switchOffContainer", switchOffContainer), _defineProperty(_ref2, "resetContainer", resetContainer), _defineProperty(_ref2, "setPen", setPen), _defineProperty(_ref2, "setEraser", setEraser), _defineProperty(_ref2, "setStroke", setStroke), _defineProperty(_ref2, "setStrokeWidth", setStrokeWidth), _defineProperty(_ref2, "clear", clear), _defineProperty(_ref2, "cancelDrawable", cancelDrawable), _defineProperty(_ref2, "setHighlighters", setHighlighters), _defineProperty(_ref2, "setText", setText), _defineProperty(_ref2, "loadDoc", loadDoc), _defineProperty(_ref2, "start", start), _defineProperty(_ref2, "republish", republish), _defineProperty(_ref2, "setRole", setRole), _defineProperty(_ref2, "setAccountId", setAccountId), _defineProperty(_ref2, "setEditable", setEditable), _defineProperty(_ref2, "getThumbnailList", getThumbnailList), _ref2;
+    }, _defineProperty(_ref2, "getVodAllCids", getVodAllCids), _defineProperty(_ref2, "setRemoteData", setRemoteData), _defineProperty(_ref2, "zoomIn", zoomIn), _defineProperty(_ref2, "zoomOut", zoomOut), _defineProperty(_ref2, "zoomReset", zoomReset), _defineProperty(_ref2, "move", move), _defineProperty(_ref2, "prevStep", prevStep), _defineProperty(_ref2, "nextStep", nextStep), _defineProperty(_ref2, "setPlayMode", setPlayMode), _defineProperty(_ref2, "setSize", setSize), _defineProperty(_ref2, "createUUID", createUUID), _defineProperty(_ref2, "setControlStyle", setControlStyle), _defineProperty(_ref2, "gotoPage", gotoPage), _defineProperty(_ref2, "cancelZoom", cancelZoom), _defineProperty(_ref2, "switchOnContainer", switchOnContainer), _defineProperty(_ref2, "switchOffContainer", switchOffContainer), _defineProperty(_ref2, "resetContainer", resetContainer), _defineProperty(_ref2, "setPen", setPen), _defineProperty(_ref2, "setEraser", setEraser), _defineProperty(_ref2, "setStroke", setStroke), _defineProperty(_ref2, "setStrokeWidth", setStrokeWidth), _defineProperty(_ref2, "clear", clear), _defineProperty(_ref2, "cancelDrawable", cancelDrawable), _defineProperty(_ref2, "setHighlighters", setHighlighters), _defineProperty(_ref2, "setText", setText), _defineProperty(_ref2, "loadDoc", loadDoc), _defineProperty(_ref2, "start", start), _defineProperty(_ref2, "republish", republish), _defineProperty(_ref2, "setRole", setRole), _defineProperty(_ref2, "setAccountId", setAccountId), _defineProperty(_ref2, "setEditable", setEditable), _defineProperty(_ref2, "getThumbnailList", getThumbnailList), _defineProperty(_ref2, "getAllDocList", getAllDocList), _defineProperty(_ref2, "getWebinarDocList", getWebinarDocList), _defineProperty(_ref2, "getDocDetail", getDocDetail), _defineProperty(_ref2, "syncDoc", syncDoc), _defineProperty(_ref2, "delDocList", delDocList), _ref2;
   }
 
   function useEventEmitter() {
@@ -13466,7 +13470,12 @@
       return function getHistoryMsg() {
         return _ref.apply(this, arguments);
       };
-    }(); //发送聊天消息
+    }(); // 清空聊天消息
+
+
+    var clearHistoryMsg = function clearHistoryMsg() {
+      state.chatList = [];
+    }; //发送聊天消息
 
 
     var sendMsg = function sendMsg() {
@@ -13628,15 +13637,18 @@
       return resultMsg;
     };
 
-    return {
+    var result = {
       state: state,
       setState: setState,
       getHistoryMsg: getHistoryMsg,
+      clearHistoryMsg: clearHistoryMsg,
       sendMsg: sendMsg,
       fetchHistoryData: fetchHistoryData,
       setKeywordList: setKeywordList,
       checkHasKeyword: checkHasKeyword
     };
+    contextServer.set('chatServer', result);
+    return result;
   }
 
   function useNoticeServer() {
@@ -13914,6 +13926,93 @@
     };
   }
 
+  function useGroupDiscussionServer() {
+    // 收到切换小组消息,判断是否需要切换 channel
+    var getGroupJoinChangeInfo = /*#__PURE__*/function () {
+      var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(group_ids) {
+        var roomBaseServer, groupInitData, oldGroupInitData, _groupInitData, _groupInitData2;
+
+        return regeneratorRuntime.wrap(function _callee$(_context) {
+          while (1) {
+            switch (_context.prev = _context.next) {
+              case 0:
+                roomBaseServer = contextServer.get('roomBaseServer');
+                groupInitData = roomBaseServer.state.groupInitData; // 备份之前的小组信息
+
+                oldGroupInitData = _objectSpread2({}, groupInitData); // 如果在主直播间，并且 group_ids 中包括主直播间
+
+                if (!(!oldGroupInitData.isInGroup && group_ids.indexOf(0) > -1)) {
+                  _context.next = 8;
+                  break;
+                }
+
+                _context.next = 6;
+                return roomBaseServer.getGroupInitData();
+
+              case 6:
+                _groupInitData = roomBaseServer.state.groupInitData; // 如果新的小组跟之前的小组不一样则需要关心,否则不需要关心
+
+                return _context.abrupt("return", {
+                  isNeedCare: _groupInitData.isInGroup,
+                  from: 0,
+                  to: _groupInitData.group_id
+                });
+
+              case 8:
+                if (!(oldGroupInitData.isInGroup && group_ids.indexOf(oldGroupInitData.group_id) > -1)) {
+                  _context.next = 15;
+                  break;
+                }
+
+                _context.next = 11;
+                return roomBaseServer.getGroupInitData();
+
+              case 11:
+                _groupInitData2 = roomBaseServer.state.groupInitData; // 如果现在变为不在小组了,则需要关心
+
+                if (oldGroupInitData.isInGroup) {
+                  _context.next = 14;
+                  break;
+                }
+
+                return _context.abrupt("return", {
+                  isNeedCare: true,
+                  from: oldGroupInitData.group_id,
+                  to: 0
+                });
+
+              case 14:
+                return _context.abrupt("return", {
+                  isNeedCare: oldGroupInitData.group_id !== _groupInitData2.group_id,
+                  from: oldGroupInitData.group_id,
+                  to: _groupInitData2.group_id
+                });
+
+              case 15:
+                return _context.abrupt("return", {
+                  isNeedCare: false,
+                  from: oldGroupInitData.isInGroup ? oldGroupInitData.group_id : 0,
+                  to: oldGroupInitData.isInGroup ? oldGroupInitData.group_id : 0
+                });
+
+              case 16:
+              case "end":
+                return _context.stop();
+            }
+          }
+        }, _callee);
+      }));
+
+      return function getGroupJoinChangeInfo(_x) {
+        return _ref.apply(this, arguments);
+      };
+    }();
+
+    return {
+      getGroupJoinChangeInfo: getGroupJoinChangeInfo
+    };
+  }
+
   exports.contextServer = contextServer;
   exports.requestApi = requestApi;
   exports.setBaseUrl = setBaseUrl;
@@ -13922,6 +14021,7 @@
   exports.useChatServer = useChatServer;
   exports.useDesktopShareServer = useDesktopShareServer;
   exports.useDocServer = useDocServer;
+  exports.useGroupDiscussionServer = useGroupDiscussionServer;
   exports.useInsertFileServer = useInsertFileServer;
   exports.useInteractiveServer = useInteractiveServer;
   exports.useMediaCheckServer = useMediaCheckServer;

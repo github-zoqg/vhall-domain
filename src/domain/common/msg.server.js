@@ -83,7 +83,7 @@ export default function useMsgServer() {
 
         const isPcClient = isPc()
 
-        const { watchInitData } = roomBaseServerState
+        const { watchInitData, groupInitData } = roomBaseServerState
 
         const defaultContext = {
             nickname: watchInitData.join_info.nickname,
@@ -93,9 +93,10 @@ export default function useMsgServer() {
             role_name: watchInitData.join_info.role_name,
             device_type: isPcClient ? '2' : '1', // 设备类型 1手机端 2PC 0未检测
             device_status: '0', // 设备状态  0未检测 1可以上麦 2不可以上麦
-            audience: roomBaseServerState.clientType === 'send',
+            audience: roomBaseServerState.clientType !== 'send',
             kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
             privacies: watchInitData.join_info.privacies || '',
+            group_id: groupInitData.group_id || null
         }
 
         const defaultOptions = {
@@ -173,6 +174,11 @@ export default function useMsgServer() {
     // 初始化子房间聊天sdk
     const initGroupMsg = (customOptions = {}) => {
         if (!contextServer.get('roomInitGroupServer')) return
+
+        // 每次初始化子房间聊天都需要清空原有房间聊天消息然后重新拉取
+        const chatServer = contextServer.get('chatServer')
+        chatServer && chatServer.clearHistoryMsg()
+
         const { state: roomInitGroupServerState } = contextServer.get('roomInitGroupServer')
 
         const defaultOptions = getGroupDefaultOptions()
@@ -198,9 +204,6 @@ export default function useMsgServer() {
 
     // 注销事件
     const $off = (eventType, fn) => {
-        if (!isPropertityExist(_eventhandlers, eventType)) {
-            throw new TypeError('Invalid eventType')
-        }
 
         if (!fn) {
             _eventhandlers[eventType] = []
@@ -208,7 +211,7 @@ export default function useMsgServer() {
 
         const index = _eventhandlers[eventType].indexOf(fn)
         if (index > -1) {
-            _eventhandlers.splice(index, 1)
+            _eventhandlers[eventType].splice(index, 1)
         }
     }
 
