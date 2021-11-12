@@ -182,6 +182,7 @@ export default function useMsgServer() {
         const { watchInitData, groupInitData } = roomBaseServer.state
 
         msgInstance.emitRoomMsg({
+            type: 'group_join_info',
             ...groupInitData,
             accountId: watchInitData.join_info.third_party_user_id,
         })
