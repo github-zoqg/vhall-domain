@@ -11,7 +11,8 @@ export default function useRoomBaseServer() {
         webinarVo: {},
         watchInitData: {}, // 活动信息
         groupInitData: {
-            discussState: false
+            discussState: false,
+            isInGroup: false
         }, // 分组信息
         watchInitErrorData: undefined,// 默认undefined，如果为其他值将触发特殊逻辑
         configList: {},
