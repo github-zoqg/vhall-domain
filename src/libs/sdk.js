@@ -1614,12 +1614,13 @@
           autoStartBroadcast: store.get('roomInitData').userInfo.role_name == 1,
           // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
           broadcastConfig: store.get('roomInitData').userInfo.role_name == 1 ? {
-            layout: customOptions.layout || VhallRTC.CANVAS_LAYOUT_PATTERN_FLOAT_6_5D,
+            layout: customOptions.layout || VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE,
             // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
             profile: customOptions.profile || VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1,
             // 旁路直播视频质量参数
             paneAspectRatio: VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9,
             //旁路混流窗格指定高宽比。  v2.3.2及以上
+            precastPic: false,
             border: customOptions.border || {
               // 旁路边框属性
               width: 2,
@@ -1638,6 +1639,7 @@
             _this2.listenEvents();
 
             console.log('init interactive sdk success:', event);
+            window.interactiveSdk = event;
             successCb(event);
             resolve(event);
           };
@@ -1788,9 +1790,9 @@
             if (store.get('roomInitData').userInfo.role_name != 1) {
               //上麦人员无法创建本地流上麦，向外抛出信息
               var toSpeakInfo = _objectSpread2({
-                roleName: store.get('roomInfo').roleName,
-                accountId: store.get('roomInfo').accountId,
-                nickName: store.get('roomInfo').nickName
+                roleName: store.get('roomInitData').userInfo.role_name,
+                accountId: store.get('roomInitData').userInfo.third_party_user_id,
+                nickName: store.get('roomInitData').userInfo.nickname
               }, error);
 
               reject(toSpeakInfo);
@@ -1881,9 +1883,9 @@
             showControls: false,
             // 选填，是否开启视频原生控制条，默认为false
             attributes: JSON.stringify({
-              account_id: store.get('roomInfo').accountId,
-              nick_name: store.get('roomInfo').nickName,
-              role_name: store.get('roomInfo').roleName
+              roleName: store.get('roomInitData').userInfo.role_name,
+              accountId: store.get('roomInitData').userInfo.third_party_user_id,
+              nickName: store.get('roomInitData').userInfo.nickname
             }),
             //选填，自定义信息，支持字符串类型
             streamType: 0 //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。
@@ -1917,9 +1919,15 @@
             videoNode: options.videoNode,
             // 传入本地视频显示容器，必填
             audio: true,
-            video: true,
+            video: false,
             //如参会者没有摄像头，则传入false
-            videoTrack: options.videoTrack //MediaStreamTrack对象
+            videoTrack: options.videoTrack,
+            //MediaStreamTrack对象
+            attributes: JSON.stringify({
+              roleName: store.get('roomInitData').userInfo.role_name,
+              accountId: store.get('roomInitData').userInfo.third_party_user_id,
+              nickName: store.get('roomInitData').userInfo.nickname
+            }) //选填，自定义信息，支持字符串类型
 
           };
           var params = merge.recursive({}, defaultOptions, addConfig);
@@ -2147,7 +2155,7 @@
         var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
         return new Promise(function (resolve, reject) {
           var defaultOptions = {
-            layout: options.layout || VhallRTC.CANVAS_LAYOUT_PATTERN_FLOAT_6_5D,
+            layout: options.layout || VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE,
             // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
             profile: options.profile || VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1,
             // 旁路直播视频质量参数
@@ -2200,7 +2208,7 @@
         var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
         return new Promise(function (resolve, reject) {
           _this20.instance.setBroadCastLayout({
-            layout: options.layout || VhallRTC.CANVAS_LAYOUT_PATTERN_FLOAT_6_5D
+            layout: options.layout
           }).then(function () {
             resolve();
           })["catch"](function (error) {
