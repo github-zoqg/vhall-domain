@@ -138,6 +138,42 @@
     }
   }
 
+  function _objectWithoutPropertiesLoose(source, excluded) {
+    if (source == null) return {};
+    var target = {};
+    var sourceKeys = Object.keys(source);
+    var key, i;
+
+    for (i = 0; i < sourceKeys.length; i++) {
+      key = sourceKeys[i];
+      if (excluded.indexOf(key) >= 0) continue;
+      target[key] = source[key];
+    }
+
+    return target;
+  }
+
+  function _objectWithoutProperties(source, excluded) {
+    if (source == null) return {};
+
+    var target = _objectWithoutPropertiesLoose(source, excluded);
+
+    var key, i;
+
+    if (Object.getOwnPropertySymbols) {
+      var sourceSymbolKeys = Object.getOwnPropertySymbols(source);
+
+      for (i = 0; i < sourceSymbolKeys.length; i++) {
+        key = sourceSymbolKeys[i];
+        if (excluded.indexOf(key) >= 0) continue;
+        if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
+        target[key] = source[key];
+      }
+    }
+
+    return target;
+  }
+
   function _assertThisInitialized(self) {
     if (self === void 0) {
       throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
@@ -173,6 +209,39 @@
 
       return _possibleConstructorReturn(this, result);
     };
+  }
+
+  function _toConsumableArray(arr) {
+    return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
+  }
+
+  function _arrayWithoutHoles(arr) {
+    if (Array.isArray(arr)) return _arrayLikeToArray(arr);
+  }
+
+  function _iterableToArray(iter) {
+    if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
+  }
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
+
+    return arr2;
+  }
+
+  function _nonIterableSpread() {
+    throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
   var mountSDK = function mountSDK(src) {
@@ -1193,6 +1262,8 @@
     return ChatModule;
   }(BaseModule);
 
+  var _excluded = ["key"];
+
   var DocModule = /*#__PURE__*/function (_BaseModule) {
     _inherits(DocModule, _BaseModule);
 
@@ -1240,17 +1311,19 @@
         isPc();
 
         var _store$get = store.get('roomInitData'),
-            paasInfo = _store$get.paasInfo,
-            userInfo = _store$get.userInfo;
+            _store$get$paasInfo = _store$get.paasInfo,
+            paasInfo = _store$get$paasInfo === void 0 ? {} : _store$get$paasInfo,
+            _store$get$userInfo = _store$get.userInfo,
+            userInfo = _store$get$userInfo === void 0 ? {} : _store$get$userInfo;
 
         var defaultOptions = {
-          accountId: userInfo.third_party_user_id,
-          roomId: paasInfo.room_id,
-          channelId: paasInfo.channel_id,
+          accountId: userInfo === null || userInfo === void 0 ? void 0 : userInfo.third_party_user_id,
+          roomId: paasInfo === null || paasInfo === void 0 ? void 0 : paasInfo.room_id,
+          channelId: paasInfo === null || paasInfo === void 0 ? void 0 : paasInfo.channel_id,
           // 频道id 必须
-          appId: paasInfo.paas_app_id,
+          appId: paasInfo === null || paasInfo === void 0 ? void 0 : paasInfo.paas_app_id,
           // appId 必须
-          role: userInfo.role_name,
+          role: userInfo === null || userInfo === void 0 ? void 0 : userInfo.role_name,
           // 角色 必须
           isVod: false,
           // 是否是回放 必须
@@ -1275,6 +1348,8 @@
         }); // 当前文档加载完成
 
         this.instance.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE, function (data) {
+          console.log('doc 加载完成');
+
           _this3.$emit(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE, data);
         }); // 开关变换
 
@@ -1286,7 +1361,9 @@
           _this3.$emit(VHDocSDK.Event.DELETE_CONTAINER, data);
         }); // 所有的文档准备完成
 
-        this.instance.on(VHDocSDK.Event.ALL_COMPLETE, function (data) {
+        this.instance.on(VHDocSDK.Event.ALL_COMPLETE, function (data, s1, s2) {
+          console.log('doc 所有文档加载完成', data, s1, s2);
+
           _this3.$emit(VHDocSDK.Event.ALL_COMPLETE, data);
         }); // 正在演示的文档被删除(文档不存在)
 
@@ -1304,8 +1381,18 @@
           _this3.$emit(VHDocSDK.Event.PAGE_CHANGE, event);
         }); // 回放文件加载完成
 
-        this.instance.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, function (event) {
+        this.instance.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, function (event, s1, s2) {
+          console.log('doc 回放文件加载完成', event, s1, s2);
+
           _this3.$emit(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, event);
+        }); // 回放时间更新
+
+        this.instance.on(VHDocSDK.Event.VOD_TIME_UPDATE, function (event) {
+          _this3.$emit(VHDocSDK.Event.VOD_TIME_UPDATE, event);
+        }); // error
+
+        this.instance.on(VHDocSDK.Event.ERROR, function (event) {
+          _this3.$emit(VHDocSDK.Event.ERROR, event);
         }); // ppt文档加载完毕
 
         this.instance.on(VHDocSDK.Event.PLAYBACKCOMPLETE, function (event) {
@@ -1409,22 +1496,22 @@
     }, {
       key: "addChild",
       value: function addChild(child) {
-        this.children.push(child);
+        return this.children.push(child);
       }
     }, {
       key: "zoomIn",
       value: function zoomIn() {
-        this.instance.zoomIn();
+        return this.instance.zoomIn();
       }
     }, {
       key: "zoomOut",
       value: function zoomOut() {
-        this.instance.zoomOut();
+        return this.instance.zoomOut();
       }
     }, {
       key: "zoomReset",
       value: function zoomReset() {
-        this.instance.zoomReset();
+        return this.instance.zoomReset();
       }
     }, {
       key: "cancelZoom",
@@ -1434,17 +1521,17 @@
     }, {
       key: "move",
       value: function move() {
-        this.instance.move();
+        return this.instance.move();
       }
     }, {
       key: "prevStep",
       value: function prevStep() {
-        this.instance.prevStep();
+        return this.instance.prevStep();
       }
     }, {
       key: "nextStep",
       value: function nextStep() {
-        this.instance.nextStep();
+        return this.instance.nextStep();
       }
     }, {
       key: "switchOnContainer",
@@ -1555,6 +1642,43 @@
       key: "getThumbnailList",
       value: function getThumbnailList(options) {
         return this.instance.getThumbnailList(options);
+      }
+    }, {
+      key: "setSquare",
+      value: function setSquare(options) {
+        return this.instance.setSquare(options);
+      }
+    }, {
+      key: "setCircle",
+      value: function setCircle(options) {
+        return this.instance.setCircle(options);
+      }
+    }, {
+      key: "setBitmap",
+      value: function setBitmap(options) {
+        return this.instance.setBitmap(options);
+      }
+    }, {
+      key: "setIsoscelesTriangle",
+      value: function setIsoscelesTriangle(options) {
+        return this.instance.setIsoscelesTriangle(options);
+      }
+      /**
+       * @description 调用sdk方法
+       * @param  {...any} args 
+       */
+
+    }, {
+      key: "callPaasSDK",
+      value: function callPaasSDK() {
+        var _this$instance$key;
+
+        var key = arguments.key,
+            args = _objectWithoutProperties(arguments, _excluded);
+
+        if (!key) return console.error('没有指定调用的函数名');
+
+        (_this$instance$key = this.instance[key]).call.apply(_this$instance$key, [this.instance[key]].concat(_toConsumableArray(args)));
       }
     }]);
 
@@ -12401,9 +12525,9 @@
       key: "setRequestConfig",
       value: function setRequestConfig(options) {
         if (options.development) {
-          setBaseUrl('https://test-saas-api.vhall.com');
+          setBaseUrl('https://t-saas-dispatch.vhall.com');
         } else {
-          setBaseUrl('https://test-saas-api.vhall.com');
+          setBaseUrl('https://t-saas-dispatch.vhall.com');
         }
 
         setToken(options.token, options.liveToken);
