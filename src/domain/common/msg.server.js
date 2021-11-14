@@ -93,10 +93,10 @@ export default function useMsgServer() {
             role_name: watchInitData.join_info.role_name,
             device_type: isPcClient ? '2' : '1', // 设备类型 1手机端 2PC 0未检测
             device_status: '0', // 设备状态  0未检测 1可以上麦 2不可以上麦
-            audience: roomBaseServerState.clientType === 'send',
+            audience: roomBaseServerState.clientType !== 'send',
             kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
             privacies: watchInitData.join_info.privacies || '',
-            group_id: groupInitData.group_id || null
+            groupInitData: groupInitData
         }
 
         const defaultOptions = {
@@ -150,13 +150,18 @@ export default function useMsgServer() {
         const { watchInitData, groupInitData } = roomBaseServerState
 
         const defaultContext = {
-            nick_name: watchInitData.join_info.nickname,
+            nickname: watchInitData.join_info.nickname,
             avatar: watchInitData.join_info.avatar,
+            pv: watchInitData.pv.num2 || watchInitData.pv.real, // pv
+            uv: watchInitData.online.num || watchInitData.online.virtual,
             role_name: watchInitData.join_info.role_name,
             device_type: isPcClient ? '2' : '1', // 设备类型 1手机端 2PC 0未检测
             device_status: '0', // 设备状态  0未检测 1可以上麦 2不可以上麦
-            is_banned: groupInitData.is_banned, // 是否禁言 1是 0否
             watch_type: isPcClient ? '1' : '2', // 1 pc  2 h5  3 app  4 是客户端
+            audience: roomBaseServerState.clientType !== 'send',
+            kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
+            privacies: watchInitData.join_info.privacies || '',
+            groupInitData: groupInitData
         }
 
         const defaultOptions = {
@@ -171,9 +176,26 @@ export default function useMsgServer() {
         return defaultOptions
     }
 
+    // 子房间上线发送group信息
+    const sendGroupInfoAfterJoin = (msgInstance) => {
+        const roomBaseServer = contextServer.get('roomBaseServer')
+        const { watchInitData, groupInitData } = roomBaseServer.state
+
+        msgInstance.emitRoomMsg({
+            type: 'group_join_info',
+            ...groupInitData,
+            accountId: watchInitData.join_info.third_party_user_id,
+        })
+    }
+
     // 初始化子房间聊天sdk
     const initGroupMsg = (customOptions = {}) => {
         if (!contextServer.get('roomInitGroupServer')) return
+
+        // 每次初始化子房间聊天都需要清空原有房间聊天消息然后重新拉取
+        const chatServer = contextServer.get('chatServer')
+        chatServer && chatServer.clearHistoryMsg()
+
         const { state: roomInitGroupServerState } = contextServer.get('roomInitGroupServer')
 
         const defaultOptions = getGroupDefaultOptions()
@@ -184,6 +206,8 @@ export default function useMsgServer() {
         console.log('创建子房间聊天实例', options)
         return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(res => {
             state.groupMsgInstance = res
+            // 子房间上线，在小组内广播当前人的小组信息
+            sendGroupInfoAfterJoin(res)
             _addListeners(res)
             return res
         })

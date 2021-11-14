@@ -96,6 +96,11 @@ export default function useChatServer() {
         };
     }
 
+    // 清空聊天消息
+    const clearHistoryMsg = () => {
+        state.chatList = []
+    }
+
     //发送聊天消息
     const sendMsg = (params = {}) => {
 
@@ -249,5 +254,9 @@ export default function useChatServer() {
         return resultMsg;
     }
 
-    return {state, setState, getHistoryMsg, sendMsg, fetchHistoryData, setKeywordList, checkHasKeyword};
+    const result = {state, setState, getHistoryMsg, clearHistoryMsg, sendMsg, fetchHistoryData, setKeywordList, checkHasKeyword};
+
+    contextServer.set('chatServer', result)
+
+    return result
 }
