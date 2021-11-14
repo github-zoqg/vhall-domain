@@ -183,6 +183,7 @@ export default function useMsgServer() {
 
         msgInstance.emitRoomMsg({
             type: 'group_join_info',
+            nickname: watchInitData.join_info.nickname,
             ...groupInitData,
             accountId: watchInitData.join_info.third_party_user_id,
         })
