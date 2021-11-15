@@ -5,7 +5,7 @@ const docApi = requestApi.doc;
 
 export default function useDocServer() {
     const state = {
-        docInstance: null,
+        docInstance: null
     };
 
     const on = (type, cb) => {
@@ -145,6 +145,22 @@ export default function useDocServer() {
         return state.docInstance.clear();
     };
 
+    const setSquare = (options) => {
+        return state.docInstance.setSquare(options)
+    };
+
+    const setCircle = (options) => {
+        return state.docInstance.setCircle(options)
+    };
+
+    const setBitmap = (options) => {
+        return state.docInstance.setBitmap(options)
+    };
+
+    const setIsoscelesTriangle = (options) => {
+        return state.docInstance.setIsoscelesTriangle(options)
+    };
+
     const cancelDrawable = () => {
         return state.docInstance.cancelDrawable();
     };
@@ -241,6 +257,10 @@ export default function useDocServer() {
         setEraser,
         setStroke,
         setStrokeWidth,
+        setSquare,
+        setCircle,
+        setBitmap,
+        setIsoscelesTriangle,
         clear,
         cancelDrawable,
         setHighlighters,

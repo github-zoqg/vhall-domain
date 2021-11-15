@@ -5,12 +5,14 @@ export default function useGroupDiscussionServer() {
         const roomBaseServer = contextServer.get('roomBaseServer')
         const { groupInitData } = roomBaseServer.state
         // 备份之前的小组信息
-        const oldGroupInitData = { ...groupInitData }
+        const oldGroupInitData = JSON.parse(JSON.stringify(groupInitData))
+        console.log('domain -------- oldGroupInitData', oldGroupInitData)
         // 如果在主直播间，并且 group_ids 中包括主直播间
         if (!oldGroupInitData.isInGroup && group_ids.indexOf(0) > -1) {
             // 重新获取最新的 groupInitData
             await roomBaseServer.getGroupInitData()
             const { groupInitData } = roomBaseServer.state
+            console.log('domain -------- groupInitData', groupInitData)
             // 如果新的小组跟之前的小组不一样则需要关心,否则不需要关心
             return {
                 isNeedCare: groupInitData.isInGroup,
@@ -19,9 +21,10 @@ export default function useGroupDiscussionServer() {
             }
         }
         // 如果是在小组中，并且 group_ids 中包括了该小组
-        if (oldGroupInitData.isInGroup && group_ids.indexOf(oldGroupInitData.group_id) > -1) {
+        if (oldGroupInitData.isInGroup && group_ids.indexOf(Number(oldGroupInitData.group_id)) > -1) {
             await roomBaseServer.getGroupInitData()
             const { groupInitData } = roomBaseServer.state
+            console.log('domain -------- groupInitData', groupInitData)
             // 如果现在变为不在小组了,则需要关心
             if (!oldGroupInitData.isInGroup) {
                 return {

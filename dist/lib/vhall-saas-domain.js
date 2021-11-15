@@ -449,7 +449,7 @@
         audience: roomBaseServerState.clientType !== 'send',
         kick_mark: "".concat(randomNumGenerator()).concat(watchInitData.webinar.id),
         privacies: watchInitData.join_info.privacies || '',
-        group_id: groupInitData.group_id || null
+        groupInitData: groupInitData
       };
       var defaultOptions = {
         context: defaultContext,
@@ -504,17 +504,22 @@
       var watchInitData = roomBaseServerState.watchInitData,
           groupInitData = roomBaseServerState.groupInitData;
       var defaultContext = {
-        nick_name: watchInitData.join_info.nickname,
+        nickname: watchInitData.join_info.nickname,
         avatar: watchInitData.join_info.avatar,
+        pv: watchInitData.pv.num2 || watchInitData.pv.real,
+        // pv
+        uv: watchInitData.online.num || watchInitData.online.virtual,
         role_name: watchInitData.join_info.role_name,
         device_type: isPcClient ? '2' : '1',
         // 设备类型 1手机端 2PC 0未检测
         device_status: '0',
         // 设备状态  0未检测 1可以上麦 2不可以上麦
-        is_banned: groupInitData.is_banned,
-        // 是否禁言 1是 0否
-        watch_type: isPcClient ? '1' : '2' // 1 pc  2 h5  3 app  4 是客户端
-
+        watch_type: isPcClient ? '1' : '2',
+        // 1 pc  2 h5  3 app  4 是客户端
+        audience: roomBaseServerState.clientType !== 'send',
+        kick_mark: "".concat(randomNumGenerator()).concat(watchInitData.webinar.id),
+        privacies: watchInitData.join_info.privacies || '',
+        groupInitData: groupInitData
       };
       var defaultOptions = {
         context: defaultContext,
@@ -526,6 +531,19 @@
 
       };
       return defaultOptions;
+    }; // 子房间上线发送group信息
+
+
+    var sendGroupInfoAfterJoin = function sendGroupInfoAfterJoin(msgInstance) {
+      var roomBaseServer = contextServer.get('roomBaseServer');
+      var _roomBaseServer$state = roomBaseServer.state,
+          watchInitData = _roomBaseServer$state.watchInitData,
+          groupInitData = _roomBaseServer$state.groupInitData;
+      msgInstance.emitRoomMsg(_objectSpread2(_objectSpread2({
+        type: 'group_join_info'
+      }, groupInitData), {}, {
+        accountId: watchInitData.join_info.third_party_user_id
+      }));
     }; // 初始化子房间聊天sdk
 
 
@@ -544,7 +562,9 @@
       state.groupMsgSdkInitOptions = options;
       console.log('创建子房间聊天实例', options);
       return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(function (res) {
-        state.groupMsgInstance = res;
+        state.groupMsgInstance = res; // 子房间上线，在小组内广播当前人的小组信息
+
+        sendGroupInfoAfterJoin(res);
 
         _addListeners(res);
 
@@ -604,7 +624,7 @@
     };
   }
 
-  (function(factory){typeof define==='function'&&define.amd?define(factory):factory();})(function(){function ownKeys(object,enumerableOnly){var keys=Object.keys(object);if(Object.getOwnPropertySymbols){var symbols=Object.getOwnPropertySymbols(object);if(enumerableOnly){symbols=symbols.filter(function(sym){return Object.getOwnPropertyDescriptor(object,sym).enumerable;});}keys.push.apply(keys,symbols);}return keys;}function _objectSpread2(target){for(var i=1;i<arguments.length;i++){var source=arguments[i]!=null?arguments[i]:{};if(i%2){ownKeys(Object(source),true).forEach(function(key){_defineProperty(target,key,source[key]);});}else if(Object.getOwnPropertyDescriptors){Object.defineProperties(target,Object.getOwnPropertyDescriptors(source));}else {ownKeys(Object(source)).forEach(function(key){Object.defineProperty(target,key,Object.getOwnPropertyDescriptor(source,key));});}}return target;}function _typeof$1(obj){"@babel/helpers - typeof";if(typeof Symbol==="function"&&typeof Symbol.iterator==="symbol"){_typeof$1=function _typeof(obj){return typeof obj;};}else {_typeof$1=function _typeof(obj){return obj&&typeof Symbol==="function"&&obj.constructor===Symbol&&obj!==Symbol.prototype?"symbol":typeof obj;};}return _typeof$1(obj);}function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor)){throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||false;descriptor.configurable=true;if("value"in descriptor)descriptor.writable=true;Object.defineProperty(target,descriptor.key,descriptor);}}function _createClass(Constructor,protoProps,staticProps){if(protoProps)_defineProperties(Constructor.prototype,protoProps);if(staticProps)_defineProperties(Constructor,staticProps);return Constructor;}function _defineProperty(obj,key,value){if(key in obj){Object.defineProperty(obj,key,{value:value,enumerable:true,configurable:true,writable:true});}else {obj[key]=value;}return obj;}function _inherits(subClass,superClass){if(typeof superClass!=="function"&&superClass!==null){throw new TypeError("Super expression must either be null or a function");}subClass.prototype=Object.create(superClass&&superClass.prototype,{constructor:{value:subClass,writable:true,configurable:true}});if(superClass)_setPrototypeOf(subClass,superClass);}function _getPrototypeOf(o){_getPrototypeOf=Object.setPrototypeOf?Object.getPrototypeOf:function _getPrototypeOf(o){return o.__proto__||Object.getPrototypeOf(o);};return _getPrototypeOf(o);}function _setPrototypeOf(o,p){_setPrototypeOf=Object.setPrototypeOf||function _setPrototypeOf(o,p){o.__proto__=p;return o;};return _setPrototypeOf(o,p);}function _isNativeReflectConstruct(){if(typeof Reflect==="undefined"||!Reflect.construct)return false;if(Reflect.construct.sham)return false;if(typeof Proxy==="function")return true;try{Boolean.prototype.valueOf.call(Reflect.construct(Boolean,[],function(){}));return true;}catch(e){return false;}}function _assertThisInitialized(self){if(self===void 0){throw new ReferenceError("this hasn't been initialised - super() hasn't been called");}return self;}function _possibleConstructorReturn(self,call){if(call&&(_typeof(call)==="object"||typeof call==="function")){return call;}else if(call!==void 0){throw new TypeError("Derived constructors may only return object or undefined");}return _assertThisInitialized(self);}function _createSuper(Derived){var hasNativeReflectConstruct=_isNativeReflectConstruct();return function _createSuperInternal(){var Super=_getPrototypeOf(Derived),result;if(hasNativeReflectConstruct){var NewTarget=_getPrototypeOf(this).constructor;result=Reflect.construct(Super,arguments,NewTarget);}else {result=Super.apply(this,arguments);}return _possibleConstructorReturn(this,result);};}var mountSDK=function mountSDK(src){return new Promise(function(resolve){var node=document.createElement('script');document.head.appendChild(node);node.src=src;node.onload=function(){resolve();};});};/**
+  (function(factory){typeof define==='function'&&define.amd?define(factory):factory();})(function(){function ownKeys(object,enumerableOnly){var keys=Object.keys(object);if(Object.getOwnPropertySymbols){var symbols=Object.getOwnPropertySymbols(object);if(enumerableOnly){symbols=symbols.filter(function(sym){return Object.getOwnPropertyDescriptor(object,sym).enumerable;});}keys.push.apply(keys,symbols);}return keys;}function _objectSpread2(target){for(var i=1;i<arguments.length;i++){var source=arguments[i]!=null?arguments[i]:{};if(i%2){ownKeys(Object(source),true).forEach(function(key){_defineProperty(target,key,source[key]);});}else if(Object.getOwnPropertyDescriptors){Object.defineProperties(target,Object.getOwnPropertyDescriptors(source));}else {ownKeys(Object(source)).forEach(function(key){Object.defineProperty(target,key,Object.getOwnPropertyDescriptor(source,key));});}}return target;}function _typeof$1(obj){"@babel/helpers - typeof";if(typeof Symbol==="function"&&typeof Symbol.iterator==="symbol"){_typeof$1=function _typeof(obj){return typeof obj;};}else {_typeof$1=function _typeof(obj){return obj&&typeof Symbol==="function"&&obj.constructor===Symbol&&obj!==Symbol.prototype?"symbol":typeof obj;};}return _typeof$1(obj);}function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor)){throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||false;descriptor.configurable=true;if("value"in descriptor)descriptor.writable=true;Object.defineProperty(target,descriptor.key,descriptor);}}function _createClass(Constructor,protoProps,staticProps){if(protoProps)_defineProperties(Constructor.prototype,protoProps);if(staticProps)_defineProperties(Constructor,staticProps);return Constructor;}function _defineProperty(obj,key,value){if(key in obj){Object.defineProperty(obj,key,{value:value,enumerable:true,configurable:true,writable:true});}else {obj[key]=value;}return obj;}function _inherits(subClass,superClass){if(typeof superClass!=="function"&&superClass!==null){throw new TypeError("Super expression must either be null or a function");}subClass.prototype=Object.create(superClass&&superClass.prototype,{constructor:{value:subClass,writable:true,configurable:true}});if(superClass)_setPrototypeOf(subClass,superClass);}function _getPrototypeOf(o){_getPrototypeOf=Object.setPrototypeOf?Object.getPrototypeOf:function _getPrototypeOf(o){return o.__proto__||Object.getPrototypeOf(o);};return _getPrototypeOf(o);}function _setPrototypeOf(o,p){_setPrototypeOf=Object.setPrototypeOf||function _setPrototypeOf(o,p){o.__proto__=p;return o;};return _setPrototypeOf(o,p);}function _isNativeReflectConstruct(){if(typeof Reflect==="undefined"||!Reflect.construct)return false;if(Reflect.construct.sham)return false;if(typeof Proxy==="function")return true;try{Boolean.prototype.valueOf.call(Reflect.construct(Boolean,[],function(){}));return true;}catch(e){return false;}}function _objectWithoutPropertiesLoose(source,excluded){if(source==null)return {};var target={};var sourceKeys=Object.keys(source);var key,i;for(i=0;i<sourceKeys.length;i++){key=sourceKeys[i];if(excluded.indexOf(key)>=0)continue;target[key]=source[key];}return target;}function _objectWithoutProperties(source,excluded){if(source==null)return {};var target=_objectWithoutPropertiesLoose(source,excluded);var key,i;if(Object.getOwnPropertySymbols){var sourceSymbolKeys=Object.getOwnPropertySymbols(source);for(i=0;i<sourceSymbolKeys.length;i++){key=sourceSymbolKeys[i];if(excluded.indexOf(key)>=0)continue;if(!Object.prototype.propertyIsEnumerable.call(source,key))continue;target[key]=source[key];}}return target;}function _assertThisInitialized(self){if(self===void 0){throw new ReferenceError("this hasn't been initialised - super() hasn't been called");}return self;}function _possibleConstructorReturn(self,call){if(call&&(_typeof(call)==="object"||typeof call==="function")){return call;}else if(call!==void 0){throw new TypeError("Derived constructors may only return object or undefined");}return _assertThisInitialized(self);}function _createSuper(Derived){var hasNativeReflectConstruct=_isNativeReflectConstruct();return function _createSuperInternal(){var Super=_getPrototypeOf(Derived),result;if(hasNativeReflectConstruct){var NewTarget=_getPrototypeOf(this).constructor;result=Reflect.construct(Super,arguments,NewTarget);}else {result=Super.apply(this,arguments);}return _possibleConstructorReturn(this,result);};}function _toConsumableArray(arr){return _arrayWithoutHoles(arr)||_iterableToArray(arr)||_unsupportedIterableToArray(arr)||_nonIterableSpread();}function _arrayWithoutHoles(arr){if(Array.isArray(arr))return _arrayLikeToArray(arr);}function _iterableToArray(iter){if(typeof Symbol!=="undefined"&&iter[Symbol.iterator]!=null||iter["@@iterator"]!=null)return Array.from(iter);}function _unsupportedIterableToArray(o,minLen){if(!o)return;if(typeof o==="string")return _arrayLikeToArray(o,minLen);var n=Object.prototype.toString.call(o).slice(8,-1);if(n==="Object"&&o.constructor)n=o.constructor.name;if(n==="Map"||n==="Set")return Array.from(o);if(n==="Arguments"||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n))return _arrayLikeToArray(o,minLen);}function _arrayLikeToArray(arr,len){if(len==null||len>arr.length)len=arr.length;for(var i=0,arr2=new Array(len);i<len;i++){arr2[i]=arr[i];}return arr2;}function _nonIterableSpread(){throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");}var mountSDK=function mountSDK(src){return new Promise(function(resolve){var node=document.createElement('script');document.head.appendChild(node);node.src=src;node.onload=function(){resolve();};});};/**
      * ajax请求 jsonp处理
      * 1.jsonp 请求格式
      *   $fetch({
@@ -726,21 +746,23 @@
          * 获取房间在线信息
          * @param {Object} params 分页参数
          * @returns {Promise}
-         */},{key:"getOnlineInfo",value:function getOnlineInfo(params){var _this5=this;var defaultParams={currPage:1,pageSize:200};var retParams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){_this5.instance.getOnlineInfo(retParams,resolve,reject);});}}]);return ChatModule;}(BaseModule);var DocModule=/*#__PURE__*/function(_BaseModule){_inherits(DocModule,_BaseModule);var _super=_createSuper(DocModule);function DocModule(options){var _this;_classCallCheck(this,DocModule);_this=_super.call(this,options);_this.instance=null;_this.children=[];return _this;}_createClass(DocModule,[{key:"init",value:function init(){var _this2=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var defaultOptions=this.initDefaultOptions();var options=merge.recursive({},defaultOptions,customOptions);console.log('doc options:',options);return new Promise(function(resolve,reject){var onSuccess=function onSuccess(){console.log('saasSDK文档初始化成功');resolve();};var onFail=function onFail(failed){console.error('saasSDK文档初始化失败',failed.msg);reject();};_this2.instance=window.VHDocSDK.createInstance(options,onSuccess,onFail);_this2.listenEvents();});}},{key:"initDefaultOptions",value:function initDefaultOptions(){isPc();var _store$get=store.get('roomInitData'),paasInfo=_store$get.paasInfo,userInfo=_store$get.userInfo;var defaultOptions={accountId:userInfo.third_party_user_id,roomId:paasInfo.room_id,channelId:paasInfo.channel_id,// 频道id 必须
-  appId:paasInfo.paas_app_id,// appId 必须
-  role:userInfo.role_name,// 角色 必须
+         */},{key:"getOnlineInfo",value:function getOnlineInfo(params){var _this5=this;var defaultParams={currPage:1,pageSize:200};var retParams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){_this5.instance.getOnlineInfo(retParams,resolve,reject);});}}]);return ChatModule;}(BaseModule);var _excluded=["key"];var DocModule=/*#__PURE__*/function(_BaseModule){_inherits(DocModule,_BaseModule);var _super=_createSuper(DocModule);function DocModule(options){var _this;_classCallCheck(this,DocModule);_this=_super.call(this,options);_this.instance=null;_this.children=[];return _this;}_createClass(DocModule,[{key:"init",value:function init(){var _this2=this;var customOptions=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var defaultOptions=this.initDefaultOptions();var options=merge.recursive({},defaultOptions,customOptions);console.log('doc options:',options);return new Promise(function(resolve,reject){var onSuccess=function onSuccess(){console.log('saasSDK文档初始化成功');resolve();};var onFail=function onFail(failed){console.error('saasSDK文档初始化失败',failed.msg);reject();};_this2.instance=window.VHDocSDK.createInstance(options,onSuccess,onFail);_this2.listenEvents();});}},{key:"initDefaultOptions",value:function initDefaultOptions(){isPc();var _store$get=store.get('roomInitData'),_store$get$paasInfo=_store$get.paasInfo,paasInfo=_store$get$paasInfo===void 0?{}:_store$get$paasInfo,_store$get$userInfo=_store$get.userInfo,userInfo=_store$get$userInfo===void 0?{}:_store$get$userInfo;var defaultOptions={accountId:userInfo===null||userInfo===void 0?void 0:userInfo.third_party_user_id,roomId:paasInfo===null||paasInfo===void 0?void 0:paasInfo.room_id,channelId:paasInfo===null||paasInfo===void 0?void 0:paasInfo.channel_id,// 频道id 必须
+  appId:paasInfo===null||paasInfo===void 0?void 0:paasInfo.paas_app_id,// appId 必须
+  role:userInfo===null||userInfo===void 0?void 0:userInfo.role_name,// 角色 必须
   isVod:false,// 是否是回放 必须
   client:window.VHDocSDK.Client.PC_WEB,// 客户端类型
   token:''};return defaultOptions;}},{key:"listenEvents",value:function listenEvents(){var _this3=this;// 创建容器事件
   this.instance.on(VHDocSDK.Event.CREATE_CONTAINER,function(data){_this3.$emit(VHDocSDK.Event.CREATE_CONTAINER,data);});// 选择容器
   this.instance.on(VHDocSDK.Event.SELECT_CONTAINER,function(data){_this3.$emit(VHDocSDK.Event.SELECT_CONTAINER,data);});// 当前文档加载完成
-  this.instance.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE,function(data){_this3.$emit(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE,data);});// 开关变换
+  this.instance.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE,function(data){console.log('doc 加载完成');_this3.$emit(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE,data);});// 开关变换
   this.instance.on(VHDocSDK.Event.SWITCH_CHANGE,function(status){_this3.$emit(VHDocSDK.Event.SWITCH_CHANGE,status);});// 删除容器时候触发的事件
   this.instance.on(VHDocSDK.Event.DELETE_CONTAINER,function(data){_this3.$emit(VHDocSDK.Event.DELETE_CONTAINER,data);});// 所有的文档准备完成
-  this.instance.on(VHDocSDK.Event.ALL_COMPLETE,function(data){_this3.$emit(VHDocSDK.Event.ALL_COMPLETE,data);});// 正在演示的文档被删除(文档不存在)
+  this.instance.on(VHDocSDK.Event.ALL_COMPLETE,function(data,s1,s2){console.log('doc 所有文档加载完成',data,s1,s2);_this3.$emit(VHDocSDK.Event.ALL_COMPLETE,data);});// 正在演示的文档被删除(文档不存在)
   this.instance.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT,function(_ref){var cid=_ref.cid,docId=_ref.docId;_this3.$emit(VHDocSDK.Event.DOCUMENT_NOT_EXIT,{cid:cid,docId:docId});});// 翻页事件
   this.instance.on(VHDocSDK.Event.PAGE_CHANGE,function(event){_this3.$emit(VHDocSDK.Event.PAGE_CHANGE,event);});// 回放文件加载完成
-  this.instance.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE,function(event){_this3.$emit(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE,event);});// ppt文档加载完毕
+  this.instance.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE,function(event,s1,s2){console.log('doc 回放文件加载完成',event,s1,s2);_this3.$emit(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE,event);});// 回放时间更新
+  this.instance.on(VHDocSDK.Event.VOD_TIME_UPDATE,function(event){_this3.$emit(VHDocSDK.Event.VOD_TIME_UPDATE,event);});// error
+  this.instance.on(VHDocSDK.Event.ERROR,function(event){_this3.$emit(VHDocSDK.Event.ERROR,event);});// ppt文档加载完毕
   this.instance.on(VHDocSDK.Event.PLAYBACKCOMPLETE,function(event){_this3.$emit(VHDocSDK.Event.PLAYBACKCOMPLETE,event);});}},{key:"destroy",value:function destroy(){if(!this.instance)return;this.instance.destroy();this.instance=null;}},{key:"createUUID",value:function createUUID(type){return this.instance.createUUID(type);}},{key:"createBoard",value:function createBoard(customOptions){var elId=this.instance.createUUID('board');var defaultOptions={elId:elId,// div 容器 必须
   width:200,// div 宽度，像素单位，数值型不带px 必须
   height:200,// div 高度，像素单位，数值型不带px 必须
@@ -758,7 +780,10 @@
   stroke:'#000',// 颜色值
   strokeWidth:4// 正数 Number
   }),_defaultOptions);var options=merge.recursive({},defaultOptions,customOptions);return this.instance.createDocument(options);// 返回promise
-  }},{key:"selectContainer",value:function selectContainer(options){this.instance.selectContainer(options);this.currentCid=options.id;}},{key:"getContainerInfo",value:function getContainerInfo(params){return this.instance.getContainerInfo(params);}},{key:"destroyContainer",value:function destroyContainer(val){return this.instance.destroyContainer(val);}},{key:"getVodAllCids",value:function getVodAllCids(){return this.instance.getVodAllCids();}},{key:"setRemoteData",value:function setRemoteData(item){return this.instance.setRemoteData(item);}},{key:"addChild",value:function addChild(child){this.children.push(child);}},{key:"zoomIn",value:function zoomIn(){this.instance.zoomIn();}},{key:"zoomOut",value:function zoomOut(){this.instance.zoomOut();}},{key:"zoomReset",value:function zoomReset(){this.instance.zoomReset();}},{key:"cancelZoom",value:function cancelZoom(){return this.instance.cancelZoom();}},{key:"move",value:function move(){this.instance.move();}},{key:"prevStep",value:function prevStep(){this.instance.prevStep();}},{key:"nextStep",value:function nextStep(){this.instance.nextStep();}},{key:"switchOnContainer",value:function switchOnContainer(val){return this.instance.switchOnContainer(val);}},{key:"switchOffContainer",value:function switchOffContainer(val){return this.instance.switchOffContainer(val);}},{key:"resetContainer",value:function resetContainer(){return this.instance.resetContainer();}},{key:"setPlayMode",value:function setPlayMode(mode){return this.instance.setPlayMode(mode);}},{key:"setSize",value:function setSize(width,height,options){return this.instance.setSize(width,height,options);}},{key:"setControlStyle",value:function setControlStyle(style){return this.instance.setControlStyle(style);}},{key:"gotoPage",value:function gotoPage(options){return this.instance.gotoPage(options);}},{key:"setPen",value:function setPen(val){return this.instance.setPen(val);}},{key:"setEraser",value:function setEraser(val){return this.instance.setEraser(val);}},{key:"setStroke",value:function setStroke(options){return this.instance.setStroke(options);}},{key:"setStrokeWidth",value:function setStrokeWidth(options){return this.instance.setStrokeWidth(options);}},{key:"clear",value:function clear(){return this.instance.clear();}},{key:"cancelDrawable",value:function cancelDrawable(){return this.instance.cancelDrawable();}},{key:"setHighlighters",value:function setHighlighters(){return this.instance.setHighlighters();}},{key:"setText",value:function setText(val){return this.instance.setText(val);}},{key:"loadDoc",value:function loadDoc(options){return this.instance.loadDoc(options);}},{key:"start",value:function start(val,type){return this.instance.start(val,type);}},{key:"republish",value:function republish(){return this.instance.republish();}},{key:"setRole",value:function setRole(role){return this.instance.setRole(role);}},{key:"setAccountId",value:function setAccountId(role){return this.instance.setAccountId(role);}},{key:"setEditable",value:function setEditable(editable){return this.instance.setEditable(editable);}},{key:"getThumbnailList",value:function getThumbnailList(options){return this.instance.getThumbnailList(options);}}]);return DocModule;}(BaseModule);var InteractiveModule=/*#__PURE__*/function(_BaseModule){_inherits(InteractiveModule,_BaseModule);var _super=_createSuper(InteractiveModule);function InteractiveModule(customOptions){var _this;_classCallCheck(this,InteractiveModule);_this=_super.call(this,customOptions);_this.instance=null;return _this;}/**
+  }},{key:"selectContainer",value:function selectContainer(options){this.instance.selectContainer(options);this.currentCid=options.id;}},{key:"getContainerInfo",value:function getContainerInfo(params){return this.instance.getContainerInfo(params);}},{key:"destroyContainer",value:function destroyContainer(val){return this.instance.destroyContainer(val);}},{key:"getVodAllCids",value:function getVodAllCids(){return this.instance.getVodAllCids();}},{key:"setRemoteData",value:function setRemoteData(item){return this.instance.setRemoteData(item);}},{key:"addChild",value:function addChild(child){return this.children.push(child);}},{key:"zoomIn",value:function zoomIn(){return this.instance.zoomIn();}},{key:"zoomOut",value:function zoomOut(){return this.instance.zoomOut();}},{key:"zoomReset",value:function zoomReset(){return this.instance.zoomReset();}},{key:"cancelZoom",value:function cancelZoom(){return this.instance.cancelZoom();}},{key:"move",value:function move(){return this.instance.move();}},{key:"prevStep",value:function prevStep(){return this.instance.prevStep();}},{key:"nextStep",value:function nextStep(){return this.instance.nextStep();}},{key:"switchOnContainer",value:function switchOnContainer(val){return this.instance.switchOnContainer(val);}},{key:"switchOffContainer",value:function switchOffContainer(val){return this.instance.switchOffContainer(val);}},{key:"resetContainer",value:function resetContainer(){return this.instance.resetContainer();}},{key:"setPlayMode",value:function setPlayMode(mode){return this.instance.setPlayMode(mode);}},{key:"setSize",value:function setSize(width,height,options){return this.instance.setSize(width,height,options);}},{key:"setControlStyle",value:function setControlStyle(style){return this.instance.setControlStyle(style);}},{key:"gotoPage",value:function gotoPage(options){return this.instance.gotoPage(options);}},{key:"setPen",value:function setPen(val){return this.instance.setPen(val);}},{key:"setEraser",value:function setEraser(val){return this.instance.setEraser(val);}},{key:"setStroke",value:function setStroke(options){return this.instance.setStroke(options);}},{key:"setStrokeWidth",value:function setStrokeWidth(options){return this.instance.setStrokeWidth(options);}},{key:"clear",value:function clear(){return this.instance.clear();}},{key:"cancelDrawable",value:function cancelDrawable(){return this.instance.cancelDrawable();}},{key:"setHighlighters",value:function setHighlighters(){return this.instance.setHighlighters();}},{key:"setText",value:function setText(val){return this.instance.setText(val);}},{key:"loadDoc",value:function loadDoc(options){return this.instance.loadDoc(options);}},{key:"start",value:function start(val,type){return this.instance.start(val,type);}},{key:"republish",value:function republish(){return this.instance.republish();}},{key:"setRole",value:function setRole(role){return this.instance.setRole(role);}},{key:"setAccountId",value:function setAccountId(role){return this.instance.setAccountId(role);}},{key:"setEditable",value:function setEditable(editable){return this.instance.setEditable(editable);}},{key:"getThumbnailList",value:function getThumbnailList(options){return this.instance.getThumbnailList(options);}},{key:"setSquare",value:function setSquare(options){return this.instance.setSquare(options);}},{key:"setCircle",value:function setCircle(options){return this.instance.setCircle(options);}},{key:"setBitmap",value:function setBitmap(options){return this.instance.setBitmap(options);}},{key:"setIsoscelesTriangle",value:function setIsoscelesTriangle(options){return this.instance.setIsoscelesTriangle(options);}/**
+         * @description 调用sdk方法
+         * @param  {...any} args 
+         */},{key:"callPaasSDK",value:function callPaasSDK(){var _this$instance$key;var key=arguments.key,args=_objectWithoutProperties(arguments,_excluded);if(!key)return console.error('没有指定调用的函数名');(_this$instance$key=this.instance[key]).call.apply(_this$instance$key,[this.instance[key]].concat(_toConsumableArray(args)));}}]);return DocModule;}(BaseModule);var InteractiveModule=/*#__PURE__*/function(_BaseModule){_inherits(InteractiveModule,_BaseModule);var _super=_createSuper(InteractiveModule);function InteractiveModule(customOptions){var _this;_classCallCheck(this,InteractiveModule);_this=_super.call(this,customOptions);_this.instance=null;return _this;}/**
        * 初始化互动sdk
        * @param {Object} customOptions 
        * @param {*} successCb 
@@ -773,12 +798,12 @@
   role:VhallRTC.ROLE_HOST,//用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
   attributes:'',// String 类型
   autoStartBroadcast:store.get('roomInitData').userInfo.role_name==1,// 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
-  broadcastConfig:store.get('roomInitData').userInfo.role_name==1?{layout:customOptions.layout||VhallRTC.CANVAS_LAYOUT_PATTERN_FLOAT_6_5D,// 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
+  broadcastConfig:store.get('roomInitData').userInfo.role_name==1?{layout:customOptions.layout||VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE,// 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
   profile:customOptions.profile||VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1,// 旁路直播视频质量参数
   paneAspectRatio:VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9,//旁路混流窗格指定高宽比。  v2.3.2及以上
-  border:customOptions.border||{// 旁路边框属性
+  precastPic:false,border:customOptions.border||{// 旁路边框属性
   width:2,color:'0x666666'}}:{}// 自动旁路   开启旁路直播方法所需参数
-  };var options=merge.recursive({},defaultOptions,customOptions);console.log("optionssssssssssssssssssssssssssss",options);return new Promise(function(resolve,reject){var onSuccess=function onSuccess(event){_this2.instance=event.vhallrtc;_this2.currentStreams=event.currentStreams;_this2.listenEvents();console.log('init interactive sdk success:',event);successCb(event);resolve(event);};var onFail=function onFail(event){console.log('fail:',event);failCb(event);reject(event);};VhallRTC.createInstance(options,onSuccess,onFail);});}},{key:"listenEvents",value:function listenEvents(){var _this3=this;this.instance.on(VhallRTC.EVENT_REMOTESTREAM_ADD,function(e){// 远端流加入事件
+  };var options=merge.recursive({},defaultOptions,customOptions);console.log("optionssssssssssssssssssssssssssss",options);return new Promise(function(resolve,reject){var onSuccess=function onSuccess(event){_this2.instance=event.vhallrtc;_this2.currentStreams=event.currentStreams;_this2.listenEvents();console.log('init interactive sdk success:',event);window.interactiveSdk=event;successCb(event);resolve(event);};var onFail=function onFail(event){console.log('fail:',event);failCb(event);reject(event);};VhallRTC.createInstance(options,onSuccess,onFail);});}},{key:"listenEvents",value:function listenEvents(){var _this3=this;this.instance.on(VhallRTC.EVENT_REMOTESTREAM_ADD,function(e){// 远端流加入事件
   console.log('5555555remote stream added');_this3.$emit(VhallRTC.EVENT_REMOTESTREAM_ADD,e);});this.instance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED,function(e){// 远端流离开事件
   _this3.$emit(VhallRTC.EVENT_REMOTESTREAM_REMOVED,e);});this.instance.on(VhallRTC.EVENT_ROOM_EXCDISCONNECTED,function(e){// 房间信令异常断开事件
   _this3.$emit(VhallRTC.EVENT_ROOM_EXCDISCONNECTED,e);});this.instance.on(VhallRTC.EVENT_REMOTESTREAM_MUTE,function(e){// 远端流音视频状态改变事件
@@ -809,7 +834,7 @@
   streamType:2,//选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。
   attributes:JSON.stringify({roleName:store.get('roomInitData').userInfo.role_name,accountId:store.get('roomInitData').userInfo.third_party_user_id,nickName:store.get('roomInitData').userInfo.nickname})//选填，自定义信息，支持字符串类型
   };var params=merge.recursive({},defaultOptions,addConfig);console.log('pass params::',params);_this6.instance.createStream(params).then(function(data){resolve(data.streamId);})["catch"](function(error){if(store.get('roomInitData').userInfo.role_name!=1){//上麦人员无法创建本地流上麦，向外抛出信息
-  var toSpeakInfo=_objectSpread2({roleName:store.get('roomInfo').roleName,accountId:store.get('roomInfo').accountId,nickName:store.get('roomInfo').nickName},error);reject(toSpeakInfo);}else {reject(error);}});});}/**
+  var toSpeakInfo=_objectSpread2({roleName:store.get('roomInitData').userInfo.role_name,accountId:store.get('roomInitData').userInfo.third_party_user_id,nickName:store.get('roomInitData').userInfo.nickname},error);reject(toSpeakInfo);}else {reject(error);}});});}/**
          * 创建桌面共享流
          * @param obt {Object} - sdk init stream base info config  videoNode: 容器 speaker: 是否采集扬声器 profile: 视频的质量 addConfig: 扩展配置项
          * @return {Promise} - 创建成功后的promise 回调
@@ -831,7 +856,7 @@
   video:false,// 选填，是否采集视频设备，默认为true
   audioDevice:options.audioDevice,// 选填，指定的音频设备id，默认为系统缺省
   showControls:false,// 选填，是否开启视频原生控制条，默认为false
-  attributes:JSON.stringify({account_id:store.get('roomInfo').accountId,nick_name:store.get('roomInfo').nickName,role_name:store.get('roomInfo').roleName}),//选填，自定义信息，支持字符串类型
+  attributes:JSON.stringify({roleName:store.get('roomInitData').userInfo.role_name,accountId:store.get('roomInitData').userInfo.third_party_user_id,nickName:store.get('roomInitData').userInfo.nickname}),//选填，自定义信息，支持字符串类型
   streamType:0//选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。
   };var params=merge.recursive({},defaultOptions,addConfig);_this8.instance.createStream(params).then(function(data){resolve(data.streamId);})["catch"](function(error){reject(error);});});}/**
          * 创建图片推流
@@ -839,8 +864,9 @@
          * @return {Promise} - 创建成功后的promise 回调
          *
          */},{key:"createLocalPhotoStream",value:function createLocalPhotoStream(){var _this9=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var addConfig=arguments.length>1&&arguments[1]!==undefined?arguments[1]:{};return new Promise(function(resolve,reject){var defaultOptions={videoNode:options.videoNode,// 传入本地视频显示容器，必填
-  audio:true,video:true,//如参会者没有摄像头，则传入false
-  videoTrack:options.videoTrack//MediaStreamTrack对象
+  audio:true,video:false,//如参会者没有摄像头，则传入false
+  videoTrack:options.videoTrack,//MediaStreamTrack对象
+  attributes:JSON.stringify({roleName:store.get('roomInitData').userInfo.role_name,accountId:store.get('roomInitData').userInfo.third_party_user_id,nickName:store.get('roomInitData').userInfo.nickname})//选填，自定义信息，支持字符串类型
   };var params=merge.recursive({},defaultOptions,addConfig);_this9.instance.createStream(params).then(function(data){resolve(data.streamId);})["catch"](function(error){reject(error);});});}/**
          * 销毁本地流
          * @param {String} streamId -- 要销毁的流Id
@@ -882,7 +908,7 @@
          * 开启旁路
          * @param {Object} options --  layout: 旁路布局  profile: 旁路直播视频质量参数 paneAspectRatio:旁路混流窗格指定高宽比 border: 旁路边框属性
          * @returns {Promise} - 开启旁路后的promise回调
-         */},{key:"startBroadCast",value:function startBroadCast(){var _this18=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var addConfig=arguments.length>1&&arguments[1]!==undefined?arguments[1]:{};return new Promise(function(resolve,reject){var defaultOptions={layout:options.layout||VhallRTC.CANVAS_LAYOUT_PATTERN_FLOAT_6_5D,// 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
+         */},{key:"startBroadCast",value:function startBroadCast(){var _this18=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var addConfig=arguments.length>1&&arguments[1]!==undefined?arguments[1]:{};return new Promise(function(resolve,reject){var defaultOptions={layout:options.layout||VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE,// 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
   profile:options.profile||VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1,// 旁路直播视频质量参数
   paneAspectRatio:VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9,//旁路混流窗格指定高宽比。  v2.3.2及以上
   border:options.border||{// 旁路边框属性
@@ -893,7 +919,7 @@
          * 动态配置指定旁路布局模板
          * @param {Object} options --  layout: 指定旁路布局模板
          * @returns {Promise} - 动态配置指定旁路布局模板的promise回调
-         */},{key:"setBroadCastLayout",value:function setBroadCastLayout(){var _this20=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){_this20.instance.setBroadCastLayout({layout:options.layout||VhallRTC.CANVAS_LAYOUT_PATTERN_FLOAT_6_5D}).then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
+         */},{key:"setBroadCastLayout",value:function setBroadCastLayout(){var _this20=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){_this20.instance.setBroadCastLayout({layout:options.layout}).then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
          * 配置旁路布局自适应模式
          * @param {Object} options --  layout: 指定旁路布局模板
          * @returns {Promise} - 配置旁路布局自适应模式的promise回调
@@ -10440,7 +10466,7 @@
   return this.instance.setPlaySpeed(val,failure);}},{key:"openControls",value:function openControls(isOpen){// 开关默认控制条
   return this.instance.openControls(isOpen);}},{key:"openUI",value:function openUI(isOpen){return this.instance.openUI(isOpen);}},{key:"setResetVideo",value:function setResetVideo(){var videoDom=document.getElementById(this.params.videoNode);if(videoDom&&this.instance){this.instance.setSize({width:videoDom.offsetWidth,height:videoDom.offsetHeight});}}},{key:"setBarrageInfo",value:function setBarrageInfo(option){return this.instance.setBarrageInfo(option,function(err){Vlog.error(err);});}},{key:"addBarrage",value:function addBarrage(content){return this.instance.addBarrage(content,function(err){Vlog.error(err);});}},{key:"toggleBarrage",value:function toggleBarrage(open){if(!this.instance)return;if(open){this.instance.openBarrage();}else {this.instance.closeBarrage();}}},{key:"toggleSubtitle",value:function toggleSubtitle(open){if(this.instance&&this.params.recordId){if(open){// 开启点播字幕(仅点播可用)
   this.instance.openSubtitle();}else {// 关闭点播字幕(仅点播可用)
-  this.instance.closeSubtitle();}}}}]);return PlayerModule;}(BaseModule);var initLoader=function initLoader(){Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.1.6.js')]).then(function(res){});};var VhallSaasSDK=/*#__PURE__*/function(){function VhallSaasSDK(){_classCallCheck(this,VhallSaasSDK);this.msgBus=null;this.request=requestApi;this.baseState=store;}_createClass(VhallSaasSDK,[{key:"init",value:function init(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{clientType:'send',receiveType:'standard'};this.setRequestConfig(options);this.setClientType(options.clientType);if(options.clientType==='send'){return this.initSendLive(options);}else {return this.initReceiveLive(options);}}},{key:"initSendLive",value:function initSendLive(options){var _this=this;return new Promise(function(resolve,reject){_this.request.live.initSendLive(options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"initReceiveLive",value:function initReceiveLive(options){var _this2=this;var receiveApi={standard:'initStandardReceiveLive',embed:'initEmbeddedReceiveLive',sdk:'initSdkReceiveLive'};return new Promise(function(resolve,reject){_this2.request.live[receiveApi[options.receiveType]](options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"setClientType",value:function setClientType(clientType){if(clientType!=='send'&&clientType!=='receive'){throw new TypeError('clientType is invalid');}store.set('clientType',clientType);}},{key:"setRequestConfig",value:function setRequestConfig(options){if(options.development){setBaseUrl('https://test-saas-api.vhall.com');}else {setBaseUrl('https://test-saas-api.vhall.com');}setToken(options.token,options.liveToken);if(options.requestHeaders){setRequestHeaders(options.requestHeaders);}}},{key:"isReady",value:function isReady(){return loadSuccess===true;}},{key:"createPlayer",value:function createPlayer(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new PlayerModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createInteractive",value:function createInteractive(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var instance=new InteractiveModule(options);return instance.init(options).then(function(res){return instance;});}},{key:"createChat",value:function createChat(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new ChatModule();instance.init(options).then(function(res){resolve(instance);});});}},{key:"createDoc",value:function createDoc(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new DocModule(options);instance.init(options).then(function(res){resolve(instance);});});}}]);return VhallSaasSDK;}();VhallSaasSDK.requestApi=requestApi;initLoader();window.VhallSaasSDK=VhallSaasSDK;});
+  this.instance.closeSubtitle();}}}}]);return PlayerModule;}(BaseModule);var initLoader=function initLoader(){Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.1.6.js')]).then(function(res){});};var VhallSaasSDK=/*#__PURE__*/function(){function VhallSaasSDK(){_classCallCheck(this,VhallSaasSDK);this.msgBus=null;this.request=requestApi;this.baseState=store;}_createClass(VhallSaasSDK,[{key:"init",value:function init(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{clientType:'send',receiveType:'standard'};this.setRequestConfig(options);this.setClientType(options.clientType);if(options.clientType==='send'){return this.initSendLive(options);}else {return this.initReceiveLive(options);}}},{key:"initSendLive",value:function initSendLive(options){var _this=this;return new Promise(function(resolve,reject){_this.request.live.initSendLive(options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"initReceiveLive",value:function initReceiveLive(options){var _this2=this;var receiveApi={standard:'initStandardReceiveLive',embed:'initEmbeddedReceiveLive',sdk:'initSdkReceiveLive'};return new Promise(function(resolve,reject){_this2.request.live[receiveApi[options.receiveType]](options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"setClientType",value:function setClientType(clientType){if(clientType!=='send'&&clientType!=='receive'){throw new TypeError('clientType is invalid');}store.set('clientType',clientType);}},{key:"setRequestConfig",value:function setRequestConfig(options){if(options.development){setBaseUrl('https://t-saas-dispatch.vhall.com');}else {setBaseUrl('https://t-saas-dispatch.vhall.com');}setToken(options.token,options.liveToken);if(options.requestHeaders){setRequestHeaders(options.requestHeaders);}}},{key:"isReady",value:function isReady(){return loadSuccess===true;}},{key:"createPlayer",value:function createPlayer(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new PlayerModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createInteractive",value:function createInteractive(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var instance=new InteractiveModule(options);return instance.init(options).then(function(res){return instance;});}},{key:"createChat",value:function createChat(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new ChatModule();instance.init(options).then(function(res){resolve(instance);});});}},{key:"createDoc",value:function createDoc(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new DocModule(options);instance.init(options).then(function(res){resolve(instance);});});}}]);return VhallSaasSDK;}();VhallSaasSDK.requestApi=requestApi;initLoader();window.VhallSaasSDK=VhallSaasSDK;});
 
   /**
    * ajax请求 jsonp处理
@@ -10545,9 +10571,8 @@
 
     if (!LIVETOKEN) {
       TOKEN && xhr.setRequestHeader('token', TOKEN);
-    }
+    } // console.log('HEADERS', HEADERS, TOKEN)
 
-    console.log('HEADERS', HEADERS, TOKEN);
 
     if (HEADERS) {
       Object.getOwnPropertyNames(HEADERS).forEach(function (item) {
@@ -10703,6 +10728,46 @@
       type: 'POST',
       data: retParmams
     });
+  }; //初始化回放录制
+
+
+  var initRecordApi = function initRecordApi() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+    var _contextServer$get7 = contextServer.get('roomBaseServer'),
+        state = _contextServer$get7.state;
+
+    var _contextServer$get8 = contextServer.get('roomInitGroupServer');
+        _contextServer$get8.state;
+
+    var retParams = {
+      webinar_id: params['webinarId'] || state.watchInitData.webinar.id
+    };
+    return $fetch({
+      url: '/v3/webinars/record/init',
+      type: 'POST',
+      data: retParams
+    });
+  }; //获取房间内各工具的状态
+
+
+  var getRoomToolStatus = function getRoomToolStatus() {
+    var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+    var _contextServer$get9 = contextServer.get('roomBaseServer'),
+        state = _contextServer$get9.state;
+
+    var _contextServer$get10 = contextServer.get('roomInitGroupServer');
+        _contextServer$get10.state;
+
+    var retParams = {
+      room_id: params.room_id || state.watchInitData.interact.room_id
+    };
+    return $fetch({
+      url: '/v3/interacts/room/get-inav-tool-status',
+      type: 'POST',
+      data: retParams
+    });
   };
 
   var roomBase = {
@@ -10710,7 +10775,9 @@
     getConfigList: getConfigList,
     setDevice: setDevice,
     recordApi: recordApi,
-    getGroupInitData: getGroupInitData
+    getGroupInitData: getGroupInitData,
+    initRecordApi: initRecordApi,
+    getRoomToolStatus: getRoomToolStatus
   };
 
   var loginInfo = function loginInfo() {
@@ -11183,7 +11250,7 @@
 
 
     var on = function on(type, callback) {
-      console.log('ON INTERACTIVE REGSITER SUCCESS', type);
+      // console.log('ON INTERACTIVE REGSITER SUCCESS',type);
       return state.interactiveInstance.$on(type, callback);
     }; // 销毁实例
 
@@ -11203,6 +11270,7 @@
     var createLocalVideoStream = function createLocalVideoStream() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      console.error('cxs...........1', options, addConfig, state.interactiveInstance);
       return state.interactiveInstance.createLocalVideoStream(options, addConfig);
     }; // 创建桌面共享流
 
@@ -11467,54 +11535,6 @@
     }; // 组合api
 
 
-    var startPushStream = function startPushStream() {
-      console.log('state:', state);
-      createLocalAndStream(state.interactiveInstance);
-    }; // 创建本地的推流和推流
-
-
-    var createLocalAndStream = function createLocalAndStream(interactive) {
-      var camerasList = null,
-          micropsList = null,
-          videoConstraintsList = null;
-      return interactive.getDevices().then(function (data) {
-        console.log('devices list::', data);
-        camerasList = data.videoInputDevices.filter(function (d) {
-          return d.label && d.deviceId != 'desktopScreen';
-        });
-        micropsList = data.audioInputDevices.filter(function (d) {
-          return d.deviceId != 'default' && d.deviceId != 'communications' && d.label;
-        });
-      }).then(function () {
-        var RESOLUTION_REG = /((^VIDEO_PROFILE_(720P|540P|480P|360P)_1$)|(^RTC_VIDEO_PROFILE_(720P|540P|480P|360P)_16x9_M$))/;
-        interactive.getVideoConstraints(camerasList[0].deviceId).then(function (data) {
-          console.log('constrainList', data);
-          videoConstraintsList = data.filter(function (item) {
-            return RESOLUTION_REG.test(item.label);
-          });
-        }).then(function () {
-          var params = {
-            videoNode: 'vhall-video',
-            videoDevice: camerasList[0].deviceId,
-            audioDevice: micropsList[0].deviceId,
-            profile: videoConstraintsList[0]
-          };
-          interactive.createLocalVideoStream(params).then(function (res) {
-            console.log('create local stream success::', res);
-            state.streamId = res;
-            return res;
-          })["catch"](function (err) {
-            console.log('local stream failed::', err);
-          });
-        })["catch"](function (err) {
-          console.log('constrainlist is failed::', err);
-        });
-      })["catch"](function (err) {
-        console.log('getDevies is failed::', err);
-      });
-    };
-
-
     var remoteStreamList = function remoteStreamList() {
       state.remoteStreams = state.interactiveInstance.getRemoteStreams();
 
@@ -11539,7 +11559,6 @@
 
     return {
       state: state,
-      startPushStream: startPushStream,
       init: init,
       destroyInit: destroyInit,
       createLocalStream: createLocalStream,
@@ -12135,7 +12154,8 @@
       watchInitData: {},
       // 活动信息
       groupInitData: {
-        discussState: false
+        discussState: false,
+        isInGroup: false
       },
       // 分组信息
       watchInitErrorData: undefined,
@@ -12256,6 +12276,18 @@
       return requestApi.roomBase.recordApi({
         status: 3
       });
+    }; //初始化回放录制
+
+
+    var initReplayRecord = function initReplayRecord() {
+      var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.roomBase.initRecordApi(params);
+    }; //获取房间内各工具的状态
+
+
+    var getRoomToolStatus = function getRoomToolStatus() {
+      var params = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+      return requestApi.roomBase.getRoomToolStatus(params);
     };
 
     var init = function init(option) {
@@ -12279,6 +12311,8 @@
       getGroupInitData: getGroupInitData,
       setGroupType: setGroupType,
       setGroupDiscussState: setGroupDiscussState,
+      initReplayRecord: initReplayRecord,
+      getRoomToolStatus: getRoomToolStatus,
       setClientType: setClientType
     };
   }
@@ -13939,18 +13973,20 @@
                 roomBaseServer = contextServer.get('roomBaseServer');
                 groupInitData = roomBaseServer.state.groupInitData; // 备份之前的小组信息
 
-                oldGroupInitData = _objectSpread2({}, groupInitData); // 如果在主直播间，并且 group_ids 中包括主直播间
+                oldGroupInitData = JSON.parse(JSON.stringify(groupInitData));
+                console.log('domain -------- oldGroupInitData', oldGroupInitData); // 如果在主直播间，并且 group_ids 中包括主直播间
 
                 if (!(!oldGroupInitData.isInGroup && group_ids.indexOf(0) > -1)) {
-                  _context.next = 8;
+                  _context.next = 10;
                   break;
                 }
 
-                _context.next = 6;
+                _context.next = 7;
                 return roomBaseServer.getGroupInitData();
 
-              case 6:
-                _groupInitData = roomBaseServer.state.groupInitData; // 如果新的小组跟之前的小组不一样则需要关心,否则不需要关心
+              case 7:
+                _groupInitData = roomBaseServer.state.groupInitData;
+                console.log('domain -------- groupInitData', _groupInitData); // 如果新的小组跟之前的小组不一样则需要关心,否则不需要关心
 
                 return _context.abrupt("return", {
                   isNeedCare: _groupInitData.isInGroup,
@@ -13958,20 +13994,21 @@
                   to: _groupInitData.group_id
                 });
 
-              case 8:
-                if (!(oldGroupInitData.isInGroup && group_ids.indexOf(oldGroupInitData.group_id) > -1)) {
-                  _context.next = 15;
+              case 10:
+                if (!(oldGroupInitData.isInGroup && group_ids.indexOf(Number(oldGroupInitData.group_id)) > -1)) {
+                  _context.next = 18;
                   break;
                 }
 
-                _context.next = 11;
+                _context.next = 13;
                 return roomBaseServer.getGroupInitData();
 
-              case 11:
-                _groupInitData2 = roomBaseServer.state.groupInitData; // 如果现在变为不在小组了,则需要关心
+              case 13:
+                _groupInitData2 = roomBaseServer.state.groupInitData;
+                console.log('domain -------- groupInitData', _groupInitData2); // 如果现在变为不在小组了,则需要关心
 
                 if (oldGroupInitData.isInGroup) {
-                  _context.next = 14;
+                  _context.next = 17;
                   break;
                 }
 
@@ -13981,21 +14018,21 @@
                   to: 0
                 });
 
-              case 14:
+              case 17:
                 return _context.abrupt("return", {
                   isNeedCare: oldGroupInitData.group_id !== _groupInitData2.group_id,
                   from: oldGroupInitData.group_id,
                   to: _groupInitData2.group_id
                 });
 
-              case 15:
+              case 18:
                 return _context.abrupt("return", {
                   isNeedCare: false,
                   from: oldGroupInitData.isInGroup ? oldGroupInitData.group_id : 0,
                   to: oldGroupInitData.isInGroup ? oldGroupInitData.group_id : 0
                 });
 
-              case 16:
+              case 19:
               case "end":
                 return _context.stop();
             }

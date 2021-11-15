@@ -92,7 +92,6 @@ export default function useRoomInitGroupServer(options = {}) {
             await roomBaseServer.getGroupInitData()
         }
         await roomBaseServer.getConfigList()
-
         return true;
     }
 
