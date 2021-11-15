@@ -11,4 +11,5 @@ dist
 *.ntvs*
 *.njsproj
 *.sln
+.history
 package-lock.json
