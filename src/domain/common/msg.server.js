@@ -191,7 +191,7 @@ export default function useMsgServer() {
 
     // 初始化子房间聊天sdk
     const initGroupMsg = (customOptions = {}) => {
-        if (!contextServer.get('roomInitGroupServer')) return
+        if (!contextServer.get('roomInitGroupServer')) return Promise.reject('No Room Exist')
 
         // 每次初始化子房间聊天都需要清空原有房间聊天消息然后重新拉取
         const chatServer = contextServer.get('chatServer')
@@ -207,8 +207,10 @@ export default function useMsgServer() {
         console.log('创建子房间聊天实例', options)
         return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(res => {
             state.groupMsgInstance = res
-            // 子房间上线，在小组内广播当前人的小组信息
-            sendGroupInfoAfterJoin(res)
+            // 子房间上线，在小组内广播当前人的小组信息，延时500ms解决开始讨论收不到消息的问题
+            setTimeout(() => {
+                sendGroupInfoAfterJoin(res)
+            }, 500)
             _addListeners(res)
             return res
         })
