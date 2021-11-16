@@ -191,7 +191,7 @@ export default function useMsgServer() {
 
     // 初始化子房间聊天sdk
     const initGroupMsg = (customOptions = {}) => {
-        if (!contextServer.get('roomInitGroupServer')) return
+        if (!contextServer.get('roomInitGroupServer')) return Promise.reject('No Room Exist')
 
         // 每次初始化子房间聊天都需要清空原有房间聊天消息然后重新拉取
         const chatServer = contextServer.get('chatServer')
