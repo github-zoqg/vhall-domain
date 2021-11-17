@@ -3,6 +3,7 @@ import requestApi from '@/request/index.js';
 import contextServer from "@/domain/common/context.server.js"
 import useEventEmitter from '@/domain/common/eventEmitter.server.js';
 import { setRequestHeaders } from '@/utils/http.js';
+import { merge } from '@/utils/index.js';
 
 export default function useRoomBaseServer() {
     const state = {
