@@ -42,7 +42,6 @@ export default function useInteractiveServer() {
     }
     // 创建摄像头视频流
     const createLocalVideoStream = (options = {}, addConfig = {}) => {
-        console.error('cxs...........1',options, addConfig, state.interactiveInstance);
         return state.interactiveInstance.createLocalVideoStream(options, addConfig)
     }
     // 创建桌面共享流
@@ -182,7 +181,7 @@ export default function useInteractiveServer() {
     }
 
     const speakUserOff=(data={})=>{
-        return requestApi.interactive.speakUserOff(data)
+        return requestApi.mic.speakUserOff(data)
     }
 
     // 设置主屏

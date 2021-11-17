@@ -14,7 +14,7 @@ export default function useMicServer() {
     }
 
     const speakUserOff=(data={})=>{
-        return requestApi.interactive.speakUserOff(data)
+        return requestApi.mic.speakUserOff(data)
     }
 
     // 允许举手
