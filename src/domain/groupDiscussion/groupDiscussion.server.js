@@ -26,7 +26,7 @@ export default function useGroupDiscussionServer() {
             const { groupInitData } = roomBaseServer.state
             console.log('domain -------- groupInitData', groupInitData)
             // 如果现在变为不在小组了,则需要关心
-            if (!oldGroupInitData.isInGroup) {
+            if (!groupInitData.isInGroup) {
                 return {
                     isNeedCare: true,
                     from: oldGroupInitData.group_id,

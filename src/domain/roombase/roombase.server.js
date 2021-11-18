@@ -3,6 +3,7 @@ import requestApi from '@/request/index.js';
 import contextServer from "@/domain/common/context.server.js"
 import useEventEmitter from '@/domain/common/eventEmitter.server.js';
 import { setRequestHeaders } from '@/utils/http.js';
+import { merge } from '@/utils/index.js';
 
 export default function useRoomBaseServer() {
     const state = {
@@ -11,8 +12,8 @@ export default function useRoomBaseServer() {
         webinarVo: {},
         watchInitData: {}, // 活动信息
         groupInitData: {
-            discussState: false,
-            isInGroup: false
+            discussState: false, // 是否开始讨论
+            isInGroup: false // 是否在小组中
         }, // 分组信息
         watchInitErrorData: undefined,// 默认undefined，如果为其他值将触发特殊逻辑
         configList: {},
@@ -64,6 +65,14 @@ export default function useRoomBaseServer() {
     // 设置分组讨论是否正在讨论中
     const setGroupDiscussState = (type) => {
         state.groupInitData.discussState = type
+    }
+
+    // 设置子房间初始化信息
+    const setGroupInitData = (data) => {
+        state.groupInitData  = merge.recursive({}, data, state.groupInitData)
+        if (state.groupInitData.group_id === 0) {
+            state.groupInitData.isInGroup = false
+        }
     }
 
     // 获取分组初始化信息
@@ -151,6 +160,7 @@ export default function useRoomBaseServer() {
 
     return { state, init, on, destroy, getWatchInitData, getWebinarInfo, getConfigList,
         startLive, endLive, setDevice, startRecord, pauseRecord, endRecord,
-        getGroupInitData, setGroupType, setGroupDiscussState, initReplayRecord, getRoomToolStatus, setClientType }
+        getGroupInitData, setGroupType, setGroupDiscussState, initReplayRecord, getRoomToolStatus,
+        setClientType, setGroupInitData }
 
 }
