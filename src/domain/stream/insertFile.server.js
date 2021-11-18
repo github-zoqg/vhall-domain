@@ -244,6 +244,7 @@ function useInsertFileServer() {
     // 设置已经存在的videoElement
     const setExistVideoElement = (videoElement) => {
         state._videoElement = videoElement
+        state._isAudio = videoElement.isAudio
     }
 
     return {
