@@ -85,13 +85,42 @@ const getGroupInitData = (params = {}) => {
         data: retParmams
     })
 }
+//初始化回放录制
+const initRecordApi = (params = {}) => {
+    const {state} = contextServer.get('roomBaseServer');
+    const {state: roomInitGroupServerState} = contextServer.get('roomInitGroupServer');
+    const retParams = {
+        webinar_id: params['webinarId'] || state.watchInitData.webinar.id
+    }
+    return $http({
+        url: '/v3/webinars/record/init',
+        type: 'POST',
+        data: retParams
+    });
+}
+
+//获取房间内各工具的状态
+const getRoomToolStatus = (params={})=>{
+    const {state} = contextServer.get('roomBaseServer');
+    const {state: roomInitGroupServerState} = contextServer.get('roomInitGroupServer');
+    const retParams = {
+        room_id:params.room_id || state.watchInitData.interact.room_id
+    }
+    return $http({
+        url: '/v3/interacts/room/get-inav-tool-status',
+        type: 'POST',
+        data: retParams
+    });
+}
 
 const roomBase = {
     getWebinarInfo,
     getConfigList,
     setDevice,
     recordApi,
-    getGroupInitData
+    getGroupInitData,
+    initRecordApi,
+    getRoomToolStatus
 }
 
 export default roomBase

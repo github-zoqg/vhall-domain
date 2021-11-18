@@ -241,6 +241,12 @@ function useInsertFileServer() {
         return interactiveServer.unSubscribeStream(options)
     }
 
+    // 设置已经存在的videoElement
+    const setExistVideoElement = (videoElement) => {
+        state._videoElement = videoElement
+        state._isAudio = videoElement.isAudio
+    }
+
     return {
         state,
         getInsertFileList,
@@ -255,7 +261,8 @@ function useInsertFileServer() {
         unsubscribeInsertStream,
         onInsertFileStreamAdd,
         onInsertFileStreamDelete,
-        onInsertFileStreamFaild
+        onInsertFileStreamFaild,
+        setExistVideoElement
     }
 }
 

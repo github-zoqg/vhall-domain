@@ -17,7 +17,7 @@ import useChatServer from "@/domain/chat/chat.server.js";
 import useMicServer from "@/domain/stream/mic.server.js";
 import useNoticeServer from "@/domain/notice/notice.server.js";
 import userMemberServer from "@/domain/member/member.server.js";
-import groupDiscussionServer from "@/domain/groupDiscussion/groupDiscussion.server.js";
+import useGroupDiscussionServer from "@/domain/groupDiscussion/groupDiscussion.server.js";
 
 export {
     contextServer,
@@ -36,5 +36,5 @@ export {
     useDocServer,
     useNoticeServer,
     userMemberServer,
-    groupDiscussionServer
+    useGroupDiscussionServer
 };

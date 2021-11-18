@@ -26,7 +26,7 @@ export default function useInteractiveServer() {
 
     // 监听事件
     const on = (type,callback) => {
-        console.log('ON INTERACTIVE REGSITER SUCCESS',type);
+        // console.log('ON INTERACTIVE REGSITER SUCCESS',type);
 
         return state.interactiveInstance.$on(type, callback)
     }
@@ -181,7 +181,7 @@ export default function useInteractiveServer() {
     }
 
     const speakUserOff=(data={})=>{
-        return requestApi.interactive.speakUserOff(data)
+        return requestApi.mic.speakUserOff(data)
     }
 
     // 设置主屏
@@ -294,7 +294,7 @@ export default function useInteractiveServer() {
             // state.remoteStreams.filter(item => item.streamId == e.streamId)
         })
     }
-    return { state, startPushStream ,init, destroyInit, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
+    return { state, init, destroyInit, createLocalStream, createLocalVideoStream, createLocaldesktopStream, createLocalAudioStream,
     createLocalPhotoStream, destroyStream, publishStream, unpublishStream, subscribeStream, unSubscribeStream, setDual, muteVideo,
     muteAudio, startBroadCast, stopBroadCast, setBroadCastLayout, setBroadCastScreen, getDevices, getCameras, getMicrophones,
     getSpeakers, getVideoConstraints, isScreenShareSupported, checkSystemRequirements, getPacketLossRate, getRoomStreams, remoteStreamList,
