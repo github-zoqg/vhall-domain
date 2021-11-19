@@ -80,6 +80,7 @@ function json(params, success, fail) {
                 } else {
                     response = xhr.responseText
                 }
+                console.log('调试模式DOMAIN******response.then******', response)
                 success && success(response)
             } else {
                 fail && fail(status)
@@ -114,6 +115,7 @@ function json(params, success, fail) {
     //     interactToken && xhr.setRequestHeader('interact-token', interactToken)
     //     token && xhr.setRequestHeader('token', token)
     // }
+    console.log('调试模式DOMAIN******request.then******', xhr)
     if (params.type == 'GET') {
         xhr.send(null)
     } else {
