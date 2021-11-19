@@ -5,7 +5,8 @@ export default function useMsgServer() {
     const state = {
         msgInstance: null,
         eventsPool: [],
-        msgSdkInitOptions: {}
+        msgSdkInitOptions: {},
+        groupMsgSdkInitOptions: {}
     }
 
     let groupMsgInstance = null
@@ -206,6 +207,7 @@ export default function useMsgServer() {
         state.groupMsgSdkInitOptions = options
         console.log('创建子房间聊天实例', options)
         return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(res => {
+            console.log('domain----创建子房间聊天实例成功', res)
             state.groupMsgInstance = res
             // 子房间上线，在小组内广播当前人的小组信息，延时500ms解决开始讨论收不到消息的问题
             setTimeout(() => {
@@ -251,7 +253,17 @@ export default function useMsgServer() {
         state.msgInstance = null
     }
 
+    // 获取当前主房间初始化参数
+    const getCurrentMsgInitOptions = () => {
+        return JSON.parse(JSON.stringify(state.msgSdkInitOptions))
+    }
+
+    // 获取当前子房间初始化参数
+    const getCurrentGroupMsgInitOptions = () => {
+        return JSON.parse(JSON.stringify(state.groupMsgSdkInitOptions))
+    }
+
     return { state, init, initGroupMsg, destroy, destroyGroupMsg, $on, $off,
         getGroupDefaultOptions, getDefaultOptions, setMainChannelMute, sendRoomMsg,
-        sendChatMsg }
+        sendChatMsg, getCurrentMsgInitOptions, getCurrentGroupMsgInitOptions }
 }
