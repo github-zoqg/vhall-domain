@@ -23,6 +23,9 @@ let HEADERS = {}
 function setBaseUrl(url) {
     BUSE_URL = url
 }
+function getBaseUrl() {
+    return BUSE_URL
+}
 function setToken(token, livetoken) {
     console.log(token, livetoken, 888)
     TOKEN = token
@@ -169,4 +172,4 @@ function random() {
 
 
 export default $fetch
-export { setBaseUrl, setToken, setRequestHeaders }
+export { setBaseUrl, getBaseUrl, setToken, setRequestHeaders }

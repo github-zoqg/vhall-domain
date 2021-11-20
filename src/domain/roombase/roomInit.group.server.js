@@ -2,7 +2,7 @@ import contextServer from '@/domain/common/context.server.js'
 import useMsgServer from '@/domain/common/msg.server.js'
 import useRoomBaseServer from '@/domain/roombase/roombase.server.js'
 import useInteractiveServer from '@/domain/stream/interactive.server.js';
-import { setBaseUrl, setToken, setRequestHeaders } from '@/utils/http.js';
+import { getBaseUrl, setToken, setRequestHeaders } from '@/utils/http.js';
 import { merge } from '@/utils/index.js';
 import useMicServer from "@/domain/stream/mic.server.js";
 
@@ -60,6 +60,11 @@ export default function useRoomInitGroupServer(options = {}) {
         }
 
         const options = merge.recursive({}, defaultOptions, customOptions)
+
+        if (!options.baseUrl) {
+            options.baseUrl = getBaseUrl()
+        }
+
         setRequestConfig(options)
 
         await roomBaseServer.init(options);
@@ -85,6 +90,11 @@ export default function useRoomInitGroupServer(options = {}) {
         roomBaseServer.setClientType('receive')
 
         const options = merge.recursive({}, defaultOptions, customOptions)
+
+        if (!options.baseUrl) {
+            options.baseUrl = getBaseUrl()
+        }
+
         setRequestConfig(options)
 
         await roomBaseServer.init(options)

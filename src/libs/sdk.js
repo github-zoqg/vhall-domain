@@ -244,18 +244,6 @@
     throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
 
-  var mountSDK = function mountSDK(src) {
-    return new Promise(function (resolve) {
-      var node = document.createElement('script');
-      document.head.appendChild(node);
-      node.src = src;
-
-      node.onload = function () {
-        resolve();
-      };
-    });
-  };
-
   /**
    * ajax请求 jsonp处理
    * 1.jsonp 请求格式
@@ -284,7 +272,7 @@
   }
 
   function setRequestHeaders(options) {
-    HEADERS = _objectSpread2({}, options);
+    HEADERS = _objectSpread2(_objectSpread2({}, HEADERS), options);
   }
 
   function $fetch(options) {
@@ -1401,9 +1389,9 @@
       }
     }, {
       key: "destroy",
-      value: function destroy() {
+      value: function destroy(isAutoDestroyMsg) {
         if (!this.instance) return;
-        this.instance.destroy();
+        this.instance.destroy(isAutoDestroyMsg);
         this.instance = null;
       }
     }, {
@@ -12445,11 +12433,6 @@
     return PlayerModule;
   }(BaseModule);
 
-  var initLoader = function initLoader() {
-    Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js'), mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.1.6.js')]).then(function (res) {
-    });
-  };
-
   var VhallSaasSDK = /*#__PURE__*/function () {
     function VhallSaasSDK() {
       _classCallCheck(this, VhallSaasSDK);
@@ -12524,10 +12507,10 @@
     }, {
       key: "setRequestConfig",
       value: function setRequestConfig(options) {
-        if (options.development) {
-          setBaseUrl('https://t-saas-dispatch.vhall.com');
+        if (options.baseUrl) {
+          setBaseUrl(options.baseUrl);
         } else {
-          setBaseUrl('https://t-saas-dispatch.vhall.com');
+          setBaseUrl('https://test-saas-api.vhall.com');
         }
 
         setToken(options.token, options.liveToken);
@@ -12588,8 +12571,7 @@
     return VhallSaasSDK;
   }();
 
-  VhallSaasSDK.requestApi = requestApi;
-  initLoader();
+  VhallSaasSDK.requestApi = requestApi; // initLoader()
 
   window.VhallSaasSDK = VhallSaasSDK;
 
