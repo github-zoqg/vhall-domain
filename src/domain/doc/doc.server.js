@@ -13,8 +13,8 @@ export default function useDocServer() {
         state.docInstance.$on(type, cb);
     };
 
-    const destroy = () => {
-        return state.docInstance.destroy();
+    const destroy = (isAutoDestroyMsg) => {
+        return state.docInstance.destroy(isAutoDestroyMsg);
     };
 
     const init = (options) => {

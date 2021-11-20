@@ -6,7 +6,8 @@ export default function useMsgServer() {
         msgInstance: null,
         eventsPool: [],
         msgSdkInitOptions: {},
-        groupMsgSdkInitOptions: {}
+        groupMsgSdkInitOptions: {},
+        keepAliveMsgEventList: {}
     }
 
     let groupMsgInstance = null
@@ -22,7 +23,7 @@ export default function useMsgServer() {
         LEFT: []
     }
 
-    // 发送房间消息
+    // 发送聊天消息
     const sendChatMsg = (data, context) => {
         if (state.groupMsgInstance) {
             state.groupMsgInstance.emitTextChat(data, context)
@@ -60,6 +61,27 @@ export default function useMsgServer() {
         }
     }
 
+    // 重新注册保活消息
+    const reRegisterKeepAliveMsgEvent = () => {
+        console.log('重新注册保活消息', state.keepAliveMsgEventList)
+        for (let eventType in state.keepAliveMsgEventList) {
+            state.msgInstance.$on(eventType, (msg) => {
+                if (state.keepAliveMsgEventList[eventType].length) {
+                    state.keepAliveMsgEventList[eventType].forEach((handler) => {
+                        handler(msg)
+                    })
+                }
+            })
+        }
+    }
+
+    // 注销保活消息
+    const removeKeepAliveMsgEvent = () => {
+        for (let eventType in state.keepAliveMsgEventList) {
+            state.msgInstance.$off(eventType)
+        }
+    }
+
     Object.defineProperty(state, 'groupMsgInstance', {
         get() {
             return groupMsgInstance
@@ -68,10 +90,15 @@ export default function useMsgServer() {
             // 如果新值旧值都为假，或者新值旧值相同，直接 return
             if (!newVal && !groupMsgInstance || newVal === groupMsgInstance) return
 
-            if (!newVal) { // 如果是销毁子房间实例，重新注册主房间事件
+            if (!newVal) { // 如果是销毁子房间实例
+                // 主房间保活消息注销
+                removeKeepAliveMsgEvent()
+                // 重新注册主房间消息
                 state.msgInstance && _addListeners(state.msgInstance)
             } else { // 如果是新创建子房间实例，注销主房间事件
                 state.msgInstance && _removeListeners(state.msgInstance)
+                // 主房间保活消息重新注册
+                reRegisterKeepAliveMsgEvent()
             }
 
             groupMsgInstance = newVal
@@ -219,9 +246,15 @@ export default function useMsgServer() {
     }
 
     // 注册事件
-    const $on = (eventType, fn) => {
+    const $on = (eventType, fn, iskeepLive) => {
         if (!_eventhandlers.hasOwnProperty(eventType)) {
             throw new TypeError('Invalid eventType')
+        }
+        if (iskeepLive) { // 主房间保活消息
+            if(!state.keepAliveMsgEventList[eventType]) {
+                state.keepAliveMsgEventList[eventType] = []
+            }
+            state.keepAliveMsgEventList[eventType].push(fn)
         }
         _eventhandlers[eventType].push(fn)
     }
