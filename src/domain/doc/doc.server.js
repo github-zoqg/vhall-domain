@@ -149,6 +149,14 @@ export default function useDocServer() {
         return state.docInstance.setSquare(options)
     };
 
+    const setSingleArrow = (options) => {
+        return state.docInstance.setSquare(options)
+    };
+
+    const setDoubleArrow = (options) => {
+        return state.docInstance.setSquare(options)
+    };
+
     const setCircle = (options) => {
         return state.docInstance.setCircle(options)
     };
@@ -259,7 +267,8 @@ export default function useDocServer() {
         setStrokeWidth,
         setSquare,
         setCircle,
-        setBitmap,
+        setSingleArrow,
+        setDoubleArrow,
         setIsoscelesTriangle,
         clear,
         cancelDrawable,
