@@ -326,6 +326,7 @@
             response = xhr.responseText;
           }
 
+          console.log('调试模式SDK******response.then******', response);
           success && success(response);
         } else {
           fail && fail(status);
@@ -361,6 +362,8 @@
     //     token && xhr.setRequestHeader('token', token)
     // }
 
+
+    console.log('调试模式SDK******request.then******', xhr);
 
     if (params.type == 'GET') {
       xhr.send(null);
@@ -1640,6 +1643,16 @@
       key: "setCircle",
       value: function setCircle(options) {
         return this.instance.setCircle(options);
+      }
+    }, {
+      key: "setSingleArrow",
+      value: function setSingleArrow(options) {
+        return this.instance.setSingleArrow(options);
+      }
+    }, {
+      key: "setDoubleArrow",
+      value: function setDoubleArrow(options) {
+        return this.instance.setDoubleArrow(options);
       }
     }, {
       key: "setBitmap",
