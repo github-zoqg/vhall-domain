@@ -150,11 +150,11 @@ export default function useDocServer() {
     };
 
     const setSingleArrow = (options) => {
-        return state.docInstance.setSquare(options)
+        return state.docInstance.setSingleArrow(options)
     };
 
     const setDoubleArrow = (options) => {
-        return state.docInstance.setSquare(options)
+        return state.docInstance.setDoubleArrow(options)
     };
 
     const setCircle = (options) => {
