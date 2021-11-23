@@ -98,7 +98,7 @@ export default function useChatServer() {
 
     // 清空聊天消息
     const clearHistoryMsg = () => {
-        state.chatList = []
+        state.chatList.splice(0, state.chatList.length)
     }
 
     //发送聊天消息
