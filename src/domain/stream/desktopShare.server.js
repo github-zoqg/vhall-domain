@@ -27,7 +27,7 @@ export default function useDesktopShareServer(){
         return new Promise((resolve, reject) => {
             interactiveServer.checkSystemRequirements().then(checkResult => {
                 console.log('result',checkResult, checkResult.result, 'detail', checkResult.detail);
-                if (checkResult.result || checkResult.detail.isScreenShareSupported) {
+                if ((checkResult.result || checkResult.detail.isScreenShareSupported) && !navigator.userAgent.indexOf('Firefox') > 0) {
                     resolve(true);
                 } else {
                     reject(false);
