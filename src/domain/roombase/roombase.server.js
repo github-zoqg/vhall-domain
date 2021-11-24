@@ -12,6 +12,7 @@ export default function useRoomBaseServer() {
         webinarVo: {},
         watchInitData: {}, // 活动信息
         groupInitData: {
+            isBanned: false, // 小组禁言
             discussState: false, // 是否开始讨论
             isInGroup: false // 是否在小组中
         }, // 分组信息
@@ -81,10 +82,16 @@ export default function useRoomBaseServer() {
             state.groupInitData = {
                 ...state.groupInitData,
                 ...res.data,
+                isBanned: res.data.is_banned == '1',
                 isInGroup: res.code !== 513325
             };
             return res;
         })
+    }
+
+    // 设置分组禁言状态
+    const setGroupBannedStatus = (status) => {
+        state.groupInitData.isBanned = status
     }
 
     // 获取活动信息
@@ -161,6 +168,6 @@ export default function useRoomBaseServer() {
     return { state, init, on, destroy, getWatchInitData, getWebinarInfo, getConfigList,
         startLive, endLive, setDevice, startRecord, pauseRecord, endRecord,
         getGroupInitData, setGroupType, setGroupDiscussState, initReplayRecord, getRoomToolStatus,
-        setClientType, setGroupInitData }
+        setClientType, setGroupInitData, setGroupBannedStatus }
 
 }

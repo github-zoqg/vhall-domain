@@ -45,6 +45,7 @@ export default function useMsgServer() {
     const _addListeners = (instance) => {
         for (let eventType in _eventhandlers) {
             instance.$on(eventType, (msg) => {
+                console.log('----domain----,消息事件', msg, _eventhandlers[eventType])
                 if (_eventhandlers[eventType].length) {
                     _eventhandlers[eventType].forEach((handler) => {
                         handler(msg)
