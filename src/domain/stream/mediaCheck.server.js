@@ -1,9 +1,6 @@
 import contextServer from "@/domain/common/context.server.js";
 
-// 业务功能: 1.获取设备列表(继承interactiveServer-getDevices) / 2.本地预览 / 3.停止预览  /  4.获取清晰度(继承interactiveServer-getVideoConstraints)
-
 export default function useMediaCheckServer() {
-    let interactiveServer = null
 
     const state = {
         videoNode: "vh-device-check-video", // 视频容器
@@ -15,7 +12,6 @@ export default function useMediaCheckServer() {
         state.videoNode = opt.videoNode || "vh-device-check-video"
         state.selectedVideoDeviceId = opt.selectedVideoDeviceId === undefined ? opt.selectedVideoDeviceId : ""
         state.localStreamId = opt.localStreamId === undefined ? opt.localStreamId : ""
-        interactiveServer = contextServer.get("interactiveServer")
 
     }
 
@@ -39,18 +35,28 @@ export default function useMediaCheckServer() {
             { ...originalOpts },
             { ...opts }
         )
-        return interactiveServer.createLocalStream(options).then(streamId => {
-            state.localStreamId = streamId
-            return streamId
+        return new Promise((resolve, reject) => {
+            const success = (res) => {
+                resolve(res)
+            }
+            const failure = (error) => {
+                reject(error)
+            }
+            window.VhallRTC.startPreview(options, success, failure);
         })
     }
 
     // 结束视频预览
     const stopPreviewVideo = (streamId) => {
         const id = streamId || state.localStreamId
-        return interactiveServer.destroyStream(id).then(() => {
-            setVideoNode("");
-            return state.localStreamId
+        return new Promise((resolve, reject) => {
+            const success = (res) => {
+                resolve(res)
+            }
+            const failure = (error) => {
+                reject(error)
+            }
+            window.VhallRTC.stopPreview({ streamId: id }, success, failure);
         })
     }
 
@@ -63,7 +69,7 @@ export default function useMediaCheckServer() {
         setSelectedVideoDeviceId,
         startPreviewVideo,
         stopPreviewVideo,
-        getDevices: interactiveServer.getDevices,
-        getVideoConstraints: interactiveServer.getVideoConstraints
+        getDevices: window.VhallRTC.getDevices,
+        getVideoConstraints: window.VhallRTC.getVideoConstraints
     }
 }
