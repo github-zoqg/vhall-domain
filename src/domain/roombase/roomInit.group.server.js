@@ -70,7 +70,6 @@ export default function useRoomInitGroupServer(options = {}) {
         await roomBaseServer.init(options);
         if (roomBaseServer.state.watchInitData.webinar.mode === 6) { // 如果是分组直播
             roomBaseServer.setGroupType(true)
-            await roomBaseServer.getGroupInitData()
         }
         await roomBaseServer.getConfigList();
 
