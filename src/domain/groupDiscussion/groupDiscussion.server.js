@@ -48,5 +48,23 @@ export default function useGroupDiscussionServer() {
         }
     }
 
-    return { getGroupJoinChangeInfo }
+    // 分组直播，进出子房间需要在主房间发消息，维护主房间 online-list
+    const sendMainRoomJoinChangeMsg = (options = { isJoinMainRoom: false }) => {
+        const roomBaseServer = contextServer.get('roomBaseServer')
+        const msgServer = contextServer.get('msgServer')
+        const { watchInitData, groupInitData } = roomBaseServer.state
+        const { msgInstance } = msgServer.state
+
+        const body = {
+            type: 'main_room_join_change',
+            nickname: watchInitData.join_info.nickname,
+            ...groupInitData,
+            accountId: watchInitData.join_info.third_party_user_id,
+            isJoinMainRoom: options.isJoinMainRoom
+        }
+
+        msgInstance && msgInstance.emitRoomMsg(body)
+    }
+
+    return { getGroupJoinChangeInfo, sendMainRoomJoinChangeMsg }
 }
