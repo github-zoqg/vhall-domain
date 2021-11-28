@@ -1,4 +1,6 @@
 import contextServer from "@/domain/common/context.server.js"
+import { isPc } from '@/utils/index.js'
+
 export default function useGroupDiscussionServer() {
     // 收到切换小组消息,判断是否需要切换 channel
     const getGroupJoinChangeInfo = async (group_ids) => {
@@ -49,18 +51,22 @@ export default function useGroupDiscussionServer() {
     }
 
     // 分组直播，进出子房间需要在主房间发消息，维护主房间 online-list
-    const sendMainRoomJoinChangeMsg = (options = { isJoinMainRoom: false }) => {
+    const sendMainRoomJoinChangeMsg = (options = { isJoinMainRoom: false, isBanned: false }) => {
         const roomBaseServer = contextServer.get('roomBaseServer')
         const msgServer = contextServer.get('msgServer')
-        const { watchInitData, groupInitData } = roomBaseServer.state
+        const { watchInitData } = roomBaseServer.state
         const { msgInstance } = msgServer.state
+
+        const isPcClient = isPc()
 
         const body = {
             type: 'main_room_join_change',
             nickname: watchInitData.join_info.nickname,
-            ...groupInitData,
             accountId: watchInitData.join_info.third_party_user_id,
-            isJoinMainRoom: options.isJoinMainRoom
+            isJoinMainRoom: options.isJoinMainRoom,
+            role_name: watchInitData.join_info.role_name,
+            device_type: isPcClient ? '2' : '1',
+            isBanned: options.isBanned
         }
 
         msgInstance && msgInstance.emitRoomMsg(body)
