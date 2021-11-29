@@ -2291,7 +2291,13 @@
               width: 2,
               color: '0x666666'
             }
-          };
+          }; // 如果有 adaptiveLayoutMode 就不传 layout
+
+          if (options.adaptiveLayoutMode !== undefined || options.adaptiveLayoutMode !== null) {
+            delete defaultOptions.layout;
+            defaultOptions.adaptiveLayoutMode = options.adaptiveLayoutMode;
+          }
+
           var params = merge.recursive({}, defaultOptions, addConfig);
 
           _this18.instance.startBroadCast(params).then(function () {
