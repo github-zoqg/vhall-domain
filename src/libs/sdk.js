@@ -664,7 +664,8 @@
       refer: params.refer || '',
       sign: params.sign || '',
       ts: params.ts || '',
-      biz_id: params.biz_id || ''
+      biz_id: params.biz_id || '',
+      third_user_id: params.third_user_id || ''
     };
     return new Promise(function (resolve, reject) {
       $fetch({
@@ -692,7 +693,8 @@
       qrcode: params.qrcode || '',
       share_id: params.share_id || '',
       visitor_id: params.visitor_id || '',
-      biz_id: params.biz_id || ''
+      biz_id: params.biz_id || '',
+      third_user_id: params.third_user_id || ''
     };
     return new Promise(function (resolve, reject) {
       $fetch({
@@ -2149,13 +2151,6 @@
             videoNode: options.videoNode,
             // 传入本地视频显示容器，必填
             streamId: options.streamId,
-            mute: {
-              // 选填，订阅成功后立即mute远端流
-              audio: options.mute && options.mute.audio || false,
-              // 是否关闭音频，默认false
-              video: options.mute && options.mute.audio || false // 是否关闭视频，默认false
-
-            },
             dual: options.dual || 1 // 双流订阅选项， 0为小流， 1为大流(默认)
 
           };

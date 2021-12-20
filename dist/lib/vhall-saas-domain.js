@@ -353,7 +353,9 @@
     var state = {
       msgInstance: null,
       eventsPool: [],
-      msgSdkInitOptions: {}
+      msgSdkInitOptions: {},
+      groupMsgSdkInitOptions: {},
+      keepAliveMsgEventList: {}
     };
     var groupMsgInstance = null;
     var _eventhandlers = {
@@ -365,7 +367,7 @@
       DOC_MSG: [],
       JOIN: [],
       LEFT: []
-    }; // 发送房间消息
+    }; // 发送聊天消息
 
     var sendChatMsg = function sendChatMsg(data, context) {
       if (state.groupMsgInstance) {
@@ -388,6 +390,8 @@
     var _addListeners = function _addListeners(instance) {
       var _loop = function _loop(eventType) {
         instance.$on(eventType, function (msg) {
+          console.log('----domain----,消息事件', msg, _eventhandlers[eventType]);
+
           if (_eventhandlers[eventType].length) {
             _eventhandlers[eventType].forEach(function (handler) {
               handler(msg);
@@ -406,6 +410,32 @@
       for (var eventType in _eventhandlers) {
         instance.$off(eventType);
       }
+    }; // 重新注册保活消息
+
+
+    var reRegisterKeepAliveMsgEvent = function reRegisterKeepAliveMsgEvent() {
+      console.log('重新注册保活消息', state.keepAliveMsgEventList);
+
+      var _loop2 = function _loop2(eventType) {
+        state.msgInstance.$on(eventType, function (msg) {
+          if (state.keepAliveMsgEventList[eventType].length) {
+            state.keepAliveMsgEventList[eventType].forEach(function (handler) {
+              handler(msg);
+            });
+          }
+        });
+      };
+
+      for (var eventType in state.keepAliveMsgEventList) {
+        _loop2(eventType);
+      }
+    }; // 注销保活消息
+
+
+    var removeKeepAliveMsgEvent = function removeKeepAliveMsgEvent() {
+      for (var eventType in state.keepAliveMsgEventList) {
+        state.msgInstance.$off(eventType);
+      }
     };
 
     Object.defineProperty(state, 'groupMsgInstance', {
@@ -417,11 +447,16 @@
         if (!newVal && !groupMsgInstance || newVal === groupMsgInstance) return;
 
         if (!newVal) {
-          // 如果是销毁子房间实例，重新注册主房间事件
+          // 如果是销毁子房间实例
+          // 主房间保活消息注销
+          removeKeepAliveMsgEvent(); // 重新注册主房间消息
+
           state.msgInstance && _addListeners(state.msgInstance);
         } else {
           // 如果是新创建子房间实例，注销主房间事件
-          state.msgInstance && _removeListeners(state.msgInstance);
+          state.msgInstance && _removeListeners(state.msgInstance); // 主房间保活消息重新注册
+
+          reRegisterKeepAliveMsgEvent();
         }
 
         groupMsgInstance = newVal;
@@ -540,7 +575,8 @@
           watchInitData = _roomBaseServer$state.watchInitData,
           groupInitData = _roomBaseServer$state.groupInitData;
       msgInstance.emitRoomMsg(_objectSpread2(_objectSpread2({
-        type: 'group_join_info'
+        type: 'group_join_info',
+        nickname: watchInitData.join_info.nickname
       }, groupInitData), {}, {
         accountId: watchInitData.join_info.third_party_user_id
       }));
@@ -549,7 +585,7 @@
 
     var initGroupMsg = function initGroupMsg() {
       var customOptions = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      if (!contextServer.get('roomInitGroupServer')) return; // 每次初始化子房间聊天都需要清空原有房间聊天消息然后重新拉取
+      if (!contextServer.get('roomInitGroupServer')) return Promise.reject('No Room Exist'); // 每次初始化子房间聊天都需要清空原有房间聊天消息然后重新拉取
 
       var chatServer = contextServer.get('chatServer');
       chatServer && chatServer.clearHistoryMsg();
@@ -562,9 +598,12 @@
       state.groupMsgSdkInitOptions = options;
       console.log('创建子房间聊天实例', options);
       return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(function (res) {
-        state.groupMsgInstance = res; // 子房间上线，在小组内广播当前人的小组信息
+        console.log('domain----创建子房间聊天实例成功', res);
+        state.groupMsgInstance = res; // 子房间上线，在小组内广播当前人的小组信息，延时500ms解决开始讨论收不到消息的问题
 
-        sendGroupInfoAfterJoin(res);
+        setTimeout(function () {
+          sendGroupInfoAfterJoin(res);
+        }, 500);
 
         _addListeners(res);
 
@@ -573,9 +612,18 @@
     }; // 注册事件
 
 
-    var $on = function $on(eventType, fn) {
+    var $on = function $on(eventType, fn, iskeepLive) {
       if (!_eventhandlers.hasOwnProperty(eventType)) {
         throw new TypeError('Invalid eventType');
+      }
+
+      if (iskeepLive) {
+        // 主房间保活消息
+        if (!state.keepAliveMsgEventList[eventType]) {
+          state.keepAliveMsgEventList[eventType] = [];
+        }
+
+        state.keepAliveMsgEventList[eventType].push(fn);
       }
 
       _eventhandlers[eventType].push(fn);
@@ -606,6 +654,16 @@
       if (!state.msgInstance) return;
       state.msgInstance.destroy();
       state.msgInstance = null;
+    }; // 获取当前主房间初始化参数
+
+
+    var getCurrentMsgInitOptions = function getCurrentMsgInitOptions() {
+      return JSON.parse(JSON.stringify(state.msgSdkInitOptions));
+    }; // 获取当前子房间初始化参数
+
+
+    var getCurrentGroupMsgInitOptions = function getCurrentGroupMsgInitOptions() {
+      return JSON.parse(JSON.stringify(state.groupMsgSdkInitOptions));
     };
 
     return {
@@ -620,11 +678,13 @@
       getDefaultOptions: getDefaultOptions,
       setMainChannelMute: setMainChannelMute,
       sendRoomMsg: sendRoomMsg,
-      sendChatMsg: sendChatMsg
+      sendChatMsg: sendChatMsg,
+      getCurrentMsgInitOptions: getCurrentMsgInitOptions,
+      getCurrentGroupMsgInitOptions: getCurrentGroupMsgInitOptions
     };
   }
 
-  (function(factory){typeof define==='function'&&define.amd?define(factory):factory();})(function(){function ownKeys(object,enumerableOnly){var keys=Object.keys(object);if(Object.getOwnPropertySymbols){var symbols=Object.getOwnPropertySymbols(object);if(enumerableOnly){symbols=symbols.filter(function(sym){return Object.getOwnPropertyDescriptor(object,sym).enumerable;});}keys.push.apply(keys,symbols);}return keys;}function _objectSpread2(target){for(var i=1;i<arguments.length;i++){var source=arguments[i]!=null?arguments[i]:{};if(i%2){ownKeys(Object(source),true).forEach(function(key){_defineProperty(target,key,source[key]);});}else if(Object.getOwnPropertyDescriptors){Object.defineProperties(target,Object.getOwnPropertyDescriptors(source));}else {ownKeys(Object(source)).forEach(function(key){Object.defineProperty(target,key,Object.getOwnPropertyDescriptor(source,key));});}}return target;}function _typeof$1(obj){"@babel/helpers - typeof";if(typeof Symbol==="function"&&typeof Symbol.iterator==="symbol"){_typeof$1=function _typeof(obj){return typeof obj;};}else {_typeof$1=function _typeof(obj){return obj&&typeof Symbol==="function"&&obj.constructor===Symbol&&obj!==Symbol.prototype?"symbol":typeof obj;};}return _typeof$1(obj);}function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor)){throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||false;descriptor.configurable=true;if("value"in descriptor)descriptor.writable=true;Object.defineProperty(target,descriptor.key,descriptor);}}function _createClass(Constructor,protoProps,staticProps){if(protoProps)_defineProperties(Constructor.prototype,protoProps);if(staticProps)_defineProperties(Constructor,staticProps);return Constructor;}function _defineProperty(obj,key,value){if(key in obj){Object.defineProperty(obj,key,{value:value,enumerable:true,configurable:true,writable:true});}else {obj[key]=value;}return obj;}function _inherits(subClass,superClass){if(typeof superClass!=="function"&&superClass!==null){throw new TypeError("Super expression must either be null or a function");}subClass.prototype=Object.create(superClass&&superClass.prototype,{constructor:{value:subClass,writable:true,configurable:true}});if(superClass)_setPrototypeOf(subClass,superClass);}function _getPrototypeOf(o){_getPrototypeOf=Object.setPrototypeOf?Object.getPrototypeOf:function _getPrototypeOf(o){return o.__proto__||Object.getPrototypeOf(o);};return _getPrototypeOf(o);}function _setPrototypeOf(o,p){_setPrototypeOf=Object.setPrototypeOf||function _setPrototypeOf(o,p){o.__proto__=p;return o;};return _setPrototypeOf(o,p);}function _isNativeReflectConstruct(){if(typeof Reflect==="undefined"||!Reflect.construct)return false;if(Reflect.construct.sham)return false;if(typeof Proxy==="function")return true;try{Boolean.prototype.valueOf.call(Reflect.construct(Boolean,[],function(){}));return true;}catch(e){return false;}}function _objectWithoutPropertiesLoose(source,excluded){if(source==null)return {};var target={};var sourceKeys=Object.keys(source);var key,i;for(i=0;i<sourceKeys.length;i++){key=sourceKeys[i];if(excluded.indexOf(key)>=0)continue;target[key]=source[key];}return target;}function _objectWithoutProperties(source,excluded){if(source==null)return {};var target=_objectWithoutPropertiesLoose(source,excluded);var key,i;if(Object.getOwnPropertySymbols){var sourceSymbolKeys=Object.getOwnPropertySymbols(source);for(i=0;i<sourceSymbolKeys.length;i++){key=sourceSymbolKeys[i];if(excluded.indexOf(key)>=0)continue;if(!Object.prototype.propertyIsEnumerable.call(source,key))continue;target[key]=source[key];}}return target;}function _assertThisInitialized(self){if(self===void 0){throw new ReferenceError("this hasn't been initialised - super() hasn't been called");}return self;}function _possibleConstructorReturn(self,call){if(call&&(_typeof(call)==="object"||typeof call==="function")){return call;}else if(call!==void 0){throw new TypeError("Derived constructors may only return object or undefined");}return _assertThisInitialized(self);}function _createSuper(Derived){var hasNativeReflectConstruct=_isNativeReflectConstruct();return function _createSuperInternal(){var Super=_getPrototypeOf(Derived),result;if(hasNativeReflectConstruct){var NewTarget=_getPrototypeOf(this).constructor;result=Reflect.construct(Super,arguments,NewTarget);}else {result=Super.apply(this,arguments);}return _possibleConstructorReturn(this,result);};}function _toConsumableArray(arr){return _arrayWithoutHoles(arr)||_iterableToArray(arr)||_unsupportedIterableToArray(arr)||_nonIterableSpread();}function _arrayWithoutHoles(arr){if(Array.isArray(arr))return _arrayLikeToArray(arr);}function _iterableToArray(iter){if(typeof Symbol!=="undefined"&&iter[Symbol.iterator]!=null||iter["@@iterator"]!=null)return Array.from(iter);}function _unsupportedIterableToArray(o,minLen){if(!o)return;if(typeof o==="string")return _arrayLikeToArray(o,minLen);var n=Object.prototype.toString.call(o).slice(8,-1);if(n==="Object"&&o.constructor)n=o.constructor.name;if(n==="Map"||n==="Set")return Array.from(o);if(n==="Arguments"||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n))return _arrayLikeToArray(o,minLen);}function _arrayLikeToArray(arr,len){if(len==null||len>arr.length)len=arr.length;for(var i=0,arr2=new Array(len);i<len;i++){arr2[i]=arr[i];}return arr2;}function _nonIterableSpread(){throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");}var mountSDK=function mountSDK(src){return new Promise(function(resolve){var node=document.createElement('script');document.head.appendChild(node);node.src=src;node.onload=function(){resolve();};});};/**
+  (function(factory){typeof define==='function'&&define.amd?define(factory):factory();})(function(){function ownKeys(object,enumerableOnly){var keys=Object.keys(object);if(Object.getOwnPropertySymbols){var symbols=Object.getOwnPropertySymbols(object);if(enumerableOnly){symbols=symbols.filter(function(sym){return Object.getOwnPropertyDescriptor(object,sym).enumerable;});}keys.push.apply(keys,symbols);}return keys;}function _objectSpread2(target){for(var i=1;i<arguments.length;i++){var source=arguments[i]!=null?arguments[i]:{};if(i%2){ownKeys(Object(source),true).forEach(function(key){_defineProperty(target,key,source[key]);});}else if(Object.getOwnPropertyDescriptors){Object.defineProperties(target,Object.getOwnPropertyDescriptors(source));}else {ownKeys(Object(source)).forEach(function(key){Object.defineProperty(target,key,Object.getOwnPropertyDescriptor(source,key));});}}return target;}function _typeof$1(obj){"@babel/helpers - typeof";if(typeof Symbol==="function"&&typeof Symbol.iterator==="symbol"){_typeof$1=function _typeof(obj){return typeof obj;};}else {_typeof$1=function _typeof(obj){return obj&&typeof Symbol==="function"&&obj.constructor===Symbol&&obj!==Symbol.prototype?"symbol":typeof obj;};}return _typeof$1(obj);}function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor)){throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||false;descriptor.configurable=true;if("value"in descriptor)descriptor.writable=true;Object.defineProperty(target,descriptor.key,descriptor);}}function _createClass(Constructor,protoProps,staticProps){if(protoProps)_defineProperties(Constructor.prototype,protoProps);if(staticProps)_defineProperties(Constructor,staticProps);return Constructor;}function _defineProperty(obj,key,value){if(key in obj){Object.defineProperty(obj,key,{value:value,enumerable:true,configurable:true,writable:true});}else {obj[key]=value;}return obj;}function _inherits(subClass,superClass){if(typeof superClass!=="function"&&superClass!==null){throw new TypeError("Super expression must either be null or a function");}subClass.prototype=Object.create(superClass&&superClass.prototype,{constructor:{value:subClass,writable:true,configurable:true}});if(superClass)_setPrototypeOf(subClass,superClass);}function _getPrototypeOf(o){_getPrototypeOf=Object.setPrototypeOf?Object.getPrototypeOf:function _getPrototypeOf(o){return o.__proto__||Object.getPrototypeOf(o);};return _getPrototypeOf(o);}function _setPrototypeOf(o,p){_setPrototypeOf=Object.setPrototypeOf||function _setPrototypeOf(o,p){o.__proto__=p;return o;};return _setPrototypeOf(o,p);}function _isNativeReflectConstruct(){if(typeof Reflect==="undefined"||!Reflect.construct)return false;if(Reflect.construct.sham)return false;if(typeof Proxy==="function")return true;try{Boolean.prototype.valueOf.call(Reflect.construct(Boolean,[],function(){}));return true;}catch(e){return false;}}function _objectWithoutPropertiesLoose(source,excluded){if(source==null)return {};var target={};var sourceKeys=Object.keys(source);var key,i;for(i=0;i<sourceKeys.length;i++){key=sourceKeys[i];if(excluded.indexOf(key)>=0)continue;target[key]=source[key];}return target;}function _objectWithoutProperties(source,excluded){if(source==null)return {};var target=_objectWithoutPropertiesLoose(source,excluded);var key,i;if(Object.getOwnPropertySymbols){var sourceSymbolKeys=Object.getOwnPropertySymbols(source);for(i=0;i<sourceSymbolKeys.length;i++){key=sourceSymbolKeys[i];if(excluded.indexOf(key)>=0)continue;if(!Object.prototype.propertyIsEnumerable.call(source,key))continue;target[key]=source[key];}}return target;}function _assertThisInitialized(self){if(self===void 0){throw new ReferenceError("this hasn't been initialised - super() hasn't been called");}return self;}function _possibleConstructorReturn(self,call){if(call&&(_typeof(call)==="object"||typeof call==="function")){return call;}else if(call!==void 0){throw new TypeError("Derived constructors may only return object or undefined");}return _assertThisInitialized(self);}function _createSuper(Derived){var hasNativeReflectConstruct=_isNativeReflectConstruct();return function _createSuperInternal(){var Super=_getPrototypeOf(Derived),result;if(hasNativeReflectConstruct){var NewTarget=_getPrototypeOf(this).constructor;result=Reflect.construct(Super,arguments,NewTarget);}else {result=Super.apply(this,arguments);}return _possibleConstructorReturn(this,result);};}function _toConsumableArray(arr){return _arrayWithoutHoles(arr)||_iterableToArray(arr)||_unsupportedIterableToArray(arr)||_nonIterableSpread();}function _arrayWithoutHoles(arr){if(Array.isArray(arr))return _arrayLikeToArray(arr);}function _iterableToArray(iter){if(typeof Symbol!=="undefined"&&iter[Symbol.iterator]!=null||iter["@@iterator"]!=null)return Array.from(iter);}function _unsupportedIterableToArray(o,minLen){if(!o)return;if(typeof o==="string")return _arrayLikeToArray(o,minLen);var n=Object.prototype.toString.call(o).slice(8,-1);if(n==="Object"&&o.constructor)n=o.constructor.name;if(n==="Map"||n==="Set")return Array.from(o);if(n==="Arguments"||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n))return _arrayLikeToArray(o,minLen);}function _arrayLikeToArray(arr,len){if(len==null||len>arr.length)len=arr.length;for(var i=0,arr2=new Array(len);i<len;i++){arr2[i]=arr[i];}return arr2;}function _nonIterableSpread(){throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");}/**
      * ajax请求 jsonp处理
      * 1.jsonp 请求格式
      *   $fetch({
@@ -635,21 +695,21 @@
      *        name: 123
      *      }
      *   })
-     */var BUSE_URL='';var TOKEN='';var LIVETOKEN='';var HEADERS=null;function setBaseUrl(url){BUSE_URL=url;}function setToken(token,livetoken){console.log(token,livetoken,888);TOKEN=token;LIVETOKEN=livetoken;}function setRequestHeaders(options){HEADERS=_objectSpread2({},options);}function $fetch(options){// if ("development" != 'development') {
+     */var BUSE_URL='';var TOKEN='';var LIVETOKEN='';var HEADERS=null;function setBaseUrl(url){BUSE_URL=url;}function setToken(token,livetoken){console.log(token,livetoken,888);TOKEN=token;LIVETOKEN=livetoken;}function setRequestHeaders(options){HEADERS=_objectSpread2(_objectSpread2({},HEADERS),options);}function $fetch(options){// if ("development" != 'development') {
   //
   // }
   options.url=BUSE_URL+options.url;console.log('接口环境',options.url);return new Promise(function(resolve,reject){options=options||{};if(options.data){if(LIVETOKEN){options.data.live_token=LIVETOKEN;}options.data=formatParams(options.data);}options.dataType?jsonp(options,resolve,reject):json(options,resolve,reject);});}// JSON请求
   function json(params,success,fail){var xhr=null;// interactToken = sessionStorage.getItem('interact-token') || '',
   // grayId = sessionStorage.getItem('grayId') || '',
   // vhallJSSDKUserInfo = localStorage.getItem('vhallJSSDKUserInfo') ? JSON.parse(localStorage.getItem('vhallJSSDKUserInfo')) : {},
-  params.type=(params.type||'GET').toUpperCase();if(window.XMLHttpRequest){xhr=new XMLHttpRequest();}else {xhr=new ActiveXObject('Microsoft.XMLHTTP');}xhr.onreadystatechange=function(){if(xhr.readyState==4){var status=xhr.status;if(status>=200&&status<300){var response='';var type=xhr.getResponseHeader('Content-type');if(type.indexOf('xml')!==-1&&xhr.responseXML){response=xhr.responseXML;}else if(type==='application/json'||type==='application/json;charset=UTF-8'){response=JSON.parse(xhr.responseText);}else {response=xhr.responseText;}success&&success(response);}else {fail&&fail(status);}}};if(params.type=='GET'){if(params.data){xhr.open(params.type,params.url+'?'+params.data,true);}else {xhr.open(params.type,params.url,true);}}else if(params.type=='POST'){xhr.open(params.type,params.url,true);}xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');if(!LIVETOKEN){TOKEN&&xhr.setRequestHeader('token',TOKEN);}if(HEADERS){Object.getOwnPropertyNames(HEADERS).forEach(function(item){xhr.setRequestHeader(item,HEADERS[item]);});}// if (params.headers && params.headers.activeType == 'new') {
+  params.type=(params.type||'GET').toUpperCase();if(window.XMLHttpRequest){xhr=new XMLHttpRequest();}else {xhr=new ActiveXObject('Microsoft.XMLHTTP');}xhr.onreadystatechange=function(){if(xhr.readyState==4){var status=xhr.status;if(status>=200&&status<300){var response='';var type=xhr.getResponseHeader('Content-type');if(type.indexOf('xml')!==-1&&xhr.responseXML){response=xhr.responseXML;}else if(type==='application/json'||type==='application/json;charset=UTF-8'){response=JSON.parse(xhr.responseText);}else {response=xhr.responseText;}console.log('调试模式SDK******response.then******',response);success&&success(response);}else {fail&&fail(status);}}};if(params.type=='GET'){if(params.data){xhr.open(params.type,params.url+'?'+params.data,true);}else {xhr.open(params.type,params.url,true);}}else if(params.type=='POST'){xhr.open(params.type,params.url,true);}xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');if(!LIVETOKEN){TOKEN&&xhr.setRequestHeader('token',TOKEN);}if(HEADERS){Object.getOwnPropertyNames(HEADERS).forEach(function(item){xhr.setRequestHeader(item,HEADERS[item]);});}// if (params.headers && params.headers.activeType == 'new') {
   //     xhr.setRequestHeader('platform', 18)
   //     xhr.setRequestHeader('request-id', uuid())
   //     grayId && xhr.setRequestHeader('gray-id', grayId)
   //     interactToken && xhr.setRequestHeader('interact-token', interactToken)
   //     token && xhr.setRequestHeader('token', token)
   // }
-  if(params.type=='GET'){xhr.send(null);}else {xhr.send(params.data);}}// JSONP请求
+  console.log('调试模式SDK******request.then******',xhr);if(params.type=='GET'){xhr.send(null);}else {xhr.send(params.data);}}// JSONP请求
   function jsonp(params,success,fail){var callbackName=params.dataType;params['callback']=callbackName;var script=document.createElement('script');script.type="text/javascript";script.charset="utf-8";document.body.appendChild(script);// 创建回调函数
   window[callbackName]=function(val){document.body.removeChild(script);clearTimeout(script.timer);window[callbackName]=null;success&&success(val);};script.src="".concat(params.url,"?").concat(params.data,"&_=",1594014089800);// 超时处理
   if(params.time){script.timer=setTimeout(function(){window[callbackName]=null;head.removeChild(script);fail&&fail('请求超时');},parmas.time*1000);}}// 格式化数据
@@ -662,8 +722,8 @@
      * @returns
      */function isPc(target){var userAgentInfo=navigator.userAgent;var Agents=["Android","iPhone","SymbianOS","Windows Phone","iPad","iPod"];var flag=true;for(var v=0;v<Agents.length;v++){if(userAgentInfo.indexOf(Agents[v])>0){flag=false;break;}}return flag;}var initSendLive=function initSendLive(params){var retParmams={webinar_id:params.webinarId,live_token:params.live_token||'',nickname:params.nickname||'',email:params.email||'',check_online:params.check_online||0,biz_id:params.biz_id||''};return new Promise(function(resolve,reject){$fetch({url:'/v3/webinars/live/init',type:'GET',data:retParmams}).then(function(res){resolve(res);})["catch"](function(e){return reject(e);});});};// 观看端初始化（标品）
   var initStandardReceiveLive=function initStandardReceiveLive(params){var retParmams={webinar_id:params.webinarId,visitor_id:params.visitor_id||'',record_id:params.record_id||'',refer:params.refer||'',biz_id:params.biz_id||''};return new Promise(function(resolve,reject){$fetch({url:'/v3/webinars/watch/init',type:'GET',data:retParmams}).then(function(res){resolve(res);})["catch"](function(e){return reject(e);});});};// 观看端初始化（嵌入页）
-  var initEmbeddedReceiveLive=function initEmbeddedReceiveLive(params){var retParmams={webinar_id:params.webinarId,visitor_id:params.visitor_id||'',record_id:params.record_id||'',email:params.email||'',nickname:params.nickname||'',k:params.k||'',state:params.state||'',refer:params.refer||'',sign:params.sign||'',ts:params.ts||'',biz_id:params.biz_id||''};return new Promise(function(resolve,reject){$fetch({url:'/v3/webinars/watch/inline-init',type:'GET',data:retParmams}).then(function(res){resolve(res);})["catch"](function(e){return reject(e);});});};// 观看端初始化（SDK）
-  var initSdkReceiveLive=function initSdkReceiveLive(params){var retParmams={webinar_id:params.webinarId,record_id:params.record_id||'',email:params.email||'',nickname:params.nickname||'',pass:params.pass||'',k:params.k||'',refer:params.refer||'',qrcode:params.qrcode||'',share_id:params.share_id||'',visitor_id:params.visitor_id||'',biz_id:params.biz_id||''};return new Promise(function(resolve,reject){$fetch({url:'/v3/webinars/watch/sdk-init',type:'GET',data:retParmams}).then(function(res){resolve(res);})["catch"](function(e){return reject(e);});});};// 开始直播
+  var initEmbeddedReceiveLive=function initEmbeddedReceiveLive(params){var retParmams={webinar_id:params.webinarId,visitor_id:params.visitor_id||'',record_id:params.record_id||'',email:params.email||'',nickname:params.nickname||'',k:params.k||'',state:params.state||'',refer:params.refer||'',sign:params.sign||'',ts:params.ts||'',biz_id:params.biz_id||'',third_user_id:params.third_user_id||''};return new Promise(function(resolve,reject){$fetch({url:'/v3/webinars/watch/inline-init',type:'GET',data:retParmams}).then(function(res){resolve(res);})["catch"](function(e){return reject(e);});});};// 观看端初始化（SDK）
+  var initSdkReceiveLive=function initSdkReceiveLive(params){var retParmams={webinar_id:params.webinarId,record_id:params.record_id||'',email:params.email||'',nickname:params.nickname||'',pass:params.pass||'',k:params.k||'',refer:params.refer||'',qrcode:params.qrcode||'',share_id:params.share_id||'',visitor_id:params.visitor_id||'',biz_id:params.biz_id||'',third_user_id:params.third_user_id||''};return new Promise(function(resolve,reject){$fetch({url:'/v3/webinars/watch/sdk-init',type:'GET',data:retParmams}).then(function(res){resolve(res);})["catch"](function(e){return reject(e);});});};// 开始直播
   var startLive=function startLive(params){var _store$get=store.get('roomInitData'),_store$get$webinar=_store$get.webinar,webinar=_store$get$webinar===void 0?{}:_store$get$webinar;var defaultParams={webinar_id:webinar.id};var retParmams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){$fetch({url:'/v3/webinars/live/start',type:'POST',data:retParmams}).then(function(res){return resolve(res);})["catch"](function(e){return reject(e);});});};// 结束直播
   var endLive=function endLive(params){var _store$get2=store.get('roomInitData'),_store$get2$webinar=_store$get2.webinar,webinar=_store$get2$webinar===void 0?{}:_store$get2$webinar;var defaultParams={webinar_id:webinar.id};var retParmams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){$fetch({url:'/v3/webinars/live/end',type:'POST',data:retParmams}).then(function(res){return resolve(res);})["catch"](function(e){return reject(e);});});};// 进入直播前检测
   var checkLive=function checkLive(params){var _store$get3=store.get('roomInitData'),_store$get3$webinar=_store$get3.webinar,webinar=_store$get3$webinar===void 0?{}:_store$get3$webinar;var defaultParams={webinar_id:webinar.id};var retParmams=merge.recursive({},defaultParams,params);return new Promise(function(resolve,reject){$fetch({url:'/v3/webinars/live/check',type:'GET',data:retParmams}).then(function(res){return resolve(res);})["catch"](function(e){return reject(e);});});};// 获取聊天服务链接参数
@@ -763,7 +823,7 @@
   this.instance.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE,function(event,s1,s2){console.log('doc 回放文件加载完成',event,s1,s2);_this3.$emit(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE,event);});// 回放时间更新
   this.instance.on(VHDocSDK.Event.VOD_TIME_UPDATE,function(event){_this3.$emit(VHDocSDK.Event.VOD_TIME_UPDATE,event);});// error
   this.instance.on(VHDocSDK.Event.ERROR,function(event){_this3.$emit(VHDocSDK.Event.ERROR,event);});// ppt文档加载完毕
-  this.instance.on(VHDocSDK.Event.PLAYBACKCOMPLETE,function(event){_this3.$emit(VHDocSDK.Event.PLAYBACKCOMPLETE,event);});}},{key:"destroy",value:function destroy(){if(!this.instance)return;this.instance.destroy();this.instance=null;}},{key:"createUUID",value:function createUUID(type){return this.instance.createUUID(type);}},{key:"createBoard",value:function createBoard(customOptions){var elId=this.instance.createUUID('board');var defaultOptions={elId:elId,// div 容器 必须
+  this.instance.on(VHDocSDK.Event.PLAYBACKCOMPLETE,function(event){_this3.$emit(VHDocSDK.Event.PLAYBACKCOMPLETE,event);});}},{key:"destroy",value:function destroy(isAutoDestroyMsg){if(!this.instance)return;this.instance.destroy(isAutoDestroyMsg);this.instance=null;}},{key:"createUUID",value:function createUUID(type){return this.instance.createUUID(type);}},{key:"createBoard",value:function createBoard(customOptions){var elId=this.instance.createUUID('board');var defaultOptions={elId:elId,// div 容器 必须
   width:200,// div 宽度，像素单位，数值型不带px 必须
   height:200,// div 高度，像素单位，数值型不带px 必须
   backgroundColor:'RGBA',// 背景颜色， 支持RGB 与 RGBA， 如果全透明，舞台背景色与网页背景色相同，如 ‘#FF0000’或 ‘#FF000000’ 必须
@@ -780,7 +840,7 @@
   stroke:'#000',// 颜色值
   strokeWidth:4// 正数 Number
   }),_defaultOptions);var options=merge.recursive({},defaultOptions,customOptions);return this.instance.createDocument(options);// 返回promise
-  }},{key:"selectContainer",value:function selectContainer(options){this.instance.selectContainer(options);this.currentCid=options.id;}},{key:"getContainerInfo",value:function getContainerInfo(params){return this.instance.getContainerInfo(params);}},{key:"destroyContainer",value:function destroyContainer(val){return this.instance.destroyContainer(val);}},{key:"getVodAllCids",value:function getVodAllCids(){return this.instance.getVodAllCids();}},{key:"setRemoteData",value:function setRemoteData(item){return this.instance.setRemoteData(item);}},{key:"addChild",value:function addChild(child){return this.children.push(child);}},{key:"zoomIn",value:function zoomIn(){return this.instance.zoomIn();}},{key:"zoomOut",value:function zoomOut(){return this.instance.zoomOut();}},{key:"zoomReset",value:function zoomReset(){return this.instance.zoomReset();}},{key:"cancelZoom",value:function cancelZoom(){return this.instance.cancelZoom();}},{key:"move",value:function move(){return this.instance.move();}},{key:"prevStep",value:function prevStep(){return this.instance.prevStep();}},{key:"nextStep",value:function nextStep(){return this.instance.nextStep();}},{key:"switchOnContainer",value:function switchOnContainer(val){return this.instance.switchOnContainer(val);}},{key:"switchOffContainer",value:function switchOffContainer(val){return this.instance.switchOffContainer(val);}},{key:"resetContainer",value:function resetContainer(){return this.instance.resetContainer();}},{key:"setPlayMode",value:function setPlayMode(mode){return this.instance.setPlayMode(mode);}},{key:"setSize",value:function setSize(width,height,options){return this.instance.setSize(width,height,options);}},{key:"setControlStyle",value:function setControlStyle(style){return this.instance.setControlStyle(style);}},{key:"gotoPage",value:function gotoPage(options){return this.instance.gotoPage(options);}},{key:"setPen",value:function setPen(val){return this.instance.setPen(val);}},{key:"setEraser",value:function setEraser(val){return this.instance.setEraser(val);}},{key:"setStroke",value:function setStroke(options){return this.instance.setStroke(options);}},{key:"setStrokeWidth",value:function setStrokeWidth(options){return this.instance.setStrokeWidth(options);}},{key:"clear",value:function clear(){return this.instance.clear();}},{key:"cancelDrawable",value:function cancelDrawable(){return this.instance.cancelDrawable();}},{key:"setHighlighters",value:function setHighlighters(){return this.instance.setHighlighters();}},{key:"setText",value:function setText(val){return this.instance.setText(val);}},{key:"loadDoc",value:function loadDoc(options){return this.instance.loadDoc(options);}},{key:"start",value:function start(val,type){return this.instance.start(val,type);}},{key:"republish",value:function republish(){return this.instance.republish();}},{key:"setRole",value:function setRole(role){return this.instance.setRole(role);}},{key:"setAccountId",value:function setAccountId(role){return this.instance.setAccountId(role);}},{key:"setEditable",value:function setEditable(editable){return this.instance.setEditable(editable);}},{key:"getThumbnailList",value:function getThumbnailList(options){return this.instance.getThumbnailList(options);}},{key:"setSquare",value:function setSquare(options){return this.instance.setSquare(options);}},{key:"setCircle",value:function setCircle(options){return this.instance.setCircle(options);}},{key:"setBitmap",value:function setBitmap(options){return this.instance.setBitmap(options);}},{key:"setIsoscelesTriangle",value:function setIsoscelesTriangle(options){return this.instance.setIsoscelesTriangle(options);}/**
+  }},{key:"selectContainer",value:function selectContainer(options){this.instance.selectContainer(options);this.currentCid=options.id;}},{key:"getContainerInfo",value:function getContainerInfo(params){return this.instance.getContainerInfo(params);}},{key:"destroyContainer",value:function destroyContainer(val){return this.instance.destroyContainer(val);}},{key:"getVodAllCids",value:function getVodAllCids(){return this.instance.getVodAllCids();}},{key:"setRemoteData",value:function setRemoteData(item){return this.instance.setRemoteData(item);}},{key:"addChild",value:function addChild(child){return this.children.push(child);}},{key:"zoomIn",value:function zoomIn(){return this.instance.zoomIn();}},{key:"zoomOut",value:function zoomOut(){return this.instance.zoomOut();}},{key:"zoomReset",value:function zoomReset(){return this.instance.zoomReset();}},{key:"cancelZoom",value:function cancelZoom(){return this.instance.cancelZoom();}},{key:"move",value:function move(){return this.instance.move();}},{key:"prevStep",value:function prevStep(){return this.instance.prevStep();}},{key:"nextStep",value:function nextStep(){return this.instance.nextStep();}},{key:"switchOnContainer",value:function switchOnContainer(val){return this.instance.switchOnContainer(val);}},{key:"switchOffContainer",value:function switchOffContainer(val){return this.instance.switchOffContainer(val);}},{key:"resetContainer",value:function resetContainer(){return this.instance.resetContainer();}},{key:"setPlayMode",value:function setPlayMode(mode){return this.instance.setPlayMode(mode);}},{key:"setSize",value:function setSize(width,height,options){return this.instance.setSize(width,height,options);}},{key:"setControlStyle",value:function setControlStyle(style){return this.instance.setControlStyle(style);}},{key:"gotoPage",value:function gotoPage(options){return this.instance.gotoPage(options);}},{key:"setPen",value:function setPen(val){return this.instance.setPen(val);}},{key:"setEraser",value:function setEraser(val){return this.instance.setEraser(val);}},{key:"setStroke",value:function setStroke(options){return this.instance.setStroke(options);}},{key:"setStrokeWidth",value:function setStrokeWidth(options){return this.instance.setStrokeWidth(options);}},{key:"clear",value:function clear(){return this.instance.clear();}},{key:"cancelDrawable",value:function cancelDrawable(){return this.instance.cancelDrawable();}},{key:"setHighlighters",value:function setHighlighters(){return this.instance.setHighlighters();}},{key:"setText",value:function setText(val){return this.instance.setText(val);}},{key:"loadDoc",value:function loadDoc(options){return this.instance.loadDoc(options);}},{key:"start",value:function start(val,type){return this.instance.start(val,type);}},{key:"republish",value:function republish(){return this.instance.republish();}},{key:"setRole",value:function setRole(role){return this.instance.setRole(role);}},{key:"setAccountId",value:function setAccountId(role){return this.instance.setAccountId(role);}},{key:"setEditable",value:function setEditable(editable){return this.instance.setEditable(editable);}},{key:"getThumbnailList",value:function getThumbnailList(options){return this.instance.getThumbnailList(options);}},{key:"setSquare",value:function setSquare(options){return this.instance.setSquare(options);}},{key:"setCircle",value:function setCircle(options){return this.instance.setCircle(options);}},{key:"setSingleArrow",value:function setSingleArrow(options){return this.instance.setSingleArrow(options);}},{key:"setDoubleArrow",value:function setDoubleArrow(options){return this.instance.setDoubleArrow(options);}},{key:"setBitmap",value:function setBitmap(options){return this.instance.setBitmap(options);}},{key:"setIsoscelesTriangle",value:function setIsoscelesTriangle(options){return this.instance.setIsoscelesTriangle(options);}/**
          * @description 调用sdk方法
          * @param  {...any} args 
          */},{key:"callPaasSDK",value:function callPaasSDK(){var _this$instance$key;var key=arguments.key,args=_objectWithoutProperties(arguments,_excluded);if(!key)return console.error('没有指定调用的函数名');(_this$instance$key=this.instance[key]).call.apply(_this$instance$key,[this.instance[key]].concat(_toConsumableArray(args)));}}]);return DocModule;}(BaseModule);var InteractiveModule=/*#__PURE__*/function(_BaseModule){_inherits(InteractiveModule,_BaseModule);var _super=_createSuper(InteractiveModule);function InteractiveModule(customOptions){var _this;_classCallCheck(this,InteractiveModule);_this=_super.call(this,customOptions);_this.instance=null;return _this;}/**
@@ -884,10 +944,7 @@
          * @param {Object} options -- streamId:订阅的流id videoNode: 页面显示的容器 mute: 远端流的音视频 dual: 大小流 0小流 1大流
          * @returns {Promise} - 订阅成功后的promise 回调
          */},{key:"subscribeStream",value:function subscribeStream(){var _this13=this;var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var addConfig=arguments.length>1&&arguments[1]!==undefined?arguments[1]:{};return new Promise(function(resolve,reject){var defaultOptions={videoNode:options.videoNode,// 传入本地视频显示容器，必填
-  streamId:options.streamId,mute:{// 选填，订阅成功后立即mute远端流
-  audio:options.mute&&options.mute.audio||false,// 是否关闭音频，默认false
-  video:options.mute&&options.mute.audio||false// 是否关闭视频，默认false
-  },dual:options.dual||1// 双流订阅选项， 0为小流， 1为大流(默认)
+  streamId:options.streamId,dual:options.dual||1// 双流订阅选项， 0为小流， 1为大流(默认)
   };var params=merge.recursive({},defaultOptions,addConfig);_this13.instance.subscribe(params).then(function(data){resolve(data);})["catch"](function(error){reject(error);});});}/**
          * 取消订阅远端流
          * @param {String} streamId -- 要取消订阅的流Id 
@@ -912,7 +969,8 @@
   profile:options.profile||VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1,// 旁路直播视频质量参数
   paneAspectRatio:VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9,//旁路混流窗格指定高宽比。  v2.3.2及以上
   border:options.border||{// 旁路边框属性
-  width:2,color:'0x666666'}};var params=merge.recursive({},defaultOptions,addConfig);_this18.instance.startBroadCast(params).then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
+  width:2,color:'0x666666'}};// 如果有 adaptiveLayoutMode 就不传 layout
+  if(options.adaptiveLayoutMode!==undefined||options.adaptiveLayoutMode!==null){delete defaultOptions.layout;defaultOptions.adaptiveLayoutMode=options.adaptiveLayoutMode;}var params=merge.recursive({},defaultOptions,addConfig);_this18.instance.startBroadCast(params).then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
          * 停止旁路
          * @returns {Promise} - 停止旁路后的promise回调
          */},{key:"stopBroadCast",value:function stopBroadCast(){var _this19=this;return new Promise(function(resolve,reject){_this19.instance.stopBroadCast().then(function(){resolve();})["catch"](function(error){reject(error);});});}/**
@@ -10466,7 +10524,8 @@
   return this.instance.setPlaySpeed(val,failure);}},{key:"openControls",value:function openControls(isOpen){// 开关默认控制条
   return this.instance.openControls(isOpen);}},{key:"openUI",value:function openUI(isOpen){return this.instance.openUI(isOpen);}},{key:"setResetVideo",value:function setResetVideo(){var videoDom=document.getElementById(this.params.videoNode);if(videoDom&&this.instance){this.instance.setSize({width:videoDom.offsetWidth,height:videoDom.offsetHeight});}}},{key:"setBarrageInfo",value:function setBarrageInfo(option){return this.instance.setBarrageInfo(option,function(err){Vlog.error(err);});}},{key:"addBarrage",value:function addBarrage(content){return this.instance.addBarrage(content,function(err){Vlog.error(err);});}},{key:"toggleBarrage",value:function toggleBarrage(open){if(!this.instance)return;if(open){this.instance.openBarrage();}else {this.instance.closeBarrage();}}},{key:"toggleSubtitle",value:function toggleSubtitle(open){if(this.instance&&this.params.recordId){if(open){// 开启点播字幕(仅点播可用)
   this.instance.openSubtitle();}else {// 关闭点播字幕(仅点播可用)
-  this.instance.closeSubtitle();}}}}]);return PlayerModule;}(BaseModule);var initLoader=function initLoader(){Promise.all([mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.3.js'),mountSDK('https://static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.1.6.js')]).then(function(res){});};var VhallSaasSDK=/*#__PURE__*/function(){function VhallSaasSDK(){_classCallCheck(this,VhallSaasSDK);this.msgBus=null;this.request=requestApi;this.baseState=store;}_createClass(VhallSaasSDK,[{key:"init",value:function init(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{clientType:'send',receiveType:'standard'};this.setRequestConfig(options);this.setClientType(options.clientType);if(options.clientType==='send'){return this.initSendLive(options);}else {return this.initReceiveLive(options);}}},{key:"initSendLive",value:function initSendLive(options){var _this=this;return new Promise(function(resolve,reject){_this.request.live.initSendLive(options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"initReceiveLive",value:function initReceiveLive(options){var _this2=this;var receiveApi={standard:'initStandardReceiveLive',embed:'initEmbeddedReceiveLive',sdk:'initSdkReceiveLive'};return new Promise(function(resolve,reject){_this2.request.live[receiveApi[options.receiveType]](options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"setClientType",value:function setClientType(clientType){if(clientType!=='send'&&clientType!=='receive'){throw new TypeError('clientType is invalid');}store.set('clientType',clientType);}},{key:"setRequestConfig",value:function setRequestConfig(options){if(options.development){setBaseUrl('https://t-saas-dispatch.vhall.com');}else {setBaseUrl('https://t-saas-dispatch.vhall.com');}setToken(options.token,options.liveToken);if(options.requestHeaders){setRequestHeaders(options.requestHeaders);}}},{key:"isReady",value:function isReady(){return loadSuccess===true;}},{key:"createPlayer",value:function createPlayer(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new PlayerModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createInteractive",value:function createInteractive(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var instance=new InteractiveModule(options);return instance.init(options).then(function(res){return instance;});}},{key:"createChat",value:function createChat(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new ChatModule();instance.init(options).then(function(res){resolve(instance);});});}},{key:"createDoc",value:function createDoc(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new DocModule(options);instance.init(options).then(function(res){resolve(instance);});});}}]);return VhallSaasSDK;}();VhallSaasSDK.requestApi=requestApi;initLoader();window.VhallSaasSDK=VhallSaasSDK;});
+  this.instance.closeSubtitle();}}}}]);return PlayerModule;}(BaseModule);var VhallSaasSDK=/*#__PURE__*/function(){function VhallSaasSDK(){_classCallCheck(this,VhallSaasSDK);this.msgBus=null;this.request=requestApi;this.baseState=store;}_createClass(VhallSaasSDK,[{key:"init",value:function init(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{clientType:'send',receiveType:'standard'};this.setRequestConfig(options);this.setClientType(options.clientType);if(options.clientType==='send'){return this.initSendLive(options);}else {return this.initReceiveLive(options);}}},{key:"initSendLive",value:function initSendLive(options){var _this=this;return new Promise(function(resolve,reject){_this.request.live.initSendLive(options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"initReceiveLive",value:function initReceiveLive(options){var _this2=this;var receiveApi={standard:'initStandardReceiveLive',embed:'initEmbeddedReceiveLive',sdk:'initSdkReceiveLive'};return new Promise(function(resolve,reject){_this2.request.live[receiveApi[options.receiveType]](options).then(function(res){if(res.code===200){store.set('roomInitData',getRoomInfo(res));resolve(res);}else {reject(res);}});});}},{key:"setClientType",value:function setClientType(clientType){if(clientType!=='send'&&clientType!=='receive'){throw new TypeError('clientType is invalid');}store.set('clientType',clientType);}},{key:"setRequestConfig",value:function setRequestConfig(options){if(options.baseUrl){setBaseUrl(options.baseUrl);}else {setBaseUrl('https://test-saas-api.vhall.com');}setToken(options.token,options.liveToken);if(options.requestHeaders){setRequestHeaders(options.requestHeaders);}}},{key:"isReady",value:function isReady(){return loadSuccess===true;}},{key:"createPlayer",value:function createPlayer(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new PlayerModule(options);instance.init(options).then(function(res){resolve(instance);});});}},{key:"createInteractive",value:function createInteractive(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};var instance=new InteractiveModule(options);return instance.init(options).then(function(res){return instance;});}},{key:"createChat",value:function createChat(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new ChatModule();instance.init(options).then(function(res){resolve(instance);});});}},{key:"createDoc",value:function createDoc(){var options=arguments.length>0&&arguments[0]!==undefined?arguments[0]:{};return new Promise(function(resolve,reject){var instance=new DocModule(options);instance.init(options).then(function(res){resolve(instance);});});}}]);return VhallSaasSDK;}();VhallSaasSDK.requestApi=requestApi;// initLoader()
+  window.VhallSaasSDK=VhallSaasSDK;});
 
   /**
    * ajax请求 jsonp处理
@@ -10487,6 +10546,10 @@
 
   function setBaseUrl(url) {
     BUSE_URL = url;
+  }
+
+  function getBaseUrl() {
+    return BUSE_URL;
   }
 
   function setToken(token, livetoken) {
@@ -10550,6 +10613,7 @@
             response = xhr.responseText;
           }
 
+          console.log('调试模式DOMAIN******response.then******', response);
           success && success(response);
         } else {
           fail && fail(status);
@@ -10586,6 +10650,8 @@
     //     token && xhr.setRequestHeader('token', token)
     // }
 
+
+    console.log('调试模式DOMAIN******request.then******', xhr);
 
     if (params.type == 'GET') {
       xhr.send(null);
@@ -11270,7 +11336,6 @@
     var createLocalVideoStream = function createLocalVideoStream() {
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var addConfig = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-      console.error('cxs...........1', options, addConfig, state.interactiveInstance);
       return state.interactiveInstance.createLocalVideoStream(options, addConfig);
     }; // 创建桌面共享流
 
@@ -11489,7 +11554,7 @@
 
     var speakUserOff = function speakUserOff() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return requestApi.interactive.speakUserOff(data);
+      return requestApi.mic.speakUserOff(data);
     }; // 设置主屏
 
 
@@ -11611,7 +11676,6 @@
   }
 
   function useMediaCheckServer() {
-    var interactiveServer = null;
     var state = {
       videoNode: "vh-device-check-video",
       // 视频容器
@@ -11626,7 +11690,6 @@
       state.videoNode = opt.videoNode || "vh-device-check-video";
       state.selectedVideoDeviceId = opt.selectedVideoDeviceId === undefined ? opt.selectedVideoDeviceId : "";
       state.localStreamId = opt.localStreamId === undefined ? opt.localStreamId : "";
-      interactiveServer = contextServer.get("interactiveServer");
     };
 
     var setVideoNode = function setVideoNode(videoNode) {
@@ -11649,18 +11712,34 @@
         profile: VhallRTC.RTC_VIDEO_PROFILE_240P_16x9_M
       };
       var options = Object.assign(_objectSpread2({}, originalOpts), _objectSpread2({}, opts));
-      return interactiveServer.createLocalStream(options).then(function (streamId) {
-        state.localStreamId = streamId;
-        return streamId;
+      return new Promise(function (resolve, reject) {
+        var success = function success(res) {
+          resolve(res);
+        };
+
+        var failure = function failure(error) {
+          reject(error);
+        };
+
+        window.VhallRTC.startPreview(options, success, failure);
       });
     }; // 结束视频预览
 
 
     var stopPreviewVideo = function stopPreviewVideo(streamId) {
       var id = streamId || state.localStreamId;
-      return interactiveServer.destroyStream(id).then(function () {
-        setVideoNode("");
-        return state.localStreamId;
+      return new Promise(function (resolve, reject) {
+        var success = function success(res) {
+          resolve(res);
+        };
+
+        var failure = function failure(error) {
+          reject(error);
+        };
+
+        window.VhallRTC.stopPreview({
+          streamId: id
+        }, success, failure);
       });
     };
 
@@ -11672,8 +11751,8 @@
       setSelectedVideoDeviceId: setSelectedVideoDeviceId,
       startPreviewVideo: startPreviewVideo,
       stopPreviewVideo: stopPreviewVideo,
-      getDevices: interactiveServer.getDevices,
-      getVideoConstraints: interactiveServer.getVideoConstraints
+      getDevices: window.VhallRTC.getDevices,
+      getVideoConstraints: window.VhallRTC.getVideoConstraints
     };
   }
 
@@ -11877,8 +11956,8 @@
       state.docInstance.$on(type, cb);
     };
 
-    var destroy = function destroy() {
-      return state.docInstance.destroy();
+    var destroy = function destroy(isAutoDestroyMsg) {
+      return state.docInstance.destroy(isAutoDestroyMsg);
     };
 
     var init = function init(options) {
@@ -12020,6 +12099,26 @@
       return state.docInstance.clear();
     };
 
+    var setSquare = function setSquare(options) {
+      return state.docInstance.setSquare(options);
+    };
+
+    var setSingleArrow = function setSingleArrow(options) {
+      return state.docInstance.setSingleArrow(options);
+    };
+
+    var setDoubleArrow = function setDoubleArrow(options) {
+      return state.docInstance.setDoubleArrow(options);
+    };
+
+    var setCircle = function setCircle(options) {
+      return state.docInstance.setCircle(options);
+    };
+
+    var setIsoscelesTriangle = function setIsoscelesTriangle(options) {
+      return state.docInstance.setIsoscelesTriangle(options);
+    };
+
     var cancelDrawable = function cancelDrawable() {
       return state.docInstance.cancelDrawable();
     };
@@ -12096,7 +12195,7 @@
       selectContainer: selectContainer,
       getContainerInfo: getContainerInfo,
       destroyContainer: destroyContainer
-    }, _defineProperty(_ref2, "getVodAllCids", getVodAllCids), _defineProperty(_ref2, "setRemoteData", setRemoteData), _defineProperty(_ref2, "zoomIn", zoomIn), _defineProperty(_ref2, "zoomOut", zoomOut), _defineProperty(_ref2, "zoomReset", zoomReset), _defineProperty(_ref2, "move", move), _defineProperty(_ref2, "prevStep", prevStep), _defineProperty(_ref2, "nextStep", nextStep), _defineProperty(_ref2, "setPlayMode", setPlayMode), _defineProperty(_ref2, "setSize", setSize), _defineProperty(_ref2, "createUUID", createUUID), _defineProperty(_ref2, "setControlStyle", setControlStyle), _defineProperty(_ref2, "gotoPage", gotoPage), _defineProperty(_ref2, "cancelZoom", cancelZoom), _defineProperty(_ref2, "switchOnContainer", switchOnContainer), _defineProperty(_ref2, "switchOffContainer", switchOffContainer), _defineProperty(_ref2, "resetContainer", resetContainer), _defineProperty(_ref2, "setPen", setPen), _defineProperty(_ref2, "setEraser", setEraser), _defineProperty(_ref2, "setStroke", setStroke), _defineProperty(_ref2, "setStrokeWidth", setStrokeWidth), _defineProperty(_ref2, "clear", clear), _defineProperty(_ref2, "cancelDrawable", cancelDrawable), _defineProperty(_ref2, "setHighlighters", setHighlighters), _defineProperty(_ref2, "setText", setText), _defineProperty(_ref2, "loadDoc", loadDoc), _defineProperty(_ref2, "start", start), _defineProperty(_ref2, "republish", republish), _defineProperty(_ref2, "setRole", setRole), _defineProperty(_ref2, "setAccountId", setAccountId), _defineProperty(_ref2, "setEditable", setEditable), _defineProperty(_ref2, "getThumbnailList", getThumbnailList), _defineProperty(_ref2, "getAllDocList", getAllDocList), _defineProperty(_ref2, "getWebinarDocList", getWebinarDocList), _defineProperty(_ref2, "getDocDetail", getDocDetail), _defineProperty(_ref2, "syncDoc", syncDoc), _defineProperty(_ref2, "delDocList", delDocList), _ref2;
+    }, _defineProperty(_ref2, "getVodAllCids", getVodAllCids), _defineProperty(_ref2, "setRemoteData", setRemoteData), _defineProperty(_ref2, "zoomIn", zoomIn), _defineProperty(_ref2, "zoomOut", zoomOut), _defineProperty(_ref2, "zoomReset", zoomReset), _defineProperty(_ref2, "move", move), _defineProperty(_ref2, "prevStep", prevStep), _defineProperty(_ref2, "nextStep", nextStep), _defineProperty(_ref2, "setPlayMode", setPlayMode), _defineProperty(_ref2, "setSize", setSize), _defineProperty(_ref2, "createUUID", createUUID), _defineProperty(_ref2, "setControlStyle", setControlStyle), _defineProperty(_ref2, "gotoPage", gotoPage), _defineProperty(_ref2, "cancelZoom", cancelZoom), _defineProperty(_ref2, "switchOnContainer", switchOnContainer), _defineProperty(_ref2, "switchOffContainer", switchOffContainer), _defineProperty(_ref2, "resetContainer", resetContainer), _defineProperty(_ref2, "setPen", setPen), _defineProperty(_ref2, "setEraser", setEraser), _defineProperty(_ref2, "setStroke", setStroke), _defineProperty(_ref2, "setStrokeWidth", setStrokeWidth), _defineProperty(_ref2, "setSquare", setSquare), _defineProperty(_ref2, "setCircle", setCircle), _defineProperty(_ref2, "setSingleArrow", setSingleArrow), _defineProperty(_ref2, "setDoubleArrow", setDoubleArrow), _defineProperty(_ref2, "setIsoscelesTriangle", setIsoscelesTriangle), _defineProperty(_ref2, "clear", clear), _defineProperty(_ref2, "cancelDrawable", cancelDrawable), _defineProperty(_ref2, "setHighlighters", setHighlighters), _defineProperty(_ref2, "setText", setText), _defineProperty(_ref2, "loadDoc", loadDoc), _defineProperty(_ref2, "start", start), _defineProperty(_ref2, "republish", republish), _defineProperty(_ref2, "setRole", setRole), _defineProperty(_ref2, "setAccountId", setAccountId), _defineProperty(_ref2, "setEditable", setEditable), _defineProperty(_ref2, "getThumbnailList", getThumbnailList), _defineProperty(_ref2, "getAllDocList", getAllDocList), _defineProperty(_ref2, "getWebinarDocList", getWebinarDocList), _defineProperty(_ref2, "getDocDetail", getDocDetail), _defineProperty(_ref2, "syncDoc", syncDoc), _defineProperty(_ref2, "delDocList", delDocList), _ref2;
   }
 
   function useEventEmitter() {
@@ -12154,8 +12253,12 @@
       watchInitData: {},
       // 活动信息
       groupInitData: {
+        isBanned: false,
+        // 小组禁言
         discussState: false,
-        isInGroup: false
+        // 是否开始讨论
+        isInGroup: false // 是否在小组中
+
       },
       // 分组信息
       watchInitErrorData: undefined,
@@ -12210,16 +12313,31 @@
 
     var setGroupDiscussState = function setGroupDiscussState(type) {
       state.groupInitData.discussState = type;
+    }; // 设置子房间初始化信息
+
+
+    var setGroupInitData = function setGroupInitData(data) {
+      state.groupInitData = merge.recursive({}, data, state.groupInitData);
+
+      if (state.groupInitData.group_id === 0) {
+        state.groupInitData.isInGroup = false;
+      }
     }; // 获取分组初始化信息
 
 
     var getGroupInitData = function getGroupInitData(data) {
       return requestApi.roomBase.getGroupInitData(data).then(function (res) {
         state.groupInitData = _objectSpread2(_objectSpread2(_objectSpread2({}, state.groupInitData), res.data), {}, {
+          isBanned: res.data.is_banned == '1',
           isInGroup: res.code !== 513325
         });
         return res;
       });
+    }; // 设置分组禁言状态
+
+
+    var setGroupBannedStatus = function setGroupBannedStatus(status) {
+      state.groupInitData.isBanned = status;
     }; // 获取活动信息
 
 
@@ -12313,7 +12431,9 @@
       setGroupDiscussState: setGroupDiscussState,
       initReplayRecord: initReplayRecord,
       getRoomToolStatus: getRoomToolStatus,
-      setClientType: setClientType
+      setClientType: setClientType,
+      setGroupInitData: setGroupInitData,
+      setGroupBannedStatus: setGroupBannedStatus
     };
   }
 
@@ -12665,6 +12785,12 @@
       var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       var interactiveServer = contextServer.get('interactiveServer');
       return interactiveServer.unSubscribeStream(options);
+    }; // 设置已经存在的videoElement
+
+
+    var setExistVideoElement = function setExistVideoElement(videoElement) {
+      state._videoElement = videoElement;
+      state._isAudio = videoElement.isAudio;
     };
 
     return {
@@ -12681,7 +12807,8 @@
       unsubscribeInsertStream: unsubscribeInsertStream,
       onInsertFileStreamAdd: onInsertFileStreamAdd,
       onInsertFileStreamDelete: onInsertFileStreamDelete,
-      onInsertFileStreamFaild: onInsertFileStreamFaild
+      onInsertFileStreamFaild: onInsertFileStreamFaild,
+      setExistVideoElement: setExistVideoElement
     };
   }
 
@@ -12701,7 +12828,7 @@
 
     var speakUserOff = function speakUserOff() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
-      return requestApi.interactive.speakUserOff(data);
+      return requestApi.mic.speakUserOff(data);
     }; // 允许举手
 
 
@@ -12831,30 +12958,29 @@
                   state.live_token = customOptions.liveToken;
                 }
 
-                options = Object.assign({}, defaultOptions, customOptions);
-                setRequestConfig(options);
-                _context2.next = 10;
-                return roomBaseServer.init(options);
+                options = merge.recursive({}, defaultOptions, customOptions);
 
-              case 10:
-                if (!(roomBaseServer.state.watchInitData.webinar.mode === 6)) {
-                  _context2.next = 14;
-                  break;
+                if (!options.baseUrl) {
+                  options.baseUrl = getBaseUrl();
                 }
 
-                // 如果是分组直播
-                roomBaseServer.setGroupType(true);
-                _context2.next = 14;
-                return roomBaseServer.getGroupInitData();
+                setRequestConfig(options);
+                _context2.next = 11;
+                return roomBaseServer.init(options);
 
-              case 14:
-                _context2.next = 16;
+              case 11:
+                if (roomBaseServer.state.watchInitData.webinar.mode === 6) {
+                  // 如果是分组直播
+                  roomBaseServer.setGroupType(true);
+                }
+
+                _context2.next = 14;
                 return roomBaseServer.getConfigList();
 
-              case 16:
+              case 14:
                 return _context2.abrupt("return", true);
 
-              case 17:
+              case 15:
               case "end":
                 return _context2.stop();
             }
@@ -12888,30 +13014,35 @@
                   receiveType: 'standard'
                 };
                 roomBaseServer.setClientType('receive');
-                options = Object.assign({}, defaultOptions, customOptions);
+                options = merge.recursive({}, defaultOptions, customOptions);
+
+                if (!options.baseUrl) {
+                  options.baseUrl = getBaseUrl();
+                }
+
                 setRequestConfig(options);
-                _context3.next = 8;
+                _context3.next = 9;
                 return roomBaseServer.init(options);
 
-              case 8:
+              case 9:
                 if (!(roomBaseServer.state.watchInitData.webinar.mode === 6 && roomBaseServer.state.watchInitData.webinar.type == 1)) {
-                  _context3.next = 12;
+                  _context3.next = 13;
                   break;
                 }
 
                 // 如果是分组直播
                 roomBaseServer.setGroupType(true);
-                _context3.next = 12;
+                _context3.next = 13;
                 return roomBaseServer.getGroupInitData();
 
-              case 12:
-                _context3.next = 14;
+              case 13:
+                _context3.next = 15;
                 return roomBaseServer.getConfigList();
 
-              case 14:
+              case 15:
                 return _context3.abrupt("return", true);
 
-              case 15:
+              case 16:
               case "end":
                 return _context3.stop();
             }
@@ -12973,7 +13104,7 @@
         interactiveServer.checkSystemRequirements().then(function (checkResult) {
           console.log('result', checkResult, checkResult.result, 'detail', checkResult.detail);
 
-          if (checkResult.result || checkResult.detail.isScreenShareSupported) {
+          if ((checkResult.result || checkResult.detail.isScreenShareSupported) && !navigator.userAgent.indexOf('Firefox') > 0) {
             resolve(true);
           } else {
             reject(false);
@@ -13508,7 +13639,7 @@
 
 
     var clearHistoryMsg = function clearHistoryMsg() {
-      state.chatList = [];
+      state.chatList.splice(0, state.chatList.length);
     }; //发送聊天消息
 
 
@@ -14007,7 +14138,7 @@
                 _groupInitData2 = roomBaseServer.state.groupInitData;
                 console.log('domain -------- groupInitData', _groupInitData2); // 如果现在变为不在小组了,则需要关心
 
-                if (oldGroupInitData.isInGroup) {
+                if (_groupInitData2.isInGroup) {
                   _context.next = 17;
                   break;
                 }
@@ -14043,10 +14174,34 @@
       return function getGroupJoinChangeInfo(_x) {
         return _ref.apply(this, arguments);
       };
-    }();
+    }(); // 分组直播，进出子房间需要在主房间发消息，维护主房间 online-list
+
+
+    var sendMainRoomJoinChangeMsg = function sendMainRoomJoinChangeMsg() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
+        isJoinMainRoom: false,
+        isBanned: false
+      };
+      var roomBaseServer = contextServer.get('roomBaseServer');
+      var msgServer = contextServer.get('msgServer');
+      var watchInitData = roomBaseServer.state.watchInitData;
+      var msgInstance = msgServer.state.msgInstance;
+      var isPcClient = isPc();
+      var body = {
+        type: 'main_room_join_change',
+        nickname: watchInitData.join_info.nickname,
+        accountId: watchInitData.join_info.third_party_user_id,
+        isJoinMainRoom: options.isJoinMainRoom,
+        role_name: watchInitData.join_info.role_name,
+        device_type: isPcClient ? '2' : '1',
+        isBanned: options.isBanned
+      };
+      msgInstance && msgInstance.emitRoomMsg(body);
+    };
 
     return {
-      getGroupJoinChangeInfo: getGroupJoinChangeInfo
+      getGroupJoinChangeInfo: getGroupJoinChangeInfo,
+      sendMainRoomJoinChangeMsg: sendMainRoomJoinChangeMsg
     };
   }
 
