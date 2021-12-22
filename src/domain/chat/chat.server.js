@@ -254,7 +254,52 @@ export default function useChatServer() {
         return resultMsg;
     }
 
-    const result = {state, setState, getHistoryMsg, clearHistoryMsg, sendMsg, fetchHistoryData, setKeywordList, checkHasKeyword};
+    /**
+     * 禁言
+     * /v3/interacts/chat-user/set-banned
+     * */
+    function setBanned(){
+
+    }
+
+    /**
+     * 全体禁言
+     * /v3/interacts/chat-user/set-all-banned
+     * */
+    function setAllBanned(){
+
+    }
+
+    /**
+     * 删除消息
+     * /v3/interacts/chat/delete-message
+     * */
+    function deleteMessage(){
+
+    }
+
+    /**
+     * 踢出
+     * /v3/interacts/chat-user/set-kicked
+     * */
+    function setKicked(){
+
+    }
+
+    const result = {
+        state,
+        setState,
+        getHistoryMsg,
+        clearHistoryMsg,
+        sendMsg,
+        fetchHistoryData,
+        setKeywordList,
+        checkHasKeyword,
+        setBanned,
+        setAllBanned,
+        deleteMessage,
+        setKicked
+    };
 
     contextServer.set('chatServer', result)
 
