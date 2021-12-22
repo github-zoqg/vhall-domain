@@ -2,4 +2,4 @@
 
 ## 子域列表
 + 转播(reboard)
-+ 分组(group)
++ 分组(groupDiscussion)
