@@ -8,6 +8,7 @@ function useInsertFileServer() {
         isChrome88: isChrome88()
     }
 
+
     const interactiveServer = contextServer.get('interactiveServer')
 
     // 注册插播流加入事件
