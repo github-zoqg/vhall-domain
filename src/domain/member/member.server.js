@@ -173,5 +173,71 @@ export default function userMemberServer(){
         });
     }
 
-    return {state,setState,getOnlineUserList,getMutedUserList,getKickedUserList,mutedUser,kickedUser};
+    /**
+     * 邀请演示、邀请上麦
+     * v3/interacts/inav/invite
+     * */
+    function inviteUserToInteract(){
+
+    }
+
+    /**
+     * 结束演示
+     * /v3/interacts/inav/nopresentation
+     * /v3/interacts/inav-user/nopresentation
+     * todo 考虑跟后端沟通，是否接口可以合并
+     * */
+    function endPresentation(){
+
+    }
+
+    /**
+     * 踢出活动、踢出小组
+     * /v3/interacts/chat-user/set-kicked
+     * */
+    function setKicked(){
+
+    }
+
+    /**
+     * 同意上麦
+     * /v3/interacts/inav/agree-apply
+     * */
+    function agreeApply(){
+
+    }
+
+    /**
+     * 用户下麦
+     * /v3/interacts/inav/nospeak
+     * */
+    function noSpeak(){
+
+    }
+
+    /**
+     * 我要演示
+     * /v3/interacts/inav-user/presentation
+     * */
+    function applyPresentation(){
+
+    }
+
+
+
+    return {
+        state,
+        setState,
+        getOnlineUserList,
+        getMutedUserList,
+        getKickedUserList,
+        mutedUser,
+        kickedUser,
+        inviteUserToInteract,
+        endPresentation,
+        setKicked,
+        agreeApply,
+        noSpeak,
+        applyPresentation
+    };
 }
