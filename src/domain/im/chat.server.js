@@ -4,7 +4,7 @@
 import {textToEmojiText} from './emoji';
 import Msg from './msg-class';
 import contextServer from '@/domain/common/context.server.js';
-import $http from '@/utils/http.js';
+import requestApi from "../../request/index.js";
 
 export default function useChatServer() {
 
@@ -24,6 +24,10 @@ export default function useChatServer() {
         roleName: '',
         defaultAvatar:''
     };
+
+    const iMRequest = requestApi.im;
+    const meetingRequest = requestApi.meeting;
+
 
     //消息服务
     const msgServer = contextServer.get('msgServer');
@@ -124,21 +128,7 @@ export default function useChatServer() {
 
     //发起请求，或者聊天记录数据
     const fetchHistoryData = (params) => {
-
-        let defaultParams = {
-            room_id: roomId,
-            pos: state.page * state.limit,
-            limit: state.limit
-        };
-
-        let mixedParams = Object.assign({}, defaultParams, params);
-
-        return $http({
-            url: '/v3/interacts/chat/get-list',
-            type: 'POST',
-            data: mixedParams
-        });
-
+        return iMRequest.chat.getChatList(params);
     }
 
     //获取keywordList
@@ -256,34 +246,40 @@ export default function useChatServer() {
 
     /**
      * 禁言
-     * /v3/interacts/chat-user/set-banned
      * */
-    function setBanned(){
-
+    function setBanned(params={}){
+        return meetingRequest.chat.setBanned(params);
     }
 
     /**
      * 全体禁言
      * /v3/interacts/chat-user/set-all-banned
      * */
-    function setAllBanned(){
-
+    function setAllBanned(params={}){
+        return meetingRequest.chat.setAllBanned(params);
     }
 
     /**
      * 删除消息
      * /v3/interacts/chat/delete-message
      * */
-    function deleteMessage(){
-
+    function deleteMessage(params){
+        return iMRequest.chat.deleteMessage(params);
     }
 
     /**
      * 踢出
      * /v3/interacts/chat-user/set-kicked
      * */
-    function setKicked(){
+    function setKicked(params={}){
+        return meetingRequest.chat.setKicked(params);
+    }
 
+    /**
+     * 获取关键词
+     * */
+    function getKeyWordsList(params = {}) {
+        return iMRequest.keyWords.getKeyWordsList(params);
     }
 
     const result = {
@@ -298,7 +294,8 @@ export default function useChatServer() {
         setBanned,
         setAllBanned,
         deleteMessage,
-        setKicked
+        setKicked,
+        getKeyWordsList
     };
 
     contextServer.set('chatServer', result)
