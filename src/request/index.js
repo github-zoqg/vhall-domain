@@ -12,6 +12,7 @@ import imPrivateChat from './im/privateChat/index.js';
 import imSignaling from './im/signaling/index.js';
 import imNotice from './im/notice/index.js';
 import imChatAuth from './im/chatAuth/index.js';
+import activity from './room/activity/index.js';
 
 
 class RequestApi {
@@ -35,7 +36,11 @@ class RequestApi {
             chatAuth:imChatAuth
         };
 
-        this.meeting = {}
+        this.meeting = {};
+
+        this.room = {
+            activity:activity
+        };
 
 
     }
