@@ -10,7 +10,7 @@ import imChat from './im/chat/index.js';
 import imKeyWords from './im/keyWords/index.js';
 import imPrivateChat from './im/privateChat/index.js';
 import imSignaling from './im/signaling/index.js';
-import meetingChat from './meeting/chat/index.js';
+import imNotice from './im/notice/index.js';
 
 
 class RequestApi {
@@ -29,7 +29,8 @@ class RequestApi {
             chat:imChat,
             keyWords:imKeyWords,
             privateChat:imPrivateChat,
-            signaling:imSignaling
+            signaling:imSignaling,
+            notice:imNotice
         };
 
         this.meeting = {}

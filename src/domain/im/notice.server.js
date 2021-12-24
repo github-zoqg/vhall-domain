@@ -1,5 +1,4 @@
-import contextServer from '@/domain/common/context.server.js';
-import $http from '@/utils/http.js';
+import requestApi from "@/request/index.js";
 
 export default function useNoticeServer() {
     const state = {
@@ -18,17 +17,7 @@ export default function useNoticeServer() {
         total: 0,
     };
 
-    const roomServer = contextServer.get('roomBaseServer');
-    const {roomId = '', channelId = ''} = roomServer.state.watchInitData;
-
-    //从服务器获取消息记录
-    const fetchNoticeList = (params) => {
-        return $http({
-            url: '/v3/interacts/chat/get-announcement-list',
-            type: 'POST',
-            data: params
-        });
-    }
+    const iMRequest = requestApi.im;
 
     //获取消息记录
     const getNoticeList = ({flag = false, params = {}}) => {
@@ -49,7 +38,7 @@ export default function useNoticeServer() {
         }
 
 
-        return fetchNoticeList(params)
+        return iMRequest.notice.getNoticeList(params)
             .then(res => {
                 if (res.code == 200 && res.data) {
                     state.total = res.data.total;
@@ -60,18 +49,16 @@ export default function useNoticeServer() {
                     }
                     state.totalPages = Math.ceil(res.data.total / state.pageInfo.limit);
                 }
-                return {backData:res,state};
+                return {backData: res, state};
             });
     }
 
-    //发送消息
-    const sendNotice = (params = {}) => {
-        return $http({
-            url: '/v3/interacts/chat/send-notice-message',
-            type: 'POST',
-            data: params
-        });
+    /**
+     * 发送公告消息
+     * */
+    function sendNotice(params = {}) {
+        return iMRequest.notice.sendNotice(params);
     }
 
-    return {state, sendNotice, getNoticeList, fetchNoticeList};
+    return {state, sendNotice, getNoticeList};
 }

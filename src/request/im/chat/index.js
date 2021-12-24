@@ -16,7 +16,39 @@ function getChatList(params = {}) {
  * */
 function deleteMessage(params = {}) {
     return $http({
-        url: '/v4/interacts/chat/delete-message',
+        url: '/v4/im-chat/chat/delete',
+        type: 'POST',
+        data: params
+    });
+}
+/**
+ * 批量删除聊天消息
+ * */
+function batchDeleteMessage(params = {}) {
+    return $http({
+        url: '/v4/interacts/chat/batch-delete-message',
+        type: 'POST',
+        data: params
+    });
+}
+
+/**
+ * 删除活动所有聊天的消息
+ * */
+function deleteRoomMessage(params = {}) {
+    return $http({
+        url: '/v3/interacts/chat/delete-room-message',
+        type: 'POST',
+        data: params
+    });
+}
+
+/**
+ * 删除用户所有聊天的消息
+ * */
+function deleteUserMessage(params = {}) {
+    return $http({
+        url: '/v4/im-chat/chat/delete-user-message',
         type: 'POST',
         data: params
     });
@@ -99,16 +131,51 @@ function setKicked(params={}){
     });
 }
 
+/**
+ * 发送自定义消息
+ * */
+function sendCustomMessage(params={}){
+    return $http({
+        url: '/v4/interacts/chat/send-custom-message',
+        type: 'POST',
+        data: params
+    });
+}
+
+/**
+ * 发送自定义消息
+ * */
+function sendCustomMessage(params={}){
+    return $http({
+        url: '/v4/interacts/chat/send-custom-message',
+        type: 'POST',
+        data: params
+    });
+}
+
+/**
+ * 发送自定义消息
+ * */
+function sendCustomMessage(params={}){
+    return $http({
+        url: '/v4/interacts/chat/send-custom-message',
+        type: 'POST',
+        data: params
+    });
+}
+
 export default {
     getChatList,
     getBannedList,
     getKickedList,
     getOnlineList,
     getBoundedList,
-
     setBanned,
     setAllBanned,
     setKicked,
-
     deleteMessage,
+    batchDeleteMessage,
+
+    sendCustomMessage,
+
 }
