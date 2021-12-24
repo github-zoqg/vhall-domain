@@ -4,7 +4,7 @@
 import {textToEmojiText} from './emoji';
 import Msg from './msg-class';
 import contextServer from '@/domain/common/context.server.js';
-import requestApi from "../../request/index.js";
+import requestApi from "@/request/index.js";
 
 export default function useChatServer() {
 
@@ -26,7 +26,6 @@ export default function useChatServer() {
     };
 
     const iMRequest = requestApi.im;
-    const meetingRequest = requestApi.meeting;
 
 
     //消息服务
@@ -248,7 +247,7 @@ export default function useChatServer() {
      * 禁言
      * */
     function setBanned(params={}){
-        return meetingRequest.chat.setBanned(params);
+        return iMRequest.chat.setBanned(params);
     }
 
     /**
@@ -256,7 +255,7 @@ export default function useChatServer() {
      * /v3/interacts/chat-user/set-all-banned
      * */
     function setAllBanned(params={}){
-        return meetingRequest.chat.setAllBanned(params);
+        return iMRequest.chat.setAllBanned(params);
     }
 
     /**
@@ -272,7 +271,7 @@ export default function useChatServer() {
      * /v3/interacts/chat-user/set-kicked
      * */
     function setKicked(params={}){
-        return meetingRequest.chat.setKicked(params);
+        return iMRequest.chat.setKicked(params);
     }
 
     /**

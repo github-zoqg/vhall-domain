@@ -32,9 +32,7 @@ class RequestApi {
             signaling:imSignaling
         };
 
-        this.meeting = {
-            chat:meetingChat,
-        }
+        this.meeting = {}
 
 
     }
