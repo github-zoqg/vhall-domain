@@ -1,4 +1,5 @@
 import $http from '@/utils/http.js';
+import requestApi from "@/request/index.js";
 export default function userMemberServer(){
     const state = {
         //在线的成员
@@ -18,6 +19,8 @@ export default function userMemberServer(){
 
     };
 
+    const imRequest = requestApi.im;
+
     //设置state的值
     const setState = (key, value) => {
         state[key] = value;
@@ -25,7 +28,7 @@ export default function userMemberServer(){
 
     //请求在线成员列表然后处理
     const getOnlineUserList = (params = {}) => {
-        return _getOnlineUser(params)
+        return imRequest.chat.getOnlineList(params)
             .then(res => {
                 console.warn('当前在线人员列表', res);
 
@@ -110,117 +113,71 @@ export default function userMemberServer(){
         );
     }
 
-    //请求在线成员列表
-    const _getOnlineUser = (params={})=>{
-        return $http({
-            url: '/v3/interacts/chat-user/get-online-list',
-            type: 'POST',
-            data: params
-        });
-    }
-
     //踢出成员
-    const kickedUser = (params={})=>{
-       return _kickedUser(params)
-           .then(res=>{
-               return res;
-           })
+    function kickedUser(params = {}) {
+        return imRequest.chat.setKicked(params);
     }
 
     //禁言成员
-    const mutedUser = (params={})=>{
-       return _mutedUser(params)
-           .then(res=>{
-               return res;
-           });
+    function mutedUser(params={}){
+       return imRequest.chat.setBanned(params);
     }
 
-
-
-    //请求踢出成员
-    const _kickedUser = (params={})=>{
-        return $http({
-            url: '/v3/interacts/chat-user/set-kicked',
-            type: 'POST',
-            data: params
-        });
-    }
-
-
-    //请求禁言
-    const _mutedUser = (params={})=>{
-        return $http({
-            url: '/v3/interacts/chat-user/set-banned',
-            type: 'POST',
-            data: params
-        });
-    }
 
     //请求禁言的成员列表
-    const getMutedUserList = (params={})=>{
-        return $http({
-            url: '/v3/interacts/chat-user/get-banned-list',
-            type: 'POST',
-            data: params
-        });
+    function getMutedUserList(params = {}) {
+        return imRequest.chat.getBannedList(params);
     }
+
     //请求踢出的成员列表
-    const getKickedUserList = (params={})=>{
-        return $http({
-            url: '/v3/interacts/chat-user/get-kicked-list',
-            type: 'POST',
-            data: params
-        });
+    function getKickedUserList(params = {}) {
+        return imRequest.chat.getKickedList(params);
     }
 
     /**
      * 邀请演示、邀请上麦
      * v3/interacts/inav/invite
      * */
-    function inviteUserToInteract(){
-
+    function inviteUserToInteract(params){
+        return imRequest.signaling.hostInviteUser(params);
     }
 
     /**
-     * 结束演示
-     * /v3/interacts/inav/nopresentation
-     * /v3/interacts/inav-user/nopresentation
-     * todo 考虑跟后端沟通，是否接口可以合并
+     * 发起端-结束用户演示
      * */
-    function endPresentation(){
-
+    function endUserPresentation(params={}){
+        return imRequest.signaling.endUserPresentation(params);
     }
 
     /**
-     * 踢出活动、踢出小组
-     * /v3/interacts/chat-user/set-kicked
+     * 观看端-用户结束演示
      * */
-    function setKicked(){
-
+    function userEndPresentation(params={}){
+        return imRequest.signaling.userEndPresentation(params);
     }
 
+
     /**
-     * 同意上麦
-     * /v3/interacts/inav/agree-apply
+     * 发起端-允许（同意）用户上麦
      * */
-    function agreeApply(){
-
+    function hostAgreeApply(params={}){
+        return imRequest.signaling.hostAgreeApply(params);
     }
 
+
     /**
-     * 用户下麦
-     * /v3/interacts/inav/nospeak
+     * 发起端&观看端-用户下麦
      * */
-    function noSpeak(){
-
+    function userNoSpeak(params={}){
+        return imRequest.signaling.userNoSpeak(params);
     }
 
     /**
-     * 我要演示
+     * 用户上麦开始演示
      * /v3/interacts/inav-user/presentation
      * */
-    function applyPresentation(){
-
+    function userPresentation(params){
+        return imRequest.signaling.userPresentation(params);
     }
 
 
@@ -234,10 +191,10 @@ export default function userMemberServer(){
         mutedUser,
         kickedUser,
         inviteUserToInteract,
-        endPresentation,
-        setKicked,
-        agreeApply,
-        noSpeak,
-        applyPresentation
+        endUserPresentation,
+        userEndPresentation,
+        hostAgreeApply,
+        userNoSpeak,
+        userPresentation
     };
 }
