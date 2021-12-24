@@ -1,12 +1,15 @@
+import requestApi from "@/request/index.js";
 export default function useChatAuthServer() {
+
     let state = {};
 
+    const imRequest = requestApi.im;
     /**
      * 开启/关闭聊天审核
      * /sdk/v2/message/set-channel-switch
      * */
-    function toggleChatCheckStatus() {
-
+    function toggleChatAuthStatus(params={}) {
+        return imRequest.chatAuth.toggleChatAuthStatus(params);
     }
 
     /**
@@ -29,16 +32,16 @@ export default function useChatAuthServer() {
      * 获取禁言列表
      * /v3/interacts/chat-user/get-banned-list
      * */
-    function getBannedList() {
-
+    function getBannedList(params={}) {
+        return imRequest.chat.getBannedList(params);
     }
 
     /**
      * 获取踢出列表
      * /v3/interacts/chat-user/get-kicked-list
      * */
-    function getKickedList() {
-
+    function getKickedList(params={}) {
+        return imRequest.chat.getKickedList(params);
     }
 
     /**
@@ -62,22 +65,22 @@ export default function useChatAuthServer() {
      * 取消禁言
      * /v3/interacts/chat-user/set-banned
      * */
-    function toggleBannedStatus() {
-
+    function toggleBannedStatus(params={}) {
+        return imRequest.chat.setBanned(params);
     }
 
     /**
      * 取消踢出
      * /v3/interacts/chat-user/set-kicked
      * */
-    function toggleKickedStatus() {
-
+    function toggleKickedStatus(params={}) {
+        return imRequest.chat.setKicked(params);
     }
 
 
     return {
         state,
-        toggleChatCheckStatus,
+        toggleChatAuthStatus,
         getAuditMessageList,
         getPassedMessageList,
         getBannedList,

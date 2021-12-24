@@ -11,6 +11,7 @@ import imKeyWords from './im/keyWords/index.js';
 import imPrivateChat from './im/privateChat/index.js';
 import imSignaling from './im/signaling/index.js';
 import imNotice from './im/notice/index.js';
+import imChatAuth from './im/chatAuth/index.js';
 
 
 class RequestApi {
@@ -30,7 +31,8 @@ class RequestApi {
             keyWords:imKeyWords,
             privateChat:imPrivateChat,
             signaling:imSignaling,
-            notice:imNotice
+            notice:imNotice,
+            chatAuth:imChatAuth
         };
 
         this.meeting = {}
