@@ -1,4 +1,5 @@
 import contextServer from "../common/context.server";
+import requestApi from '@/request/index.js';
 
 export default function usePlayerServer() {
     let state = {
@@ -6,7 +7,8 @@ export default function usePlayerServer() {
         isPlaying:false,
         markPoints:[],
         type:'live',// live or vod
-        voice:60
+        voice:60,
+        playerConfig: {} // 播放器配置
     }
 
     let vhallSaasInstance = null;
@@ -147,6 +149,13 @@ export default function usePlayerServer() {
         state.playerInstance.$emit(type,params)
     }
 
+    const getPlayerConfig= (params) => {
+        return requestApi.player.getPlayerConfig(params).then(res => {
+            state.playerConfig = res.date
+            return res
+        })
+    }
+
     const destroy = () => {
 
     }
@@ -183,6 +192,7 @@ export default function usePlayerServer() {
         openBarrage,
         closeBarrage,
         clearBarrage,
-        toggleSubtitle
+        toggleSubtitle,
+        getPlayerConfig
      }
 }

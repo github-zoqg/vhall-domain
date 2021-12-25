@@ -13,6 +13,7 @@ import imSignaling from './im/signaling/index.js';
 import imNotice from './im/notice/index.js';
 import imChatAuth from './im/chatAuth/index.js';
 import activity from './room/activity/index.js';
+import player from './player.js'
 
 
 class RequestApi {
@@ -25,6 +26,7 @@ class RequestApi {
         this.interactive = interactive;
         this.mic = mic;
         this.doc = doc;
+        this.player = player;
 
 
         this.im = {
@@ -41,8 +43,6 @@ class RequestApi {
         this.room = {
             activity:activity
         };
-
-
     }
 }
 
