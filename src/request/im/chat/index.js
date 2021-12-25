@@ -142,28 +142,6 @@ function sendCustomMessage(params={}){
     });
 }
 
-/**
- * 发送自定义消息
- * */
-function sendCustomMessage(params={}){
-    return $http({
-        url: '/v4/interacts/chat/send-custom-message',
-        type: 'POST',
-        data: params
-    });
-}
-
-/**
- * 发送自定义消息
- * */
-function sendCustomMessage(params={}){
-    return $http({
-        url: '/v4/interacts/chat/send-custom-message',
-        type: 'POST',
-        data: params
-    });
-}
-
 export default {
     getChatList,
     getBannedList,
