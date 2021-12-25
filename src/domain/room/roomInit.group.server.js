@@ -1,10 +1,10 @@
 import contextServer from '@/domain/common/context.server.js'
 import useMsgServer from '@/domain/common/msg.server.js'
-import useRoomBaseServer from '@/domain/roombase/roombase.server.js'
-import useInteractiveServer from '@/domain/stream/interactive.server.js';
+import useRoomBaseServer from '@/domain/room/roombase.server.js'
+import useInteractiveServer from '@/domain/media/interactive.server.js';
 import { getBaseUrl, setToken, setRequestHeaders } from '@/utils/http.js';
 import { merge } from '@/utils/index.js';
-import useMicServer from "@/domain/stream/mic.server.js";
+import useMicServer from "@/domain/media/mic.server.js";
 
 export default function useRoomInitGroupServer(options = {}) {
     const state = {
