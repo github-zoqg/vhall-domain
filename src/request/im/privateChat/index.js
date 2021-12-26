@@ -2,7 +2,7 @@ import $http from '@/utils/http.js';
 /**
  * 获取私聊聊天联系人列表
  * */
-function getRankList(params={}){
+function getRankList(params = {}) {
     return $http({
         url: '/v3/interacts/chat-private/get-rank-list',
         type: 'POST',
@@ -13,7 +13,7 @@ function getRankList(params={}){
 /**
  * 获取私聊聊天列表
  * */
-function getPrivateChatList(params={}){
+function getPrivateChatList(params = {}) {
     return $http({
         url: '/v3/interacts/chat-private/get-list',
         type: 'POST',
@@ -23,7 +23,7 @@ function getPrivateChatList(params={}){
 /**
  * 设置私聊聊天联系人列表
  * */
-function setRankList(params={}){
+function setRankList(params = {}) {
     return $http({
         url: '/v3/interacts/chat-private/set-rank-list',
         type: 'POST',
@@ -35,4 +35,4 @@ export default {
     getRankList,
     getPrivateChatList,
     setRankList
-}
+};

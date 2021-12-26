@@ -1,5 +1,5 @@
-import contextServer from "@/domain/common/context.server.js";
-import requestApi from "../../request/index.js";
+import contextServer from '@/domain/common/context.server.js';
+import requestApi from '../../request/index.js';
 
 const docApi = requestApi.doc;
 
@@ -13,47 +13,42 @@ export default function useDocServer() {
         state.docInstance.$on(type, cb);
     };
 
-    const destroy = (isAutoDestroyMsg) => {
+    const destroy = isAutoDestroyMsg => {
         return state.docInstance.destroy(isAutoDestroyMsg);
     };
 
-    const init = (options) => {
-        const { state: roomInitGroupServer } = contextServer.get(
-            "roomInitGroupServer"
-        );
-        console.log(
-            "create doc",
-            roomInitGroupServer.vhallSaasInstance.createDoc
-        );
+    const init = options => {
+        const { state: roomInitGroupServer } = contextServer.get('roomInitGroupServer');
+        console.log('create doc', roomInitGroupServer.vhallSaasInstance.createDoc);
         return roomInitGroupServer.vhallSaasInstance
             .createDoc(options)
-            .then((instance) => {
+            .then(instance => {
                 state.docInstance = instance;
                 return instance;
             })
-            .catch((e) => {
+            .catch(e => {
                 return e;
             });
     };
 
-    const createBoard = (options) => {
+    const createBoard = options => {
         return state.docInstance.createBoard(options);
     };
 
-    const createDocument = (options) => {
+    const createDocument = options => {
         return state.docInstance.createDocument(options);
     };
 
-    const selectContainer = (option) => {
-        console.log("select container:", option);
+    const selectContainer = option => {
+        console.log('select container:', option);
         return state.docInstance.selectContainer(option);
     };
 
-    const switchOnContainer = (val) => {
+    const switchOnContainer = val => {
         return state.docInstance.switchOnContainer(val);
     };
 
-    const switchOffContainer = (val) => {
+    const switchOffContainer = val => {
         return state.docInstance.switchOffContainer(val);
     };
 
@@ -61,19 +56,19 @@ export default function useDocServer() {
         return state.docInstance.resetContainer();
     };
 
-    const getContainerInfo = async (options) => {
+    const getContainerInfo = async options => {
         return state.docInstance.getContainerInfo(options);
     };
 
-    const destroyContainer = (val) => {
+    const destroyContainer = val => {
         return state.docInstance.destroyContainer(val);
     };
 
-    const getVodAllCids = (val) => {
+    const getVodAllCids = val => {
         return state.docInstance.getVodAllCids(val);
     };
 
-    const setRemoteData = (item) => {
+    const setRemoteData = item => {
         return state.docInstance.setRemoteData(item);
     };
 
@@ -105,7 +100,7 @@ export default function useDocServer() {
         return state.docInstance.nextStep();
     };
 
-    const setPlayMode = (mode) => {
+    const setPlayMode = mode => {
         return state.docInstance.setPlayMode(mode);
     };
 
@@ -113,31 +108,31 @@ export default function useDocServer() {
         return state.docInstance.setSize(width, height, options);
     };
 
-    const createUUID = (type) => {
+    const createUUID = type => {
         return state.docInstance.createUUID(type);
     };
 
-    const setControlStyle = (style) => {
+    const setControlStyle = style => {
         return state.docInstance.setControlStyle(style);
     };
 
-    const gotoPage = (options) => {
+    const gotoPage = options => {
         return state.docInstance.gotoPage(options);
     };
 
-    const setPen = (val) => {
+    const setPen = val => {
         return state.docInstance.setPen(val);
     };
 
-    const setEraser = (val) => {
+    const setEraser = val => {
         return state.docInstance.setEraser(val);
     };
 
-    const setStroke = (options) => {
+    const setStroke = options => {
         return state.docInstance.setStroke(options);
     };
 
-    const setStrokeWidth = (options) => {
+    const setStrokeWidth = options => {
         return state.docInstance.setStrokeWidth(options);
     };
 
@@ -145,28 +140,28 @@ export default function useDocServer() {
         return state.docInstance.clear();
     };
 
-    const setSquare = (options) => {
-        return state.docInstance.setSquare(options)
+    const setSquare = options => {
+        return state.docInstance.setSquare(options);
     };
 
-    const setSingleArrow = (options) => {
-        return state.docInstance.setSingleArrow(options)
+    const setSingleArrow = options => {
+        return state.docInstance.setSingleArrow(options);
     };
 
-    const setDoubleArrow = (options) => {
-        return state.docInstance.setDoubleArrow(options)
+    const setDoubleArrow = options => {
+        return state.docInstance.setDoubleArrow(options);
     };
 
-    const setCircle = (options) => {
-        return state.docInstance.setCircle(options)
+    const setCircle = options => {
+        return state.docInstance.setCircle(options);
     };
 
-    const setBitmap = (options) => {
-        return state.docInstance.setBitmap(options)
+    const setBitmap = options => {
+        return state.docInstance.setBitmap(options);
     };
 
-    const setIsoscelesTriangle = (options) => {
-        return state.docInstance.setIsoscelesTriangle(options)
+    const setIsoscelesTriangle = options => {
+        return state.docInstance.setIsoscelesTriangle(options);
     };
 
     const cancelDrawable = () => {
@@ -177,11 +172,11 @@ export default function useDocServer() {
         return state.docInstance.setHighlighters();
     };
 
-    const setText = (val) => {
+    const setText = val => {
         return state.docInstance.setText(val);
     };
 
-    const loadDoc = (options) => {
+    const loadDoc = options => {
         return state.docInstance.loadDoc(options);
     };
 
@@ -193,43 +188,43 @@ export default function useDocServer() {
         return state.docInstance.republish();
     };
 
-    const setRole = (role) => {
+    const setRole = role => {
         return state.docInstance.setRole(role);
     };
 
-    const setAccountId = (role) => {
+    const setAccountId = role => {
         return state.docInstance.setAccountId(role);
     };
 
-    const setEditable = (editable) => {
+    const setEditable = editable => {
         return state.docInstance.setEditable(editable);
     };
 
-    const getThumbnailList = (options) => {
+    const getThumbnailList = options => {
         return state.docInstance.getThumbnailList(options);
     };
     // 获取文档列表(资料库所有文档)
-    const getAllDocList = (params) => {
+    const getAllDocList = params => {
         return docApi.getAllDocList(params);
     };
 
     // 获取文档列表(当前活动下)
-    const getWebinarDocList = (params) => {
+    const getWebinarDocList = params => {
         return docApi.getWebinarDocList(params);
     };
 
     // 获取文档详情
-    const getDocDetail = (params) => {
+    const getDocDetail = params => {
         return docApi.getDocDetail(params);
     };
 
     // 同步文档
-    const syncDoc = (params) => {
+    const syncDoc = params => {
         return docApi.syncDoc(params);
     };
 
     // 删除文档(多选)
-    const delDocList = (params) => {
+    const delDocList = params => {
         return docApi.delDocList(params);
     };
 
@@ -286,5 +281,5 @@ export default function useDocServer() {
         getDocDetail,
         syncDoc,
         delDocList
-    }
+    };
 }

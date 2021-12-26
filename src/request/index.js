@@ -13,8 +13,7 @@ import imSignaling from './im/signaling/index.js';
 import imNotice from './im/notice/index.js';
 import imChatAuth from './im/chatAuth/index.js';
 import activity from './room/activity/index.js';
-import player from './player.js'
-
+import player from './player.js';
 
 class RequestApi {
     constructor() {
@@ -28,23 +27,22 @@ class RequestApi {
         this.doc = doc;
         this.player = player;
 
-
         this.im = {
-            chat:imChat,
-            keyWords:imKeyWords,
-            privateChat:imPrivateChat,
-            signaling:imSignaling,
-            notice:imNotice,
-            chatAuth:imChatAuth
+            chat: imChat,
+            keyWords: imKeyWords,
+            privateChat: imPrivateChat,
+            signaling: imSignaling,
+            notice: imNotice,
+            chatAuth: imChatAuth
         };
 
         this.meeting = {};
 
         this.room = {
-            activity:activity
+            activity: activity
         };
     }
 }
 
-const requestApi = new RequestApi()
-export default requestApi
+const requestApi = new RequestApi();
+export default requestApi;

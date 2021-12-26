@@ -11,7 +11,6 @@ function getChatAuthSetting(params = {}) {
     });
 }
 
-
 /**
  * 更新人工审核状态
  * */
@@ -62,4 +61,4 @@ export default {
     getChatAuthStatus,
     getAutoSetting,
     setAutoSetting
-}
+};

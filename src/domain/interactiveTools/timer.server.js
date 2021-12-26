@@ -1,6 +1,6 @@
 /**
  * 定时器服务
- * @returns 
+ * @returns
  */
 export default function useTimerServer() {
     let state = {};

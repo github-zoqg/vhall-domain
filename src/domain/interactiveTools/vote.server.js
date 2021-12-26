@@ -44,6 +44,6 @@ export default function useVoteServer() {
         finishVote,
         pushVote,
         deleteVote,
-        answerVote,
+        answerVote
     };
 }

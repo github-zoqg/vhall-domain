@@ -1,6 +1,6 @@
 /**
  * 挂件
- * @returns 
+ * @returns
  */
 export default function usePendantServer() {
     let state = {};

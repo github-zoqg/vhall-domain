@@ -1,22 +1,21 @@
 import $http from '@/utils/http.js';
-import requestApi from "@/request/index.js";
-export default function userMemberServer(){
+import requestApi from '@/request/index.js';
+export default function userMemberServer() {
     const state = {
         //在线的成员
-        onlineUsers:[],
+        onlineUsers: [],
         //申请上麦的人员
-        applyUsers:[],
+        applyUsers: [],
         //是否刷新了
-        isRefresh:false,
+        isRefresh: false,
 
         //总数
-        totalNum:0,
+        totalNum: 0,
         //当前页数
-        page:1,
+        page: 1,
 
         //举手状态
-        raiseHandTip:false
-
+        raiseHandTip: false
     };
 
     const imRequest = requestApi.im;
@@ -24,48 +23,46 @@ export default function userMemberServer(){
     //设置state的值
     const setState = (key, value) => {
         state[key] = value;
-    }
+    };
 
     //请求在线成员列表然后处理
     const getOnlineUserList = (params = {}) => {
-        return imRequest.chat.getOnlineList(params)
-            .then(res => {
-                console.warn('当前在线人员列表', res);
+        return imRequest.chat.getOnlineList(params).then(res => {
+            console.warn('当前在线人员列表', res);
 
-                if(res && [200,'200'].includes(res.code)){
-
-                    if (state.isRefesh) {
-                        state.onlineUsers = _sortUsers(res.data.list);
-                        state.isRefesh = false;
-                        console.log('>>>>>>aaaa2', state.applyUsers)
-                        state.applyUsers.forEach(element => {
-                            state.onlineUsers.forEach(item => {
-                                if (element.accountId == item.accountId) {
-                                    item.isApply = true
-                                }
-                            })
-                        })
-                    }
-
-                    if (!state.isRefesh && res.data.list.length === 0) {
-                        state.page--;
-                    }
-
-                    state.totalNum = res.data.total;
+            if (res && [200, '200'].includes(res.code)) {
+                if (state.isRefesh) {
+                    state.onlineUsers = _sortUsers(res.data.list);
+                    state.isRefesh = false;
+                    console.log('>>>>>>aaaa2', state.applyUsers);
+                    state.applyUsers.forEach(element => {
+                        state.onlineUsers.forEach(item => {
+                            if (element.accountId == item.accountId) {
+                                item.isApply = true;
+                            }
+                        });
+                    });
                 }
 
-                if(![200,'200'].includes(res.code)){
+                if (!state.isRefesh && res.data.list.length === 0) {
                     state.page--;
                 }
 
-                return res;
-            });
-    }
+                state.totalNum = res.data.total;
+            }
+
+            if (![200, '200'].includes(res.code)) {
+                state.page--;
+            }
+
+            return res;
+        });
+    };
 
     /**
      * 将在线人员列表分为五个部分排序 主持人 / 上麦嘉宾 / 下麦嘉宾 / 助理 / 上麦观众 / 普通观众
      */
-   const  _sortUsers =  (list=[])=> {
+    const _sortUsers = (list = []) => {
         let host = []; // 主持人
         let onMicGuest = []; // 上麦嘉宾
         let downMicGuest = []; // 下麦嘉宾
@@ -81,9 +78,7 @@ export default function userMemberServer(){
 
                 // 观众
                 case 2:
-                    item.is_speak
-                        ? onMicAudience.push(item)
-                        : downMicAudience.push(item);
+                    item.is_speak ? onMicAudience.push(item) : downMicAudience.push(item);
                     break;
 
                 // 助理
@@ -104,14 +99,8 @@ export default function userMemberServer(){
         if (downMicAudience.length > 200) {
             downMicAudience = downMicAudience.slice(-200);
         }
-        return host.concat(
-            onMicGuest,
-            downMicGuest,
-            assistant,
-            onMicAudience,
-            downMicAudience
-        );
-    }
+        return host.concat(onMicGuest, downMicGuest, assistant, onMicAudience, downMicAudience);
+    };
 
     //踢出成员
     function kickedUser(params = {}) {
@@ -119,10 +108,9 @@ export default function userMemberServer(){
     }
 
     //禁言成员
-    function mutedUser(params={}){
-       return imRequest.chat.setBanned(params);
+    function mutedUser(params = {}) {
+        return imRequest.chat.setBanned(params);
     }
-
 
     //请求禁言的成员列表
     function getMutedUserList(params = {}) {
@@ -138,37 +126,35 @@ export default function userMemberServer(){
      * 邀请演示、邀请上麦
      * v3/interacts/inav/invite
      * */
-    function inviteUserToInteract(params){
+    function inviteUserToInteract(params) {
         return imRequest.signaling.hostInviteUser(params);
     }
 
     /**
      * 发起端-结束用户演示
      * */
-    function endUserPresentation(params={}){
+    function endUserPresentation(params = {}) {
         return imRequest.signaling.endUserPresentation(params);
     }
 
     /**
      * 观看端-用户结束演示
      * */
-    function userEndPresentation(params={}){
+    function userEndPresentation(params = {}) {
         return imRequest.signaling.userEndPresentation(params);
     }
-
 
     /**
      * 发起端-允许（同意）用户上麦
      * */
-    function hostAgreeApply(params={}){
+    function hostAgreeApply(params = {}) {
         return imRequest.signaling.hostAgreeApply(params);
     }
-
 
     /**
      * 发起端&观看端-用户下麦
      * */
-    function userNoSpeak(params={}){
+    function userNoSpeak(params = {}) {
         return imRequest.signaling.userNoSpeak(params);
     }
 
@@ -176,11 +162,9 @@ export default function userMemberServer(){
      * 用户上麦开始演示
      * /v3/interacts/inav-user/presentation
      * */
-    function userPresentation(params){
+    function userPresentation(params) {
         return imRequest.signaling.userPresentation(params);
     }
-
-
 
     return {
         state,

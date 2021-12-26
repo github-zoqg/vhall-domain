@@ -2,7 +2,7 @@ import $http from '@/utils/http.js';
 /**
  * 发起端-设置房间举手状态
  * */
-function setHandsUp(params={}){
+function setHandsUp(params = {}) {
     return $http({
         url: '/v4/interacts/inav/set-handsup',
         type: 'POST',
@@ -13,7 +13,7 @@ function setHandsUp(params={}){
 /**
  * 观看端-用户举手申请上麦
  * */
-function userApply(params={}){
+function userApply(params = {}) {
     return $http({
         url: '/v4/interacts/inav/user-apply',
         type: 'POST',
@@ -24,7 +24,7 @@ function userApply(params={}){
 /**
  * 观看端-用户取消申请上麦
  * */
-function userCancelApply(params={}){
+function userCancelApply(params = {}) {
     return $http({
         url: '/v4/interacts/inav/user-cancel-apply',
         type: 'POST',
@@ -35,7 +35,7 @@ function userCancelApply(params={}){
 /**
  * 发起端-允许（同意）用户上麦
  * */
-function hostAgreeApply(params={}){
+function hostAgreeApply(params = {}) {
     return $http({
         url: '/v4/interacts/inav/agree-apply',
         type: 'POST',
@@ -46,7 +46,7 @@ function hostAgreeApply(params={}){
 /**
  * 发起端-拒绝用户上麦
  * */
-function hostRejectApply(params={}){
+function hostRejectApply(params = {}) {
     return $http({
         url: '/v4/interacts/inav/reject-apply',
         type: 'POST',
@@ -57,7 +57,7 @@ function hostRejectApply(params={}){
 /**
  * 观看端-用户上麦（接受邀请）
  * */
-function userSpeak(params={}){
+function userSpeak(params = {}) {
     return $http({
         url: '/v4/interacts/inav/user-speak',
         type: 'POST',
@@ -68,7 +68,7 @@ function userSpeak(params={}){
 /**
  * 发起端&观看端-用户下麦
  * */
-function userNoSpeak(params={}){
+function userNoSpeak(params = {}) {
     return $http({
         url: '/v4/interacts/inav/nospeak',
         type: 'POST',
@@ -79,7 +79,7 @@ function userNoSpeak(params={}){
 /**
  * 发起端-邀请用户上麦
  * */
-function hostInviteUser(params={}){
+function hostInviteUser(params = {}) {
     return $http({
         url: '/v4/interacts/inav/invite',
         type: 'POST',
@@ -90,7 +90,7 @@ function hostInviteUser(params={}){
 /**
  * 观看端-用户同意上麦邀请
  * */
-function userAgreeInvite(params={}){
+function userAgreeInvite(params = {}) {
     return $http({
         url: '/v4/interacts/inav/user-agree-invite',
         type: 'POST',
@@ -101,7 +101,7 @@ function userAgreeInvite(params={}){
 /**
  * 观看端-用户拒绝上麦邀请
  * */
-function userRejectInvite(params={}){
+function userRejectInvite(params = {}) {
     return $http({
         url: '/v4/interacts/inav/user-reject-invite',
         type: 'POST',
@@ -112,7 +112,7 @@ function userRejectInvite(params={}){
 /**
  * 发起端-获取当前上麦用户列表
  * */
-function getSpeakList(params={}){
+function getSpeakList(params = {}) {
     return $http({
         url: '/v4/interacts/inav/get-speak-list',
         type: 'POST',
@@ -123,7 +123,7 @@ function getSpeakList(params={}){
 /**
  * 用户上麦并开始演示
  * */
-function userPresentation(params={}){
+function userPresentation(params = {}) {
     return $http({
         url: '/v4/interacts/inav/user-presentation',
         type: 'POST',
@@ -134,7 +134,7 @@ function userPresentation(params={}){
 /**
  * 发起端-结束用户演示
  * */
-function endUserPresentation(params={}){
+function endUserPresentation(params = {}) {
     return $http({
         url: '/v3/interacts/inav/nopresentation',
         type: 'POST',
@@ -145,7 +145,7 @@ function endUserPresentation(params={}){
 /**
  * 观看端-用户结束演示
  * */
-function userEndPresentation(params={}){
+function userEndPresentation(params = {}) {
     return $http({
         url: '/v4/interacts/inav/user-nopresentation',
         type: 'POST',
@@ -156,7 +156,7 @@ function userEndPresentation(params={}){
 /**
  * 发起端-预下麦
  * */
-function preBreakSpeak(params={}){
+function preBreakSpeak(params = {}) {
     return $http({
         url: '/v4/interacts/inav/pre-break-speak',
         type: 'POST',
@@ -167,19 +167,13 @@ function preBreakSpeak(params={}){
 /**
  * 观看端-无法上麦
  * */
-function userUnableSpeak(params={}){
+function userUnableSpeak(params = {}) {
     return $http({
         url: '/v4/interacts/inav/user-unable-speak',
         type: 'POST',
         data: params
     });
 }
-
-
-
-
-
-
 
 export default {
     setHandsUp,
@@ -198,4 +192,4 @@ export default {
     userEndPresentation,
     preBreakSpeak,
     userUnableSpeak
-}
+};

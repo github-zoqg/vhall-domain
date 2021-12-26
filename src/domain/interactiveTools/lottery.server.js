@@ -56,6 +56,6 @@ export default function useLotteryServer() {
         setPublishResult,
         getDrawPrizeInfo,
         getAwardInfo,
-        getLotteryCount,
+        getLotteryCount
     };
 }

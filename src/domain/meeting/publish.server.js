@@ -1,3 +1,1 @@
-export default function useMeetingPublishServer(){
-    
-}
+export default function useMeetingPublishServer() {}
