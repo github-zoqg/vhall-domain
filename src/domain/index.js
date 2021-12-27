@@ -15,7 +15,7 @@ import useRoomInitGroupServer from '@/domain/room/roomInit.group.server.js';
 import useDesktopShareServer from '@/domain/media/desktopShare.server.js';
 import useChatServer from '@/domain/chat/chat.server.js';
 import useMicServer from '@/domain/media/mic.server.js';
-import useNoticeServer from '@/notice/notice.server.js';
+import useNoticeServer from '@/domain/notice/notice.server.js';
 import useMemberServer from '@/domain/member/member.server.js';
 import useGroupDiscussionServer from '@/domain/room/groupDiscussion.server.js';
 
