@@ -1,11 +1,11 @@
 import contextServer from '../common/context.server';
 export default function useDesktopShareServer() {
-    const state = { localDesktopStreamId: '' };
+    let state = { localDesktopStreamId: '' };
 
     const interactiveServer = contextServer.get('interactiveServer');
 
     //检测浏览器是否支持桌面共享
-    const browserDetection = () => {
+    function browserDetection() {
         const ua = navigator.userAgent;
         const chromeTest = ua.match(/chrome\/([\d\.]+)/i);
         const chromeVersion = chromeTest ? chromeTest[1] : 0;
@@ -26,10 +26,10 @@ export default function useDesktopShareServer() {
             safariTest,
             safariVersion
         };
-    };
+    }
 
     //分享屏幕检测
-    const shareScreenCheck = () => {
+    function shareScreenCheck() {
         return new Promise((resolve, reject) => {
             interactiveServer.checkSystemRequirements().then(checkResult => {
                 console.log(
@@ -49,10 +49,10 @@ export default function useDesktopShareServer() {
                 }
             });
         });
-    };
+    }
 
     // 开始桌面共享
-    const startShareScreen = options => {
+    function startShareScreen(options) {
         const { state: roomBaseServerState } = contextServer.get('roomBaseServer');
 
         const retOptions = {
@@ -71,10 +71,10 @@ export default function useDesktopShareServer() {
         };
 
         return interactiveServer.createLocaldesktopStream(retOptions, addConfig);
-    };
+    }
 
     // 推桌面共享流
-    const publishDesktopShareStream = streamId => {
+    function publishDesktopShareStream(streamId) {
         return new Promise((resolve, reject) => {
             interactiveServer
                 .publishStream({ streamId })
@@ -84,14 +84,14 @@ export default function useDesktopShareServer() {
                 })
                 .catch(reject);
         });
-    };
+    }
 
     /**
      * 停止桌面共享
      * */
-    const stopShareScreen = streamId => {
+    function stopShareScreen(streamId) {
         return interactiveServer.unpublishStream(streamId || state.localDesktopStreamId);
-    };
+    }
 
     return {
         state,

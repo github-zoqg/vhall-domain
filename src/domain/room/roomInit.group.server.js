@@ -7,7 +7,7 @@ import { merge } from '@/utils/index.js';
 import useMicServer from '@/domain/media/mic.server.js';
 
 export default function useRoomInitGroupServer(options = {}) {
-    const state = {
+    let state = {
         bizId: options.biz_id || 2, // 区分 端（知客/直播） 2-直播 4-知客
         vhallSaasInstance: null,
         live_token: null
@@ -23,28 +23,28 @@ export default function useRoomInitGroupServer(options = {}) {
     contextServer.set('interactiveServer', interactiveServer);
     contextServer.set('micServer', micServer);
 
-    const reload = async () => {
+    async function reload() {
         msgServer.destroy();
         await msgServer.init();
-    };
+    }
 
-    const setRequestConfig = options => {
+    function setRequestConfig(options) {
         setToken(options.token, options.liveToken);
 
         if (options.requestHeaders) {
             setRequestHeaders(options.requestHeaders);
         }
-    };
+    }
 
-    const initSdk = () => {
+    function initSdk() {
         return new Promise((resolve, reject) => {
             state.vhallSaasInstance = new window.VhallSaasSDK();
             addToContext();
             resolve();
         });
-    };
+    }
 
-    const initSendLive = async (customOptions = {}) => {
+    async function initSendLive(customOptions = {}) {
         await initSdk();
         const defaultOptions = {
             clientType: 'send',
@@ -75,9 +75,9 @@ export default function useRoomInitGroupServer(options = {}) {
         await roomBaseServer.getConfigList();
 
         return true;
-    };
+    }
 
-    const initReceiveLive = async (customOptions = {}) => {
+    async function initReceiveLive(customOptions = {}) {
         initSdk();
         const defaultOptions = {
             clientType: 'receive',
@@ -108,7 +108,7 @@ export default function useRoomInitGroupServer(options = {}) {
         }
         await roomBaseServer.getConfigList();
         return true;
-    };
+    }
 
     const result = {
         state,
