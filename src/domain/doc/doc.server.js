@@ -4,21 +4,22 @@ import requestApi from '../../request/index.js';
 const docApi = requestApi.doc;
 
 export default function useDocServer() {
-    const state = {
+
+    let state = {
         docInstance: null
     };
 
-    const on = (type, cb) => {
+    function on(type, cb) {
         if (!state.docInstance) return;
         state.docInstance.$on(type, cb);
-    };
+    }
 
-    const destroy = isAutoDestroyMsg => {
+    function destroy(isAutoDestroyMsg) {
         return state.docInstance.destroy(isAutoDestroyMsg);
-    };
+    }
 
-    const init = options => {
-        const { state: roomInitGroupServer } = contextServer.get('roomInitGroupServer');
+    function init(options) {
+        const {state: roomInitGroupServer} = contextServer.get('roomInitGroupServer');
         console.log('create doc', roomInitGroupServer.vhallSaasInstance.createDoc);
         return roomInitGroupServer.vhallSaasInstance
             .createDoc(options)
@@ -29,204 +30,205 @@ export default function useDocServer() {
             .catch(e => {
                 return e;
             });
-    };
+    }
 
-    const createBoard = options => {
+    function createBoard(options) {
         return state.docInstance.createBoard(options);
-    };
+    }
 
-    const createDocument = options => {
+    function createDocument(options) {
         return state.docInstance.createDocument(options);
-    };
+    }
 
-    const selectContainer = option => {
+    function selectContainer(options) {
         console.log('select container:', option);
         return state.docInstance.selectContainer(option);
-    };
+    }
 
-    const switchOnContainer = val => {
+    function switchOnContainer(val) {
         return state.docInstance.switchOnContainer(val);
-    };
+    }
 
-    const switchOffContainer = val => {
+    function switchOffContainer(val) {
         return state.docInstance.switchOffContainer(val);
-    };
+    }
 
-    const resetContainer = () => {
+    function resetContainer() {
         return state.docInstance.resetContainer();
-    };
+    }
 
-    const getContainerInfo = async options => {
+    async function getContainerInfo(options) {
         return state.docInstance.getContainerInfo(options);
-    };
+    }
 
-    const destroyContainer = val => {
+    function destroyContainer(val) {
         return state.docInstance.destroyContainer(val);
-    };
+    }
 
-    const getVodAllCids = val => {
+    function getVodAllCids(val) {
         return state.docInstance.getVodAllCids(val);
-    };
+    }
 
-    const setRemoteData = item => {
+    function setRemoteData(item) {
         return state.docInstance.setRemoteData(item);
-    };
+    }
 
-    const zoomIn = () => {
+    function zoomIn() {
         return state.docInstance.zoomIn();
-    };
+    }
 
-    const zoomOut = () => {
+    function zoomOut() {
         return state.docInstance.zoomOut();
-    };
+    }
 
-    const zoomReset = () => {
+    function zoomReset() {
         return state.docInstance.zoomReset();
-    };
+    }
 
-    const cancelZoom = () => {
+    function cancelZoom() {
         return state.docInstance.cancelZoom();
-    };
+    }
 
-    const move = () => {
+    function move() {
         return state.docInstance.move();
-    };
+    }
 
-    const prevStep = () => {
+    function prevStep() {
         return state.docInstance.prevStep();
-    };
+    }
 
-    const nextStep = () => {
+    function nextStep() {
         return state.docInstance.nextStep();
-    };
+    }
 
-    const setPlayMode = mode => {
+    function setPlayMode(mode) {
         return state.docInstance.setPlayMode(mode);
-    };
+    }
 
-    const setSize = (width, height, options) => {
+    function setSize(width, height, options) {
         return state.docInstance.setSize(width, height, options);
-    };
+    }
 
-    const createUUID = type => {
+    function createUUID(type) {
         return state.docInstance.createUUID(type);
-    };
+    }
 
-    const setControlStyle = style => {
+    function setControlStyle(style) {
         return state.docInstance.setControlStyle(style);
-    };
+    }
 
-    const gotoPage = options => {
+    function gotoPage(options) {
         return state.docInstance.gotoPage(options);
-    };
+    }
 
-    const setPen = val => {
+    function setPen(val) {
         return state.docInstance.setPen(val);
-    };
+    }
 
-    const setEraser = val => {
+    function setEraser(val) {
         return state.docInstance.setEraser(val);
-    };
+    }
 
-    const setStroke = options => {
+    function setStroke(options) {
         return state.docInstance.setStroke(options);
-    };
+    }
 
-    const setStrokeWidth = options => {
+    function setStrokeWidth(options) {
         return state.docInstance.setStrokeWidth(options);
-    };
+    }
 
-    const clear = () => {
+    function clear() {
         return state.docInstance.clear();
-    };
+    }
 
-    const setSquare = options => {
+    function setSquare(options) {
         return state.docInstance.setSquare(options);
-    };
+    }
 
-    const setSingleArrow = options => {
+    function setSingleArrow(options) {
         return state.docInstance.setSingleArrow(options);
-    };
+    }
 
-    const setDoubleArrow = options => {
+    function setDoubleArrow(options) {
         return state.docInstance.setDoubleArrow(options);
-    };
+    }
 
-    const setCircle = options => {
+    function setCircle(options) {
         return state.docInstance.setCircle(options);
-    };
+    }
 
-    const setBitmap = options => {
+    function setBitmap(options) {
         return state.docInstance.setBitmap(options);
-    };
+    }
 
-    const setIsoscelesTriangle = options => {
+    function setIsoscelesTriangle(options) {
         return state.docInstance.setIsoscelesTriangle(options);
-    };
+    }
 
-    const cancelDrawable = () => {
+    function cancelDrawable() {
         return state.docInstance.cancelDrawable();
-    };
+    }
 
-    const setHighlighters = () => {
+    function setHighlighters() {
         return state.docInstance.setHighlighters();
-    };
+    }
 
-    const setText = val => {
+    function setText(val) {
         return state.docInstance.setText(val);
-    };
+    }
 
-    const loadDoc = options => {
+    function loadDoc(options) {
         return state.docInstance.loadDoc(options);
-    };
+    }
 
-    const start = (val, type) => {
+    function start(val, type) {
         return state.docInstance.start(val, type);
-    };
+    }
 
-    const republish = () => {
+    function republish() {
         return state.docInstance.republish();
-    };
+    }
 
-    const setRole = role => {
+    function setRole(role) {
         return state.docInstance.setRole(role);
-    };
+    }
 
-    const setAccountId = role => {
+    function setAccountId(role) {
         return state.docInstance.setAccountId(role);
-    };
+    }
 
-    const setEditable = editable => {
+    function setEditable(editable) {
         return state.docInstance.setEditable(editable);
-    };
+    }
 
-    const getThumbnailList = options => {
+    function getThumbnailList(options) {
         return state.docInstance.getThumbnailList(options);
-    };
+    }
+
     // 获取文档列表(资料库所有文档)
-    const getAllDocList = params => {
+    function getAllDocList(params) {
         return docApi.getAllDocList(params);
-    };
+    }
 
     // 获取文档列表(当前活动下)
-    const getWebinarDocList = params => {
+    function getWebinarDocList(params) {
         return docApi.getWebinarDocList(params);
-    };
+    }
 
     // 获取文档详情
-    const getDocDetail = params => {
+    function getDocDetail(params) {
         return docApi.getDocDetail(params);
-    };
+    }
 
     // 同步文档
-    const syncDoc = params => {
+    function syncDoc(params) {
         return docApi.syncDoc(params);
-    };
+    }
 
     // 删除文档(多选)
-    const delDocList = params => {
+    function delDocList(params) {
         return docApi.delDocList(params);
-    };
+    }
 
     return {
         state,
@@ -239,7 +241,6 @@ export default function useDocServer() {
         selectContainer,
         getContainerInfo,
         destroyContainer,
-        getVodAllCids,
         setRemoteData,
         zoomIn,
         zoomOut,

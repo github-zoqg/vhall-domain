@@ -1,8 +1,12 @@
 import contextServer from '@/domain/common/context.server.js';
 import { isPc, merge, randomNumGenerator } from '@/utils/index.js';
 
-export default function useMsgServer() {
-    const state = {
+export default/**
+*
+*/
+ function useMsgServer() {
+
+    let state = {
         msgInstance: null,
         eventsPool: [],
         msgSdkInitOptions: {},
@@ -12,7 +16,7 @@ export default function useMsgServer() {
 
     let groupMsgInstance = null;
 
-    const _eventhandlers = {
+    let _eventhandlers = {
         ROOM_MSG: [],
         CHAT: [],
         CUSTOM_MSG: [],
@@ -24,25 +28,25 @@ export default function useMsgServer() {
     };
 
     // 发送聊天消息
-    const sendChatMsg = (data, context) => {
+    function sendChatMsg(data, context) {
         if (state.groupMsgInstance) {
             state.groupMsgInstance.emitTextChat(data, context);
         } else {
             state.msgInstance.emitTextChat(data, context);
         }
-    };
+    }
 
     // 发送房间消息
-    const sendRoomMsg = data => {
+    function sendRoomMsg(data){
         if (state.groupMsgInstance) {
             state.groupMsgInstance.emitRoomMsg(data);
         } else {
             state.msgInstance.emitRoomMsg(data);
         }
-    };
+    }
 
     // 为聊天实例注册事件
-    const _addListeners = instance => {
+    function _addListeners(instance) {
         for (let eventType in _eventhandlers) {
             instance.$on(eventType, msg => {
                 console.log('----domain----,消息事件', msg, _eventhandlers[eventType]);
@@ -53,17 +57,17 @@ export default function useMsgServer() {
                 }
             });
         }
-    };
+    }
 
     // 为聊天实例注销事件
-    const _removeListeners = instance => {
+    function _removeListeners (instance) {
         for (let eventType in _eventhandlers) {
             instance.$off(eventType);
         }
-    };
+    }
 
     // 重新注册保活消息
-    const reRegisterKeepAliveMsgEvent = () => {
+    function reRegisterKeepAliveMsgEvent() {
         console.log('重新注册保活消息', state.keepAliveMsgEventList);
         for (let eventType in state.keepAliveMsgEventList) {
             state.msgInstance.$on(eventType, msg => {
@@ -74,14 +78,14 @@ export default function useMsgServer() {
                 }
             });
         }
-    };
+    }
 
     // 注销保活消息
-    const removeKeepAliveMsgEvent = () => {
+    function removeKeepAliveMsgEvent() {
         for (let eventType in state.keepAliveMsgEventList) {
             state.msgInstance.$off(eventType);
         }
-    };
+    }
 
     Object.defineProperty(state, 'groupMsgInstance', {
         get() {
@@ -109,7 +113,7 @@ export default function useMsgServer() {
     });
 
     // 获取主房间聊天sdk初始化默认参数
-    const getDefaultOptions = () => {
+    function getDefaultOptions (){
         const { state: roomBaseServerState } = contextServer.get('roomBaseServer');
 
         const isPcClient = isPc();
@@ -140,10 +144,10 @@ export default function useMsgServer() {
         };
 
         return defaultOptions;
-    };
+    }
 
     // 初始化主房间聊天sdk
-    const init = (customOptions = {}) => {
+    function init(customOptions = {}){
         if (!contextServer.get('roomInitGroupServer')) return;
         const { state: roomInitGroupServerState } = contextServer.get('roomInitGroupServer');
 
@@ -161,19 +165,19 @@ export default function useMsgServer() {
             }
             return res;
         });
-    };
+    }
 
     // 设置主频道静默状态
-    const setMainChannelMute = mute => {
+    function setMainChannelMute(mute) {
         if (mute) {
             _removeListeners(state.msgInstance);
         } else {
             _addListeners(state.msgInstance);
         }
-    };
+    }
 
     // 获取子房间聊天sdk初始化默认参数
-    const getGroupDefaultOptions = () => {
+    function getGroupDefaultOptions() {
         const { state: roomBaseServerState } = contextServer.get('roomBaseServer');
 
         const isPcClient = isPc();
@@ -205,10 +209,10 @@ export default function useMsgServer() {
         };
 
         return defaultOptions;
-    };
+    }
 
     // 子房间上线发送group信息
-    const sendGroupInfoAfterJoin = msgInstance => {
+    function sendGroupInfoAfterJoin(msgInstance) {
         const roomBaseServer = contextServer.get('roomBaseServer');
         const { watchInitData, groupInitData } = roomBaseServer.state;
 
@@ -218,10 +222,10 @@ export default function useMsgServer() {
             ...groupInitData,
             accountId: watchInitData.join_info.third_party_user_id
         });
-    };
+    }
 
     // 初始化子房间聊天sdk
-    const initGroupMsg = (customOptions = {}) => {
+    function initGroupMsg(customOptions = {}){
         if (!contextServer.get('roomInitGroupServer')) return Promise.reject('No Room Exist');
 
         // 每次初始化子房间聊天都需要清空原有房间聊天消息然后重新拉取
@@ -246,10 +250,10 @@ export default function useMsgServer() {
             _addListeners(res);
             return res;
         });
-    };
+    }
 
     // 注册事件
-    const $on = (eventType, fn, iskeepLive) => {
+    function $on(eventType, fn, iskeepLive){
         if (!_eventhandlers.hasOwnProperty(eventType)) {
             throw new TypeError('Invalid eventType');
         }
@@ -261,10 +265,10 @@ export default function useMsgServer() {
             state.keepAliveMsgEventList[eventType].push(fn);
         }
         _eventhandlers[eventType].push(fn);
-    };
+    }
 
     // 注销事件
-    const $off = (eventType, fn) => {
+    function $off(eventType, fn){
         if (!fn) {
             _eventhandlers[eventType] = [];
         }
@@ -273,31 +277,31 @@ export default function useMsgServer() {
         if (index > -1) {
             _eventhandlers[eventType].splice(index, 1);
         }
-    };
+    }
 
     // 销毁子房间聊天实例
-    const destroyGroupMsg = () => {
+    function destroyGroupMsg(){
         if (!state.groupMsgInstance) return;
         state.groupMsgInstance.destroy();
         state.groupMsgInstance = null;
-    };
+    }
 
     // 销毁主房间聊天实例
-    const destroy = () => {
+    function destroy(){
         if (!state.msgInstance) return;
         state.msgInstance.destroy();
         state.msgInstance = null;
-    };
+    }
 
     // 获取当前主房间初始化参数
-    const getCurrentMsgInitOptions = () => {
+    function getCurrentMsgInitOptions(){
         return JSON.parse(JSON.stringify(state.msgSdkInitOptions));
-    };
+    }
 
     // 获取当前子房间初始化参数
-    const getCurrentGroupMsgInitOptions = () => {
+    function getCurrentGroupMsgInitOptions(){
         return JSON.parse(JSON.stringify(state.groupMsgSdkInitOptions));
-    };
+    }
 
     return {
         state,

@@ -1,5 +1,6 @@
 import requestApi from '@/request/index.js';
 export default function useChatAuthServer() {
+
     let state = {};
 
     const imRequest = requestApi.im;
