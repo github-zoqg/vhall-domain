@@ -1,3 +1,1 @@
-export default function useWatchLimitServer(){
-
-}
+export default function useWatchLimitServer() {}

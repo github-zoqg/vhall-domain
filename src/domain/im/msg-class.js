@@ -1,6 +1,6 @@
 let count = 0;
 let count2 = 0;
-let count3 = 0
+let count3 = 0;
 export default class Msg {
     constructor(params, type = '') {
         switch (type) {

@@ -1,13 +1,12 @@
 /**
  * 聊天服务
  * */
-import {textToEmojiText} from './emoji';
+import { textToEmojiText } from './emoji';
 import Msg from './msg-class';
 import contextServer from '@/domain/common/context.server.js';
-import requestApi from "@/request/index.js";
+import requestApi from '@/request/index.js';
 
 export default function useChatServer() {
-
     const state = {
         //聊天记录
         chatList: [],
@@ -22,45 +21,48 @@ export default function useChatServer() {
         roomId: '',
         avatar: '',
         roleName: '',
-        defaultAvatar:''
+        defaultAvatar: ''
     };
 
     const iMRequest = requestApi.im;
-
 
     //消息服务
     const msgServer = contextServer.get('msgServer');
 
     //消息sdk
-    const {msgInstance} = msgServer.state;
+    const { msgInstance } = msgServer.state;
 
     //基础服务
     const roomServer = contextServer.get('roomBaseServer');
 
-    const {roomId = '', roleName, avatar = ''} = roomServer.state.watchInitData;
+    const { roomId = '', roleName, avatar = '' } = roomServer.state.watchInitData;
 
     //setSate
-    const setState = (key,value)=>{
+    const setState = (key, value) => {
         state[key] = value;
-    }
+    };
 
     //接收聊天消息
     const getHistoryMsg = async (params = {}, from = '观看端') => {
-
         //请求获取聊天消息
         let backData = await fetchHistoryData(params);
 
         let list = (backData.data.list || [])
             .map(item => {
-
                 //处理普通内容
-                item.data.text_content && (item.data.text_content = textToEmojiText(item.data.text_content));
+                item.data.text_content &&
+                    (item.data.text_content = textToEmojiText(item.data.text_content));
 
                 //处理图片预览
                 item.data.image_urls && _handleImgUrl(item.data.image_urls);
 
                 //处理私聊列表
-                if (item.context && Array.isArray(item.context.at_list) && item.context.at_list.length && item.data.text_content) {
+                if (
+                    item.context &&
+                    Array.isArray(item.context.at_list) &&
+                    item.context.at_list.length &&
+                    item.data.text_content
+                ) {
                     item.context.at_list = _handlePrivateChatList(item, item.context.at_list);
                     //发起端的特殊处理，可以考虑统一
                     item.context.atList = item.context.at_list;
@@ -71,7 +73,9 @@ export default function useChatServer() {
             })
             .reduce((acc, curr) => {
                 const showTime = curr.showTime;
-                acc.some(s => s.showTime === showTime) ? acc.push({...curr, showTime: ''}) : acc.push(curr);
+                acc.some(s => s.showTime === showTime)
+                    ? acc.push({ ...curr, showTime: '' })
+                    : acc.push(curr);
                 return acc;
             }, [])
             .reverse()
@@ -80,12 +84,12 @@ export default function useChatServer() {
         if (['观看端'].includes(from)) {
             list.forEach((msg, index) => {
                 if (index !== 0) {
-                    const preMsgTime = list[index - 1].sendTime
+                    const preMsgTime = list[index - 1].sendTime;
                     if (preMsgTime.slice(0, 13) === msg.sendTime.slice(0, 13)) {
-                        msg.showTime = ''
+                        msg.showTime = '';
                     }
                 }
-            })
+            });
         }
 
         state.chatList.unshift(...list);
@@ -97,17 +101,16 @@ export default function useChatServer() {
             chatList: state.chatList,
             imgUrls: state.imgUrls || []
         };
-    }
+    };
 
     // 清空聊天消息
     const clearHistoryMsg = () => {
-        state.chatList.splice(0, state.chatList.length)
-    }
+        state.chatList.splice(0, state.chatList.length);
+    };
 
     //发送聊天消息
     const sendMsg = (params = {}) => {
-
-        let {inputValue, needFilter = true, data = {}, context = {}} = params;
+        let { inputValue, needFilter = true, data = {}, context = {} } = params;
         // let filterStatus = checkHasKeyword(needFilter, inputValue);
         // return new Promise((resolve, reject) => {
         //     if (roleName != 2 || (roleName == 2 && filterStatus)) {
@@ -118,25 +121,24 @@ export default function useChatServer() {
         //     }
         // });
 
-        return  new Promise((resolve,reject)=>{
-            msgServer.sendChatMsg(data,context)
+        return new Promise((resolve, reject) => {
+            msgServer.sendChatMsg(data, context);
             resolve();
         });
-
-    }
+    };
 
     //发起请求，或者聊天记录数据
-    const fetchHistoryData = (params) => {
+    const fetchHistoryData = params => {
         return iMRequest.chat.getChatList(params);
-    }
+    };
 
     //获取keywordList
     const setKeywordList = (list = []) => {
         state.keywordList = list;
-    }
+    };
 
     //检测是否包含敏感词
-    const checkHasKeyword = (needFilter=true,inputValue)=>{
+    const checkHasKeyword = (needFilter = true, inputValue) => {
         let filterStatus = true;
 
         if (needFilter && state.keywordList.length) {
@@ -145,21 +147,23 @@ export default function useChatServer() {
         }
 
         return filterStatus;
-    }
+    };
 
     //私有方法，处理图片链接
-    const _handleImgUrl = (rawData) => {
+    const _handleImgUrl = rawData => {
         state.imgUrls.push(...rawData);
-    }
+    };
 
     //私有方法，处理私聊列表
     const _handlePrivateChatList = (item, list = [], from = '观看端') => {
-
         if (['观看端'].includes(from)) {
             return list.map(a => {
-                item.data.text_content = item.data.text_content.replace(`***${a.nick_name}`, `@${a.nick_name}`);
+                item.data.text_content = item.data.text_content.replace(
+                    `***${a.nick_name}`,
+                    `@${a.nick_name}`
+                );
                 return a;
-            })
+            });
         }
 
         if (['h5'].includes(from)) {
@@ -169,23 +173,23 @@ export default function useChatServer() {
                     item.data.text_content = item.data.text_content.replace(
                         `***${a.nick_name}`,
                         `<span style='color:#4da1ff;float:left'>@${a.nick_name} &nbsp;</span> `
-                    )
+                    );
                 } else {
                     item.data.text_content = item.data.text_content.replace(
                         `@${a.nick_name}`,
                         `<span style='color:#4da1ff;float:left'>@${a.nick_name} &nbsp;</span> `
-                    )
+                    );
                 }
                 return a;
             });
         }
-    }
+    };
 
     //私有方法，组装消息（暂时按照的h5版本的,大致数据一致，具体业务逻辑操作有差异，后续返回一个promise，并返回未处理的原始数据，由视图自己决定如何处理）
     const _handleGenerateMsg = (item = {}, from = '') => {
         let params = {};
 
-        if (['观看端','发起端'].includes(from)) {
+        if (['观看端', '发起端'].includes(from)) {
             params = {
                 type: item.data.type,
                 avatar: item.avatar ? item.avatar : state.defaultAvatar,
@@ -200,10 +204,11 @@ export default function useChatServer() {
                 msgId: item.msg_id,
                 channel: item.channel_id,
                 isHistoryMsg: true
-            }
+            };
 
-            if(['发起端'].includes(from) && params.avatar === ''){
-                params.avatar = 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png';
+            if (['发起端'].includes(from) && params.avatar === '') {
+                params.avatar =
+                    'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png';
             }
         }
 
@@ -223,7 +228,7 @@ export default function useChatServer() {
             };
         }
 
-        let resultMsg = new Msg(params,from);
+        let resultMsg = new Msg(params, from);
         if (item.data.event_type) {
             resultMsg = {
                 ...resultMsg,
@@ -234,19 +239,20 @@ export default function useChatServer() {
                     gift_name: item.data.gift_name,
                     gift_url: item.data.gift_url
                 }
-            }
+            };
             if (['观看端'].includes(from)) {
-                resultMsg.nickName = item.nickname.length > 8 ? item.nickname.substr(0, 8) + '...' : item.nickname;
+                resultMsg.nickName =
+                    item.nickname.length > 8 ? item.nickname.substr(0, 8) + '...' : item.nickname;
                 resultMsg.interactToolsStatus = true;
             }
         }
         return resultMsg;
-    }
+    };
 
     /**
      * 禁言
      * */
-    function setBanned(params={}){
+    function setBanned(params = {}) {
         return iMRequest.chat.setBanned(params);
     }
 
@@ -254,7 +260,7 @@ export default function useChatServer() {
      * 全体禁言
      * /v3/interacts/chat-user/set-all-banned
      * */
-    function setAllBanned(params={}){
+    function setAllBanned(params = {}) {
         return iMRequest.chat.setAllBanned(params);
     }
 
@@ -262,7 +268,7 @@ export default function useChatServer() {
      * 删除消息
      * /v3/interacts/chat/delete-message
      * */
-    function deleteMessage(params){
+    function deleteMessage(params) {
         return iMRequest.chat.deleteMessage(params);
     }
 
@@ -270,7 +276,7 @@ export default function useChatServer() {
      * 踢出
      * /v3/interacts/chat-user/set-kicked
      * */
-    function setKicked(params={}){
+    function setKicked(params = {}) {
         return iMRequest.chat.setKicked(params);
     }
 
@@ -297,7 +303,7 @@ export default function useChatServer() {
         getKeyWordsList
     };
 
-    contextServer.set('chatServer', result)
+    contextServer.set('chatServer', result);
 
-    return result
+    return result;
 }

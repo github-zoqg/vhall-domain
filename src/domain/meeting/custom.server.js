@@ -1,3 +1,1 @@
-export default function useMeetingCustomServer(){
-    
-}
+export default function useMeetingCustomServer() {}

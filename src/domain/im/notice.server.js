@@ -1,4 +1,4 @@
-import requestApi from "@/request/index.js";
+import requestApi from '@/request/index.js';
 
 export default function useNoticeServer() {
     const state = {
@@ -14,14 +14,13 @@ export default function useNoticeServer() {
         //总页数
         totalPages: 1,
         //总条数
-        total: 0,
+        total: 0
     };
 
     const iMRequest = requestApi.im;
 
     //获取消息记录
-    const getNoticeList = ({flag = false, params = {}}) => {
-
+    const getNoticeList = ({ flag = false, params = {} }) => {
         if (!flag) {
             state.noticeList = [];
             state.pageInfo = {
@@ -37,21 +36,19 @@ export default function useNoticeServer() {
             state.pageInfo.pageNum = params.pageNum;
         }
 
-
-        return iMRequest.notice.getNoticeList(params)
-            .then(res => {
-                if (res.code == 200 && res.data) {
-                    state.total = res.data.total;
-                    if (flag) {
-                        state.noticeList.push(...res.data.list)
-                    } else {
-                        state.noticeList = res.data.list
-                    }
-                    state.totalPages = Math.ceil(res.data.total / state.pageInfo.limit);
+        return iMRequest.notice.getNoticeList(params).then(res => {
+            if (res.code == 200 && res.data) {
+                state.total = res.data.total;
+                if (flag) {
+                    state.noticeList.push(...res.data.list);
+                } else {
+                    state.noticeList = res.data.list;
                 }
-                return {backData: res, state};
-            });
-    }
+                state.totalPages = Math.ceil(res.data.total / state.pageInfo.limit);
+            }
+            return { backData: res, state };
+        });
+    };
 
     /**
      * 发送公告消息
@@ -60,5 +57,5 @@ export default function useNoticeServer() {
         return iMRequest.notice.sendNotice(params);
     }
 
-    return {state, sendNotice, getNoticeList};
+    return { state, sendNotice, getNoticeList };
 }

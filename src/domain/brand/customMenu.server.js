@@ -1,3 +1,1 @@
-export default function useCustomMenuServer() {
-    
-}
+export default function useCustomMenuServer() {}

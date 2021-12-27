@@ -1,6 +1,6 @@
 /**
  * 考试服务
- * @returns 
+ * @returns
  */
 export default function useExamServer() {
     // v2/exam/watch-list 「获取考试列表」
@@ -33,6 +33,6 @@ export default function useExamServer() {
         getGradeList,
         getExamStat,
         getAnsweredList,
-        answerExam,
+        answerExam
     };
 }

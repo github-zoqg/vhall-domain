@@ -57,7 +57,7 @@ function deleteUserMessage(params = {}) {
 /**
  * 获取禁言用户列表
  * */
-function getBannedList(params={}){
+function getBannedList(params = {}) {
     return $http({
         url: '/v4/interacts/chat-user/get-banned-list',
         type: 'POST',
@@ -68,7 +68,7 @@ function getBannedList(params={}){
 /**
  * 获取踢出用户列表
  * */
-function getKickedList(params={}){
+function getKickedList(params = {}) {
     return $http({
         url: '/v4/interacts/chat-user/get-kicked-list',
         type: 'POST',
@@ -79,7 +79,7 @@ function getKickedList(params={}){
 /**
  * 获取在线用户列表
  * */
-function getOnlineList(params={}){
+function getOnlineList(params = {}) {
     return $http({
         url: '/v4/interacts/chat-user/get-online-list',
         type: 'POST',
@@ -90,7 +90,7 @@ function getOnlineList(params={}){
 /**
  * 获取受限用户列表
  * */
-function getBoundedList(params={}){
+function getBoundedList(params = {}) {
     return $http({
         url: '/v4/interacts/chat-user/get-bounded-list',
         type: 'POST',
@@ -101,7 +101,7 @@ function getBoundedList(params={}){
 /**
  * 设置 / 取消用户禁言
  * */
-function setBanned(params={}){
+function setBanned(params = {}) {
     return $http({
         url: '/v4/interacts/chat-user/set-banned',
         type: 'POST',
@@ -112,7 +112,7 @@ function setBanned(params={}){
 /**
  * 设置 / 取消全体用户禁言
  * */
-function setAllBanned(params={}){
+function setAllBanned(params = {}) {
     return $http({
         url: '/v4/interacts/chat-user/set-all-banned',
         type: 'POST',
@@ -123,7 +123,7 @@ function setAllBanned(params={}){
 /**
  * 踢出用户 / 取消踢出
  * */
-function setKicked(params={}){
+function setKicked(params = {}) {
     return $http({
         url: '/v4/interacts/chat-user/set-kicked',
         type: 'POST',
@@ -134,7 +134,7 @@ function setKicked(params={}){
 /**
  * 发送自定义消息
  * */
-function sendCustomMessage(params={}){
+function sendCustomMessage(params = {}) {
     return $http({
         url: '/v4/interacts/chat/send-custom-message',
         type: 'POST',
@@ -154,6 +154,5 @@ export default {
     deleteMessage,
     batchDeleteMessage,
 
-    sendCustomMessage,
-
-}
+    sendCustomMessage
+};
