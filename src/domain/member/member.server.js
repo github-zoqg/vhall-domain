@@ -1,7 +1,6 @@
-import $http from '@/utils/http.js';
 import requestApi from '@/request/index.js';
 export default function userMemberServer() {
-    const state = {
+    let state = {
         //在线的成员
         onlineUsers: [],
         //申请上麦的人员
@@ -21,12 +20,12 @@ export default function userMemberServer() {
     const imRequest = requestApi.im;
 
     //设置state的值
-    const setState = (key, value) => {
+    function setState(key, value) {
         state[key] = value;
-    };
+    }
 
     //请求在线成员列表然后处理
-    const getOnlineUserList = (params = {}) => {
+    function getOnlineUserList(params = {}) {
         return imRequest.chat.getOnlineList(params).then(res => {
             console.warn('当前在线人员列表', res);
 
@@ -57,12 +56,12 @@ export default function userMemberServer() {
 
             return res;
         });
-    };
+    }
 
     /**
      * 将在线人员列表分为五个部分排序 主持人 / 上麦嘉宾 / 下麦嘉宾 / 助理 / 上麦观众 / 普通观众
      */
-    const _sortUsers = (list = []) => {
+    function _sortUsers(list = []) {
         let host = []; // 主持人
         let onMicGuest = []; // 上麦嘉宾
         let downMicGuest = []; // 下麦嘉宾
@@ -100,7 +99,7 @@ export default function userMemberServer() {
             downMicAudience = downMicAudience.slice(-200);
         }
         return host.concat(onMicGuest, downMicGuest, assistant, onMicAudience, downMicAudience);
-    };
+    }
 
     //踢出成员
     function kickedUser(params = {}) {

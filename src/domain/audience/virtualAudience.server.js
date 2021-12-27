@@ -1,8 +1,8 @@
 import requestApi from '../../request/index';
 
 export default function useVirtualClientStartServe() {
-    const state = {
-        preson: {
+    let state = {
+        person: {
             pv: '',
             basePv: '',
             baseTime: '',
@@ -12,27 +12,26 @@ export default function useVirtualClientStartServe() {
         addCount: ''
     };
 
-    const virtualClientStart = data => {
+    function virtualClientStart(data = {}) {
         return requestApi.virtualClient.virtualClientStart(data);
-    };
+    }
 
-    const virtualAccumulation = data => {
+    function virtualAccumulation(data = {}) {
         return requestApi.virtualClient.virtualAccumulation(data);
-    };
+    }
 
-    const virtualClientGet = data => {
+    function virtualClientGet(data = {}) {
         let http = requestApi.virtualClient.virtualClientGet(data);
         http.then(res => {
-            console.log('请求成功！！！！！');
-            state.preson.pv = res.data.pv;
-            state.preson.basePv = res.data.base_pv;
-            state.preson.baseTime = res.data.base_time;
+            state.person.pv = res.data.pv;
+            state.person.basePv = res.data.base_pv;
+            state.person.baseTime = res.data.base_time;
             state.addCount = res.data.base_time;
-            state.preson.onlineNum = res.data.online;
-            state.preson.baseOnlineNum = res.data.base_online;
+            state.person.onlineNum = res.data.online;
+            state.person.baseOnlineNum = res.data.base_online;
         });
         return http;
-    };
+    }
 
-    return { state, virtualClientStart, virtualAccumulation, virtualClientGet };
+    return {state, virtualClientStart, virtualAccumulation, virtualClientGet};
 }

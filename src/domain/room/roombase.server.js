@@ -5,7 +5,7 @@ import { setRequestHeaders } from '@/utils/http.js';
 import { merge } from '@/utils/index.js';
 
 export default function useRoomBaseServer() {
-    const state = {
+    let state = {
         inited: false,
         isLiveOver: false,
         webinarVo: {},
@@ -24,12 +24,12 @@ export default function useRoomBaseServer() {
     const eventEmitter = useEventEmitter();
 
     // 设置当前房间是发起端还是观看端
-    const setClientType = type => {
+    function setClientType(type) {
         state.clientType = type;
-    };
+    }
 
     // 初始化房间信息,包含发起/观看(嵌入/标品)
-    const getWatchInitData = options => {
+    function getWatchInitData(options) {
         console.log(contextServer.get('useRoomInitGroupServer'));
         const { state: roomInitGroupServer } = contextServer.get('roomInitGroupServer');
 
@@ -47,36 +47,36 @@ export default function useRoomBaseServer() {
             }
             return res;
         });
-    };
+    }
 
-    const on = (type, cb) => {
+    function on(type, cb) {
         eventEmitter.$on(type, cb);
-    };
+    }
 
-    const destroy = () => {
+    function destroy() {
         eventEmitter.$destroy();
-    };
+    }
 
     // 设置活动是否为分组活动
-    const setGroupType = type => {
+    function setGroupType(type) {
         state.isGroupWebinar = type;
-    };
+    }
 
     // 设置分组讨论是否正在讨论中
-    const setGroupDiscussState = type => {
+    function setGroupDiscussState(type) {
         state.groupInitData.discussState = type;
-    };
+    }
 
     // 设置子房间初始化信息
-    const setGroupInitData = data => {
+    function setGroupInitData(data) {
         state.groupInitData = merge.recursive({}, data, state.groupInitData);
         if (state.groupInitData.group_id === 0) {
             state.groupInitData.isInGroup = false;
         }
-    };
+    }
 
     // 获取分组初始化信息
-    const getGroupInitData = data => {
+    function getGroupInitData(data) {
         return requestApi.roomBase.getGroupInitData(data).then(res => {
             state.groupInitData = {
                 ...state.groupInitData,
@@ -86,81 +86,81 @@ export default function useRoomBaseServer() {
             };
             return res;
         });
-    };
+    }
 
     // 设置分组禁言状态
-    const setGroupBannedStatus = status => {
+    function setGroupBannedStatus(status) {
         state.groupInitData.isBanned = status;
-    };
+    }
 
     // 获取活动信息
-    const getWebinarInfo = data => {
+    function getWebinarInfo(data) {
         return requestApi.roomBase.getWebinarInfo(data).then(res => {
             state.webinarVo = res.data;
             return res;
         });
-    };
+    }
 
     // 获取房间权限配置列表
-    const getConfigList = data => {
+    function getConfigList(data) {
         return requestApi.roomBase.getConfigList(data).then(res => {
             state.configList = JSON.parse(res.data.permissions);
             return res;
         });
-    };
+    }
 
     // 设置设备检测状态
-    const setDevice = data => {
+    function setDevice(data) {
         return requestApi.roomBase.setDevice(data).then(res => {
             return res;
         });
-    };
+    }
 
     // 开播startLive
-    const startLive = (data = {}) => {
+    function startLive(data = {}) {
         setDevice(data);
         return requestApi.live.startLive(data);
-    };
+    }
 
     // 结束直播
-    const endLive = data => {
+    function endLive(data) {
         return requestApi.live.endLive(data);
-    };
+    }
 
     // 开始/恢复录制
-    const startRecord = () => {
+    function startRecord() {
         return requestApi.roomBase.recordApi({
             status: 1
         });
-    };
+    }
 
     // 暂停录制
-    const pauseRecord = () => {
+    function pauseRecord() {
         return requestApi.roomBase.recordApi({
             status: 2
         });
-    };
+    }
 
     // 结束录制
-    const endRecord = () => {
+    function endRecord() {
         return requestApi.roomBase.recordApi({
             status: 3
         });
-    };
+    }
 
     //初始化回放录制
-    const initReplayRecord = (params = {}) => {
+    function initReplayRecord(params = {}) {
         return requestApi.roomBase.initRecordApi(params);
-    };
+    }
 
     //获取房间内各工具的状态
-    const getRoomToolStatus = (params = {}) => {
+    function getRoomToolStatus(params = {}) {
         return requestApi.roomBase.getRoomToolStatus(params);
-    };
+    }
 
-    const init = option => {
+    function init(option) {
         return getWatchInitData(option);
-    };
+    }
 
     return {
         state,

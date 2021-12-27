@@ -1,29 +1,27 @@
-import contextServer from '@/domain/common/context.server.js';
-
 export default function useMediaCheckServer() {
-    const state = {
+    let state = {
         videoNode: 'vh-device-check-video', // 视频容器
         selectedVideoDeviceId: '', // 当前选取的设备id
         localStreamId: '' // 本地流id
     };
 
-    const init = (opt = {}) => {
+    function init(opt = {}) {
         state.videoNode = opt.videoNode || 'vh-device-check-video';
         state.selectedVideoDeviceId =
             opt.selectedVideoDeviceId === undefined ? opt.selectedVideoDeviceId : '';
         state.localStreamId = opt.localStreamId === undefined ? opt.localStreamId : '';
-    };
+    }
 
-    const setVideoNode = videoNode => {
+    function setVideoNode(videoNode) {
         state.videoNode = videoNode;
-    };
+    }
 
-    const setSelectedVideoDeviceId = selectedVideoDeviceId => {
+    function setSelectedVideoDeviceId(selectedVideoDeviceId) {
         state.selectedVideoDeviceId = selectedVideoDeviceId;
-    };
+    }
 
     // 开始视频预览
-    const startPreviewVideo = (opts = {}) => {
+    function startPreviewVideo(opts = {}) {
         const originalOpts = {
             videoNode: state.videoNode, // 传入本地视频显示容器，必填
             audio: false, // 是否获取音频，选填，默认为true
@@ -40,10 +38,10 @@ export default function useMediaCheckServer() {
             };
             window.VhallRTC.startPreview(options, success, failure);
         });
-    };
+    }
 
     // 结束视频预览
-    const stopPreviewVideo = streamId => {
+    function stopPreviewVideo(streamId) {
         const id = streamId || state.localStreamId;
         return new Promise((resolve, reject) => {
             const success = res => {
@@ -54,7 +52,7 @@ export default function useMediaCheckServer() {
             };
             window.VhallRTC.stopPreview({ streamId: id }, success, failure);
         });
-    };
+    }
 
     init();
 

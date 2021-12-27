@@ -2,32 +2,32 @@ import requestApi from '../../request/index';
 import '../../libs/sdk.js';
 
 export default function useUserServer() {
-    const state = {};
+    let state = {};
 
     // 验证码登录&&账号登录
-    const loginInfo = data => {
+    function loginInfo(data) {
         return requestApi.user.loginInfo(data);
-    };
+    }
 
     // 第三方授权
-    const callbackUserInfo = data => {
+    function callbackUserInfo(data) {
         return requestApi.user.callbackUserInfo(data);
-    };
+    }
 
     // 注册
-    const register = data => {
+    function register(data) {
         return requestApi.user.register(data);
-    };
+    }
 
     // 手机||邮箱验证码
-    const codeCheck = data => {
+    function codeCheck(data) {
         return requestApi.user.codeCheck(data);
-    };
+    }
 
     // 密码重置
-    const resetPassword = data => {
+    function resetPassword(data) {
         return requestApi.user.resetPassword(data);
-    };
+    }
 
     return { state, loginInfo, callbackUserInfo, register, codeCheck, resetPassword };
 }

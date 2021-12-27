@@ -1,4 +1,4 @@
-import requestApi from '@/request/index.js';
+import requestApi from '@/request';
 
 export default function useNoticeServer() {
     const state = {

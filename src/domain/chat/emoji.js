@@ -365,7 +365,8 @@ const faceArr = {
     '[NO]': '89',
     '[OK]': '90'
 };
-const textToEmoji = s => {
+
+function textToEmoji(s) {
     s = s.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
 
     // eslint-disable-next-line no-useless-escape
@@ -380,10 +381,10 @@ const textToEmoji = s => {
     textArr.forEach((cont, i) => {
         // 当文字内容不为空 添加到a
         cont &&
-            ret.push({
-                msgType: 'text',
-                msgCont: cont
-            });
+        ret.push({
+            msgType: 'text',
+            msgCont: cont
+        });
 
         // 最后一次循环，肯定没有表情与之对应，所以忽略
         // 如果不是最后一次，添加表情到a
@@ -418,6 +419,7 @@ const textToEmoji = s => {
     });
     return ret;
 };
+
 function getEmojiList() {
     const result = [];
     for (const key in faceArr) {
@@ -430,6 +432,7 @@ function getEmojiList() {
 
     return result;
 }
+
 // 将拆分开的消息数组转换成字符串
 function combinationStr(arr) {
     let result = '';
@@ -444,13 +447,15 @@ function combinationStr(arr) {
 
     return result;
 }
+
 function textToEmojiText(str) {
     const arr = textToEmoji(str);
     const result = combinationStr(arr);
     return result;
 }
-const emojiToPath = key =>
-    key.includes('[删除]')
-        ? `${emojiUrl}/${faceArr[key]}@2x.png`
-        : `${emojiUrl}/Expression_${faceArr[key]}@2x.png`;
-export { getEmojiList, textToEmojiText, emojiToPath, textToEmoji, faceArr, faceArr_v2 };
+
+function emojiToPath(key) {
+    return key.includes('[删除]') ? `${emojiUrl}/${faceArr[key]}@2x.png` : `${emojiUrl}/Expression_${faceArr[key]}@2x.png`;
+}
+
+export {getEmojiList, textToEmojiText, emojiToPath, textToEmoji, faceArr, faceArr_v2};

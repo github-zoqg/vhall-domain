@@ -11,50 +11,50 @@ function useInsertFileServer() {
     const interactiveServer = contextServer.get('interactiveServer');
 
     // 注册插播流加入事件
-    const onInsertFileStreamAdd = cb => {
+    function onInsertFileStreamAdd(cb) {
         interactiveServer.on('interactive_REMOTESTREAM_ADD', e => {
             e.data.attributes = JSON.parse(e.data.attributes);
             if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
                 cb(e);
             }
         });
-    };
+    }
 
     // 注册插播流删除事件
-    const onInsertFileStreamDelete = cb => {
+    function onInsertFileStreamDelete(cb) {
         interactiveServer.on('interactive_REMOTESTREAM_REMOVED', e => {
             cb(e);
         });
-    };
+    }
 
     // 插播流订阅失败
-    const onInsertFileStreamFaild = cb => {
+    function onInsertFileStreamFaild(cb) {
         interactiveServer.on('interactive_REMOTESTREAM_FAILED', e => {
             cb(e);
         });
-    };
+    }
 
     // 获取插播列表
-    const getInsertFileList = (params = {}) => {
+    function getInsertFileList(params = {}) {
         return requestApi.insertFile.getInsertFileList(params);
-    };
+    }
 
     // 删除插播文件
-    const deleteInsertFile = (params = {}) => {
+    function deleteInsertFile(params = {}) {
         return requestApi.insertFile.deleteInsertFile(params);
-    };
+    }
 
     // 检查captureStream是否能用
-    const isCanUseCaptureStream = () => {
+    function isCanUseCaptureStream() {
         const v = document.createElement('video');
         if (typeof v.captureStream !== 'function') {
             return false;
         }
         return true;
-    };
+    }
 
     // 选择音视频文件
-    const selectLocalFile = (onChange = e => {}) => {
+    function selectLocalFile(onChange = e => {}) {
         const { state: roomBaseState } = contextServer.get('roomBaseServer');
 
         let accept = 'video/mp4,video/webm,audio/ogg';
@@ -68,10 +68,10 @@ function useInsertFileServer() {
         };
 
         uploadFile(retParams, onChange);
-    };
+    }
 
     // 创建video标签播放本地音视频文件
-    const createLocalVideoElement = (file, options = {}) => {
+    function createLocalVideoElement(file, options = {}) {
         return new Promise((resolve, reject) => {
             state._isAudio = file.type.includes('ogg');
             const videoElement = document.createElement('video');
@@ -103,10 +103,10 @@ function useInsertFileServer() {
                 }, 100);
             });
         });
-    };
+    }
 
     // 使用canvas抓流
-    const captureStreamByCanvas = () => {
+    function captureStreamByCanvas() {
         //先做检测，存在没有video引用的情况
         if (!state._videoElement) {
             state._videoElement = document.createElement('video');
@@ -143,10 +143,10 @@ function useInsertFileServer() {
         // video track 从[canvas抓取MediaStream对象]中获取
         const videoTrack = canvasStream.getVideoTracks()[0];
         return { audioTrack, videoTrack };
-    };
+    }
 
     // 使用videoElement抓流
-    const captureStreamByVideo = () => {
+    function captureStreamByVideo() {
         let videoStream;
         const videoElement = state._videoElement;
         if (videoElement.captureStream) {
@@ -159,19 +159,19 @@ function useInsertFileServer() {
             }
             return videoStream;
         }
-    };
+    }
 
     // 抓取本地音视频轨道
-    const captureLocalStream = () => {
+    function captureLocalStream() {
         if (state.isChrome88 && !state._isAudio) {
             return captureStreamByCanvas();
         } else {
             return captureStreamByVideo();
         }
-    };
+    }
 
     // 创建本地插播流
-    const createLocalInsertStream = (options = {}) => {
+    function createLocalInsertStream(options = {}) {
         const retSteram = captureLocalStream();
         const { state: roomBaseServerState } = contextServer.get('roomBaseServer');
 
@@ -211,10 +211,10 @@ function useInsertFileServer() {
         const interactiveServer = contextServer.get('interactiveServer');
         console.log('interactiveServer', interactiveServer);
         return interactiveServer.createLocalStream(retOptions);
-    };
+    }
 
     // 推插播流
-    const publishInsertStream = stream => {
+    function publishInsertStream(stream) {
         const interactiveServer = contextServer.get('interactiveServer');
         return new Promise((resolve, reject) => {
             interactiveServer
@@ -225,10 +225,10 @@ function useInsertFileServer() {
                 })
                 .catch(reject);
         });
-    };
+    }
 
     // 停止推流
-    const stopPublishInsertStream = streamId => {
+    function stopPublishInsertStream(streamId) {
         return new Promise((resolve, reject) => {
             const interactiveServer = contextServer.get('interactiveServer');
             console.log('stopPublishInsertStream', streamId);
@@ -240,25 +240,25 @@ function useInsertFileServer() {
                 })
                 .catch(reject);
         });
-    };
+    }
 
     // 订阅插播流
-    const subscribeInsertStream = (options = {}) => {
+    function subscribeInsertStream(options = {}) {
         const interactiveServer = contextServer.get('interactiveServer');
         return interactiveServer.subscribeStream(options);
-    };
+    }
 
     // 取消订阅流
-    const unsubscribeInsertStream = (options = {}) => {
+    function unsubscribeInsertStream(options = {}) {
         const interactiveServer = contextServer.get('interactiveServer');
         return interactiveServer.unSubscribeStream(options);
-    };
+    }
 
     // 设置已经存在的videoElement
-    const setExistVideoElement = videoElement => {
+    function setExistVideoElement(videoElement) {
         state._videoElement = videoElement;
         state._isAudio = videoElement.isAudio;
-    };
+    }
 
     return {
         state,

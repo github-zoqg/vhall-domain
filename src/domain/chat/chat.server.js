@@ -7,7 +7,8 @@ import contextServer from '@/domain/common/context.server.js';
 import requestApi from '@/request/index.js';
 
 export default function useChatServer() {
-    const state = {
+
+    let state = {
         //聊天记录
         chatList: [],
         //过滤的敏感词列表
@@ -38,12 +39,12 @@ export default function useChatServer() {
     const { roomId = '', roleName, avatar = '' } = roomServer.state.watchInitData;
 
     //setSate
-    const setState = (key, value) => {
+    function setState(key, value) {
         state[key] = value;
-    };
+    }
 
     //接收聊天消息
-    const getHistoryMsg = async (params = {}, from = '观看端') => {
+    async function getHistoryMsg(params = {}, from = '观看端') {
         //请求获取聊天消息
         let backData = await fetchHistoryData(params);
 
@@ -51,7 +52,7 @@ export default function useChatServer() {
             .map(item => {
                 //处理普通内容
                 item.data.text_content &&
-                    (item.data.text_content = textToEmojiText(item.data.text_content));
+                (item.data.text_content = textToEmojiText(item.data.text_content));
 
                 //处理图片预览
                 item.data.image_urls && _handleImgUrl(item.data.image_urls);
@@ -74,7 +75,7 @@ export default function useChatServer() {
             .reduce((acc, curr) => {
                 const showTime = curr.showTime;
                 acc.some(s => s.showTime === showTime)
-                    ? acc.push({ ...curr, showTime: '' })
+                    ? acc.push({...curr, showTime: ''})
                     : acc.push(curr);
                 return acc;
             }, [])
@@ -101,16 +102,16 @@ export default function useChatServer() {
             chatList: state.chatList,
             imgUrls: state.imgUrls || []
         };
-    };
+    }
 
     // 清空聊天消息
-    const clearHistoryMsg = () => {
+    function clearHistoryMsg() {
         state.chatList.splice(0, state.chatList.length);
-    };
+    }
 
     //发送聊天消息
-    const sendMsg = (params = {}) => {
-        let { inputValue, needFilter = true, data = {}, context = {} } = params;
+    function sendMsg(params = {}) {
+        let {inputValue, needFilter = true, data = {}, context = {}} = params;
         // let filterStatus = checkHasKeyword(needFilter, inputValue);
         // return new Promise((resolve, reject) => {
         //     if (roleName != 2 || (roleName == 2 && filterStatus)) {
@@ -125,20 +126,20 @@ export default function useChatServer() {
             msgServer.sendChatMsg(data, context);
             resolve();
         });
-    };
+    }
 
     //发起请求，或者聊天记录数据
-    const fetchHistoryData = params => {
+    function fetchHistoryData(params) {
         return iMRequest.chat.getChatList(params);
-    };
+    }
 
     //获取keywordList
-    const setKeywordList = (list = []) => {
+    function setKeywordList(list = []) {
         state.keywordList = list;
-    };
+    }
 
     //检测是否包含敏感词
-    const checkHasKeyword = (needFilter = true, inputValue) => {
+    function checkHasKeyword(needFilter = true, inputValue) {
         let filterStatus = true;
 
         if (needFilter && state.keywordList.length) {
@@ -147,15 +148,15 @@ export default function useChatServer() {
         }
 
         return filterStatus;
-    };
+    }
 
     //私有方法，处理图片链接
-    const _handleImgUrl = rawData => {
+    function _handleImgUrl(rawData) {
         state.imgUrls.push(...rawData);
-    };
+    }
 
     //私有方法，处理私聊列表
-    const _handlePrivateChatList = (item, list = [], from = '观看端') => {
+    function _handlePrivateChatList(item, list = [], from = '观看端') {
         if (['观看端'].includes(from)) {
             return list.map(a => {
                 item.data.text_content = item.data.text_content.replace(
@@ -183,10 +184,10 @@ export default function useChatServer() {
                 return a;
             });
         }
-    };
+    }
 
     //私有方法，组装消息（暂时按照的h5版本的,大致数据一致，具体业务逻辑操作有差异，后续返回一个promise，并返回未处理的原始数据，由视图自己决定如何处理）
-    const _handleGenerateMsg = (item = {}, from = '') => {
+    function _handleGenerateMsg(item = {}, from = '') {
         let params = {};
 
         if (['观看端', '发起端'].includes(from)) {
@@ -247,7 +248,7 @@ export default function useChatServer() {
             }
         }
         return resultMsg;
-    };
+    }
 
     /**
      * 禁言

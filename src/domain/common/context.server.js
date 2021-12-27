@@ -1,27 +1,28 @@
 function useContextServer() {
-    const state = {
+
+    let state = {
         serverPool: {}
     };
 
-    const set = (key, server) => {
-        const { serverPool } = state;
+    function set(key, server) {
+        const {serverPool} = state;
         serverPool[key] = server;
-    };
+    }
 
-    const get = key => {
-        const { serverPool } = state;
+    function get(key) {
+        const {serverPool} = state;
         return serverPool[key];
-    };
+    }
 
-    const show = () => {
-        const { serverPool } = state;
-        return { ...serverPool };
-    };
+    function show() {
+        const {serverPool} = state;
+        return {...serverPool};
+    }
 
-    const clear = () => {
-        const { serverPool } = state;
+    function clear(){
+        let { serverPool } = state;
         serverPool = {};
-    };
+    }
 
     return { set, get, show, clear };
 }

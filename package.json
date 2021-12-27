@@ -24,14 +24,11 @@
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-hot": "^0.1.1",
-    "rollup-plugin-uglify": "^6.0.4"
-  },
-  "dependencies": {
+    "rollup-plugin-uglify": "^6.0.4",
     "babel-eslint": "^10.1.0",
     "eslint": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "lint-staged": "^12.1.4",
-    "merge": "^2.1.1",
     "prettier": "^2.5.1"
   },
   "gitHooks": {

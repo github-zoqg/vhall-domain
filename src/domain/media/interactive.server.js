@@ -9,224 +9,251 @@ export default function useInteractiveServer() {
         remoteStreams: [] // 远端流数组
     };
 
-    const init = option => {
+    function init(option) {
         const roomInitGroupServer = contextServer.get('roomInitGroupServer');
         state.vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
         return state.vhallSaasInstance.createInteractive(option).then(interactives => {
-            console.log('5555555555555createInteractive');
             state.interactiveInstance = interactives;
-            // setTimeout(()=>{
-            //     console.log('555888888createInteractive');
-            //     state.interactiveInstance.listenEvents()
-            // },2000)
-            console.log('5555state.interactiveInstance', interactives, interactives.getRoomInfo());
             return interactives;
         });
-    };
+    }
 
     // 监听事件
-    const on = (type, callback) => {
-        // console.log('ON INTERACTIVE REGSITER SUCCESS',type);
-
+    function on(type, callback) {
         return state.interactiveInstance.$on(type, callback);
-    };
+    }
 
     // 销毁实例
-    const destroyInit = () => {
+    function destroyInit() {
         return state.interactiveInstance.destroyInit();
-    };
+    }
+
     // 基础api
     // 常见本地流
-    const createLocalStream = (options = {}, addConfig = {}) => {
+    function createLocalStream(options = {}, addConfig = {}) {
         return state.interactiveInstance.createLocalStream(options);
-    };
+    }
+
     // 创建摄像头视频流
-    const createLocalVideoStream = (options = {}, addConfig = {}) => {
+    function createLocalVideoStream(options = {}, addConfig = {}) {
         return state.interactiveInstance.createLocalVideoStream(options, addConfig);
-    };
+    }
+
     // 创建桌面共享流
-    const createLocaldesktopStream = (options = {}, addConfig = {}) => {
+    function createLocaldesktopStream(options = {}, addConfig = {}) {
         return state.interactiveInstance.createLocaldesktopStream(options, addConfig);
-    };
+    }
+
     // 创建本地音频流
-    const createLocalAudioStream = (options = {}, addConfig = {}) => {
+    function createLocalAudioStream(options = {}, addConfig = {}) {
         return state.interactiveInstance.createLocalAudioStream(options, addConfig);
-    };
+    }
+
     // 创建图片推流
-    const createLocalPhotoStream = (options = {}, addConfig = {}) => {
+    function createLocalPhotoStream(options = {}, addConfig = {}) {
         return state.interactiveInstance.createLocalPhotoStream(options, addConfig);
-    };
+    }
+
     // 销毁额本地流
-    const destroyStream = streamId => {
+    function destroyStream(streamId) {
         return state.interactiveInstance.destroyStream(streamId || state.streamId);
-    };
+    }
+
     // 推送本地流到远端
-    const publishStream = (options = {}) => {
+    function publishStream(options = {}) {
         return state.interactiveInstance.publishStream({
             streamId: options.streamId || state.streamId
         });
-    };
+    }
+
     // 取消推送到远端的流
-    const unpublishStream = streamId => {
+    function unpublishStream(streamId) {
         return state.interactiveInstance.unpublishStream(streamId || state.streamId);
-    };
+    }
+
     // 订阅远端流
-    const subscribeStream = (options = {}) => {
+    function subscribeStream(options = {}) {
         return state.interactiveInstance.subscribeStream(options);
-    };
+    }
+
     // 取消订阅远端流
-    const unSubscribeStream = streamId => {
+    function unSubscribeStream(streamId) {
         return state.interactiveInstance.unSubscribeStream(streamId);
-    };
+    }
+
     // 设置大小流
-    const setDual = (options = {}) => {
+    function setDual(options = {}) {
         return state.interactiveInstance.setDual(options);
-    };
+    }
+
     // 改变视频的禁用和启用
-    const muteVideo = (options = {}) => {
+    function muteVideo(options = {}) {
         return state.interactiveInstance.muteVideo(options);
-    };
+    }
+
     // 改变音频的禁用和启用
-    const muteAudio = (options = {}) => {
+    function muteAudio(options = {}) {
         return state.interactiveInstance.muteAudio(options);
-    };
+    }
+
     // 开启旁路
-    const startBroadCast = (options = {}, addConfig = {}) => {
+    function startBroadCast(options = {}, addConfig = {}) {
         return state.interactiveInstance.startBroadCast(options, addConfig);
-    };
+    }
+
     // 停止旁路
-    const stopBroadCast = () => {
+    function stopBroadCast() {
         return state.interactiveInstance.stopBroadCast();
-    };
+    }
+
     // 动态配置指定旁路布局模板
-    const setBroadCastLayout = (options = {}) => {
+    function setBroadCastLayout(options = {}) {
         return state.interactiveInstance.setBroadCastLayout(options);
-    };
+    }
+
     // 配置旁路布局自适应模式
-    const setBroadCastAdaptiveLayoutMode = (options = {}) => {
+    function setBroadCastAdaptiveLayoutMode(options = {}) {
         return state.interactiveInstance.setBroadCastAdaptiveLayoutMode(options);
-    };
+    }
+
     // 动态配置旁路主屏
-    const setBroadCastScreen = (mainScreenStreamId = '') => {
+    function setBroadCastScreen(mainScreenStreamId = '') {
         return state.interactiveInstance.setBroadCastScreen(mainScreenStreamId);
-    };
+    }
+
     // 获取全部音视频列表
-    const getDevices = () => {
+    function getDevices() {
         return state.interactiveInstance.getDevices();
-    };
+    }
+
     // 获取摄像头列表
-    const getCameras = () => {
+    function getCameras() {
         return state.interactiveInstance.getCameras();
-    };
+    }
+
     // 获取麦克风列表
-    const getMicrophones = () => {
+    function getMicrophones() {
         return state.interactiveInstance.getMicrophones();
-    };
+    }
+
     // 获取扬声器列表
-    const getSpeakers = () => {
+    function getSpeakers() {
         return state.interactiveInstance.getSpeakers();
-    };
+    }
+
     // 获取设备的分辨率
-    const getVideoConstraints = (deviceId = '') => {
+    function getVideoConstraints(deviceId = '') {
         return state.interactiveInstance.getVideoConstraints(deviceId);
-    };
+    }
+
     // 配置本地流视频质量参数
-    const setVideoProfile = (options = {}) => {
+    function setVideoProfile(options = {}) {
         return state.interactiveInstance.setVideoProfile(options);
-    };
+    }
+
     // 是否支持桌面共享
-    const isScreenShareSupported = () => {
+    function isScreenShareSupported() {
         return state.interactiveInstance.isScreenShareSupported();
-    };
+    }
+
     // 检查当前浏览器支持性
-    const checkSystemRequirements = async () => {
+    async function checkSystemRequirements() {
         if (!state.interactiveInstance) return;
         return state.interactiveInstance.checkSystemRequirements();
-    };
+    }
+
     // 获取上下行丢包率
-    const getPacketLossRate = () => {
+    function getPacketLossRate() {
         return state.interactiveInstance.getPacketLossRate();
-    };
+    }
+
     // 获取流上下行丢包率
-    const getStreamPacketLoss = (options = {}) => {
+    function getStreamPacketLoss(options = {}) {
         return state.interactiveInstance.getStreamPacketLoss(options);
-    };
+    }
+
     // 获取房间流信息
-    const getRoomStreams = () => {
+    function getRoomStreams() {
         return state.interactiveInstance.getRoomStreams();
-    };
+    }
+
     // 获取房间总的流信息(本地流加远端流)
-    const getRoomInfo = () => {
+    function getRoomInfo() {
         return state.interactiveInstance.getRoomInfo();
-    };
+    }
+
     // 获取流音频能量
-    const getAudioLevel = streamId => {
+    function getAudioLevel(streamId) {
         return state.interactiveInstance.getAudioLevel(streamId);
-    };
+    }
+
     // 获取流的mute状态
-    const getStreamMute = streamId => {
+    function getStreamMute(streamId) {
         return state.interactiveInstance.getStreamMute(streamId);
-    };
+    }
 
     // 获取当前流的信息,返回一个数组
-    const currentStreams = () => {
+    function currentStreams() {
         return state.interactiveInstance.currentStreams;
-    };
+    }
+
     // 上麦
-    const speakOn = (data = {}) => {
+    function speakOn(data = {}) {
         return requestApi.mic.speakOn(data);
-    };
+    }
 
     // 下麦
-    const speakOff = (data = {}) => {
+    function speakOff(data = {}) {
         return requestApi.mic.speakOff(data);
-    };
+    }
 
-    const speakUserOff = (data = {}) => {
+    function speakUserOff(data = {}) {
         return requestApi.mic.speakUserOff(data);
-    };
+    }
 
     // 设置主屏
-    const setMainScreen = (data = {}) => {
+    function setMainScreen(data = {}) {
         return requestApi.interactive.setMainScreen(data);
-    };
+    }
 
     // 设置主讲人
-    const setSpeaker = (data = {}) => {
+    function setSpeaker(data = {}) {
         return requestApi.interactive.setSpeaker(data);
-    };
+    }
 
     // 设置（麦克风-1 摄像头-2）
-    const setRoomDevice = (data = {}) => {
+    function setRoomDevice(data = {}) {
         return requestApi.interactive.setRoomDevice(data);
-    };
+    }
 
     // 允许举手
-    const setHandsup = (data = {}) => {
+    function setHandsup(data = {}) {
         return requestApi.mic.setHandsUp(data);
-    };
+    }
 
     // 邀请上麦
-    const inviteMic = (data = {}) => {
+    function inviteMic(data = {}) {
         return requestApi.mic.inviteMic(data);
-    };
+    }
+
     // 取消申请
-    const cancelApply = (data = {}) => {
+    function cancelApply(data = {}) {
         return requestApi.mic.cancelApply(data);
-    };
+    }
+
     // 拒绝邀请
-    const refuseInvite = (data = {}) => {
+    function refuseInvite(data = {}) {
         return requestApi.mic.refuseInvite(data);
-    };
+    }
 
     // 组合api
-    const startPushStream = () => {
+    function startPushStream() {
         console.log('state:', state);
         createLocalAndStream(state.interactiveInstance);
-    };
+    }
 
     // 创建本地的推流和推流
-    const createLocalAndStream = interactive => {
+    function createLocalAndStream(interactive) {
         let camerasList = null,
             micropsList = null,
             videoConstraintsList = null,
@@ -277,9 +304,9 @@ export default function useInteractiveServer() {
             .catch(err => {
                 console.log('getDevies is failed::', err);
             });
-    };
+    }
 
-    const pulishStream = streamId => {
+    function pulishStream(streamId) {
         interactive
             .publishStream({ streamId })
             .then(res => {
@@ -288,30 +315,29 @@ export default function useInteractiveServer() {
             .catch(err => {
                 console.log('publish is failed::', err);
             });
-    };
+    }
 
     // 订阅流列表
-    const remoteStreamList = () => {
+    function remoteStreamList() {
         state.remoteStreams = state.interactiveInstance.getRemoteStreams();
         for (const remoteStream in state.interactiveInstance.getRemoteStreams()) {
             state.remoteStreams.push(remoteStream);
         }
         return state.remoteStreams;
-    };
+    }
 
     // sdk的监听事件
-    const listenerSdk = () => {
+    function listenerSdk() {
         state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
             // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-            console.log('55555remote stream add info::', e);
             // state.remoteStreams.push(e)
         });
         state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
             // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-            console.log('55555remote stream remove info::', e);
             // state.remoteStreams.filter(item => item.streamId == e.streamId)
         });
-    };
+    }
+
     return {
         state,
         init,

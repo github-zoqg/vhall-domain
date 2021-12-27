@@ -13,7 +13,7 @@ export default function usePlayerServer() {
 
     let vhallSaasInstance = null;
 
-    const init = options => {
+    function init(options) {
         const roomInitGroupServer = contextServer.get('roomInitGroupServer');
         if (roomInitGroupServer) {
             vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
@@ -26,136 +26,136 @@ export default function usePlayerServer() {
             state.markPoints = state.playerInstance.markPoints;
             return true;
         });
-    };
+    }
 
-    const setType = (type = 'live') => {
+    function setType(type = 'live') {
         state.type = type;
-    };
+    }
 
-    const play = () => {
+    function play() {
         return state.playerInstance.play();
-    };
+    }
 
-    const pause = () => {
+    function pause() {
         return state.playerInstance.pause();
-    };
+    }
 
-    const isPause = () => {
+    function isPause() {
         return state.playerInstance.isPause();
-    };
+    }
 
-    const getQualitys = () => {
+    function getQualitys() {
         return state.playerInstance.getQualitys();
-    };
+    }
 
-    const getCurrentQuality = () => {
+    function getCurrentQuality() {
         return state.playerInstance.getCurrentQuality();
-    };
+    }
 
-    const setQuality = () => {
+    function setQuality() {
         return state.playerInstance.setQuality();
-    };
+    }
 
-    const enterFullScreen = () => {
+    function enterFullScreen() {
         return state.playerInstance.enterFullScreen();
-    };
+    }
 
-    const exitFullScreen = () => {
+    function exitFullScreen() {
         return state.playerInstance.exitFullScreen();
-    };
+    }
 
-    const setMute = () => {
+    function setMute() {
         return state.playerInstance.setMute();
-    };
+    }
 
-    const getVolume = () => {
+    function getVolume() {
         return state.playerInstance.getVolume();
-    };
+    }
 
-    const setVolume = val => {
+    function setVolume(val) {
         state.voice = val;
         return state.playerInstance.setVolume(val);
-    };
+    }
 
-    const getDuration = (onFail = () => {}) => {
+    function getDuration(onFail = () => {}) {
         return state.playerInstance.getDuration(onFail);
-    };
+    }
 
-    const getCurrentTime = () => {
+    function getCurrentTime() {
         return state.playerInstance.getCurrentTime();
-    };
+    }
 
-    const setCurrentTime = val => {
+    function setCurrentTime(val) {
         return state.playerInstance.setCurrentTime(val);
-    };
+    }
 
-    const getUsableSpeed = () => {
+    function getUsableSpeed() {
         return state.playerInstance.getUsableSpeed();
-    };
+    }
 
-    const setPlaySpeed = val => {
+    function setPlaySpeed(val) {
         return state.playerInstance.setPlaySpeed(val);
-    };
+    }
 
-    const openControls = status => {
+    function openControls(status) {
         return state.playerInstance.openControls(status);
-    };
+    }
 
-    const openUI = status => {
+    function openUI(status) {
         return state.playerInstance.openUI(status);
-    };
+    }
 
-    const setResetVideo = val => {
+    function setResetVideo(val) {
         return state.playerInstance.setResetVideo(val);
-    };
+    }
 
-    const setBarrageInfo = val => {
+    function setBarrageInfo(val) {
         return state.playerInstance.setBarrageInfo(val);
-    };
+    }
 
-    const addBarrage = val => {
+    function addBarrage(val) {
         return state.playerInstance.addBarrage(val);
-    };
+    }
 
-    const toggleBarrage = () => {
+    function toggleBarrage() {
         return state.playerInstance.toggleBarrage();
-    };
+    }
 
     //开启弹幕显示
-    const openBarrage = () => {
+    function openBarrage() {
         return state.playerInstance.toggleBarrage(true);
-    };
+    }
 
     //关闭弹幕显示
-    const closeBarrage = () => {
+    function closeBarrage() {
         return state.playerInstance.toggleBarrage(false);
-    };
+    }
 
     //清除弹幕显示
-    const clearBarrage = () => {
+    function clearBarrage() {
         return state.playerInstance.clearBarrage();
-    };
+    }
 
-    const toggleSubtitle = () => {
+    function toggleSubtitle() {
         return state.playerInstance.toggleSubtitle();
-    };
+    }
 
-    const on = (type, cb) => {
+    function on(type, cb) {
         state.playerInstance.$on(type, cb);
-    };
+    }
 
-    const emit = (type, params) => {
+    function emit(type, params) {
         state.playerInstance.$emit(type, params);
-    };
+    }
 
-    const getPlayerConfig = params => {
+    function getPlayerConfig(params) {
         return requestApi.player.getPlayerConfig(params).then(res => {
             state.playerConfig = res.date;
             return res;
         });
-    };
+    }
 
-    const destroy = () => {};
+    function destroy() {}
 
     return {
         state,
