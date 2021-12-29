@@ -77,7 +77,7 @@ export default function usePlayerServer() {
         return state.playerInstance.setVolume(val);
     }
 
-    function getDuration(onFail = () => {}) {
+    function getDuration(onFail = () => { }) {
         return state.playerInstance.getDuration(onFail);
     }
 
@@ -150,12 +150,12 @@ export default function usePlayerServer() {
 
     function getPlayerConfig(params) {
         return requestApi.player.getPlayerConfig(params).then(res => {
-            state.playerConfig = res.date;
+            state.playerConfig = res.data;
             return res;
         });
     }
 
-    function destroy() {}
+    function destroy() { }
 
     return {
         state,
