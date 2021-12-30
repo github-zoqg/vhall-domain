@@ -72,7 +72,6 @@ export default function useRoomInitGroupServer(options = {}) {
             // 如果是分组直播
             roomBaseServer.setGroupType(true);
         }
-        await roomBaseServer.getConfigList();
 
         return true;
     }
@@ -106,7 +105,6 @@ export default function useRoomInitGroupServer(options = {}) {
             roomBaseServer.setGroupType(true);
             await roomBaseServer.getGroupInitData();
         }
-        await roomBaseServer.getConfigList();
         return true;
     }
 
