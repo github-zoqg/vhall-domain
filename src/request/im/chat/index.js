@@ -153,6 +153,7 @@ export default {
     setKicked,
     deleteMessage,
     batchDeleteMessage,
-
+    deleteRoomMessage,
+    deleteUserMessage,
     sendCustomMessage
 };

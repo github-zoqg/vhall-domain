@@ -1,19 +1,19 @@
 import contextServer from '../common/context.server';
 import requestApi from '@/request/index.js';
+export default class UsePlayerServer {
+    constructor() {
+        this.state = {
+            playerInstance: null,
+            isPlaying: false,
+            markPoints: [],
+            type: 'live', // live or vod
+            voice: 60,
+            playerConfig: {} // 播放器配置
+        };
+        this.vhallSaasInstance = null
+    }
 
-export default function usePlayerServer() {
-    let state = {
-        playerInstance: null,
-        isPlaying: false,
-        markPoints: [],
-        type: 'live', // live or vod
-        voice: 60,
-        playerConfig: {} // 播放器配置
-    };
-
-    let vhallSaasInstance = null;
-
-    function init(options) {
+    init(options) {
         const roomInitGroupServer = contextServer.get('roomInitGroupServer');
         if (roomInitGroupServer) {
             vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
@@ -22,174 +22,139 @@ export default function usePlayerServer() {
         }
 
         return vhallSaasInstance.createPlayer(options).then(instance => {
-            state.playerInstance = instance;
-            state.markPoints = state.playerInstance.markPoints;
+            this.state.playerInstance = instance;
+            this.state.markPoints = this.state.playerInstance.markPoints;
             return true;
         });
     }
 
-    function setType(type = 'live') {
-        state.type = type;
+    setType(type = 'live') {
+        this.state.type = type;
     }
 
-    function play() {
-        return state.playerInstance.play();
+    play() {
+        return this.state.playerInstance.play();
     }
 
-    function pause() {
-        return state.playerInstance.pause();
+    pause() {
+        return this.state.playerInstance.pause();
     }
 
-    function isPause() {
-        return state.playerInstance.isPause();
+    isPause() {
+        return this.state.playerInstance.isPause();
     }
 
-    function getQualitys() {
-        return state.playerInstance.getQualitys();
+    getQualitys() {
+        return this.state.playerInstance.getQualitys();
     }
 
-    function getCurrentQuality() {
-        return state.playerInstance.getCurrentQuality();
+    getCurrentQuality() {
+        return this.state.playerInstance.getCurrentQuality();
     }
 
-    function setQuality() {
-        return state.playerInstance.setQuality();
+    setQuality() {
+        return this.state.playerInstance.setQuality();
     }
 
-    function enterFullScreen() {
-        return state.playerInstance.enterFullScreen();
+    enterFullScreen() {
+        return this.state.playerInstance.enterFullScreen();
     }
 
-    function exitFullScreen() {
-        return state.playerInstance.exitFullScreen();
+    exitFullScreen() {
+        return this.state.playerInstance.exitFullScreen();
     }
 
-    function setMute() {
-        return state.playerInstance.setMute();
+    setMute() {
+        return this.state.playerInstance.setMute();
     }
 
-    function getVolume() {
-        return state.playerInstance.getVolume();
+    getVolume() {
+        return this.state.playerInstance.getVolume();
     }
 
-    function setVolume(val) {
-        state.voice = val;
-        return state.playerInstance.setVolume(val);
+    setVolume(val) {
+        this.state.voice = val;
+        return this.state.playerInstance.setVolume(val);
     }
 
-    function getDuration(onFail = () => {}) {
-        return state.playerInstance.getDuration(onFail);
+    getDuration(onFail = () => { }) {
+        return this.state.playerInstance.getDuration(onFail);
     }
 
-    function getCurrentTime() {
-        return state.playerInstance.getCurrentTime();
+    getCurrentTime() {
+        return this.state.playerInstance.getCurrentTime();
     }
 
-    function setCurrentTime(val) {
-        return state.playerInstance.setCurrentTime(val);
+    setCurrentTime(val) {
+        return this.state.playerInstance.setCurrentTime(val);
     }
 
-    function getUsableSpeed() {
-        return state.playerInstance.getUsableSpeed();
+    getUsableSpeed() {
+        return this.state.playerInstance.getUsableSpeed();
     }
 
-    function setPlaySpeed(val) {
-        return state.playerInstance.setPlaySpeed(val);
+    setPlaySpeed(val) {
+        return this.state.playerInstance.setPlaySpeed(val);
     }
 
-    function openControls(status) {
-        return state.playerInstance.openControls(status);
+    openControls(status) {
+        return this.state.playerInstance.openControls(status);
     }
 
-    function openUI(status) {
-        return state.playerInstance.openUI(status);
+    openUI(status) {
+        return this.state.playerInstance.openUI(status);
     }
 
-    function setResetVideo(val) {
-        return state.playerInstance.setResetVideo(val);
+    setResetVideo(val) {
+        return this.state.playerInstance.setResetVideo(val);
     }
 
-    function setBarrageInfo(val) {
-        return state.playerInstance.setBarrageInfo(val);
+    setBarrageInfo(val) {
+        return this.state.playerInstance.setBarrageInfo(val);
     }
 
-    function addBarrage(val) {
-        return state.playerInstance.addBarrage(val);
+    addBarrage(val) {
+        return this.state.playerInstance.addBarrage(val);
     }
 
-    function toggleBarrage() {
-        return state.playerInstance.toggleBarrage();
+    toggleBarrage() {
+        return this.state.playerInstance.toggleBarrage();
     }
 
     //开启弹幕显示
-    function openBarrage() {
-        return state.playerInstance.toggleBarrage(true);
+    openBarrage() {
+        return this.state.playerInstance.toggleBarrage(true);
     }
 
     //关闭弹幕显示
-    function closeBarrage() {
-        return state.playerInstance.toggleBarrage(false);
+    closeBarrage() {
+        return this.state.playerInstance.toggleBarrage(false);
     }
 
     //清除弹幕显示
-    function clearBarrage() {
-        return state.playerInstance.clearBarrage();
+    clearBarrage() {
+        return this.state.playerInstance.clearBarrage();
     }
 
-    function toggleSubtitle() {
-        return state.playerInstance.toggleSubtitle();
+    toggleSubtitle() {
+        return this.state.playerInstance.toggleSubtitle();
     }
 
-    function on(type, cb) {
-        state.playerInstance.$on(type, cb);
+    on(type, cb) {
+        this.state.playerInstance.$on(type, cb);
     }
 
-    function emit(type, params) {
-        state.playerInstance.$emit(type, params);
+    emit(type, params) {
+        this.state.playerInstance.$emit(type, params);
     }
 
-    function getPlayerConfig(params) {
+    getPlayerConfig(params) {
         return requestApi.player.getPlayerConfig(params).then(res => {
-            state.playerConfig = res.date;
+            this.state.playerConfig = res.data;
             return res;
         });
     }
 
-    function destroy() {}
+    destroy() { }
 
-    return {
-        state,
-        setType,
-        init,
-        on,
-        emit,
-        destroy,
-        play,
-        pause,
-        isPause,
-        getQualitys,
-        getCurrentQuality,
-        setQuality,
-        enterFullScreen,
-        exitFullScreen,
-        setMute,
-        getVolume,
-        setVolume,
-        getDuration,
-        getCurrentTime,
-        setCurrentTime,
-        getUsableSpeed,
-        setPlaySpeed,
-        openControls,
-        openUI,
-        setResetVideo,
-        setBarrageInfo,
-        addBarrage,
-        toggleBarrage,
-        openBarrage,
-        closeBarrage,
-        clearBarrage,
-        toggleSubtitle,
-        getPlayerConfig
-    };
 }
