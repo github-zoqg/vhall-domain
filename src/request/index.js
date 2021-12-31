@@ -1,4 +1,4 @@
-import '../libs/sdk.js';
+import VhallSaasSDK from '@/sdk'
 import roomBase from './roomBase.js';
 import user from './user.js';
 import insertFile from './insertFile.js';
@@ -17,7 +17,7 @@ import player from './player.js';
 
 class RequestApi {
     constructor() {
-        this.live = window.VhallSaasSDK.requestApi.live;
+        this.live = VhallSaasSDK.requestApi.live;
         this.roomBase = roomBase;
         this.user = user;
         this.insertFile = insertFile;
