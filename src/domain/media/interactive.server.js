@@ -7,7 +7,7 @@ export default class UseInteractiveServer {
       interactiveInstance: null, // 互动实例
       streamId: null,
       remoteStreams: [] // 远端流数组
-    }
+    };
   }
   //初始化
   init(option) {
@@ -216,9 +216,7 @@ export default class UseInteractiveServer {
       .getDevices()
       .then(data => {
         console.log('devices list::', data);
-        camerasList = data.videoInputDevices.filter(
-          d => d.label && d.deviceId != 'desktopScreen'
-        );
+        camerasList = data.videoInputDevices.filter(d => d.label && d.deviceId != 'desktopScreen');
         micropsList = data.audioInputDevices.filter(
           d => d.deviceId != 'default' && d.deviceId != 'communications' && d.label
         );
