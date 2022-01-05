@@ -20,21 +20,21 @@ import useMemberServer from '@/domain/member/member.server.js';
 import useGroupDiscussionServer from '@/domain/room/groupDiscussion.server.js';
 
 export {
-    contextServer,
-    useMsgServer,
-    useRoomBaseServer,
-    useUserServer,
-    usePlayerServer,
-    useVirtualAudienceServer,
-    useRoomInitGroupServer,
-    useInteractiveServer,
-    useMediaCheckServer,
-    useInsertFileServer,
-    useDesktopShareServer,
-    useChatServer,
-    useMicServer,
-    useDocServer,
-    useNoticeServer,
-    useMemberServer,
-    useGroupDiscussionServer
+  contextServer,
+  useMsgServer,
+  useRoomBaseServer,
+  useUserServer,
+  usePlayerServer,
+  useVirtualAudienceServer,
+  useRoomInitGroupServer,
+  useInteractiveServer,
+  useMediaCheckServer,
+  useInsertFileServer,
+  useDesktopShareServer,
+  useChatServer,
+  useMicServer,
+  useDocServer,
+  useNoticeServer,
+  useMemberServer,
+  useGroupDiscussionServer
 };
