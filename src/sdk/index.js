@@ -1,7 +1,6 @@
 import { mountSDK } from '@/utils/loader.js';
-import store from './store/index.js';
 import passSdk from './lib/pass-sdk.js';
-class VhallSaasSDK {
+class VhallPaasSDK {
   static loadStatus = 'loading';
   //初始化成功回调
   static initSuccessHooks = [];
@@ -9,9 +8,7 @@ class VhallSaasSDK {
   static initErrorHooks = [];
   static readyModules = {};
   //加载pass-sdk
-  static init(options = { clientType: 'send', receiveType: 'standard', plugins: [] }) {
-    this.setRequestConfig(options);
-    this.setClientType(options.clientType);
+  static init(options = { plugins: [] }) {
     this.loadSdk(options.plugins);
     return this;
   }
@@ -38,6 +35,7 @@ class VhallSaasSDK {
       console.error('加载vhall-pass-sdk失败', error);
     }
   }
+  //注册加载成功回调
   static onSuccess(callback) {
     if (this.loadStatus === 'success') {
       callback(this.readyModules);
@@ -46,6 +44,7 @@ class VhallSaasSDK {
     this.initSuccessHooks.push(callback);
     return this;
   }
+  //注册加载失败回调
   static OnError(callback) {
     if (this.loadStatus === 'failed') {
       callback(this);
@@ -55,4 +54,4 @@ class VhallSaasSDK {
     return this;
   }
 }
-export default VhallSaasSDK;
+export default VhallPaasSDK;
