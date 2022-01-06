@@ -5,7 +5,6 @@ import useInteractiveServer from '@/domain/media/interactive.server.js';
 import { getBaseUrl, setToken, setRequestHeaders } from '@/utils/http.js';
 import { merge } from '@/utils/index.js';
 import useMicServer from '@/domain/media/mic.server.js';
-import VhallPaasSDK from '../../sdk';
 
 export default function useRoomInitGroupServer(options = {}) {
   let state = {
@@ -36,10 +35,17 @@ export default function useRoomInitGroupServer(options = {}) {
       setRequestHeaders(options.requestHeaders);
     }
   }
+
+  function initSdk() {
+    return new Promise((resolve, reject) => {
+      state.vhallSaasInstance = new window.VhallSaasSDK();
+      addToContext();
+      resolve();
+    });
+  }
+
   async function initSendLive(customOptions = {}) {
-    VhallPaasSDK.init({
-      plugins: customOptions.plugins || ['chat', 'player', 'doc', 'interaction']
-    })
+    await initSdk();
     const defaultOptions = {
       clientType: 'send',
       development: true,
@@ -71,9 +77,7 @@ export default function useRoomInitGroupServer(options = {}) {
   }
 
   async function initReceiveLive(customOptions = {}) {
-    VhallPaasSDK.init({
-      plugins: customOptions.plugins || ['chat', 'player', 'doc', 'interaction']
-    })
+    initSdk();
     const defaultOptions = {
       clientType: 'receive',
       development: true,

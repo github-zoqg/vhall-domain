@@ -1,4 +1,4 @@
-import requestApi from '@/request/index.js';
+import { im as imRequest } from '@/request/index.js';
 export default function userMemberServer() {
   let state = {
     //在线的成员
@@ -17,7 +17,6 @@ export default function userMemberServer() {
     raiseHandTip: false
   };
 
-  const imRequest = requestApi.im;
 
   //设置state的值
   function setState(key, value) {

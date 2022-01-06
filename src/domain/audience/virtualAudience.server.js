@@ -1,4 +1,4 @@
-import requestApi from '../../request/index';
+import { virtualClient } from '../../request/index';
 
 export default function useVirtualClientStartServe() {
   let state = {
@@ -13,15 +13,15 @@ export default function useVirtualClientStartServe() {
   };
 
   function virtualClientStart(data = {}) {
-    return requestApi.virtualClient.virtualClientStart(data);
+    return virtualClient.virtualClientStart(data);
   }
 
   function virtualAccumulation(data = {}) {
-    return requestApi.virtualClient.virtualAccumulation(data);
+    return virtualClient.virtualAccumulation(data);
   }
 
   function virtualClientGet(data = {}) {
-    let http = requestApi.virtualClient.virtualClientGet(data);
+    let http = virtualClientGet(data);
     http.then(res => {
       state.person.pv = res.data.pv;
       state.person.basePv = res.data.base_pv;
