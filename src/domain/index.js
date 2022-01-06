@@ -31,23 +31,21 @@ class Domain {
     //加载passSdk
     VhallPaasSDK.init({
       plugins: options.plugins || ['chat', 'player', 'doc', 'interaction']
-    }).onSuccess((controllers) => {
-      this.controllers = controllers
-    })
+    }).onSuccess(controllers => {
+      this.controllers = controllers;
+    });
     this.setRequestConfig(options);
   }
   //设置请求相关配置
   setRequestConfig(options) {
-    const { token, liveToken, requestHeaders } = options
+    const { token, liveToken, requestHeaders } = options;
     setToken(token, liveToken);
     requestHeaders && setRequestHeaders(requestHeaders);
   }
   //初始化房间信息
   initRoom(options) {
     const roomBaseServer = new RoomBaseServer();
-    roomBaseServer.initLive(options).then(res => {
-
-    })
+    roomBaseServer.initLive(options).then(res => {});
   }
 }
 export {
