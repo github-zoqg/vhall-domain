@@ -1,3 +1,1 @@
-export default function useWarmVideoServer() {
-
-}
+export default function useWarmVideoServer() {}

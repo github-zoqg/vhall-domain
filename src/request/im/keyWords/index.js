@@ -5,13 +5,13 @@ import $http from '@/utils/http.js';
  *
  * */
 function getKeyWordsList(params = {}) {
-    return $http({
-        url: '/v4/interacts/keyword/get-list',
-        type: 'POST',
-        data: params
-    });
+  return $http({
+    url: '/v4/interacts/keyword/get-list',
+    type: 'POST',
+    data: params
+  });
 }
 
 export default {
-    getKeyWordsList
+  getKeyWordsList
 };
