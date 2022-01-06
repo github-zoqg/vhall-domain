@@ -19,6 +19,7 @@ import useGroupDiscussionServer from '@/domain/room/groupDiscussion.server.js';
 
 import { getBaseUrl, setToken, setRequestHeaders } from '@/utils/http.js';
 import VhallPaasSDK from '../sdk';
+import { Dep } from '@/domain/common/base.server';
 /**
  * options:{
     token,
@@ -29,7 +30,10 @@ import VhallPaasSDK from '../sdk';
 class Domain {
   constructor(options) {
     this.setRequestConfig(options);
-    this.domainInitPromise = Promise.all([this.paasSdkInit(), this.initRoom(options)]);
+    Promise.all([this.paasSdkInit(), this.initRoom(options)]).then(res => {
+      //触发所有注册的依赖passsdk和房间初始化的回调
+      Dep.expenseDep('initdomian', res);
+    });
   }
 
   // 加载paasSdk
@@ -54,7 +58,7 @@ class Domain {
   //初始化房间信息
   initRoom(options) {
     const roomBaseServer = new RoomBaseServer();
-    return roomBaseServer.initLive(options).then(res => {});
+    return roomBaseServer.initLive(options);
   }
 }
 export {
