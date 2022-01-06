@@ -76,5 +76,8 @@
   "path-intellisense.mappings": {
     "@": "${workspaceRoot}/src"
   },
-  "i18n-ally.localesPaths": ["src/packages/locales"]
+  "i18n-ally.localesPaths": ["src/packages/locales"],
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

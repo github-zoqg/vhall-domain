@@ -21,6 +21,8 @@
     "babel-eslint": "^10.1.0",
     "co": "^4.6.0",
     "eslint": "^6.7.2",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.1.4",
     "lint-staged": "^12.1.4",
     "prettier": "^2.5.1",
@@ -41,8 +43,5 @@
       "git add ."
     ]
   },
-  "dependencies": {
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-config-prettier": "^8.3.0"
-  }
+  "dependencies": {}
 }
