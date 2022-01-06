@@ -1,7 +1,11 @@
+/**
+ * 依赖关系维护
+ */
 class Depend {
   constructor() {
     this.depends = {};
   }
+  //注册依赖
   addDep(name, callback) {
     if (!this.depends[name]) {
       this.depends[name] = {
@@ -18,6 +22,7 @@ class Depend {
       }
     }
   }
+  //消费依赖
   expenseDep(name, data) {
     if (this.depends[name]) {
       this.depends[name].status = 'fulfilled';
