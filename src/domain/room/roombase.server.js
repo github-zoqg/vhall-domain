@@ -8,7 +8,12 @@ import { merge } from '@/utils/index.js';
  * sdk:sdk直播
  */
 
-const liveType = new Map([['send', 'initSendLive'], ['standard', 'initStandardReceiveLive'], ['embed', 'initEmbeddedReceiveLive'], ['sdk', 'initSdkReceiveLive']])
+const liveType = new Map([
+  ['send', 'initSendLive'],
+  ['standard', 'initStandardReceiveLive'],
+  ['embed', 'initEmbeddedReceiveLive'],
+  ['sdk', 'initSdkReceiveLive']
+]);
 export default class RoomBaseServer {
   constructor() {
     if (typeof RoomBaseServer.instance === 'object') {
@@ -41,9 +46,9 @@ export default class RoomBaseServer {
         setRequestHeaders({
           'interact-token': res.data.interact.interact_token
         });
-        return res
+        return res;
       }
-    })
+    });
   }
   // 设置分组讨论是否正在讨论中
   setGroupDiscussState(type) {
