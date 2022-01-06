@@ -1,4 +1,4 @@
-import live from './live';
+import meeting from './meeting/index.js';
 import roomBase from './roomBase.js';
 import user from './user.js';
 import insertFile from './insertFile.js';
@@ -14,9 +14,19 @@ import imNotice from './im/notice/index.js';
 import imChatAuth from './im/chatAuth/index.js';
 import activity from './room/activity/index.js';
 import player from './player.js';
-
-export default {
-  live,
+const im = {
+  chat: imChat,
+  keyWords: imKeyWords,
+  privateChat: imPrivateChat,
+  signaling: imSignaling,
+  notice: imNotice,
+  chatAuth: imChatAuth
+}
+const room = {
+  activity: activity
+}
+export {
+  meeting,
   roomBase,
   user,
   insertFile,
@@ -25,15 +35,6 @@ export default {
   mic,
   doc,
   player,
-  im: {
-    chat: imChat,
-    keyWords: imKeyWords,
-    privateChat: imPrivateChat,
-    signaling: imSignaling,
-    notice: imNotice,
-    chatAuth: imChatAuth
-  },
-  room: {
-    activity: activity
-  }
+  im,
+  room
 };

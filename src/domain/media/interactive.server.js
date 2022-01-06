@@ -1,14 +1,18 @@
-import contextServer from '@/domain/common/context.server.js';
-import requestApi from '../../request';
-export default class UseInteractiveServer {
+import { mic } from '../../request';
+export default class InteractiveServer {
   constructor() {
-    this.state = {
-      vhallSaasInstance: null, // vhallsdk的实例
-      interactiveInstance: null, // 互动实例
-      streamId: null,
-      remoteStreams: [] // 远端流数组
-    };
+    if (typeof InteractiveServer.instance === 'object') {
+      return InteractiveServer.instance;
+    }
+    InteractiveServer.instance = this;
+    return this;
   }
+  state = {
+    vhallSaasInstance: null, // vhallsdk的实例
+    interactiveInstance: null, // 互动实例
+    streamId: null,
+    remoteStreams: [] // 远端流数组
+  };
   //初始化
   init(option) {
     const roomInitGroupServer = contextServer.get('roomInitGroupServer');
@@ -164,42 +168,42 @@ export default class UseInteractiveServer {
   }
   // 上麦
   speakOn(data = {}) {
-    return requestApi.mic.speakOn(data);
+    return mic.speakOn(data);
   }
   // 下麦
   speakOff(data = {}) {
-    return requestApi.mic.speakOff(data);
+    return mic.speakOff(data);
   }
   speakUserOff(data = {}) {
-    return requestApi.mic.speakUserOff(data);
+    return mic.speakUserOff(data);
   }
   // 设置主屏
   setMainScreen(data = {}) {
-    return requestApi.interactive.setMainScreen(data);
+    return interactive.setMainScreen(data);
   }
   // 设置主讲人
   setSpeaker(data = {}) {
-    return requestApi.interactive.setSpeaker(data);
+    return interactive.setSpeaker(data);
   }
   // 设置（麦克风-1 摄像头-2）
   setRoomDevice(data = {}) {
-    return requestApi.interactive.setRoomDevice(data);
+    return interactive.setRoomDevice(data);
   }
   // 允许举手
   setHandsup(data = {}) {
-    return requestApi.mic.setHandsUp(data);
+    return mic.setHandsUp(data);
   }
   // 邀请上麦
   inviteMic(data = {}) {
-    return requestApi.mic.inviteMic(data);
+    return mic.inviteMic(data);
   }
   // 取消申请
   cancelApply(data = {}) {
-    return requestApi.mic.cancelApply(data);
+    return mic.cancelApply(data);
   }
   // 拒绝邀请
   refuseInvite(data = {}) {
-    return requestApi.mic.refuseInvite(data);
+    return mic.refuseInvite(data);
   }
   // 组合api
   startPushStream() {

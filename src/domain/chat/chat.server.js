@@ -4,7 +4,7 @@
 import { textToEmojiText } from './emoji';
 import Msg from './msg-class';
 import contextServer from '@/domain/common/context.server.js';
-import requestApi from '@/request/index.js';
+import { im as iMRequest } from '@/request/index.js';
 
 export default function useChatServer() {
   let state = {
@@ -24,7 +24,6 @@ export default function useChatServer() {
     defaultAvatar: ''
   };
 
-  const iMRequest = requestApi.im;
 
   //消息服务
   const msgServer = contextServer.get('msgServer');

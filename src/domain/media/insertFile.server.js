@@ -1,4 +1,4 @@
-import requestApi from '../../request/index.js';
+import { insertFile } from '../../request/index.js';
 import { uploadFile, isChrome88 } from '@/utils/index.js';
 import contextServer from '@/domain/common/context.server.js';
 
@@ -36,12 +36,12 @@ function useInsertFileServer() {
 
   // 获取插播列表
   function getInsertFileList(params = {}) {
-    return requestApi.insertFile.getInsertFileList(params);
+    return insertFile.getInsertFileList(params);
   }
 
   // 删除插播文件
   function deleteInsertFile(params = {}) {
-    return requestApi.insertFile.deleteInsertFile(params);
+    return insertFile.deleteInsertFile(params);
   }
 
   // 检查captureStream是否能用
@@ -54,7 +54,7 @@ function useInsertFileServer() {
   }
 
   // 选择音视频文件
-  function selectLocalFile(onChange = e => {}) {
+  function selectLocalFile(onChange = e => { }) {
     const { state: roomBaseState } = contextServer.get('roomBaseServer');
 
     let accept = 'video/mp4,video/webm,audio/ogg';

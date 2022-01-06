@@ -1,4 +1,4 @@
-import requestApi from '../../request/index';
+import { user } from '../../request/index';
 // import VhallSaasSDK from '@/src'
 
 export default function useUserServer() {
