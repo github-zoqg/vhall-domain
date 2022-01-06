@@ -1,185 +1,159 @@
 import contextServer from '../common/context.server';
+import VhallPaasSDK from '../../sdk';
 
-export default function usePlayerServer() {
-  let state = {
-    playerInstance: null,
-    isPlaying: false,
-    markPoints: [],
-    type: 'live', // live or vod
-    voice: 60
-  };
-
-  let vhallSaasInstance = null;
-
-  const init = options => {
-    const roomInitGroupServer = contextServer.get('roomInitGroupServer');
-    if (roomInitGroupServer) {
-      vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
-    } else {
-      vhallSaasInstance = new window.VhallSaasSDK();
+export default class PlayerServer {
+  constructor() {
+    if (typeof PlayerServer.instance === 'object') {
+      return PlayerServer.instance;
     }
-
-    return vhallSaasInstance.createPlayer(options).then(instance => {
-      state.playerInstance = instance;
-      state.markPoints = state.playerInstance.markPoints;
-      return true;
+    this.state = {
+      playerInstance: null,
+      isPlaying: false,
+      markPoints: [],
+      type: 'live', // live or vod
+      voice: 60
+    };
+    //播放器实例
+    this.controller = null;
+    PlayerServer.instance = this;
+    return this;
+  }
+  //初始化播放器实例
+  init(options) {
+    return new Promise(resolve => {
+      VhallPaasSDK.onSuccess(contollers => {
+        const { VhallPlayer } = contollers;
+        VhallPlayer.createInstance(
+          options,
+          //创建播放器成功回调
+          instance => {
+            this.controller = instance;
+            resolve(instance);
+          },
+          //创建播放器失败成功回调
+          () => {}
+        );
+      });
     });
-  };
+  }
 
-  const setType = (type = 'live') => {
-    state.type = type;
-  };
+  setType(type = 'live') {
+    this.state.type = type;
+  }
 
-  const play = () => {
+  play() {
     return state.playerInstance.play();
-  };
+  }
 
-  const pause = () => {
+  pause() {
     return state.playerInstance.pause();
-  };
+  }
 
-  const isPause = () => {
+  isPause() {
     return state.playerInstance.isPause();
-  };
+  }
 
-  const getQualitys = () => {
+  getQualitys() {
     return state.playerInstance.getQualitys();
-  };
+  }
 
-  const getCurrentQuality = () => {
+  getCurrentQuality() {
     return state.playerInstance.getCurrentQuality();
-  };
+  }
 
-  const setQuality = item => {
+  setQuality() {
     return state.playerInstance.setQuality(item);
-  };
+  }
 
-  const enterFullScreen = () => {
+  enterFullScreen() {
     return state.playerInstance.enterFullScreen();
-  };
+  }
 
-  const exitFullScreen = () => {
+  exitFullScreen() {
     return state.playerInstance.exitFullScreen();
-  };
+  }
 
-  const setMute = () => {
+  setMute() {
     return state.playerInstance.setMute();
-  };
+  }
 
-  const getVolume = () => {
+  getVolume() {
     return state.playerInstance.getVolume();
-  };
+  }
 
-  const setVolume = val => {
+  setVolume() {
     state.voice = val;
     return state.playerInstance.setVolume(val);
-  };
+  }
 
-  const getDuration = (onFail = () => {}) => {
+  getDuration(onFail = () => {}) {
     return state.playerInstance.getDuration(onFail);
-  };
+  }
 
-  const getCurrentTime = () => {
+  getCurrentTime() {
     return state.playerInstance.getCurrentTime();
-  };
+  }
 
-  const setCurrentTime = val => {
+  setCurrentTime(val) {
     return state.playerInstance.setCurrentTime(val);
-  };
+  }
 
-  const getUsableSpeed = () => {
+  getUsableSpeed() {
     return state.playerInstance.getUsableSpeed();
-  };
+  }
 
-  const setPlaySpeed = val => {
+  setPlaySpeed(val) {
     return state.playerInstance.setPlaySpeed(val);
-  };
+  }
 
-  const openControls = status => {
+  openControls(status) {
     return state.playerInstance.openControls(status);
-  };
+  }
 
-  const openUI = status => {
+  openUI(status) {
     return state.playerInstance.openUI(status);
-  };
+  }
 
-  const setResetVideo = val => {
+  setResetVideo(val) {
     return state.playerInstance.setResetVideo(val);
-  };
+  }
 
-  const setBarrageInfo = val => {
+  setBarrageInfo(val) {
     return state.playerInstance.setBarrageInfo(val);
-  };
+  }
 
-  const addBarrage = val => {
+  addBarrage(val) {
     return state.playerInstance.addBarrage(val);
-  };
+  }
 
-  const toggleBarrage = () => {
+  toggleBarrage() {
     return state.playerInstance.toggleBarrage();
-  };
+  }
 
   //开启弹幕显示
-  const openBarrage = () => {
+  openBarrage() {
     return state.playerInstance.toggleBarrage(true);
-  };
+  }
 
   //关闭弹幕显示
-  const closeBarrage = () => {
+  closeBarrage() {
     return state.playerInstance.toggleBarrage(false);
-  };
+  }
 
   //清除弹幕显示
-  const clearBarrage = () => {
+  clearBarrage() {
     return state.playerInstance.clearBarrage();
-  };
+  }
 
-  const toggleSubtitle = () => {
+  toggleSubtitle() {
     return state.playerInstance.toggleSubtitle();
-  };
+  }
 
-  const on = (type, cb) => {
+  on(type, cb) {
     state.playerInstance.$on(type, cb);
-  };
+  }
 
-  const emit = (type, params) => {
+  emit(type, params) {
     state.playerInstance.$emit(type, params);
-  };
-
-  const destroy = () => {};
-
-  return {
-    state,
-    setType,
-    init,
-    on,
-    emit,
-    destroy,
-    play,
-    pause,
-    isPause,
-    getQualitys,
-    getCurrentQuality,
-    setQuality,
-    enterFullScreen,
-    exitFullScreen,
-    setMute,
-    getVolume,
-    setVolume,
-    getDuration,
-    getCurrentTime,
-    setCurrentTime,
-    getUsableSpeed,
-    setPlaySpeed,
-    openControls,
-    openUI,
-    setResetVideo,
-    setBarrageInfo,
-    addBarrage,
-    toggleBarrage,
-    openBarrage,
-    closeBarrage,
-    clearBarrage,
-    toggleSubtitle
-  };
+  }
 }

@@ -19,6 +19,7 @@ import useGroupDiscussionServer from '@/domain/room/groupDiscussion.server.js';
 
 import { getBaseUrl, setToken, setRequestHeaders } from '@/utils/http.js';
 import VhallPaasSDK from '../sdk';
+import { Dep } from '@/domain/common/base.server';
 /**
  * options:{
     token,
