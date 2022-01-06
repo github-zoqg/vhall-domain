@@ -31,6 +31,8 @@ class Domain {
     //加载passSdk
     VhallPaasSDK.init({
       plugins: options.plugins || ['chat', 'player', 'doc', 'interaction']
+    }).onSuccess((controllers) => {
+      this.controllers = controllers
     })
     this.setRequestConfig(options);
   }
