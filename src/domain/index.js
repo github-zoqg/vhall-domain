@@ -31,6 +31,7 @@ class Domain {
   constructor(options) {
     this.setRequestConfig(options);
     Promise.all([this.paasSdkInit(), this.initRoom(options)]).then(res => {
+      //触发所有注册的依赖passsdk和房间初始化的回调
       Dep.expenseDep('initdomian', res);
     });
   }
