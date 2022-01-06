@@ -28,24 +28,33 @@ import VhallPaasSDK from '../sdk';
  */
 class Domain {
   constructor(options) {
-    //加载passSdk
-    VhallPaasSDK.init({
-      plugins: options.plugins || ['chat', 'player', 'doc', 'interaction']
-    }).onSuccess(controllers => {
-      this.controllers = controllers;
-    });
     this.setRequestConfig(options);
+    this.domainInitPromise = Promise.all([this.paasSdkInit(), this.initRoom(options)]);
   }
+
+  // 加载paasSdk
+  paasSdkInit() {
+    return new Promise(resolve => {
+      VhallPaasSDK.init({
+        plugins: options.plugins || ['chat', 'player', 'doc', 'interaction']
+      }).onSuccess(controllers => {
+        this.controllers = controllers;
+        resolve();
+      });
+    });
+  }
+
   //设置请求相关配置
   setRequestConfig(options) {
     const { token, liveToken, requestHeaders } = options;
     setToken(token, liveToken);
     requestHeaders && setRequestHeaders(requestHeaders);
   }
+
   //初始化房间信息
   initRoom(options) {
     const roomBaseServer = new RoomBaseServer();
-    roomBaseServer.initLive(options).then(res => {});
+    return roomBaseServer.initLive(options).then(res => {});
   }
 }
 export {

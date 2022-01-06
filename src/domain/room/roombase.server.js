@@ -19,24 +19,27 @@ export default class RoomBaseServer {
     if (typeof RoomBaseServer.instance === 'object') {
       return RoomBaseServer.instance;
     }
+
+    this.state = {
+      inited: false,
+      isLiveOver: false,
+      webinarVo: {},
+      watchInitData: {}, // 活动信息
+      groupInitData: {
+        isBanned: false, // 小组禁言
+        discussState: false, // 是否开始讨论
+        isInGroup: false // 是否在小组中
+      }, // 分组信息
+      watchInitErrorData: undefined, // 默认undefined，如果为其他值将触发特殊逻辑
+      configList: {},
+      isGroupWebinar: false, // 是否是分组直播
+      clientType: ''
+    };
+
     RoomBaseServer.instance = this;
     return this;
   }
-  state = {
-    inited: false,
-    isLiveOver: false,
-    webinarVo: {},
-    watchInitData: {}, // 活动信息
-    groupInitData: {
-      isBanned: false, // 小组禁言
-      discussState: false, // 是否开始讨论
-      isInGroup: false // 是否在小组中
-    }, // 分组信息
-    watchInitErrorData: undefined, // 默认undefined，如果为其他值将触发特殊逻辑
-    configList: {},
-    isGroupWebinar: false, // 是否是分组直播
-    clientType: ''
-  };
+
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
     return meeting[liveType.get(options.clientType)](options).then(res => {
