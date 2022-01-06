@@ -1,6 +1,5 @@
 import contextServer from '@/domain/common/context.server.js';
-import requestApi from '../../request/index.js';
-const docApi = requestApi.doc;
+import { doc as docApi } from '../../request/index.js';
 export default function useDocServer() {
   if (contextServer.has('docServer')) {
     return contextServer.get('docServer');

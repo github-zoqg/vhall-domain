@@ -1,11 +1,23 @@
-import requestApi from '@/request/index.js';
-import contextServer from '@/domain/common/context.server.js';
-import useEventEmitter from '@/domain/common/eventEmitter.server.js';
+import { meeting } from '@/request/index.js';
 import { setRequestHeaders } from '@/utils/http.js';
 import { merge } from '@/utils/index.js';
+/**
+ * send:发起端
+ * standard:标准直播
+ * embed:嵌入直播
+ * sdk:sdk直播
+ */
 
-export default function useRoomBaseServer() {
-  let state = {
+const liveType = new Map([['send', 'initSendLive'], ['standard', 'initStandardReceiveLive'], ['embed', 'initEmbeddedReceiveLive'], ['sdk', 'initSdkReceiveLive']])
+export default class RoomBaseServer {
+  constructor() {
+    if (typeof RoomBaseServer.instance === 'object') {
+      return RoomBaseServer.instance;
+    }
+    RoomBaseServer.instance = this;
+    return this;
+  }
+  state = {
     inited: false,
     isLiveOver: false,
     webinarVo: {},
@@ -18,57 +30,28 @@ export default function useRoomBaseServer() {
     watchInitErrorData: undefined, // 默认undefined，如果为其他值将触发特殊逻辑
     configList: {},
     isGroupWebinar: false, // 是否是分组直播
-    clientType: 'send'
+    clientType: ''
   };
-
-  const eventEmitter = useEventEmitter();
-
-  // 设置当前房间是发起端还是观看端
-  function setClientType(type) {
-    state.clientType = type;
-  }
-
   // 初始化房间信息,包含发起/观看(嵌入/标品)
-  function getWatchInitData(options) {
-    console.log(contextServer.get('useRoomInitGroupServer'));
-    const { state: roomInitGroupServer } = contextServer.get('roomInitGroupServer');
-
-    console.log('init options:', roomInitGroupServer);
-
-    return roomInitGroupServer.vhallSaasInstance.init(options).then(res => {
+  initLive(options) {
+    return meeting[liveType.get(options.clientType)](options).then(res => {
       if (res.code === 200) {
-        state.inited = true;
+        state.state.inited = true;
         state.watchInitData = res.data;
         setRequestHeaders({
           'interact-token': res.data.interact.interact_token
         });
-      } else {
-        state.watchInitErrorData = res;
+        return res
       }
-      return res;
-    });
+    })
   }
-
-  function on(type, cb) {
-    eventEmitter.$on(type, cb);
-  }
-
-  function destroy() {
-    eventEmitter.$destroy();
-  }
-
-  // 设置活动是否为分组活动
-  function setGroupType(type) {
-    state.isGroupWebinar = type;
-  }
-
   // 设置分组讨论是否正在讨论中
-  function setGroupDiscussState(type) {
+  setGroupDiscussState(type) {
     state.groupInitData.discussState = type;
   }
 
   // 设置子房间初始化信息
-  function setGroupInitData(data) {
+  setGroupInitData(data) {
     state.groupInitData = merge.recursive({}, data, state.groupInitData);
     if (state.groupInitData.group_id === 0) {
       state.groupInitData.isInGroup = false;
@@ -76,7 +59,7 @@ export default function useRoomBaseServer() {
   }
 
   // 获取分组初始化信息
-  function getGroupInitData(data) {
+  getGroupInitData(data) {
     return requestApi.roomBase.getGroupInitData(data).then(res => {
       state.groupInitData = {
         ...state.groupInitData,
@@ -88,13 +71,8 @@ export default function useRoomBaseServer() {
     });
   }
 
-  // 设置分组禁言状态
-  function setGroupBannedStatus(status) {
-    state.groupInitData.isBanned = status;
-  }
-
   // 获取活动信息
-  function getWebinarInfo(data) {
+  getWebinarInfo(data) {
     return requestApi.roomBase.getWebinarInfo(data).then(res => {
       state.webinarVo = res.data;
       return res;
@@ -102,7 +80,7 @@ export default function useRoomBaseServer() {
   }
 
   // 获取房间权限配置列表
-  function getConfigList(data) {
+  getConfigList(data) {
     return requestApi.roomBase.getConfigList(data).then(res => {
       state.configList = JSON.parse(res.data.permissions);
       return res;
@@ -110,79 +88,51 @@ export default function useRoomBaseServer() {
   }
 
   // 设置设备检测状态
-  function setDevice(data) {
+  setDevice(data) {
     return requestApi.roomBase.setDevice(data).then(res => {
       return res;
     });
   }
 
   // 开播startLive
-  function startLive(data = {}) {
+  startLive(data = {}) {
     setDevice(data);
     return requestApi.live.startLive(data);
   }
 
   // 结束直播
-  function endLive(data) {
+  endLive(data) {
     return requestApi.live.endLive(data);
   }
 
   // 开始/恢复录制
-  function startRecord() {
+  startRecord() {
     return requestApi.roomBase.recordApi({
       status: 1
     });
   }
 
   // 暂停录制
-  function pauseRecord() {
+  pauseRecord() {
     return requestApi.roomBase.recordApi({
       status: 2
     });
   }
 
   // 结束录制
-  function endRecord() {
+  endRecord() {
     return requestApi.roomBase.recordApi({
       status: 3
     });
   }
 
   //初始化回放录制
-  function initReplayRecord(params = {}) {
+  initReplayRecord(params = {}) {
     return requestApi.roomBase.initRecordApi(params);
   }
 
   //获取房间内各工具的状态
-  function getRoomToolStatus(params = {}) {
+  getRoomToolStatus(params = {}) {
     return requestApi.roomBase.getRoomToolStatus(params);
   }
-
-  function init(option) {
-    return getWatchInitData(option);
-  }
-
-  return {
-    state,
-    init,
-    on,
-    destroy,
-    getWatchInitData,
-    getWebinarInfo,
-    getConfigList,
-    startLive,
-    endLive,
-    setDevice,
-    startRecord,
-    pauseRecord,
-    endRecord,
-    getGroupInitData,
-    setGroupType,
-    setGroupDiscussState,
-    initReplayRecord,
-    getRoomToolStatus,
-    setClientType,
-    setGroupInitData,
-    setGroupBannedStatus
-  };
 }

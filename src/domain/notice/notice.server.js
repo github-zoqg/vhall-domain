@@ -1,4 +1,4 @@
-import requestApi from '@/request';
+import { im as iMRequest } from '@/request';
 
 export default function useNoticeServer() {
   const state = {
@@ -17,7 +17,6 @@ export default function useNoticeServer() {
     total: 0
   };
 
-  const iMRequest = requestApi.im;
 
   //获取消息记录
   const getNoticeList = ({ flag = false, params = {} }) => {

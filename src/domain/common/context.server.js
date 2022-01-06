@@ -1,1 +1,2 @@
-export default contextServer = new Map();
+const contextServer = new Map();
+export default contextServer
