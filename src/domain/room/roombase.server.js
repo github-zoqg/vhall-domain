@@ -17,6 +17,7 @@ const liveType = new Map([
 ]);
 export default class RoomBaseServer extends BaseServer {
   constructor() {
+    super();
     if (typeof RoomBaseServer.instance === 'object') {
       return RoomBaseServer.instance;
     }
@@ -43,6 +44,7 @@ export default class RoomBaseServer extends BaseServer {
 
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
+    console.log('options--->', options);
     return meeting[liveType.get(options.clientType)](options).then(res => {
       if (res.code === 200) {
         state.state.inited = true;

@@ -1,4 +1,4 @@
-import RoomBaseServer from '@/domain/common/roombase.server.js';
+import RoomBaseServer from '@/domain/room/roombase.server.js';
 import { isPc, merge, randomNumGenerator } from '@/utils/index.js';
 import { Dep } from '@/domain/common/base.server';
 import { INIT_DOMAIN } from '@/domain/common/dep.const';
