@@ -20,6 +20,7 @@ export default class RoomBaseServer extends BaseServer {
     if (typeof RoomBaseServer.instance === 'object') {
       return RoomBaseServer.instance;
     }
+
     this.state = {
       inited: false,
       isLiveOver: false,
@@ -35,17 +36,11 @@ export default class RoomBaseServer extends BaseServer {
       isGroupWebinar: false, // 是否是分组直播
       clientType: ''
     };
-<<<<<<< HEAD
-    RoomBaseServer.instance = this;
-    return this;
-  }
-=======
 
     RoomBaseServer.instance = this;
     return this;
   }
 
->>>>>>> upstream/dev
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
     return meeting[liveType.get(options.clientType)](options).then(res => {
