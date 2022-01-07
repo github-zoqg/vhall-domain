@@ -1,5 +1,7 @@
 import RoomBaseServer from '@/domain/common/roombase.server.js';
 import { isPc, merge, randomNumGenerator } from '@/utils/index.js';
+import { Dep } from '@/domain/common/base.server';
+import { INIT_DOMAIN } from '@/domain/common/dep.const';
 
 export default class MsgServer {
   constructor() {
@@ -11,8 +13,7 @@ export default class MsgServer {
       msgInstance: null,
       eventsPool: [],
       msgSdkInitOptions: {},
-      groupMsgSdkInitOptions: {},
-      keepAliveMsgEventList: {}
+      groupMsgSdkInitOptions: {}
     };
 
     this.defineReactiveGroupMsg();
@@ -24,18 +25,26 @@ export default class MsgServer {
   _groupMsgInstance = null;
 
   _eventhandlers = {
-    ROOM_MSG: [],
-    CHAT: [],
-    CUSTOM_MSG: [],
-    OFFLINE: [],
-    ONLINE: [],
-    DOC_MSG: [],
-    JOIN: [],
-    LEFT: []
+    ROOM_MSG: [], // 房间消息
+    CHAT: [], // 聊天消息
+    CUSTOM_MSG: [], // 自定义消息
+    OFFLINE: [], // 断开连接
+    ONLINE: [], // 连接成功
+    DOC_MSG: [], // 文档消息
+    JOIN: [], // 加入房间
+    LEFT: [] // 离开房间
   };
 
   // 初始化主房间聊天sdk
   init(customOptions = {}) {
+    return new Promise((resolve, reject) => {
+      Dep.addDep(INIT_DOMAIN, () => {
+        this._initMsgInstance(customOptions).then(resolve).catch(reject);
+      });
+    });
+  }
+
+  _initMsgInstance(customOptions = {}) {
     const defaultOptions = this.getDefaultOptions();
 
     const options = merge.recursive({}, defaultOptions, customOptions);
@@ -52,29 +61,98 @@ export default class MsgServer {
     });
   }
 
-  // 发送聊天消息
-  sendChatMsg(data, context) {
-    if (this.state.groupMsgInstance) {
-      this.state.groupMsgInstance.emitTextChat(data, context);
+  // 注册事件
+  $onMsg(eventType, fn) {
+    if (_eventhandlers[eventType]) {
+      _eventhandlers[eventType].push(fn);
     } else {
-      this.state.msgInstance.emitTextChat(data, context);
+      const registerMsgInstance = this.state.groupMsgInstance || this.state.msgInstance;
+
+      _eventhandlers[eventType] = [];
+      _eventhandlers[eventType].push(fn);
+      if (registerMsgInstance) {
+        this._handlePaasInstanceOn(registerMsgInstance, eventType, () => {
+          _eventhandlers[eventType].forEach(handler => {
+            handler(msg);
+          });
+        });
+      }
     }
   }
 
-  // 发送房间消息
-  sendRoomMsg(data) {
+  _handlePaasInstanceOn(instance, eventType, fn) {
+    switch (eventType) {
+      case 'ROOM_MSG':
+        instance.on('room', fn); // 这个小写的字符串是跟微吼云沟通添加的，现在房间消息还没有常量
+      case 'CHAT':
+        instance.on(VhallChat.EVENTS.CHAT, fn);
+      case 'JOIN':
+        instance.on(VhallChat.EVENTS.JOIN, fn);
+      case 'JOIN_ANY':
+        instance.on(VhallChat.EVENTS.JOIN_ANY, fn);
+      case 'LEFT':
+        instance.on(VhallChat.EVENTS.LEFT, fn);
+      case 'LEFT_ANY':
+        instance.on(VhallChat.EVENTS.LEFT_ANY, fn);
+      case 'KICK':
+        instance.on(VhallChat.EVENTS.KICK, fn);
+      case 'MUTE':
+        instance.on(VhallChat.EVENTS.MUTE, fn);
+      case 'UNMUTE':
+        instance.on(VhallChat.EVENTS.UNMUTE, fn);
+      case 'SUPER_ALLOW':
+        instance.on(VhallChat.EVENTS.SUPER_ALLOW, fn);
+      case 'UNSUPER_ALLOW':
+        instance.on(VhallChat.EVENTS.UNSUPER_ALLOW, fn);
+      case 'MUTE_ALL':
+        instance.on(VhallChat.EVENTS.MUTE_ALL, fn);
+      case 'UNMUTE_ALL':
+        instance.on(VhallChat.EVENTS.UNMUTE_ALL, fn);
+      case 'OFFLINE':
+        instance.on(VhallChat.EVENTS.OFFLINE, fn);
+      case 'ONLINE':
+        instance.on(VhallChat.EVENTS.ONLINE, fn);
+      case 'GROUP_NEW':
+        instance.on(VhallChat.EVENTS.GROUP_NEW, fn);
+      case 'GROUP_DISSOLVE':
+        instance.on(VhallChat.EVENTS.GROUP_DISSOLVE, fn);
+      default:
+        instance.on(eventType, fn);
+    }
+  }
+
+  // 注销事件
+  $offMsg(eventType, fn) {
+    if (!_eventhandlers[eventType]) {
+      return new Error('该消息未注册');
+    }
+
+    if (!fn) {
+      _eventhandlers[eventType] = [];
+      this._handlePaasInstanceOff(eventType);
+      return;
+    }
+
+    const index = _eventhandlers[eventType].indexOf(fn);
+    if (index > -1) {
+      _eventhandlers[eventType].splice(index, 1);
+      this._handlePaasInstanceOff(eventType, fn);
+    }
+  }
+
+  // paas实例注销事件
+  _handlePaasInstanceOff(eventType, fn) {
     if (this.state.groupMsgInstance) {
-      this.state.groupMsgInstance.emitRoomMsg(data);
+      this.state.groupMsgInstance.off(eventType, fn);
     } else {
-      this.state.msgInstance.emitRoomMsg(data);
+      this.state.msgInstance.off(eventType, fn);
     }
   }
 
   // 为聊天实例注册事件
   _addListeners(instance) {
     for (let eventType in _eventhandlers) {
-      instance.$on(eventType, msg => {
-        console.log('----domain----,消息事件', msg, _eventhandlers[eventType]);
+      this._handlePaasInstanceOn(instance, eventType, () => {
         if (_eventhandlers[eventType].length) {
           _eventhandlers[eventType].forEach(handler => {
             handler(msg);
@@ -87,28 +165,25 @@ export default class MsgServer {
   // 为聊天实例注销事件
   _removeListeners(instance) {
     for (let eventType in _eventhandlers) {
-      instance.$off(eventType);
+      instance.off(eventType);
     }
   }
 
-  // 重新注册保活消息
-  reRegisterKeepAliveMsgEvent() {
-    console.log('重新注册保活消息', this.state.keepAliveMsgEventList);
-    for (let eventType in this.state.keepAliveMsgEventList) {
-      this.state.msgInstance.$on(eventType, msg => {
-        if (this.state.keepAliveMsgEventList[eventType].length) {
-          this.state.keepAliveMsgEventList[eventType].forEach(handler => {
-            handler(msg);
-          });
-        }
-      });
+  // 发送聊天消息
+  sendChatMsg(data, options) {
+    if (this.state.groupMsgInstance) {
+      this.state.groupMsgInstance.emitTextChat(data, options);
+    } else {
+      this.state.msgInstance.emitTextChat(data, options);
     }
   }
 
-  // 注销保活消息
-  removeKeepAliveMsgEvent() {
-    for (let eventType in this.state.keepAliveMsgEventList) {
-      this.state.msgInstance.$off(eventType);
+  // 发送房间消息
+  sendRoomMsg(data) {
+    if (this.state.groupMsgInstance) {
+      this.state.groupMsgInstance.emitRoomMsg(data);
+    } else {
+      this.state.msgInstance.emitRoomMsg(data);
     }
   }
 
@@ -123,15 +198,11 @@ export default class MsgServer {
 
         if (!newVal) {
           // 如果是销毁子房间实例
-          // 主房间保活消息注销
-          removeKeepAliveMsgEvent();
           // 重新注册主房间消息
           this.state.msgInstance && _addListeners(this.state.msgInstance);
         } else {
           // 如果是新创建子房间实例，注销主房间事件
           this.state.msgInstance && _removeListeners(this.state.msgInstance);
-          // 主房间保活消息重新注册
-          reRegisterKeepAliveMsgEvent();
         }
 
         this._groupMsgInstance = newVal;
@@ -140,6 +211,7 @@ export default class MsgServer {
   }
 
   // 获取主房间聊天sdk初始化默认参数
+  // TODO:根据中台实际需要，更改context
   getDefaultOptions() {
     const { state: roomBaseServerState } = new RoomBaseServer();
 
@@ -183,6 +255,7 @@ export default class MsgServer {
   }
 
   // 获取子房间聊天sdk初始化默认参数
+  // TODO:根据中台实际需要，调整context
   getGroupDefaultOptions() {
     const { state: roomBaseServerState } = new RoomBaseServer();
 
@@ -218,6 +291,7 @@ export default class MsgServer {
   }
 
   // 子房间上线发送group信息
+  // TODO:根据中台需要，看是否这个方法还放在 msgServer中
   sendGroupInfoAfterJoin(msgInstance) {
     const roomBaseServer = new RoomBaseServer();
     const { watchInitData, groupInitData } = roomBaseServer.state;
@@ -256,33 +330,6 @@ export default class MsgServer {
       _addListeners(res);
       return res;
     });
-  }
-
-  // 注册事件
-  $on(eventType, fn, iskeepLive) {
-    if (!_eventhandlers.hasOwnProperty(eventType)) {
-      throw new TypeError('Invalid eventType');
-    }
-    if (iskeepLive) {
-      // 主房间保活消息
-      if (!this.state.keepAliveMsgEventList[eventType]) {
-        this.state.keepAliveMsgEventList[eventType] = [];
-      }
-      this.state.keepAliveMsgEventList[eventType].push(fn);
-    }
-    _eventhandlers[eventType].push(fn);
-  }
-
-  // 注销事件
-  $off(eventType, fn) {
-    if (!fn) {
-      _eventhandlers[eventType] = [];
-    }
-
-    const index = _eventhandlers[eventType].indexOf(fn);
-    if (index > -1) {
-      _eventhandlers[eventType].splice(index, 1);
-    }
   }
 
   // 销毁子房间聊天实例
