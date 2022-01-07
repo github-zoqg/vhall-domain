@@ -1,20 +1,21 @@
 import { meeting } from '@/request/index.js';
 import { setRequestHeaders } from '@/utils/http.js';
 import { merge } from '@/utils/index.js';
+import BaseServer from '../common/base.server';
 /**
  * send:发起端
  * standard:标准直播
  * embed:嵌入直播
  * sdk:sdk直播
  */
-
+//客户端类型
 const liveType = new Map([
-  ['send', 'initSendLive'],
-  ['standard', 'initStandardReceiveLive'],
-  ['embed', 'initEmbeddedReceiveLive'],
-  ['sdk', 'initSdkReceiveLive']
+  ['send', 'initSendLive'], //发起端
+  ['standard', 'initStandardReceiveLive'], //标准观看端
+  ['embed', 'initEmbeddedReceiveLive'], //嵌入直播
+  ['sdk', 'initSdkReceiveLive'] //sdk直播
 ]);
-export default class RoomBaseServer {
+export default class RoomBaseServer extends BaseServer {
   constructor() {
     if (typeof RoomBaseServer.instance === 'object') {
       return RoomBaseServer.instance;
