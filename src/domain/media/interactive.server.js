@@ -1,5 +1,6 @@
 import { mic } from '../../request';
-export default class InteractiveServer {
+import VhallPaasSDK from '@/sdk/index';
+class InteractiveServer {
   constructor() {
     if (typeof InteractiveServer.instance === 'object') {
       return InteractiveServer.instance;
@@ -14,12 +15,18 @@ export default class InteractiveServer {
     remoteStreams: [] // 远端流数组
   };
   //初始化
-  init(option) {
-    const roomInitGroupServer = contextServer.get('roomInitGroupServer');
-    this.state.vhallSaasInstance = roomInitGroupServer.state.vhallSaasInstance;
-    return this.state.vhallSaasInstance.createInteractive(option).then(interactives => {
-      this.state.interactiveInstance = interactives;
-      return interactives;
+  init(options) {
+    return new Promise((resolve, reject) => {
+      VhallPaasSDK.modules.VhallRTC.createInstance(
+        options,
+        event => {
+          this.state.interactiveInstance = event;
+          resolve(event);
+        },
+        () => {
+          reject();
+        }
+      );
     });
   }
   //销毁实例
@@ -290,4 +297,7 @@ export default class InteractiveServer {
       // state.remoteStreams.filter(item => item.streamId == e.streamId)
     });
   }
+}
+export default function useInteractiveServer() {
+  return new InteractiveServer();
 }

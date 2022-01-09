@@ -1,11 +1,11 @@
-import contextServer from '../common/context.server';
-import VhallPaasSDK from '../../sdk';
-
-export default class PlayerServer {
+import VhallPaasSDK from '@/sdk/index.js';
+import BaseServer from '@/domain/common/base.server';
+class PlayerServer extends BaseServer {
   constructor() {
     if (typeof PlayerServer.instance === 'object') {
       return PlayerServer.instance;
     }
+    super();
     this.state = {
       playerInstance: null,
       isPlaying: false,
@@ -149,11 +149,15 @@ export default class PlayerServer {
     return state.playerInstance.toggleSubtitle();
   }
 
-  on(type, cb) {
+  onPlayer(type, cb) {
     state.playerInstance.$on(type, cb);
   }
 
-  emit(type, params) {
+  emitPlayer(type, params) {
     state.playerInstance.$emit(type, params);
   }
+}
+
+export default function usePlayerServer(options) {
+  return new PlayerServer();
 }
