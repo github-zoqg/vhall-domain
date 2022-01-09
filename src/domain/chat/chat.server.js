@@ -3,48 +3,52 @@
  * */
 import { textToEmojiText } from './emoji';
 import Msg from './msg-class';
-import contextServer from '@/domain/common/context.server.js';
 import { im as iMRequest } from '@/request/index.js';
+import BaseServer from '@/domain/common/base.server';
+import useMsgServer from '../common/msg.server';
+import useRoomBaseServer from '../room/roombase.server';
+class ChatServer extends BaseServer {
+  constructor() {
+    if (typeof ChatServer.instance === 'object') {
+      return ChatServer.instance;
+    }
+    super();
+    //基础服务
+    const roomServer = useRoomBaseServer();
+    const { roomId = '', roleName, avatar = '' } = roomServer.state.watchInitData;
+    //消息服务
+    this.msgServer = useMsgServer();
+    //消息sdk
+    this.state = {
+      //聊天记录
+      chatList: [],
+      //过滤的敏感词列表
+      keywordList: [],
+      //预览图片地址
+      imgUrls: [],
 
-export default function useChatServer() {
-  let state = {
-    //聊天记录
-    chatList: [],
-    //过滤的敏感词列表
-    keywordList: [],
-    //预览图片地址
-    imgUrls: [],
+      page: 0,
+      limit: 10,
 
-    page: 0,
-    limit: 10,
-
-    roomId: '',
-    avatar: '',
-    roleName: '',
-    defaultAvatar: ''
-  };
-
-
-  //消息服务
-  const msgServer = contextServer.get('msgServer');
-
-  //消息sdk
-  const { msgInstance } = msgServer.state;
-
-  //基础服务
-  const roomServer = contextServer.get('roomBaseServer');
-
-  const { roomId = '', roleName, avatar = '' } = roomServer.state.watchInitData;
+      roomId,
+      avatar,
+      roleName,
+      defaultAvatar: ''
+    };
+    this.controller = null;
+    ChatServer.instance = this;
+    return this;
+  }
 
   //setSate
-  function setState(key, value) {
-    state[key] = value;
+  setState(key, value) {
+    this.state[key] = value;
   }
 
   //接收聊天消息
-  async function getHistoryMsg(params = {}, from = '观看端') {
+  async getHistoryMsg(params = {}, from = '观看端') {
     //请求获取聊天消息
-    let backData = await fetchHistoryData(params);
+    let backData = await this.fetchHistoryData(params);
 
     let list = (backData.data.list || [])
       .map(item => {
@@ -91,24 +95,24 @@ export default function useChatServer() {
       });
     }
 
-    state.chatList.unshift(...list);
+    this.state.chatList.unshift(...list);
 
     //返回原始数据等以方便使用
     return {
       backData,
       list,
-      chatList: state.chatList,
-      imgUrls: state.imgUrls || []
+      chatList: this.state.chatList,
+      imgUrls: this.state.imgUrls || []
     };
   }
 
   // 清空聊天消息
-  function clearHistoryMsg() {
-    state.chatList.splice(0, state.chatList.length);
+  clearHistoryMsg() {
+    this.state.chatList.splice(0, this.state.chatList.length);
   }
 
   //发送聊天消息
-  function sendMsg(params = {}) {
+  sendMsg(params = {}) {
     let { inputValue, needFilter = true, data = {}, context = {} } = params;
     // let filterStatus = checkHasKeyword(needFilter, inputValue);
     // return new Promise((resolve, reject) => {
@@ -121,40 +125,40 @@ export default function useChatServer() {
     // });
 
     return new Promise((resolve, reject) => {
-      msgServer.sendChatMsg(data, context);
+      this.msgServer.sendChatMsg(data, context);
       resolve();
     });
   }
 
   //发起请求，或者聊天记录数据
-  function fetchHistoryData(params) {
+  fetchHistoryData(params) {
     return iMRequest.chat.getChatList(params);
   }
 
   //获取keywordList
-  function setKeywordList(list = []) {
-    state.keywordList = list;
+  setKeywordList(list = []) {
+    this.state.keywordList = list;
   }
 
   //检测是否包含敏感词
-  function checkHasKeyword(needFilter = true, inputValue) {
+  checkHasKeyword(needFilter = true, inputValue) {
     let filterStatus = true;
 
-    if (needFilter && state.keywordList.length) {
+    if (needFilter && this.state.keywordList.length) {
       //只要找到一个敏感词，消息就不让发
-      filterStatus = !state.keywordList.some(item => inputValue.includes(item.name));
+      filterStatus = !this.state.keywordList.some(item => inputValue.includes(item.name));
     }
 
     return filterStatus;
   }
 
   //私有方法，处理图片链接
-  function _handleImgUrl(rawData) {
-    state.imgUrls.push(...rawData);
+  static _handleImgUrl(rawData) {
+    this.state.imgUrls.push(...rawData);
   }
 
   //私有方法，处理私聊列表
-  function _handlePrivateChatList(item, list = [], from = '观看端') {
+  static _handlePrivateChatList(item, list = [], from = '观看端') {
     if (['观看端'].includes(from)) {
       return list.map(a => {
         item.data.text_content = item.data.text_content.replace(
@@ -185,13 +189,13 @@ export default function useChatServer() {
   }
 
   //私有方法，组装消息（暂时按照的h5版本的,大致数据一致，具体业务逻辑操作有差异，后续返回一个promise，并返回未处理的原始数据，由视图自己决定如何处理）
-  function _handleGenerateMsg(item = {}, from = '') {
+  static _handleGenerateMsg(item = {}, from = '') {
     let params = {};
 
     if (['观看端', '发起端'].includes(from)) {
       params = {
         type: item.data.type,
-        avatar: item.avatar ? item.avatar : state.defaultAvatar,
+        avatar: item.avatar ? item.avatar : this.state.defaultAvatar,
         sendId: item.sender_id,
         showTime: item.showTime,
         nickName: item.nickname,
@@ -214,7 +218,7 @@ export default function useChatServer() {
     if (['h5'].includes(from)) {
       params = {
         type: item.data.type,
-        avatar: item.avatar ? item.avatar : state.defaultAvatar,
+        avatar: item.avatar ? item.avatar : this.state.defaultAvatar,
         sendId: item.sender_id,
         showTime: item.show_time,
         nickName: item.nickname,
@@ -251,7 +255,7 @@ export default function useChatServer() {
   /**
    * 禁言
    * */
-  function setBanned(params = {}) {
+  setBanned(params = {}) {
     return iMRequest.chat.setBanned(params);
   }
 
@@ -259,7 +263,7 @@ export default function useChatServer() {
    * 全体禁言
    * /v3/interacts/chat-user/set-all-banned
    * */
-  function setAllBanned(params = {}) {
+  setAllBanned(params = {}) {
     return iMRequest.chat.setAllBanned(params);
   }
 
@@ -267,7 +271,7 @@ export default function useChatServer() {
    * 删除消息
    * /v3/interacts/chat/delete-message
    * */
-  function deleteMessage(params) {
+  deleteMessage(params) {
     return iMRequest.chat.deleteMessage(params);
   }
 
@@ -275,34 +279,18 @@ export default function useChatServer() {
    * 踢出
    * /v3/interacts/chat-user/set-kicked
    * */
-  function setKicked(params = {}) {
+  setKicked(params = {}) {
     return iMRequest.chat.setKicked(params);
   }
 
   /**
    * 获取关键词
    * */
-  function getKeyWordsList(params = {}) {
+  getKeyWordsList(params = {}) {
     return iMRequest.keyWords.getKeyWordsList(params);
   }
+}
 
-  const result = {
-    state,
-    setState,
-    getHistoryMsg,
-    clearHistoryMsg,
-    sendMsg,
-    fetchHistoryData,
-    setKeywordList,
-    checkHasKeyword,
-    setBanned,
-    setAllBanned,
-    deleteMessage,
-    setKicked,
-    getKeyWordsList
-  };
-
-  contextServer.set('chatServer', result);
-
-  return result;
+export default function useChatServer() {
+  return new ChatServer();
 }

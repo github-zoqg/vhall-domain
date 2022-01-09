@@ -15,12 +15,12 @@ const liveType = new Map([
   ['embed', 'initEmbeddedReceiveLive'], //嵌入直播
   ['sdk', 'initSdkReceiveLive'] //sdk直播
 ]);
-export default class RoomBaseServer extends BaseServer {
+class RoomBaseServer extends BaseServer {
   constructor() {
     if (typeof RoomBaseServer.instance === 'object') {
       return RoomBaseServer.instance;
     }
-
+    super();
     this.state = {
       inited: false,
       isLiveOver: false,
@@ -36,17 +36,15 @@ export default class RoomBaseServer extends BaseServer {
       isGroupWebinar: false, // 是否是分组直播
       clientType: ''
     };
-
     RoomBaseServer.instance = this;
     return this;
   }
-
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
     return meeting[liveType.get(options.clientType)](options).then(res => {
       if (res.code === 200) {
-        state.state.inited = true;
-        state.watchInitData = res.data;
+        this.state.inited = true;
+        this.state.watchInitData = res.data;
         setRequestHeaders({
           'interact-token': res.data.interact.interact_token
         });
@@ -56,21 +54,21 @@ export default class RoomBaseServer extends BaseServer {
   }
   // 设置分组讨论是否正在讨论中
   setGroupDiscussState(type) {
-    state.groupInitData.discussState = type;
+    this.state.groupInitData.discussState = type;
   }
 
   // 设置子房间初始化信息
   setGroupInitData(data) {
-    state.groupInitData = merge.recursive({}, data, state.groupInitData);
-    if (state.groupInitData.group_id === 0) {
-      state.groupInitData.isInGroup = false;
+    this.state.groupInitData = merge.recursive({}, data, state.groupInitData);
+    if (this.state.groupInitData.group_id === 0) {
+      this.state.groupInitData.isInGroup = false;
     }
   }
 
   // 获取分组初始化信息
   getGroupInitData(data) {
     return requestApi.roomBase.getGroupInitData(data).then(res => {
-      state.groupInitData = {
+      this.state.groupInitData = {
         ...state.groupInitData,
         ...res.data,
         isBanned: res.data.is_banned == '1',
@@ -83,7 +81,7 @@ export default class RoomBaseServer extends BaseServer {
   // 获取活动信息
   getWebinarInfo(data) {
     return requestApi.roomBase.getWebinarInfo(data).then(res => {
-      state.webinarVo = res.data;
+      this.state.webinarVo = res.data;
       return res;
     });
   }
@@ -91,7 +89,7 @@ export default class RoomBaseServer extends BaseServer {
   // 获取房间权限配置列表
   getConfigList(data) {
     return requestApi.roomBase.getConfigList(data).then(res => {
-      state.configList = JSON.parse(res.data.permissions);
+      this.state.configList = JSON.parse(res.data.permissions);
       return res;
     });
   }
@@ -105,7 +103,7 @@ export default class RoomBaseServer extends BaseServer {
 
   // 开播startLive
   startLive(data = {}) {
-    setDevice(data);
+    this.setDevice(data);
     return requestApi.live.startLive(data);
   }
 
@@ -144,4 +142,7 @@ export default class RoomBaseServer extends BaseServer {
   getRoomToolStatus(params = {}) {
     return requestApi.roomBase.getRoomToolStatus(params);
   }
+}
+export default function useRoomBaseServer() {
+  return new RoomBaseServer();
 }

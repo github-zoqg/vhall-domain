@@ -1,14 +1,15 @@
-import RoomBaseServer from '@/domain/common/roombase.server.js';
+import useRoomBaseServer from '@/domain/room/roombase.server.js';
 import { isPc, merge, randomNumGenerator } from '@/utils/index.js';
 import { Dep } from '@/domain/common/base.server';
 import { INIT_DOMAIN } from '@/domain/common/dep.const';
-
-export default class MsgServer {
+import BaseServer from './base.server';
+import VhallPaasSDK from '@/sdk/index.js';
+class MsgServer extends BaseServer {
   constructor() {
     if (typeof MsgServer.instance === 'object') {
       return MsgServer.instance;
     }
-
+    super();
     this.state = {
       msgInstance: null,
       eventsPool: [],
@@ -38,9 +39,7 @@ export default class MsgServer {
   // 初始化主房间聊天sdk
   init(customOptions = {}) {
     return new Promise((resolve, reject) => {
-      Dep.addDep(INIT_DOMAIN, () => {
-        this._initMsgInstance(customOptions).then(resolve).catch(reject);
-      });
+      this._initMsgInstance(customOptions).then(resolve).catch(reject);
     });
   }
 
@@ -52,12 +51,21 @@ export default class MsgServer {
 
     this.state.msgSdkInitOptions = options;
 
-    return VhallChat.createInstance(option).then(res => {
-      this.state.msgInstance = res;
-      if (!this.state.groupMsgInstance) {
-        this._addListeners(res);
-      }
-      return res;
+    return new Promise((resolve, reject) => {
+      VhallPaasSDK.modules.VhallChat.createInstance(
+        option,
+        () => {
+          this.state.msgInstance = res;
+          if (!this.state.groupMsgInstance) {
+            this._addListeners(res);
+          }
+          alert(res);
+          resolve(res);
+        },
+        () => {
+          reject();
+        }
+      );
     });
   }
 
@@ -213,7 +221,7 @@ export default class MsgServer {
   // 获取主房间聊天sdk初始化默认参数
   // TODO:根据中台实际需要，更改context
   getDefaultOptions() {
-    const { state: roomBaseServerState } = new RoomBaseServer();
+    const { state: roomBaseServerState } = useRoomBaseServer();
 
     const isPcClient = isPc();
 
@@ -257,7 +265,7 @@ export default class MsgServer {
   // 获取子房间聊天sdk初始化默认参数
   // TODO:根据中台实际需要，调整context
   getGroupDefaultOptions() {
-    const { state: roomBaseServerState } = new RoomBaseServer();
+    const { state: roomBaseServerState } = useRoomBaseServer();
 
     const isPcClient = isPc();
 
@@ -293,7 +301,7 @@ export default class MsgServer {
   // 子房间上线发送group信息
   // TODO:根据中台需要，看是否这个方法还放在 msgServer中
   sendGroupInfoAfterJoin(msgInstance) {
-    const roomBaseServer = new RoomBaseServer();
+    const roomBaseServer = useRoomBaseServer();
     const { watchInitData, groupInitData } = roomBaseServer.state;
 
     msgInstance.emitRoomMsg({
@@ -355,4 +363,7 @@ export default class MsgServer {
   getCurrentGroupMsgInitOptions() {
     return JSON.parse(JSON.stringify(this.state.groupMsgSdkInitOptions));
   }
+}
+export default function useMsgServer() {
+  return new MsgServer();
 }
