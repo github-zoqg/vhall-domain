@@ -43,5 +43,7 @@
       "git add ."
     ]
   },
-  "dependencies": {}
+  "dependencies": {
+    "merge": "^2.1.1"
+  }
 }
