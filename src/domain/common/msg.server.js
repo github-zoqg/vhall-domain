@@ -1,7 +1,5 @@
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
 import { isPc, merge, randomNumGenerator } from '@/utils/index.js';
-import { Dep } from '@/domain/common/base.server';
-import { INIT_DOMAIN } from '@/domain/common/dep.const';
 import BaseServer from './base.server';
 import VhallPaasSDK from '@/sdk/index.js';
 class MsgServer extends BaseServer {
@@ -38,12 +36,6 @@ class MsgServer extends BaseServer {
 
   // 初始化主房间聊天sdk
   init(customOptions = {}) {
-    return new Promise((resolve, reject) => {
-      this._initMsgInstance(customOptions).then(resolve).catch(reject);
-    });
-  }
-
-  _initMsgInstance(customOptions = {}) {
     const defaultOptions = this.getDefaultOptions();
 
     const options = merge.recursive({}, defaultOptions, customOptions);
@@ -59,7 +51,6 @@ class MsgServer extends BaseServer {
           if (!this.state.groupMsgInstance) {
             this._addListeners(res);
           }
-          alert(res);
           resolve(res);
         },
         () => {
