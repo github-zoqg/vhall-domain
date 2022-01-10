@@ -23,9 +23,9 @@ class MsgServer extends BaseServer {
     return this;
   }
 
-  _groupMsgInstance = null;
+  static _groupMsgInstance = null;
 
-  _eventhandlers = {
+  static _eventhandlers = {
     ROOM_MSG: [], // 房间消息
     CHAT: [], // 聊天消息
     CUSTOM_MSG: [], // 自定义消息
@@ -45,7 +45,6 @@ class MsgServer extends BaseServer {
 
   _initMsgInstance(customOptions = {}) {
     const defaultOptions = this.getDefaultOptions();
-
     const options = merge.recursive({}, defaultOptions, customOptions);
     console.log('聊天初始化参数', options);
 
@@ -53,13 +52,12 @@ class MsgServer extends BaseServer {
 
     return new Promise((resolve, reject) => {
       VhallPaasSDK.modules.VhallChat.createInstance(
-        option,
-        () => {
+        options,
+        res => {
           this.state.msgInstance = res;
           if (!this.state.groupMsgInstance) {
             this._addListeners(res);
           }
-          alert(res);
           resolve(res);
         },
         () => {
@@ -71,16 +69,16 @@ class MsgServer extends BaseServer {
 
   // 注册事件
   $onMsg(eventType, fn) {
-    if (_eventhandlers[eventType]) {
-      _eventhandlers[eventType].push(fn);
+    if (this._eventhandlers[eventType]) {
+      this._eventhandlers[eventType].push(fn);
     } else {
       const registerMsgInstance = this.state.groupMsgInstance || this.state.msgInstance;
 
-      _eventhandlers[eventType] = [];
-      _eventhandlers[eventType].push(fn);
+      this._eventhandlers[eventType] = [];
+      this._eventhandlers[eventType].push(fn);
       if (registerMsgInstance) {
         this._handlePaasInstanceOn(registerMsgInstance, eventType, () => {
-          _eventhandlers[eventType].forEach(handler => {
+          this._eventhandlers[eventType].forEach(handler => {
             handler(msg);
           });
         });
@@ -131,19 +129,19 @@ class MsgServer extends BaseServer {
 
   // 注销事件
   $offMsg(eventType, fn) {
-    if (!_eventhandlers[eventType]) {
+    if (!this._eventhandlers[eventType]) {
       return new Error('该消息未注册');
     }
 
     if (!fn) {
-      _eventhandlers[eventType] = [];
+      this._eventhandlers[eventType] = [];
       this._handlePaasInstanceOff(eventType);
       return;
     }
 
-    const index = _eventhandlers[eventType].indexOf(fn);
+    const index = this._eventhandlers[eventType].indexOf(fn);
     if (index > -1) {
-      _eventhandlers[eventType].splice(index, 1);
+      this._eventhandlers[eventType].splice(index, 1);
       this._handlePaasInstanceOff(eventType, fn);
     }
   }
@@ -159,10 +157,10 @@ class MsgServer extends BaseServer {
 
   // 为聊天实例注册事件
   _addListeners(instance) {
-    for (let eventType in _eventhandlers) {
+    for (let eventType in this._eventhandlers) {
       this._handlePaasInstanceOn(instance, eventType, () => {
-        if (_eventhandlers[eventType].length) {
-          _eventhandlers[eventType].forEach(handler => {
+        if (this._eventhandlers[eventType].length) {
+          this._eventhandlers[eventType].forEach(handler => {
             handler(msg);
           });
         }
@@ -172,7 +170,7 @@ class MsgServer extends BaseServer {
 
   // 为聊天实例注销事件
   _removeListeners(instance) {
-    for (let eventType in _eventhandlers) {
+    for (let eventType in this._eventhandlers) {
       instance.off(eventType);
     }
   }
@@ -226,7 +224,6 @@ class MsgServer extends BaseServer {
     const isPcClient = isPc();
 
     const { watchInitData, groupInitData } = roomBaseServerState;
-
     const defaultContext = {
       nickname: watchInitData.join_info.nickname,
       avatar: watchInitData.join_info.avatar,

@@ -45,5 +45,40 @@ function randomNumGenerator() {
     return v.toString(16);
   });
 }
+function logPrint(dec, tem) {
+  if (globalCommon.showLog) {
+    let date = new Date();
+    let headDes = date.toLocaleTimeString() + ' ' + date.getMilliseconds() + 'ms';
+    console.log('%s========controller=======start==================>%s:', headDes, dec);
+    if (tem) {
+      if (tem instanceof Array) {
+        for (let v in tem) {
+          console.log(v);
+        }
+      } else {
+        console.log(tem);
+      }
+    }
+    console.log('%s========controller=======end==================>', headDes);
+  }
+}
 
+function logOnlinePrint(content, type) {
+  let head = '=========window pc log=========> ';
+  if (Object.prototype.toString.call(content) == '[object Object]') {
+    content = JSON.stringify(content);
+  }
+  let tem = head + content;
+  switch (type) {
+    case 'warn':
+      console.warn(tem);
+      break;
+    case 'error':
+      console.error(tem);
+      break;
+    default:
+      console.log(tem);
+      break;
+  }
+}
 export { merge, isPc, uploadFile, isChrome88, randomNumGenerator };
