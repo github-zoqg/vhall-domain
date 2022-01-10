@@ -36,12 +36,6 @@ class MsgServer extends BaseServer {
 
   // 初始化主房间聊天sdk
   init(customOptions = {}) {
-    return new Promise((resolve, reject) => {
-      this._initMsgInstance(customOptions).then(resolve).catch(reject);
-    });
-  }
-
-  _initMsgInstance(customOptions = {}) {
     const defaultOptions = this.getDefaultOptions();
     const options = merge.recursive({}, defaultOptions, customOptions);
     console.log('聊天初始化参数', options);
