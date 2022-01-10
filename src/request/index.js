@@ -21,20 +21,8 @@ const im = {
   signaling: imSignaling,
   notice: imNotice,
   chatAuth: imChatAuth
-}
+};
 const room = {
   activity: activity
-}
-export {
-  meeting,
-  roomBase,
-  user,
-  insertFile,
-  virtualClient,
-  interactive,
-  mic,
-  doc,
-  player,
-  im,
-  room
 };
+export { meeting, user, insertFile, virtualClient, interactive, mic, doc, player, im, room };

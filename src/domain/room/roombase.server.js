@@ -69,7 +69,7 @@ class RoomBaseServer extends BaseServer {
 
   // 获取分组初始化信息
   getGroupInitData(data) {
-    return requestApi.roomBase.getGroupInitData(data).then(res => {
+    return meeting.getGroupInitData(data).then(res => {
       this.state.groupInitData = {
         ...this.state.groupInitData,
         ...res.data,
@@ -82,7 +82,7 @@ class RoomBaseServer extends BaseServer {
 
   // 获取活动信息
   getWebinarInfo(data) {
-    return requestApi.roomBase.getWebinarInfo(data).then(res => {
+    return meeting.getWebinarInfo(data).then(res => {
       this.state.webinarVo = res.data;
       return res;
     });
@@ -90,7 +90,7 @@ class RoomBaseServer extends BaseServer {
 
   // 获取房间权限配置列表
   getConfigList(data) {
-    return requestApi.roomBase.getConfigList(data).then(res => {
+    return meeting.getConfigList(data).then(res => {
       this.state.configList = JSON.parse(res.data.permissions);
       return res;
     });
@@ -98,7 +98,7 @@ class RoomBaseServer extends BaseServer {
 
   // 设置设备检测状态
   setDevice(data) {
-    return requestApi.roomBase.setDevice(data).then(res => {
+    return meeting.setDevice(data).then(res => {
       return res;
     });
   }
@@ -106,43 +106,43 @@ class RoomBaseServer extends BaseServer {
   // 开播startLive
   startLive(data = {}) {
     this.setDevice(data);
-    return requestApi.live.startLive(data);
+    return meeting.startLive(data);
   }
 
   // 结束直播
   endLive(data) {
-    return requestApi.live.endLive(data);
+    return meeting.endLive(data);
   }
 
   // 开始/恢复录制
   startRecord() {
-    return requestApi.roomBase.recordApi({
+    return meeting.recordApi({
       status: 1
     });
   }
 
   // 暂停录制
   pauseRecord() {
-    return requestApi.roomBase.recordApi({
+    return meeting.recordApi({
       status: 2
     });
   }
 
   // 结束录制
   endRecord() {
-    return requestApi.roomBase.recordApi({
+    return meeting.recordApi({
       status: 3
     });
   }
 
   //初始化回放录制
   initReplayRecord(params = {}) {
-    return requestApi.roomBase.initRecordApi(params);
+    return meeting.initRecordApi(params);
   }
 
   //获取房间内各工具的状态
   getRoomToolStatus(params = {}) {
-    return requestApi.roomBase.getRoomToolStatus(params);
+    return meeting.getRoomToolStatus(params);
   }
 }
 

@@ -12,6 +12,7 @@ class InteractiveServer extends BaseServer {
     this.state = {
       interactiveInstance: null, // 互动实例
       streamId: null,
+      localStreamId: null, // 本地流id
       remoteStreams: [] // 远端流数组
     };
     InteractiveServer.instance = this;
@@ -151,13 +152,42 @@ class InteractiveServer extends BaseServer {
   }
 
   // ---------------------------基础api---------------------------------------------
-  // 创建本地流
-  createLocalStream(options = {}, addConfig = {}) {
-    return this.state.interactiveInstance.createLocalStream(options);
+  /**
+   * 创建本地流
+   * @param {Object} options
+   * @return {Promise} - 创建成功后的 promise
+   *
+   */
+  createLocalStream(options = {}) {
+    return this.state.interactiveInstance.createStream(options).then(data => {
+      this.state.localStreamId = data.streamId;
+      return data;
+    });
   }
+
   // 创建摄像头视频流
-  createLocalVideoStream(options = {}, addConfig = {}) {
-    return this.state.interactiveInstance.createLocalVideoStream(options, addConfig);
+  createLocalVideoStream(options = {}) {
+    const { state: roomBaseServerState } = useRoomBaseServer();
+
+    let defaultOptions = {
+      videoNode: options.videoNode, // 必填，传入本地视频显示容器ID
+      audio: true, // 选填，是否采集音频设备，默认为true
+      video: true, // 选填，是否采集视频设备，默认为true
+      audioDevice: options.audioDevice, // 选填，指定的音频设备id，默认为系统缺省
+      videoDevice: options.videoDevice, // 选填，指定的视频设备id，默认为系统缺省
+      profile:
+        VhallPaasSDK.modules.VhallRTC[options.profile] ||
+        VhallPaasSDK.modules.VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
+      streamType: 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。
+      attributes: JSON.stringify({
+        roleName: roomBaseServerState.watchInitData.join_info.role_name,
+        accountId: roomBaseServerState.watchInitData.join_info.third_party_user_id,
+        nickName: roomBaseServerState.watchInitData.join_info.nickname
+      }) //选填，自定义信息，支持字符串类型
+    };
+    const params = merge.recursive({}, defaultOptions, options);
+
+    return this.createLocalStream(params);
   }
   // 创建桌面共享流
   createLocaldesktopStream(options = {}, addConfig = {}) {
@@ -171,14 +201,16 @@ class InteractiveServer extends BaseServer {
   createLocalPhotoStream(options = {}, addConfig = {}) {
     return this.state.interactiveInstance.createLocalPhotoStream(options, addConfig);
   }
-  // 销毁额本地流
+  // 销毁本地流
   destroyStream(streamId) {
     return this.state.interactiveInstance.destroyStream(streamId || this.state.streamId);
   }
   // 推送本地流到远端
-  publishStream(options = {}) {
-    return this.state.interactiveInstance.publishStream({
-      streamId: options.streamId || this.state.streamId
+  publishStream() {
+    const { state: roomBaseServerState } = useRoomBaseServer();
+    return this.state.interactiveInstance.publish({
+      streamId: this.state.localStreamId,
+      accountId: roomBaseServerState.watchInitData.join_info.third_party_user_id
     });
   }
   // 取消推送到远端的流
@@ -205,9 +237,31 @@ class InteractiveServer extends BaseServer {
   muteAudio(options = {}) {
     return this.state.interactiveInstance.muteAudio(options);
   }
-  // 开启旁路
-  startBroadCast(options = {}, addConfig = {}) {
-    return this.state.interactiveInstance.startBroadCast(options, addConfig);
+  /**
+   * 开启旁路
+   * @param {Object} options --  layout: 旁路布局  profile: 旁路直播视频质量参数 paneAspectRatio:旁路混流窗格指定高宽比 border: 旁路边框属性
+   * @returns {Promise} - 开启旁路后的promise回调
+   */
+  startBroadCast(options = {}) {
+    const defaultOptions = {
+      layout: VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
+      profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
+      paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
+      border: {
+        // 旁路边框属性
+        width: 2,
+        color: '0x1a1a1a'
+      }
+    };
+
+    const params = merge.recursive({}, defaultOptions, options);
+
+    // 如果有 adaptiveLayoutMode 就不传 layout
+    if (params.adaptiveLayoutMode !== undefined || params.adaptiveLayoutMode !== null) {
+      delete params.layout;
+    }
+
+    return this.state.interactiveInstance.startBroadCast(params);
   }
   // 停止旁路
   stopBroadCast() {
@@ -222,8 +276,10 @@ class InteractiveServer extends BaseServer {
     return this.state.interactiveInstance.setBroadCastAdaptiveLayoutMode(options);
   }
   // 动态配置旁路主屏
-  setBroadCastScreen(mainScreenStreamId = '') {
-    return this.state.interactiveInstance.setBroadCastScreen(mainScreenStreamId);
+  setBroadCastScreen(options = {}) {
+    return this.state.interactiveInstance.setBroadCastScreen({
+      mainScreenStreamId: options.mainScreenStreamId || this.state.localStreamId
+    });
   }
   // 获取全部音视频列表
   getDevices() {
