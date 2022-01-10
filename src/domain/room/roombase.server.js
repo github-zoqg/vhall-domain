@@ -21,7 +21,7 @@ class RoomBaseServer extends BaseServer {
     if (typeof RoomBaseServer.instance === 'object') {
       return RoomBaseServer.instance;
     }
-
+    super();
     this.state = {
       inited: false,
       isLiveOver: false,
@@ -37,11 +37,9 @@ class RoomBaseServer extends BaseServer {
       isGroupWebinar: false, // 是否是分组直播
       clientType: ''
     };
-
     RoomBaseServer.instance = this;
     return this;
   }
-
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
     console.log('options--->', options);
@@ -107,7 +105,7 @@ class RoomBaseServer extends BaseServer {
 
   // 开播startLive
   startLive(data = {}) {
-    setDevice(data);
+    this.setDevice(data);
     return requestApi.live.startLive(data);
   }
 

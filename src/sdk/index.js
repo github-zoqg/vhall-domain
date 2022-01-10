@@ -6,7 +6,7 @@ class VhallPaasSDK {
   static initSuccessHooks = [];
   //初始化失败回调用
   static initErrorHooks = [];
-  static readyModules = {};
+  static modules = {};
   //加载pass-sdk
   static init(options = { plugins: [] }) {
     this.loadSdk(options.plugins);
@@ -20,11 +20,11 @@ class VhallPaasSDK {
       const loadres = await Promise.all(sdklist);
       this.loadStatus = 'success';
       loadres.forEach(item => {
-        item && (this.readyModules[item] = window[item]);
+        item && (this.modules[item] = window[item]);
       });
       //消费注册成功的回调，并返回注册成功的模块
       while (this.initSuccessHooks.length > 0) {
-        this.initSuccessHooks.splice(0, 1)[0](this.readyModules);
+        this.initSuccessHooks.splice(0, 1)[0](this.modules);
       }
     } catch (error) {
       this.loadStatus = 'failed';
@@ -38,7 +38,7 @@ class VhallPaasSDK {
   //注册加载成功回调
   static onSuccess(callback) {
     if (this.loadStatus === 'success') {
-      callback(this.readyModules);
+      callback(this.modules);
       return this;
     }
     this.initSuccessHooks.push(callback);

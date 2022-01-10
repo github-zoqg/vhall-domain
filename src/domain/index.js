@@ -5,7 +5,7 @@ import useMediaCheckServer from '@/domain/media/mediaCheck.server.js';
 import usePlayerServer from '@/domain/player/player.server.js';
 import useDocServer from '@/domain/doc/doc.server.js';
 
-import RoomBaseServer from '@/domain/room/roombase.server.js';
+import useRoomBaseServer from '@/domain/room/roombase.server.js';
 import useUserServer from '@/domain/user/user.server.old.js';
 import useVirtualAudienceServer from '@/domain/audience/virtualAudience.server.js';
 import useInsertFileServer from '@/domain/media/insertFile.server.js';
@@ -30,18 +30,18 @@ import { INIT_DOMAIN } from '@/domain/common/dep.const';
  */
 class Domain {
   constructor(options) {
-    this.setRequestConfig(options);
-    Promise.all([this.paasSdkInit(), this.initRoom(options.initRoom)]).then(res => {
+    this.setRequestConfig(options.requestHeaders);
+    Promise.all([this.paasSdkInit(options.plugins), this.initRoom(options.initRoom)]).then(res => {
       //触发所有注册的依赖passsdk和房间初始化的回调
       Dep.expenseDep(INIT_DOMAIN, res);
     });
   }
 
   // 加载paasSdk
-  paasSdkInit() {
+  paasSdkInit(options) {
     return new Promise(resolve => {
       VhallPaasSDK.init({
-        plugins: options.plugins || ['chat', 'player', 'doc', 'interaction']
+        plugins: options || ['chat', 'player', 'doc', 'interaction']
       }).onSuccess(controllers => {
         this.controllers = controllers;
         resolve();
@@ -58,14 +58,14 @@ class Domain {
 
   //初始化房间信息
   initRoom(options) {
-    const roomBaseServer = new RoomBaseServer();
+    const roomBaseServer = useRoomBaseServer();
     return roomBaseServer.initLive(options);
   }
 }
 export {
   Domain,
   useMsgServer,
-  RoomBaseServer,
+  useRoomBaseServer,
   useUserServer,
   usePlayerServer,
   useVirtualAudienceServer,

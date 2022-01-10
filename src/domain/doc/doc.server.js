@@ -1,29 +1,32 @@
-import contextServer from '@/domain/common/context.server.js';
 import { doc as docApi } from '../../request/index.js';
-export default function useDocServer() {
-  if (contextServer.has('docServer')) {
-    return contextServer.get('docServer');
-  }
-  const state = {
-    docInstance: null
-  };
-
-  function on(type, cb) {
-    if (!state.docInstance) return;
-    state.docInstance.$on(type, cb);
-  }
-
-  function destroy(isAutoDestroyMsg) {
-    return state.docInstance.destroy(isAutoDestroyMsg);
+import BaseServer from '../common/base.server';
+class DocServer extends BaseServer {
+  constructor() {
+    if (typeof useDocServer.instance === 'object') {
+      return useDocServer.instance;
+    }
+    super();
+    this.state = {
+      docInstance: null
+    };
   }
 
-  function init(options) {
+  on(type, cb) {
+    if (!this.state.docInstance) return;
+    this.state.docInstance.$on(type, cb);
+  }
+
+  destroy(isAutoDestroyMsg) {
+    return this.state.docInstance.destroy(isAutoDestroyMsg);
+  }
+
+  init(options) {
     const { state: roomInitGroupServer } = contextServer.get('roomInitGroupServer');
     console.log('create doc', roomInitGroupServer.vhallSaasInstance.createDoc);
     return roomInitGroupServer.vhallSaasInstance
       .createDoc(options)
       .then(instance => {
-        state.docInstance = instance;
+        this.state.docInstance = instance;
         return instance;
       })
       .catch(e => {
@@ -31,255 +34,204 @@ export default function useDocServer() {
       });
   }
 
-  function createBoard(options) {
-    return state.docInstance.createBoard(options);
+  createBoard(options) {
+    return this.state.docInstance.createBoard(options);
   }
 
-  function createDocument(options) {
-    return state.docInstance.createDocument(options);
+  createDocument(options) {
+    return this.state.docInstance.createDocument(options);
   }
 
-  function selectContainer(options) {
+  selectContainer(options) {
     console.log('select container:', option);
-    return state.docInstance.selectContainer(option);
+    return this.state.docInstance.selectContainer(option);
   }
 
-  function switchOnContainer(val) {
-    return state.docInstance.switchOnContainer(val);
+  switchOnContainer(val) {
+    return this.state.docInstance.switchOnContainer(val);
   }
 
-  function switchOffContainer(val) {
-    return state.docInstance.switchOffContainer(val);
+  switchOffContainer(val) {
+    return this.state.docInstance.switchOffContainer(val);
   }
 
-  function resetContainer() {
-    return state.docInstance.resetContainer();
+  resetContainer() {
+    return this.state.docInstance.resetContainer();
   }
 
-  async function getContainerInfo(options) {
-    return state.docInstance.getContainerInfo(options);
+  async getContainerInfo(options) {
+    return this.state.docInstance.getContainerInfo(options);
   }
 
-  function destroyContainer(val) {
-    return state.docInstance.destroyContainer(val);
+  destroyContainer(val) {
+    return this.state.docInstance.destroyContainer(val);
   }
 
-  function getVodAllCids(val) {
-    return state.docInstance.getVodAllCids(val);
+  getVodAllCids(val) {
+    return this.state.docInstance.getVodAllCids(val);
   }
 
-  function setRemoteData(item) {
-    return state.docInstance.setRemoteData(item);
+  setRemoteData(item) {
+    return this.state.docInstance.setRemoteData(item);
   }
 
-  function zoomIn() {
-    return state.docInstance.zoomIn();
+  zoomIn() {
+    return this.state.docInstance.zoomIn();
   }
 
-  function zoomOut() {
-    return state.docInstance.zoomOut();
+  zoomOut() {
+    return this.state.docInstance.zoomOut();
   }
 
-  function zoomReset() {
-    return state.docInstance.zoomReset();
+  zoomReset() {
+    return this.state.docInstance.zoomReset();
   }
 
-  function cancelZoom() {
-    return state.docInstance.cancelZoom();
+  cancelZoom() {
+    return this.state.docInstance.cancelZoom();
   }
 
-  function move() {
-    return state.docInstance.move();
+  move() {
+    return this.state.docInstance.move();
   }
 
-  function prevStep() {
-    return state.docInstance.prevStep();
+  prevStep() {
+    return this.state.docInstance.prevStep();
   }
 
-  function nextStep() {
-    return state.docInstance.nextStep();
+  nextStep() {
+    return this.state.docInstance.nextStep();
   }
 
-  function setPlayMode(mode) {
-    return state.docInstance.setPlayMode(mode);
+  setPlayMode(mode) {
+    return this.state.docInstance.setPlayMode(mode);
   }
 
-  function setSize(width, height, options) {
-    return state.docInstance.setSize(width, height, options);
+  setSize(width, height, options) {
+    return this.state.docInstance.setSize(width, height, options);
   }
 
-  function createUUID(type) {
-    return state.docInstance.createUUID(type);
+  createUUID(type) {
+    return this.state.docInstance.createUUID(type);
   }
 
-  function setControlStyle(style) {
-    return state.docInstance.setControlStyle(style);
+  setControlStyle(style) {
+    return this.state.docInstance.setControlStyle(style);
   }
 
-  function gotoPage(options) {
-    return state.docInstance.gotoPage(options);
+  gotoPage(options) {
+    return this.state.docInstance.gotoPage(options);
   }
 
-  function setPen(val) {
-    return state.docInstance.setPen(val);
+  setPen(val) {
+    return this.state.docInstance.setPen(val);
   }
 
-  function setEraser(val) {
-    return state.docInstance.setEraser(val);
+  setEraser(val) {
+    return this.state.docInstance.setEraser(val);
   }
 
-  function setStroke(options) {
-    return state.docInstance.setStroke(options);
+  setStroke(options) {
+    return this.state.docInstance.setStroke(options);
   }
 
-  function setStrokeWidth(options) {
-    return state.docInstance.setStrokeWidth(options);
+  setStrokeWidth(options) {
+    return this.state.docInstance.setStrokeWidth(options);
   }
 
-  function clear() {
-    return state.docInstance.clear();
+  clear() {
+    return this.state.docInstance.clear();
   }
 
-  function setSquare(options) {
-    return state.docInstance.setSquare(options);
+  setSquare(options) {
+    return this.state.docInstance.setSquare(options);
   }
 
-  function setSingleArrow(options) {
-    return state.docInstance.setSingleArrow(options);
+  setSingleArrow(options) {
+    return this.state.docInstance.setSingleArrow(options);
   }
 
-  function setDoubleArrow(options) {
-    return state.docInstance.setDoubleArrow(options);
+  setDoubleArrow(options) {
+    return this.state.docInstance.setDoubleArrow(options);
   }
 
-  function setCircle(options) {
-    return state.docInstance.setCircle(options);
+  setCircle(options) {
+    return this.state.docInstance.setCircle(options);
   }
 
-  function setBitmap(options) {
-    return state.docInstance.setBitmap(options);
+  setBitmap(options) {
+    return this.state.docInstance.setBitmap(options);
   }
 
-  function setIsoscelesTriangle(options) {
-    return state.docInstance.setIsoscelesTriangle(options);
+  setIsoscelesTriangle(options) {
+    return this.state.docInstance.setIsoscelesTriangle(options);
   }
 
-  function cancelDrawable() {
-    return state.docInstance.cancelDrawable();
+  cancelDrawable() {
+    return this.state.docInstance.cancelDrawable();
   }
 
-  function setHighlighters() {
-    return state.docInstance.setHighlighters();
+  setHighlighters() {
+    return this.state.docInstance.setHighlighters();
   }
 
-  function setText(val) {
-    return state.docInstance.setText(val);
+  setText(val) {
+    return this.state.docInstance.setText(val);
   }
 
-  function loadDoc(options) {
-    return state.docInstance.loadDoc(options);
+  loadDoc(options) {
+    return this.state.docInstance.loadDoc(options);
   }
 
-  function start(val, type) {
-    return state.docInstance.start(val, type);
+  start(val, type) {
+    return this.state.docInstance.start(val, type);
   }
 
-  function republish() {
-    return state.docInstance.republish();
+  republish() {
+    return this.state.docInstance.republish();
   }
 
-  function setRole(role) {
-    return state.docInstance.setRole(role);
+  setRole(role) {
+    return this.state.docInstance.setRole(role);
   }
 
-  function setAccountId(role) {
-    return state.docInstance.setAccountId(role);
+  setAccountId(role) {
+    return this.state.docInstance.setAccountId(role);
   }
 
-  function setEditable(editable) {
-    return state.docInstance.setEditable(editable);
+  setEditable(editable) {
+    return this.state.docInstance.setEditable(editable);
   }
 
-  function getThumbnailList(options) {
-    return state.docInstance.getThumbnailList(options);
+  getThumbnailList(options) {
+    return this.state.docInstance.getThumbnailList(options);
   }
 
   // 获取文档列表(资料库所有文档)
-  function getAllDocList(params) {
+  getAllDocList(params) {
     return docApi.getAllDocList(params);
   }
 
   // 获取文档列表(当前活动下)
-  function getWebinarDocList(params) {
+  getWebinarDocList(params) {
     return docApi.getWebinarDocList(params);
   }
 
   // 获取文档详情
-  function getDocDetail(params) {
+  getDocDetail(params) {
     return docApi.getDocDetail(params);
   }
 
   // 同步文档
-  function syncDoc(params) {
+  syncDoc(params) {
     return docApi.syncDoc(params);
   }
 
   // 删除文档(多选)
-  function delDocList(params) {
+  delDocList(params) {
     return docApi.delDocList(params);
   }
-
-  return {
-    state,
-    init,
-    on,
-    destroy,
-    getVodAllCids,
-    createBoard,
-    createDocument,
-    selectContainer,
-    getContainerInfo,
-    destroyContainer,
-    setRemoteData,
-    zoomIn,
-    zoomOut,
-    zoomReset,
-    move,
-    prevStep,
-    nextStep,
-    setPlayMode,
-    setSize,
-    createUUID,
-    setControlStyle,
-    gotoPage,
-    cancelZoom,
-    switchOnContainer,
-    switchOffContainer,
-    resetContainer,
-    setPen,
-    setEraser,
-    setStroke,
-    setStrokeWidth,
-    setSquare,
-    setCircle,
-    setSingleArrow,
-    setDoubleArrow,
-    setIsoscelesTriangle,
-    clear,
-    cancelDrawable,
-    setHighlighters,
-    setText,
-    loadDoc,
-    start,
-    republish,
-    setRole,
-    setAccountId,
-    setEditable,
-    getThumbnailList,
-    getAllDocList,
-    getWebinarDocList,
-    getDocDetail,
-    syncDoc,
-    delDocList
-  };
+}
+export default function useDocServer() {
+  return new DocServer();
 }
