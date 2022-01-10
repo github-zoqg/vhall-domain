@@ -18,12 +18,9 @@ class InteractiveServer extends BaseServer {
     return this;
   }
 
-  // 检查当前浏览器支持性
-  checkSystemRequirements() {
-    return VhallPaasSDK.modules.VhallRTC.checkSystemRequirements().then(checkResult => {
-      this.checkSystemResult = checkResult;
-      return checkResult;
-    });
+  // 设置本地日志打印等级
+  static setLogLevel(opt) {
+    return VhallPaasSDK.modules.VhallRTC.setLogLevel(opt);
   }
 
   /**
