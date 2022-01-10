@@ -45,6 +45,29 @@ function randomNumGenerator() {
     return v.toString(16);
   });
 }
+//防抖
+function debounce(fn, time, immediate) {
+  var timer;
+  return function () {
+    if (timer) clearTimeout(timer);
+    immediate && !timer && fn(); // 首次进入，立即执行（立即执行开启，定时器没开启）
+    timer = setTimeout(() => {
+      timer = null;
+    }, time);
+  };
+}
+
+// throttling 节流
+function throttling(fn, immediate) {
+  var timer;
+  return function () {
+    if (timer) return false;
+    !timer && immediate && fn();
+    timer = setTimeout(() => {
+      timer = null;
+    }, 1000);
+  };
+}
 function logPrint(dec, tem) {
   if (globalCommon.showLog) {
     let date = new Date();
@@ -81,4 +104,4 @@ function logOnlinePrint(content, type) {
       break;
   }
 }
-export { merge, isPc, uploadFile, isChrome88, randomNumGenerator };
+export { merge, isPc, uploadFile, isChrome88, randomNumGenerator, debounce, throttling };

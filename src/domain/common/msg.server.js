@@ -217,6 +217,7 @@ class MsgServer extends BaseServer {
     const isPcClient = isPc();
 
     const { watchInitData, groupInitData } = roomBaseServerState;
+    console.log('roomBaseServerState', roomBaseServerState);
     const defaultContext = {
       nickname: watchInitData.join_info.nickname,
       avatar: watchInitData.join_info.avatar,
