@@ -1,44 +1,160 @@
 import { mic } from '../../request';
+import { merge } from '../../utils';
+import BaseServer from '../common/base.server';
+import useRoomBaseServer from '../room/roombase.server';
 import VhallPaasSDK from '@/sdk/index';
-class InteractiveServer {
+class InteractiveServer extends BaseServer {
   constructor() {
+    super();
     if (typeof InteractiveServer.instance === 'object') {
       return InteractiveServer.instance;
     }
+    this.state = {
+      interactiveInstance: null, // 互动实例
+      streamId: null,
+      remoteStreams: [] // 远端流数组
+    };
     InteractiveServer.instance = this;
     return this;
   }
-  state = {
-    vhallSaasInstance: null, // vhallsdk的实例
-    interactiveInstance: null, // 互动实例
-    streamId: null,
-    remoteStreams: [] // 远端流数组
-  };
-  //初始化
-  init(options) {
+
+  // 检查当前浏览器支持性
+  checkSystemRequirements() {
+    return VhallPaasSDK.modules.VhallRTC.checkSystemRequirements().then(checkResult => {
+      this.checkSystemResult = checkResult;
+      return checkResult;
+    });
+  }
+
+  /**
+   * 初始化
+   * @param {Object} customOptions
+   * @returns {Promise}
+   */
+  init(customOptions = {}) {
+    const defaultOptions = this._getDefaultOptions();
+    const options = merge.recursive({}, defaultOptions, customOptions);
+
     return new Promise((resolve, reject) => {
       VhallPaasSDK.modules.VhallRTC.createInstance(
         options,
         event => {
-          this.state.interactiveInstance = event;
+          // 互动实例
+          this.state.interactiveInstance = event.vhallrtc;
+          this._addListeners();
+          // 房间当前远端流列表
+          this.state.remoteStreams = event.currentStreams;
           resolve(event);
         },
-        () => {
-          reject();
+        error => {
+          reject(error);
         }
       );
     });
   }
-  //销毁实例
-  destroyInit() {
-    return state.interactiveInstance.destroyInit();
+
+  // 获取默认初始化参数
+  _getDefaultOptions() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const defaultOptions = {
+      appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
+      inavId: watchInitData.interact.inav_id, // 互动房间ID，必填
+      roomId: watchInitData.interact.room_id, // 如需开启旁路，必填。
+      accountId: watchInitData.join_info.third_party_user_id, // 第三方用户ID，必填
+      token: watchInitData.interact.paas_access_token, // access_token，必填
+      mode: VhallPaasSDK.modules.VhallRTC.MODE_RTC, //应用场景模式，选填，可选值参考下文【应用场景类型】。支持版本：2.3.1及以上。
+      role: VhallPaasSDK.modules.VhallRTC.ROLE_HOST, //用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
+      attributes: '', // String 类型
+      autoStartBroadcast: watchInitData.join_info.role_name == 1, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
+      broadcastConfig:
+        watchInitData.join_info.role_name == 1
+          ? {
+              layout: VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
+              profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
+              paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
+              precastPic: false, // 选填，当旁路布局模板未填满时，剩余的窗格默认会填充系统默认小人图标。可配置是否显示此图标。
+              border: {
+                // 旁路边框属性
+                width: 2,
+                color: '0x666666'
+              }
+            }
+          : {} // 自动旁路   开启旁路直播方法所需参数
+    };
+    return defaultOptions;
   }
-  //监听事件
-  on(type, callback) {
-    return this.state.interactiveInstance.$on(type, callback);
+
+  /**
+   * 销毁实例
+   * @returns {Promise}}
+   */
+  destroy() {
+    return this.state.interactiveInstance.destroyInstance();
   }
-  // 基础api
-  // 常见本地流
+
+  // 注册事件监听
+  _addListeners() {
+    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_JOIN, e => {
+      // 用户加入房间事件
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_JOIN, e);
+    });
+    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_LEAVE, e => {
+      // 用户离开房间事件
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_LEAVE, e);
+    });
+    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
+      // 远端流加入事件
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e);
+    });
+    this.state.interactiveInstance.on(
+      VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED,
+      e => {
+        // 远端流离开事件
+        this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e);
+      }
+    );
+    this.state.interactiveInstance.on(
+      VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED,
+      e => {
+        // 房间信令异常断开事件
+        this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e);
+      }
+    );
+    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_MUTE, e => {
+      // 远端流音视频状态改变事件
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_MUTE, e);
+    });
+    this.state.interactiveInstance.on(
+      VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED,
+      e => {
+        // 本地推流或订阅远端流异常断开事件
+        this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e);
+      }
+    );
+    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
+      // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e);
+    });
+    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e => {
+      // 本地流视频发送帧率异常事件
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e);
+    });
+    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e => {
+      // 新增设备或移除设备时触发
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e);
+    });
+    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_FORCELEAVE, e => {
+      // 强行踢出房间事件
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_FORCELEAVE, e);
+    });
+    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_PLAYABORT, e => {
+      // 订阅流自动播放失败
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_PLAYABORT, e);
+    });
+  }
+
+  // ---------------------------基础api---------------------------------------------
+  // 创建本地流
   createLocalStream(options = {}, addConfig = {}) {
     return this.state.interactiveInstance.createLocalStream(options);
   }
@@ -60,7 +176,7 @@ class InteractiveServer {
   }
   // 销毁额本地流
   destroyStream(streamId) {
-    return this.state.interactiveInstance.destroyStream(streamId || state.streamId);
+    return this.state.interactiveInstance.destroyStream(streamId || this.state.streamId);
   }
   // 推送本地流到远端
   publishStream(options = {}) {
@@ -140,11 +256,7 @@ class InteractiveServer {
   isScreenShareSupported() {
     return this.state.interactiveInstance.isScreenShareSupported();
   }
-  // 检查当前浏览器支持性
-  async checkSystemRequirements() {
-    if (!this.state.interactiveInstance) return;
-    return this.state.interactiveInstance.checkSystemRequirements();
-  }
+
   // 获取上下行丢包率
   getPacketLossRate() {
     return this.state.interactiveInstance.getPacketLossRate();
@@ -252,7 +364,7 @@ class InteractiveServer {
               .createLocalVideoStream(params)
               .then(res => {
                 console.log('create local stream success::', res);
-                state.streamId = res;
+                this.state.streamId = res;
                 streamId = res;
                 return res;
               })
@@ -288,16 +400,20 @@ class InteractiveServer {
   }
   // sdk的监听事件
   listenerSdk() {
-    this.state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
+    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
       // state.remoteStreams.push(e)
     });
-    this.state.interactiveInstance.on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
-      // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      // state.remoteStreams.filter(item => item.streamId == e.streamId)
-    });
+    this.state.interactiveInstance.on(
+      VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED,
+      e => {
+        // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
+        // state.remoteStreams.filter(item => item.streamId == e.streamId)
+      }
+    );
   }
 }
+
 export default function useInteractiveServer() {
   return new InteractiveServer();
 }

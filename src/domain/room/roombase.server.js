@@ -17,6 +17,7 @@ const liveType = new Map([
 ]);
 class RoomBaseServer extends BaseServer {
   constructor() {
+    super();
     if (typeof RoomBaseServer.instance === 'object') {
       return RoomBaseServer.instance;
     }
@@ -41,6 +42,7 @@ class RoomBaseServer extends BaseServer {
   }
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
+    console.log('options--->', options);
     return meeting[liveType.get(options.clientType)](options).then(res => {
       if (res.code === 200) {
         this.state.inited = true;
@@ -59,7 +61,7 @@ class RoomBaseServer extends BaseServer {
 
   // 设置子房间初始化信息
   setGroupInitData(data) {
-    this.state.groupInitData = merge.recursive({}, data, state.groupInitData);
+    this.state.groupInitData = merge.recursive({}, data, this.state.groupInitData);
     if (this.state.groupInitData.group_id === 0) {
       this.state.groupInitData.isInGroup = false;
     }
@@ -69,7 +71,7 @@ class RoomBaseServer extends BaseServer {
   getGroupInitData(data) {
     return requestApi.roomBase.getGroupInitData(data).then(res => {
       this.state.groupInitData = {
-        ...state.groupInitData,
+        ...this.state.groupInitData,
         ...res.data,
         isBanned: res.data.is_banned == '1',
         isInGroup: res.code !== 513325
@@ -143,6 +145,7 @@ class RoomBaseServer extends BaseServer {
     return requestApi.roomBase.getRoomToolStatus(params);
   }
 }
+
 export default function useRoomBaseServer() {
   return new RoomBaseServer();
 }
