@@ -31,10 +31,12 @@ import { INIT_DOMAIN } from '@/domain/common/dep.const';
 class Domain {
   constructor(options) {
     this.setRequestConfig(options.requestHeaders);
-    Promise.all([this.paasSdkInit(options.plugins), this.initRoom(options.initRoom)]).then(res => {
-      //触发所有注册的依赖passsdk和房间初始化的回调
-      Dep.expenseDep(INIT_DOMAIN, res);
-    });
+    return Promise.all([this.paasSdkInit(options.plugins), this.initRoom(options.initRoom)]).then(
+      res => {
+        //触发所有注册的依赖passsdk和房间初始化的回调
+        // Dep.expenseDep(INIT_DOMAIN, res);
+      }
+    );
   }
 
   // 加载paasSdk

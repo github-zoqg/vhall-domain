@@ -21,17 +21,17 @@ class DocServer extends BaseServer {
   }
 
   init(options) {
-    const { state: roomInitGroupServer } = contextServer.get('roomInitGroupServer');
-    console.log('create doc', roomInitGroupServer.vhallSaasInstance.createDoc);
-    return roomInitGroupServer.vhallSaasInstance
-      .createDoc(options)
-      .then(instance => {
-        this.state.docInstance = instance;
-        return instance;
-      })
-      .catch(e => {
-        return e;
-      });
+    // const { state: roomInitGroupServer } = contextServer.get('roomInitGroupServer');
+    // console.log('create doc', roomInitGroupServer.vhallSaasInstance.createDoc);
+    // return roomInitGroupServer.vhallSaasInstance
+    //   .createDoc(options)
+    //   .then(instance => {
+    //     this.state.docInstance = instance;
+    //     return instance;
+    //   })
+    //   .catch(e => {
+    //     return e;
+    //   });
   }
 
   createBoard(options) {
