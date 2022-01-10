@@ -7,6 +7,7 @@ import { im as iMRequest } from '@/request/index.js';
 import BaseServer from '@/domain/common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
+import contextServer from '../common/context.server';
 class ChatServer extends BaseServer {
   constructor() {
     if (typeof ChatServer.instance === 'object') {
@@ -55,9 +56,8 @@ class ChatServer extends BaseServer {
         //处理普通内容
         item.data.text_content &&
           (item.data.text_content = textToEmojiText(item.data.text_content));
-
         //处理图片预览
-        item.data.image_urls && _handleImgUrl(item.data.image_urls);
+        item.data.image_urls && ChatServer._handleImgUrl.call(this, item.data.image_urls);
 
         //处理私聊列表
         if (
@@ -66,13 +66,12 @@ class ChatServer extends BaseServer {
           item.context.at_list.length &&
           item.data.text_content
         ) {
-          item.context.at_list = _handlePrivateChatList(item, item.context.at_list);
+          item.context.at_list = ChatServer._handlePrivateChatList(item, item.context.at_list);
           //发起端的特殊处理，可以考虑统一
           item.context.atList = item.context.at_list;
         }
-
         //格式化消息
-        return _handleGenerateMsg(item, from);
+        return ChatServer._handleGenerateMsg.call(this, item, from);
       })
       .reduce((acc, curr) => {
         const showTime = curr.showTime;
@@ -123,7 +122,8 @@ class ChatServer extends BaseServer {
     //         reject();
     //     }
     // });
-
+    console.log('data', data);
+    console.log('data', context);
     return new Promise((resolve, reject) => {
       this.msgServer.sendChatMsg(data, context);
       resolve();

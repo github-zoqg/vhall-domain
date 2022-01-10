@@ -1,7 +1,5 @@
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
 import { isPc, merge, randomNumGenerator } from '@/utils/index.js';
-import { Dep } from '@/domain/common/base.server';
-import { INIT_DOMAIN } from '@/domain/common/dep.const';
 import BaseServer from './base.server';
 import VhallPaasSDK from '@/sdk/index.js';
 class MsgServer extends BaseServer {
@@ -54,7 +52,7 @@ class MsgServer extends BaseServer {
       VhallPaasSDK.modules.VhallChat.createInstance(
         options,
         res => {
-          this.state.msgInstance = res;
+          this.state.msgInstance = res.message;
           if (!this.state.groupMsgInstance) {
             this._addListeners(res);
           }
@@ -180,7 +178,8 @@ class MsgServer extends BaseServer {
     if (this.state.groupMsgInstance) {
       this.state.groupMsgInstance.emitTextChat(data, options);
     } else {
-      this.state.msgInstance.emitTextChat(data, options);
+      console.log(this.state.msgInstance);
+      this.state.msgInstance.emit(data, options);
     }
   }
 
@@ -189,7 +188,7 @@ class MsgServer extends BaseServer {
     if (this.state.groupMsgInstance) {
       this.state.groupMsgInstance.emitRoomMsg(data);
     } else {
-      this.state.msgInstance.emitRoomMsg(data);
+      this.state.msgInstance.e(data);
     }
   }
 
