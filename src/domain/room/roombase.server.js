@@ -89,28 +89,55 @@ class RoomBaseServer extends BaseServer {
   }
 
   // 获取房间权限配置列表
-  getConfigList(data) {
-    return meeting.getConfigList(data).then(res => {
-      this.state.configList = JSON.parse(res.data.permissions);
+  getConfigList(data = {}) {
+    const defaultParams = {
+      webinar_id: this.state.watchInitData.webinar.id,
+      webinar_user_id: this.state.watchInitData.webinar.userinfo.user_id,
+      scene_id: 2
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return meeting.getConfigList(retParams).then(res => {
+      if (res.code == 200) {
+        this.state.configList = JSON.parse(res.data.permissions);
+      }
+      return res;
+    });
+  }
+
+  //获取房间内各工具的状态
+  getInavToolStatus(data = {}) {
+    const defaultParams = {
+      room_id: this.state.watchInitData.interact.room_id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return meeting.getInavToolStatus(retParams).then(res => {
+      if (res.code == 200) {
+        this.state.tnavToolStatus = res.data;
+      }
       return res;
     });
   }
 
   // 设置设备检测状态
-  setDevice(data) {
-    return meeting.setDevice(data).then(res => {
+  setDevice(data = {}) {
+    const defaultParams = {
+      room_id: this.state.watchInitData.interact.room_id,
+      status: 1,
+      type: 2
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return meeting.setDevice(retParams).then(res => {
       return res;
     });
   }
 
   // 开播startLive
   startLive(data = {}) {
-    this.setDevice(data);
     return meeting.startLive(data);
   }
 
   // 结束直播
-  endLive(data) {
+  endLive(data = {}) {
     return meeting.endLive(data);
   }
 
@@ -138,11 +165,6 @@ class RoomBaseServer extends BaseServer {
   //初始化回放录制
   initReplayRecord(params = {}) {
     return meeting.initRecordApi(params);
-  }
-
-  //获取房间内各工具的状态
-  getRoomToolStatus(params = {}) {
-    return meeting.getRoomToolStatus(params);
   }
 }
 

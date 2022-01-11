@@ -1,17 +1,17 @@
 export default {
   //基础sdk
   base: {
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-base/vhall-msg-1.0.11.js'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-base/vhall-msg-2.0.1.js?oldver=1.0.11&t=3'
   },
   //播放器sdk
   player: {
     name: 'VhallPlayer',
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.3.8.js'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.4.0.js'
   },
   //聊天sdk
   chat: {
     name: 'VhallChat',
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-chat/3.0.1/vhall-jssdk-chat-3.0.1.js?t=3'
   },
   //互动sdk
   interaction: {
