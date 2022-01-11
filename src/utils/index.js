@@ -47,10 +47,10 @@ function randomNumGenerator() {
 }
 //防抖
 function debounce(fn, time, immediate) {
-  var timer;
-  return function () {
+  let timer;
+  return function (...args) {
     if (timer) clearTimeout(timer);
-    immediate && !timer && fn(); // 首次进入，立即执行（立即执行开启，定时器没开启）
+    immediate && !timer && fn(...args); // 首次进入，立即执行（立即执行开启，定时器没开启）
     timer = setTimeout(() => {
       timer = null;
     }, time);
@@ -58,14 +58,14 @@ function debounce(fn, time, immediate) {
 }
 
 // throttling 节流
-function throttling(fn, immediate) {
-  var timer;
-  return function () {
+function throttling(fn, time, immediate) {
+  let timer;
+  return function (...args) {
     if (timer) return false;
-    !timer && immediate && fn();
+    !timer && immediate && fn(args);
     timer = setTimeout(() => {
       timer = null;
-    }, 1000);
+    }, time);
   };
 }
 function logPrint(dec, tem) {

@@ -8,17 +8,18 @@ import BaseServer from '@/domain/common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
 import { debounce } from '@/utils';
+//基础服务
+const roomServer = useRoomBaseServer();
+//消息服务
+const msgServer = useMsgServer();
 class ChatServer extends BaseServer {
   constructor() {
     if (typeof ChatServer.instance === 'object') {
       return ChatServer.instance;
     }
     super();
-    //基础服务
-    const roomServer = useRoomBaseServer();
+
     const { roomId = '', roleName, avatar = '' } = roomServer.state.watchInitData;
-    //消息服务
-    this.msgServer = useMsgServer();
     //消息sdk
     this.state = {
       //聊天记录
@@ -27,7 +28,10 @@ class ChatServer extends BaseServer {
       keywordList: [],
       //预览图片地址
       imgUrls: [],
-
+      //当前用户禁言状态
+      banned: 0, //1禁言 0取消禁言
+      //当前频道全部禁言状态
+      allBanned: 0, //1禁言 0取消禁言
       page: 0,
       limit: 10,
 
@@ -110,8 +114,10 @@ class ChatServer extends BaseServer {
     this.state.chatList.splice(0, this.state.chatList.length);
   }
 
+  //防抖处理发送聊天消息
+  sendMsg = debounce(this.sendMsgToMsg.bind(this), 3000, true);
   //发送聊天消息
-  sendMsg(params = {}) {
+  sendMsgToMsg(params = {}) {
     let { inputValue, needFilter = true, data = {}, context = {} } = params;
     // let filterStatus = checkHasKeyword(needFilter, inputValue);
     // return new Promise((resolve, reject) => {
@@ -122,10 +128,8 @@ class ChatServer extends BaseServer {
     //         reject();
     //     }
     // });
-    console.log('data', data);
-    console.log('data', context);
     return new Promise((resolve, reject) => {
-      this.msgServer.sendChatMsg(data, context);
+      msgServer.sendChatMsg(data, context);
       resolve();
     });
   }
@@ -256,7 +260,11 @@ class ChatServer extends BaseServer {
    * 禁言
    * */
   setBanned(params = {}) {
-    return iMRequest.chat.setBanned(params);
+    return iMRequest.chat.setBanned(params).then(res => {
+      if (res.code == 200) {
+        this.state.banned = params.status;
+      }
+    });
   }
 
   /**
@@ -264,7 +272,11 @@ class ChatServer extends BaseServer {
    * /v3/interacts/chat-user/set-all-banned
    * */
   setAllBanned(params = {}) {
-    return iMRequest.chat.setAllBanned(params);
+    return iMRequest.chat.setAllBanned(params).then(res => {
+      if (res.code == 200) {
+        this.state.allBanned = params.status;
+      }
+    });
   }
 
   /**
