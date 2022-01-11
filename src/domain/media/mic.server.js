@@ -1,52 +1,81 @@
-import { mic } from '../../request';
-
-export default function useMicServer() {
-  let state = {};
-
-  // 上麦
-  function speakOn(data = {}) {
-    return mic.speakOn(data);
+import { merge } from '../../utils/index';
+import { mic, im } from '../../request';
+import BaseServer from '../common/base.server';
+import useMsgServer from '../common/msg.server';
+import useRoomBaseServer from '../room/roombase.server';
+class MicServer extends BaseServer {
+  constructor() {
+    super();
+    if (typeof MicServer.instance === 'object') {
+      return MicServer.instance;
+    }
+    this.state = {};
+    MicServer.instance = this;
+    return this;
   }
-
-  // 下麦
-  function speakOff(data = {}) {
-    return mic.speakOff(data);
+  init() {
+    this._initEventListeners();
   }
-
-  function speakUserOff(data = {}) {
-    return mic.speakUserOff(data);
+  _initEventListeners() {
+    const msgServer = useMsgServer();
+    msgServer.$onMsg('ROOM_MSG', msg => {
+      console.log('----micServer----room_msg----', msg);
+    });
   }
-
+  // 用户上麦
+  userSpeakOn(data = {}) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const defaultParams = {
+      room_id: watchInitData.interact.room_id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return im.signaling.userSpeakOn(retParams);
+  }
+  // 用户下麦
+  userSpeakOff(data = {}) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const defaultParams = {
+      room_id: watchInitData.interact.room_id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return im.signaling.userSpeakOff(retParams);
+  }
   // 允许举手
-  function setHandsUp(data = {}) {
+  setHandsUp(data = {}) {
     return mic.setHandsUp(data);
   }
-  // 允许上麦
-  function allowSpeak(data = {}) {
-    return mic.allowSpeak(data);
+  // 用户举手申请上麦
+  userApply(data = {}) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const defaultParams = {
+      room_id: watchInitData.interact.room_id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return im.signaling.userApply(retParams);
+  }
+  // 同意用户的上麦申请
+  hostAgreeApply(data = {}) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const defaultParams = {
+      room_id: watchInitData.interact.room_id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return im.signaling.hostAgreeApply(retParams);
   }
   // 邀请上麦
-  function inviteMic(data = {}) {
+  inviteMic(data = {}) {
     return mic.inviteMic(data);
   }
   // 取消申请
-  function cancelApply(data = {}) {
+  cancelApply(data = {}) {
     return mic.cancelApply(data);
   }
   // 拒绝邀请
-  function refuseInvite(data = {}) {
+  refuseInvite(data = {}) {
     return mic.refuseInvite(data);
   }
+}
 
-  return {
-    state,
-    speakOn,
-    speakOff,
-    speakUserOff,
-    allowSpeak,
-    setHandsUp,
-    inviteMic,
-    cancelApply,
-    refuseInvite
-  };
+export default function useMicServer() {
+  return new MicServer();
 }
