@@ -1,5 +1,5 @@
 class Storage {
-  constructor() {
+  constructor(options = {}) {
     this.prefix = options.prefix || 'vhallDomain';
   }
   get(key, type = 'local') {

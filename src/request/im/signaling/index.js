@@ -59,7 +59,7 @@ function hostAgreeApply(params = {}) {
  * */
 function hostRejectApply(params = {}) {
   return $http({
-    url: '/v4/interacts/inav/reject-apply',
+    url: '/v3/interacts/inav/reject-apply',
     type: 'POST',
     data: params
   });
