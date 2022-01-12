@@ -47,12 +47,6 @@ class MsgServer extends BaseServer {
         res => {
           this.msgInstance = res;
           console.log('聊天实例', this.msgInstance);
-          this.msgInstance.onRoomMsg(msg => {
-            console.log('房间消息', useMsgServer);
-          });
-          this.msgInstance.onRoomMsg(msg => {
-            console.log('房间消息', useMsgServer);
-          });
           if (!this.groupMsgInstance) {
             this._addListeners(this.msgInstance);
           }
@@ -88,11 +82,9 @@ class MsgServer extends BaseServer {
   _handlePaasInstanceOn(instance, eventType, fn) {
     // 'room';
     // 'custom'
-    console.log(instance);
     switch (eventType) {
       case 'ROOM_MSG':
-        console.log('注册房间消息');
-        instance.onRoomMsg(fn); // 这个小写的字符串是跟微吼云沟通添加的，现在房间消息还没有常量
+        instance.on('room', fn); // 这个小写的字符串是跟微吼云沟通添加的，现在房间消息还没有常量
         break;
       case 'CHAT':
         instance.on(VhallChat.EVENTS.CHAT, fn);

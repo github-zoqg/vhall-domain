@@ -101,8 +101,12 @@ class InteractiveServer extends BaseServer {
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_LEAVE, e);
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
+      const event = {
+        ...e,
+        attributes: e.attributes && JSON.parse(e.attributes)
+      };
       // 远端流加入事件
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e);
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, event);
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
       // 远端流离开事件
@@ -204,6 +208,7 @@ class InteractiveServer extends BaseServer {
       accountId: roomBaseServerState.watchInitData.join_info.third_party_user_id
     });
   }
+
   /**
    * 取消推送到远端的流
    * @param {Object} options
@@ -214,10 +219,16 @@ class InteractiveServer extends BaseServer {
       streamId: options.streamId || this.state.localStreamId
     });
   }
-  // 订阅远端流
-  subscribeStream(options = {}) {
-    return this.interactiveInstance.subscribeStream(options);
+
+  /**
+   * 订阅远端流
+   * @param {Object} options -- streamId:订阅的流id videoNode: 页面显示的容器 mute: 远端流的音视频 dual: 大小流 0小流 1大流
+   * @returns {Promise} - 订阅成功后的promise 回调
+   */
+  subscribe(options = {}) {
+    return this.interactiveInstance.subscribe(options);
   }
+
   // 取消订阅远端流
   unSubscribeStream(streamId) {
     return this.interactiveInstance.unSubscribeStream(streamId);
@@ -441,11 +452,8 @@ class InteractiveServer extends BaseServer {
       });
   }
   // 订阅流列表
-  remoteStreamList() {
-    this.state.remoteStreams = this.interactiveInstance.getRemoteStreams();
-    for (const remoteStream in this.interactiveInstance.getRemoteStreams()) {
-      this.state.remoteStreams.push(remoteStream);
-    }
+  getRoomStreams() {
+    this.state.remoteStreams = this.interactiveInstance.getRoomStreams();
     return this.state.remoteStreams;
   }
   // sdk的监听事件
