@@ -10,6 +10,7 @@ class DocServer extends BaseServer {
     super();
     this.docInstance = null;
     this.state = {
+      allComplete: false,
       currentCid: '', //当前激活的容器ID
       currentType: 'document', // 当前激活的容器类型： 文档-document, 白板-board
       fileOrBoardList: [], // 所有容器列表
@@ -31,16 +32,110 @@ class DocServer extends BaseServer {
 
   _initEvent() {
     if (!this.docInstance) return;
-
+    // 所有文档加载完成事件
+    this.docInstance.on(VHDocSDK.Event.ALL_COMPLETE, () => {
+      // if (process.env.NODE_ENV !== 'production') console.debug('所有文档加载完成');
+      // const list = this.$doc.getLiveAllCids();
+      // if (list.includes(this.previewInfo.elId)) this.previewInfo.canOperate = true;
+      // console.log('this.cid:', this.cid);
+      // console.log('this.isFullscreen :', this.isFullscreen);
+      this.state.allComplete = true;
+    });
+    // 单个文档加载完成
     this.docInstance.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE, data => {
-      console.log('===================文档加载完成===================');
+      console.log('==============文档加载完成===============');
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
       const res = this.docInstance.getThumbnailList();
       this.state.thumbnailList = res && res[0] ? res[0].list : [];
     });
+    // 文档翻页事件
+    this.docInstance.on(VHDocSDK.Event.PAGE_CHANGE, data => {
+      console.log('==============文档翻页================');
+      this.state.pageTotal = data.info.slidesTotal;
+      this.state.pageNum = Number(data.info.slideIndex) + 1;
+    });
+
+    this.docInstance.on(VHDocSDK.Event.SWITCH_CHANGE, status => {
+      // if (this.hasDocPermission) return;
+      console.log('==========控制文档开关=============', status);
+    });
+
+    this.docInstance.on(VHDocSDK.Event.CREATE_CONTAINER, data => {
+      // if ((this.roleName != 1 && this.liveStatus != 1) || this.cids.includes(data.id)) {
+      //   return;
+      // }
+      console.log('===========创建容器===========', data);
+      // this.docInfo.docContainerShow = true;
+      // this.docInfo.docShowType = data.type;
+      // this.cids.push(data.id);
+      // this.$nextTick(() => {
+      //   this.initWidth(data.type);
+      //   this.initContainer(data.type, data.id, '');
+      // });
+    });
+
+    this.docInstance.on(VHDocSDK.Event.DELETE_CONTAINER, data => {
+      // if (this.roleName != 1 && this.liveStatus != 1) {
+      //   return;
+      // }
+      console.log('=========删除容器=============', data);
+      // const index = this.cids.indexOf(data.id);
+      // if (index > -1) {
+      //   this.cids.splice(index, 1);
+      //   this.docServer.destroyContainer({ id: data.id });
+      // }
+      // if (this.currentCid == data.id) {
+      //   this.currentCid = '';
+      //   this.docInfo.docShowType = '';
+      // }
+    });
+
+    this.docInstance.on(VHDocSDK.Event.SELECT_CONTAINER, async data => {
+      // if (this.currentCid == data.id || (this.roleName != 1 && this.liveStatus != 1)) {
+      //   return;
+      // }
+      console.log('===========选择容器======', data);
+      // this.docInfo.docShowType = data.id.split('-')[0];
+      // this.currentCid = data.id;
+      // // 判断容器是否存在
+      // if (this.cids.indexOf(data.id) > -1) {
+      //   this.activeContainer(data.id);
+      // } else {
+      //   this.cids.push(data.id);
+      //   await this.$nextTick();
+      //   this.initWidth(data.type);
+      //   this.initContainer(data.type, data.id, '');
+      //   this.activeContainer(data.id);
+      // }
+      // EventBus.$emit('docInfo', this.docInfo);
+      // console.log('a9');
+
+      // this.docServer.setControlStyle(this.styleOpts);
+    });
+
+    this.docInstance.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT, ({ cid, docId }) => {
+      console.log('=============文档不存在或已删除========', cid, docId);
+      // if (cid == this.currentCid) {
+      //   this.$message({
+      //     type: 'error',
+      //     message: '文档不存在或已删除'
+      //   });
+      //   this.deleteTimer = setTimeout(() => {
+      //     this.docId = '';
+      //     const index = this.cids.indexOf(cid);
+      //     this.cids.splice(index, 1);
+      //     this.docServer.destroyContainer({ id: this.currentCid });
+      //     this.currentCid = '';
+      //     this.docInfo.docShowType = '';
+      //   }, 3000); // 其他地方调用回将值重新传入
+      // }
+    });
   }
 
+  /**
+   * 观众是否可见
+   */
   toggleSwitchStatus() {
     if (this.state.switchStatus) {
       this.docInstance.switchOffContainer();
@@ -49,6 +144,18 @@ class DocServer extends BaseServer {
       this.docInstance.switchOnContainer();
       this.state.switchStatus = true;
     }
+  }
+  /**
+   * 设置观众可见
+   * @param {} val true/false
+   */
+  setSwitchStatus(val) {
+    if (val) {
+      this.docInstance.switchOnContainer();
+    } else {
+      this.docInstance.switchOffContainer();
+    }
+    this.state.switchStatus = !!val;
   }
 
   /**
@@ -99,7 +206,7 @@ class DocServer extends BaseServer {
   }
 
   /**
-   *
+   * 加载列表中文档或白板的实例
    * @param {*} width
    * @param {*} height
    */
@@ -107,6 +214,8 @@ class DocServer extends BaseServer {
     if (!width || !height) {
       console.error('容器宽高错误', width, height);
     }
+    this.state.allComplete = false;
+    console.log('--this.state.fileOrBoardList--');
     // 创建文档和白板的实例
     for (const item of this.state.fileOrBoardList) {
       let { cid, active, docId, is_board } = item;
@@ -143,15 +252,16 @@ class DocServer extends BaseServer {
   }
 
   /**
-   *
+   * 准备创建文档或白板的数据
    * @param {*} width 容器宽
    * @param {*} height 容器高
    * @param {*} fileType fileType document:文档 board:白板,默认文档
    * @param {*} docId docId 文档id，白板时为空
-   * @param {*} type 演示类型：1：静态文档（jpg） 2：动态文档(PPT)
+   * @param {*} docType 演示类型：1：静态文档（jpg） 2：动态文档(PPT)
    */
-  prepareDocumentOrBorad(width, height, fileType = 'document', docId = '', type) {
-    const cid = this.docServer.createUUID(fileType);
+  prepareDocumentOrBorad(width, height, fileType = 'document', docId = '', docType) {
+    const cid = this.docInstance.createUUID(fileType);
+    const is_board = fileType === 'document' ? 1 : 2;
     let options = {
       docId: docId,
       elId: cid,
@@ -163,20 +273,22 @@ class DocServer extends BaseServer {
         graphicType: window.VHDocSDK.GRAPHIC.PEN,
         stroke: '#FD2C0A',
         strokeWidth: 7
-      }
+      },
+      is_board,
+      docType
     };
     const item = {
       cid: cid,
-      is_board: fileType === 'document' ? 1 : 2,
+      is_board,
       docId,
-      type
+      docType
     };
-    this.docServer.state.fileOrBoardList.push({ ...item });
+    this.state.fileOrBoardList.push({ ...item });
     return options;
   }
 
   /**
-   *
+   * 新增文档或白板
    * @param {*} item
    * @param {*}
    */
@@ -184,7 +296,7 @@ class DocServer extends BaseServer {
     // console.log('-------addNewFile-----');
     // this.allComplete = false;
     // 创建
-    const { elId, docId } = options;
+    const { elId, docId, is_board, docType } = options;
     if (Number(is_board) === 1) {
       try {
         await this.docInstance.createDocument(options);
@@ -199,7 +311,7 @@ class DocServer extends BaseServer {
         } = await this.docInstance.loadDoc({
           docId: docId,
           id: elId,
-          docType: item.type
+          docType
         });
 
         if (Number(status) === 200) {
@@ -270,8 +382,6 @@ class DocServer extends BaseServer {
    */
   async getAllContainerInfo() {
     const { list, switch_status } = await this.docInstance.getContainerInfo();
-    console.log('list:', list);
-    console.log('switch_status:', switch_status);
     this.state.fileOrBoardList = list;
     this.state.switchStatus = Boolean(switch_status);
   }
@@ -297,24 +407,34 @@ class DocServer extends BaseServer {
     return this.docInstance.setRemoteData(item);
   }
 
-  zoomIn() {
-    return this.docInstance.zoomIn();
+  zoomIn(cid) {
+    return this.docInstance.zoomIn({
+      id: cid || this.state.currentCid
+    });
   }
 
-  zoomOut() {
-    return this.docInstance.zoomOut();
+  zoomOut(cid) {
+    return this.docInstance.zoomOut({
+      id: cid || this.state.currentCid
+    });
   }
 
-  zoomReset() {
-    return this.docInstance.zoomReset();
+  zoomReset(cid) {
+    return this.docInstance.zoomReset({
+      id: cid || this.state.currentCid
+    });
   }
 
-  cancelZoom() {
-    return this.docInstance.cancelZoom();
+  cancelZoom(cid) {
+    return this.docInstance.cancelZoom({
+      id: cid || this.state.currentCid
+    });
   }
 
-  move() {
-    return this.docInstance.move();
+  move(cid) {
+    return this.docInstance.move({
+      id: cid || this.state.currentCid
+    });
   }
 
   prevStep() {
@@ -329,8 +449,10 @@ class DocServer extends BaseServer {
     return this.docInstance.setPlayMode(mode);
   }
 
-  setSize(width, height, options) {
-    return this.docInstance.setSize(width, height, options);
+  setSize(width, height, cid) {
+    return this.docInstance.setSize(width, height, {
+      id: cid || this.state.currentCid
+    });
   }
 
   createUUID(type) {
@@ -351,8 +473,9 @@ class DocServer extends BaseServer {
    * @returns
    */
   setPen(cid) {
-    console.log(this.state.currentCid);
-    this.docInstance.setPen({ id: this.state.currentCid });
+    return this.docInstance.setPen({
+      id: cid || this.state.currentCid
+    });
   }
 
   /**
