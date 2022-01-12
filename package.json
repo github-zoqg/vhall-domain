@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "private": true,
-  "main": "dist/lib/middleDomain.js",
+  "main": "dist/lib/middle-domain.js",
   "scripts": {
     "dev": "rollup -c --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
