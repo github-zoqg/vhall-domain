@@ -46,7 +46,7 @@ function startLive(params) {
 
 // 结束直播
 function endLive(params) {
-  $http({
+  return $http({
     url: '/v3/webinars/live/end',
     type: 'POST',
     data: params
@@ -61,6 +61,33 @@ function checkLive(params) {
     data: params
   });
 }
+
+// 查询活动配置信息
+const getConfigList = (params = {}) => {
+  return $http({
+    url: '/v3/users/permission/get-config-list',
+    type: 'POST',
+    data: params
+  });
+};
+
+// 查询活动互动状态
+const getInavToolStatus = (params = {}) => {
+  return $http({
+    url: '/v3/interacts/room/get-inav-tool-status',
+    type: 'POST',
+    data: params
+  });
+};
+
+// 观看端聚合接口
+const getCommonConfig = (params = {}) => {
+  return $http({
+    url: '/v3/interacts/union/common-config',
+    type: 'POST',
+    data: params
+  });
+};
 
 // 获取聊天服务链接参数
 function getChatInitOptions(params) {
@@ -119,7 +146,10 @@ const meeting = {
   liveHeartBeat,
   getLiveToken,
   getStreamPushAddress,
-  setDevice
+  setDevice,
+  getConfigList,
+  getInavToolStatus,
+  getCommonConfig
 };
 
 export default meeting;

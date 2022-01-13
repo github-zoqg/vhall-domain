@@ -9,8 +9,8 @@ class InteractiveServer extends BaseServer {
     if (typeof InteractiveServer.instance === 'object') {
       return InteractiveServer.instance;
     }
+    this.interactiveInstance = null; // 互动实例
     this.state = {
-      interactiveInstance: null, // 互动实例
       streamId: null,
       localStreamId: null, // 本地流id
       remoteStreams: [] // 远端流数组
@@ -38,7 +38,7 @@ class InteractiveServer extends BaseServer {
         options,
         event => {
           // 互动实例
-          this.state.interactiveInstance = event.vhallrtc;
+          this.interactiveInstance = event.vhallrtc;
           this._addListeners();
           // 房间当前远端流列表
           this.state.remoteStreams = event.currentStreams;
@@ -87,65 +87,60 @@ class InteractiveServer extends BaseServer {
    * @returns {Promise}}
    */
   destroy() {
-    return this.state.interactiveInstance.destroyInstance();
+    return this.interactiveInstance.destroyInstance();
   }
 
   // 注册事件监听
   _addListeners() {
-    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_JOIN, e => {
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_JOIN, e => {
       // 用户加入房间事件
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_JOIN, e);
     });
-    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_LEAVE, e => {
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_LEAVE, e => {
       // 用户离开房间事件
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_LEAVE, e);
     });
-    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
+      const event = {
+        ...e,
+        attributes: e.attributes && JSON.parse(e.attributes)
+      };
       // 远端流加入事件
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e);
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, event);
     });
-    this.state.interactiveInstance.on(
-      VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED,
-      e => {
-        // 远端流离开事件
-        this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e);
-      }
-    );
-    this.state.interactiveInstance.on(
-      VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED,
-      e => {
-        // 房间信令异常断开事件
-        this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e);
-      }
-    );
-    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_MUTE, e => {
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
+      // 远端流离开事件
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e);
+    });
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e => {
+      // 房间信令异常断开事件
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e);
+    });
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_MUTE, e => {
       // 远端流音视频状态改变事件
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_MUTE, e);
     });
-    this.state.interactiveInstance.on(
-      VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED,
-      e => {
-        // 本地推流或订阅远端流异常断开事件
-        this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e);
-      }
-    );
-    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
+      // 本地推流或订阅远端流异常断开事件
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e);
+    });
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
       // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e);
     });
-    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e => {
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e => {
       // 本地流视频发送帧率异常事件
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e);
     });
-    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e => {
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e => {
       // 新增设备或移除设备时触发
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e);
     });
-    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_FORCELEAVE, e => {
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_FORCELEAVE, e => {
       // 强行踢出房间事件
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_FORCELEAVE, e);
     });
-    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_PLAYABORT, e => {
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_PLAYABORT, e => {
       // 订阅流自动播放失败
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_PLAYABORT, e);
     });
@@ -159,7 +154,7 @@ class InteractiveServer extends BaseServer {
    *
    */
   createLocalStream(options = {}) {
-    return this.state.interactiveInstance.createStream(options).then(data => {
+    return this.interactiveInstance.createStream(options).then(data => {
       this.state.localStreamId = data.streamId;
       return data;
     });
@@ -191,51 +186,64 @@ class InteractiveServer extends BaseServer {
   }
   // 创建桌面共享流
   createLocaldesktopStream(options = {}, addConfig = {}) {
-    return this.state.interactiveInstance.createLocaldesktopStream(options, addConfig);
+    return this.interactiveInstance.createLocaldesktopStream(options, addConfig);
   }
   // 创建本地音频流
   createLocalAudioStream(options = {}, addConfig = {}) {
-    return this.state.interactiveInstance.createLocalAudioStream(options, addConfig);
+    return this.interactiveInstance.createLocalAudioStream(options, addConfig);
   }
   // 创建图片推流
   createLocalPhotoStream(options = {}, addConfig = {}) {
-    return this.state.interactiveInstance.createLocalPhotoStream(options, addConfig);
+    return this.interactiveInstance.createLocalPhotoStream(options, addConfig);
   }
   // 销毁本地流
   destroyStream(streamId) {
-    return this.state.interactiveInstance.destroyStream(streamId || this.state.streamId);
+    return this.interactiveInstance.destroyStream(streamId || this.state.streamId);
   }
   // 推送本地流到远端
   publishStream() {
     const { state: roomBaseServerState } = useRoomBaseServer();
-    return this.state.interactiveInstance.publish({
+    return this.interactiveInstance.publish({
       streamId: this.state.localStreamId,
       accountId: roomBaseServerState.watchInitData.join_info.third_party_user_id
     });
   }
-  // 取消推送到远端的流
-  unpublishStream(streamId) {
-    return this.state.interactiveInstance.unpublishStream(streamId || this.state.streamId);
+
+  /**
+   * 取消推送到远端的流
+   * @param {Object} options
+   * @returns {Promise}
+   */
+  unpublishStream(options = {}) {
+    return this.interactiveInstance.unpublish({
+      streamId: options.streamId || this.state.localStreamId
+    });
   }
-  // 订阅远端流
-  subscribeStream(options = {}) {
-    return this.state.interactiveInstance.subscribeStream(options);
+
+  /**
+   * 订阅远端流
+   * @param {Object} options -- streamId:订阅的流id videoNode: 页面显示的容器 mute: 远端流的音视频 dual: 大小流 0小流 1大流
+   * @returns {Promise} - 订阅成功后的promise 回调
+   */
+  subscribe(options = {}) {
+    return this.interactiveInstance.subscribe(options);
   }
+
   // 取消订阅远端流
   unSubscribeStream(streamId) {
-    return this.state.interactiveInstance.unSubscribeStream(streamId);
+    return this.interactiveInstance.unSubscribeStream(streamId);
   }
   // 设置大小流
   setDual(options = {}) {
-    return this.state.interactiveInstance.setDual(options);
+    return this.interactiveInstance.setDual(options);
   }
   // 改变视频的禁用和启用
   muteVideo(options = {}) {
-    return this.state.interactiveInstance.muteVideo(options);
+    return this.interactiveInstance.muteVideo(options);
   }
   // 改变音频的禁用和启用
   muteAudio(options = {}) {
-    return this.state.interactiveInstance.muteAudio(options);
+    return this.interactiveInstance.muteAudio(options);
   }
   /**
    * 开启旁路
@@ -261,82 +269,82 @@ class InteractiveServer extends BaseServer {
       delete params.layout;
     }
 
-    return this.state.interactiveInstance.startBroadCast(params);
+    return this.interactiveInstance.startBroadCast(params);
   }
   // 停止旁路
   stopBroadCast() {
-    return this.state.interactiveInstance.stopBroadCast();
+    return this.interactiveInstance.stopBroadCast();
   }
   // 动态配置指定旁路布局模板
   setBroadCastLayout(options = {}) {
-    return this.state.interactiveInstance.setBroadCastLayout(options);
+    return this.interactiveInstance.setBroadCastLayout(options);
   }
   // 配置旁路布局自适应模式
   setBroadCastAdaptiveLayoutMode(options = {}) {
-    return this.state.interactiveInstance.setBroadCastAdaptiveLayoutMode(options);
+    return this.interactiveInstance.setBroadCastAdaptiveLayoutMode(options);
   }
   // 动态配置旁路主屏
   setBroadCastScreen(options = {}) {
-    return this.state.interactiveInstance.setBroadCastScreen({
+    return this.interactiveInstance.setBroadCastScreen({
       mainScreenStreamId: options.mainScreenStreamId || this.state.localStreamId
     });
   }
   // 获取全部音视频列表
   getDevices() {
-    return this.state.interactiveInstance.getDevices();
+    return this.interactiveInstance.getDevices();
   }
   // 获取摄像头列表
   getCameras() {
-    return this.state.interactiveInstance.getCameras();
+    return this.interactiveInstance.getCameras();
   }
   // 获取麦克风列表
   getMicrophones() {
-    return this.state.interactiveInstance.getMicrophones();
+    return this.interactiveInstance.getMicrophones();
   }
   // 获取扬声器列表
   getSpeakers() {
-    return this.state.interactiveInstance.getSpeakers();
+    return this.interactiveInstance.getSpeakers();
   }
   // 获取设备的分辨率
   getVideoConstraints(deviceId = '') {
-    return this.state.interactiveInstance.getVideoConstraints(deviceId);
+    return this.interactiveInstance.getVideoConstraints(deviceId);
   }
   // 配置本地流视频质量参数
   setVideoProfile(options = {}) {
-    return this.state.interactiveInstance.setVideoProfile(options);
+    return this.interactiveInstance.setVideoProfile(options);
   }
   // 是否支持桌面共享
   isScreenShareSupported() {
-    return this.state.interactiveInstance.isScreenShareSupported();
+    return this.interactiveInstance.isScreenShareSupported();
   }
 
   // 获取上下行丢包率
   getPacketLossRate() {
-    return this.state.interactiveInstance.getPacketLossRate();
+    return this.interactiveInstance.getPacketLossRate();
   }
   // 获取流上下行丢包率
   getStreamPacketLoss(options = {}) {
-    return this.state.interactiveInstance.getStreamPacketLoss(options);
+    return this.interactiveInstance.getStreamPacketLoss(options);
   }
   // 获取房间流信息
   getRoomStreams() {
-    return this.state.interactiveInstance.getRoomStreams();
+    return this.interactiveInstance.getRoomStreams();
   }
   // 获取房间总的流信息(本地流加远端流)
   getRoomInfo() {
-    return this.state.interactiveInstance.getRoomInfo();
+    return this.interactiveInstance.getRoomInfo();
   }
   // 获取流音频能量
   getAudioLevel(streamId) {
-    return this.state.interactiveInstance.getAudioLevel(streamId);
+    return this.interactiveInstance.getAudioLevel(streamId);
   }
   // 获取流的mute状态
   getStreamMute(streamId) {
-    return this.state.interactiveInstance.getStreamMute(streamId);
+    return this.interactiveInstance.getStreamMute(streamId);
   }
   // 获取当前流的信息,返回一个数组
   currentStreams() {
-    return this.state.interactiveInstance.currentStreams;
+    return this.interactiveInstance.currentStreams;
   }
   // 上麦
   speakOn(data = {}) {
@@ -380,7 +388,7 @@ class InteractiveServer extends BaseServer {
   // 组合api
   startPushStream() {
     console.log('state:', this.state);
-    createLocalAndStream(this.state.interactiveInstance);
+    createLocalAndStream(this.interactiveInstance);
   }
   // 创建本地的推流和推流
   createLocalAndStream(interactive) {
@@ -444,26 +452,20 @@ class InteractiveServer extends BaseServer {
       });
   }
   // 订阅流列表
-  remoteStreamList() {
-    this.state.remoteStreams = this.state.interactiveInstance.getRemoteStreams();
-    for (const remoteStream in this.state.interactiveInstance.getRemoteStreams()) {
-      this.state.remoteStreams.push(remoteStream);
-    }
+  getRoomStreams() {
+    this.state.remoteStreams = this.interactiveInstance.getRoomStreams();
     return this.state.remoteStreams;
   }
   // sdk的监听事件
   listenerSdk() {
-    this.state.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
       // state.remoteStreams.push(e)
     });
-    this.state.interactiveInstance.on(
-      VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED,
-      e => {
-        // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-        // state.remoteStreams.filter(item => item.streamId == e.streamId)
-      }
-    );
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
+      // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
+      // state.remoteStreams.filter(item => item.streamId == e.streamId)
+    });
   }
 }
 

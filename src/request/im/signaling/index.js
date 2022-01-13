@@ -15,11 +15,22 @@ function setHandsUp(params = {}) {
  * */
 function userApply(params = {}) {
   return $http({
-    url: '/v4/interacts/inav/user-apply',
+    url: '/v3/interacts/inav-user/apply',
     type: 'POST',
     data: params
   });
 }
+
+/**
+ * 观看端-用户上麦
+ * */
+const userSpeakOn = (params = {}) => {
+  return $http({
+    url: '/v3/interacts/inav-user/speak',
+    type: 'POST',
+    data: params
+  });
+};
 
 /**
  * 观看端-用户取消申请上麦
@@ -37,7 +48,7 @@ function userCancelApply(params = {}) {
  * */
 function hostAgreeApply(params = {}) {
   return $http({
-    url: '/v4/interacts/inav/agree-apply',
+    url: '/v3/interacts/inav/agree-apply',
     type: 'POST',
     data: params
   });
@@ -48,7 +59,7 @@ function hostAgreeApply(params = {}) {
  * */
 function hostRejectApply(params = {}) {
   return $http({
-    url: '/v4/interacts/inav/reject-apply',
+    url: '/v3/interacts/inav/reject-apply',
     type: 'POST',
     data: params
   });
@@ -68,9 +79,9 @@ function userSpeak(params = {}) {
 /**
  * 发起端&观看端-用户下麦
  * */
-function userNoSpeak(params = {}) {
+function userSpeakOff(params = {}) {
   return $http({
-    url: '/v4/interacts/inav/nospeak',
+    url: '/v3/interacts/inav/nospeak',
     type: 'POST',
     data: params
   });
@@ -176,20 +187,21 @@ function userUnableSpeak(params = {}) {
 }
 
 export default {
-  setHandsUp,
+  // setHandsUp,
   userApply,
-  userCancelApply,
+  // userCancelApply,
   hostAgreeApply,
-  hostRejectApply,
-  userSpeak,
-  userNoSpeak,
-  hostInviteUser,
-  userAgreeInvite,
-  userRejectInvite,
-  getSpeakList,
-  userPresentation,
-  endUserPresentation,
-  userEndPresentation,
-  preBreakSpeak,
-  userUnableSpeak
+  // hostRejectApply,
+  // userSpeak,
+  userSpeakOff,
+  // hostInviteUser,
+  // userAgreeInvite,
+  // userRejectInvite,
+  // getSpeakList,
+  // userPresentation,
+  // endUserPresentation,
+  // userEndPresentation,
+  // preBreakSpeak,
+  // userUnableSpeak,
+  userSpeakOn
 };
