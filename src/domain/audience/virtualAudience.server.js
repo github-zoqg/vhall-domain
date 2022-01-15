@@ -21,7 +21,7 @@ export default function useVirtualClientStartServe() {
   }
 
   function virtualClientGet(data = {}) {
-    let http = virtualClientGet(data);
+    let http = virtualClient.virtualClientGet(data);
     http.then(res => {
       state.person.pv = res.data.pv;
       state.person.basePv = res.data.base_pv;

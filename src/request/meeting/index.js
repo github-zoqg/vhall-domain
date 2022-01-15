@@ -118,7 +118,7 @@ function getLiveToken(params) {
 
 // 获取推流地址
 function getStreamPushAddress(params) {
-  $http({
+  return $http({
     url: '/v3/webinars/live/get-stream-push-address',
     type: 'GET',
     data: params

@@ -3,21 +3,40 @@ import { merge } from '../../utils';
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import VhallPaasSDK from '@/sdk/index.js';
-
 // PaaS SDK文档: http://www.vhallyun.com/docs/show/603
 class DocServer extends BaseServer {
   constructor() {
     super();
     this.docInstance = null;
+    this.watchInitData = null;
     this.state = {
       allComplete: false,
+      docLoadComplete: false, // 文档是否加载完成
       currentCid: '', //当前激活的容器ID
       currentType: 'document', // 当前激活的容器类型： 文档-document, 白板-board
       fileOrBoardList: [], // 所有容器列表
       thumbnailList: [], // 缩略图列表
       switchStatus: false, // 观众是否可见
       pageNum: 1, // 当前页码
-      pageTotal: 1 //总页数
+      pageTotal: 1, //总页数
+      styleOpts: {
+        style: {
+          hasControls: true, // 是否有控制条
+          hasBorders: true, // 每个控制块之间是否有连接线
+          hasRotatingPoint: true, // 是否有旋转控制块
+          transparentCorners: false, // 方向控制块是否是透明
+          cornerStyle: 'circle', // 控制块样式， 支持:"circle", "square"
+          padding: 8, // 控制块与元件的边界
+          cornerSize: 13, // 控制块大小，单位px
+          rotatingPointOffset: 19, // 旋转控制块的距离元件的距离
+          borderColor: '#979797', // 连接线颜色
+          cornerColor: '#007AFF', // 控制块填充色颜色
+          cornerStrokeColor: '#007AFF' // 控制块描边颜色
+        }
+      },
+      isInGroup: false,
+      hasDocPermission: false,
+      groupRole: '' // 小组内角色
     };
   }
 
@@ -171,10 +190,17 @@ class DocServer extends BaseServer {
       this.docInstance = VhallPaasSDK.modules.VHDocSDK.createInstance(
         options,
         () => {
+          // 初始化事件
           this._initEvent();
+
+          // 无延迟
+          if (this.watchInitData.webinar.no_delay_webinar) {
+            this.docInstance.setPlayMode(VHDocSDK.PlayMode.INTERACT);
+          }
           resolve();
         },
         err => {
+          console.error('实例化文档失败', err);
           reject(err);
         }
       );
@@ -183,17 +209,51 @@ class DocServer extends BaseServer {
 
   // 获取默认初始化参数
   _getDefaultOptions() {
-    const { watchInitData } = useRoomBaseServer().state;
+    const { watchInitData, groupInitData } = useRoomBaseServer().state;
+    // console.log('---groupInitData---:', groupInitData);
+    this.watchInitData = watchInitData;
+
+    console.log('获取默认初始化参数:', this.watchInitData);
+    if (groupInitData && groupInitData.isInGroup) {
+      // 小组房间内
+      this.state.isInGroup = true;
+      this.state.hasDocPermission = groupInitData.main_screen == defaultOptions.accountId;
+      this.state.groupRole = groupInitData.join_role;
+    } else {
+      // 主房间内
+      this.state.isInGroup = false;
+      // TODO interactToolStatus
+      // if (this.interactToolStatus) {
+      //   // 主直播间邀请
+      //   this.hasDocPermission = this.interactToolStatus.main_screen == this.joinId;
+      // }
+    }
+    // 初始化参数
     const defaultOptions = {
-      accountId: watchInitData.join_info.third_party_user_id, // 第三方用户ID，必填
-      roomId: watchInitData.interact.room_id, // 必填。
-      channelId: watchInitData.interact.channel_id, // 频道id 必须
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
-      role: watchInitData.join_info.role_name, // 角色 必须
-      isVod: false, // 是否是回放 必须
-      client: VhallPaasSDK.modules.VHDocSDK.Client.PC_WEB, // 客户端类型
-      token: watchInitData.interact.paas_access_token // access_token，必填
+      accountId: watchInitData.join_info.third_party_user_id, // 第三方用户ID，必填
+      client: VhallPaasSDK.modules.VHDocSDK.Client.PC_WEB // 客户端类型
     };
+    if (this.state.isInGroup) {
+      // 分组讨论直播间中
+      defaultOptions.role = this.mapDocRole(this.state.hasDocPermission ? 1 : 2); // 角色
+      defaultOptions.roomId = groupInitData.group_room_id;
+      defaultOptions.channelId = groupInitData.channel_id;
+      defaultOptions.token = groupInitData.access_token;
+      console.log('取小组数据');
+    } else {
+      defaultOptions.role = this.mapDocRole(watchInitData.join_info.role_name);
+      defaultOptions.roomId = watchInitData.interact.room_id; // 必填。
+      defaultOptions.channelId = watchInitData.interact.channel_id; // 频道id 必须
+      defaultOptions.token = watchInitData.interact.paas_access_token; // access_token，必填
+      defaultOptions.isVod = false; // 是否是回放 必须
+      console.log('取主房间数据');
+    }
+    //  如果是无延迟直播，文档播放模式改为互动模式
+    if (watchInitData.webinar.no_delay_webinar) {
+      // 分组直播一定是无延迟直播 no_delay_webinar=1
+      defaultOptions.mode = window.VHDocSDK.PlayMode.INTERACT;
+    }
     return defaultOptions;
   }
 
@@ -215,26 +275,30 @@ class DocServer extends BaseServer {
       console.error('容器宽高错误', width, height);
     }
     this.state.allComplete = false;
-    console.log('--this.state.fileOrBoardList--');
+    console.log('--loadDocumentOrBoradData--');
+
     // 创建文档和白板的实例
     for (const item of this.state.fileOrBoardList) {
       let { cid, active, docId, is_board } = item;
       const options = {
+        id: cid,
         elId: cid,
         docId: docId,
         width: width,
         height: height,
-        noDispatch: false,
-        backgroundColor: item.backgroundColor || '#fff',
-        option: {
-          graphicType: window.VHDocSDK.GRAPHIC.PEN,
-          stroke: '#FD2C0A',
-          strokeWidth: 7
-        }
+        backgroundColor: item.backgroundColor || '#fff'
+        // option: {
+        //   graphicType: window.VHDocSDK.GRAPHIC.PEN,
+        //   stroke: '#FD2C0A',
+        //   strokeWidth: 7
+        // }
       };
+
       if (Number(is_board) === 1) {
+        console.log('创建文档:', options);
         await this.docInstance.createDocument(options);
       } else {
+        console.log('创建白板:', options);
         await this.docInstance.createBoard(options);
       }
       if (active != 0) {
@@ -247,8 +311,7 @@ class DocServer extends BaseServer {
         });
       }
     }
-
-    this.docInstance.setRemoteData2(this.state.fileOrBoardList);
+    // this.docInstance.setRemoteData2(this.state.fileOrBoardList);
   }
 
   /**
@@ -263,9 +326,9 @@ class DocServer extends BaseServer {
     const cid = this.docInstance.createUUID(fileType);
     const is_board = fileType === 'document' ? 1 : 2;
     let options = {
+      id: cid,
       docId: docId,
       elId: cid,
-      id: cid,
       width,
       height,
       option: {
@@ -364,6 +427,28 @@ class DocServer extends BaseServer {
     return cid;
   }
 
+  /**
+   * 根据直播用户的角色映射文档角色
+   * 直播角色：1-主持人；2-观众；3-助理；4-嘉宾
+   * 文档角色：1-主持人 编辑、翻页、缩放
+   *         2-嘉宾  缩放
+   *         3-观众  缩放
+   *         4-助理 翻页、缩放
+   * @param {*} role
+   */
+  mapDocRole(role) {
+    if (role === 1) {
+      return VHDocSDK.RoleType.HOST;
+    } else if (role === 2) {
+      return VHDocSDK.RoleType.SPECTATOR;
+    } else if (role === 3) {
+      return VHDocSDK.RoleType.ASSISTANT;
+    } else if (role === 4) {
+      return VHDocSDK.RoleType.GUEST;
+    }
+    return 'unkown role';
+  }
+
   switchOnContainer(val) {
     return this.docInstance.switchOnContainer(val);
   }
@@ -380,10 +465,31 @@ class DocServer extends BaseServer {
    * 当前channelId下的所有容器列表
    * @returns
    */
-  async getAllContainerInfo() {
-    const { list, switch_status } = await this.docInstance.getContainerInfo();
-    this.state.fileOrBoardList = list;
+  async getAllContainerInfo(channelId = null) {
+    let params = channelId ? { channelId } : null;
+    const rebroadcastChannelId = this.roomBaseServer?.watchInitData?.rebroadcast?.channel_id;
+    if (rebroadcastChannelId) {
+      params = { channelId: rebroadcastChannelId };
+    }
+    console.log('params:::::', params);
+    const { list, switch_status } = await this.docInstance.getContainerInfo(params);
+    // 观众端是否可见
     this.state.switchStatus = Boolean(switch_status);
+    // 文档列表
+    this.state.fileOrBoardList = list;
+
+    // 小组内是否去显示文档判断根据是否有文档内容
+    if (this.state.isInGroup) {
+      this.state.switchStatus = !!list.length;
+    }
+
+    this.state.docLoadComplete = true;
+    if (!list.length) return;
+    const activeItem = list.find(item => item.active == 1);
+    if (activeItem) {
+      this.state.pageNum = Number(activeItem.show_page) + 1;
+      this.state.pageTotal = activeItem.page;
+    }
   }
 
   /**

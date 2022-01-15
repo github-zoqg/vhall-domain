@@ -166,6 +166,17 @@ class RoomBaseServer extends BaseServer {
   initReplayRecord(params = {}) {
     return meeting.initRecordApi(params);
   }
+
+  // 获取第三方推流地址
+  getThirdPushStreamAddress(data = {}) {
+    const defaultParams = {
+      webinar_id: this.state.watchInitData.webinar.id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return meeting.getStreamPushAddress(retParams).then(res => {
+      return res;
+    });
+  }
 }
 
 export default function useRoomBaseServer() {
