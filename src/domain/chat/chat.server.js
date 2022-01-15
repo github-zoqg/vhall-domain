@@ -38,8 +38,9 @@ class ChatServer extends BaseServer {
       roomId,
       avatar,
       roleName,
-      defaultAvatar: ''
+      defaultAvatar: 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png'
     };
+    this.listenEvents();
     this.controller = null;
     ChatServer.instance = this;
     return this;
@@ -49,13 +50,21 @@ class ChatServer extends BaseServer {
   setState(key, value) {
     this.state[key] = value;
   }
-
+  //监听msgServer通知
+  listenEvents() {
+    msgServer.$onMsg('CHAT', rawMsg => {
+      //表情处理
+      rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
+      //创建消息实例并添加到消息列表
+      this.state.chatList.push(ChatServer._handleGenerateMsg.call(this, rawMsg));
+    });
+  }
   //接收聊天消息
-  async getHistoryMsg(params = {}, from = '观看端') {
+  async getHistoryMsg(params = {}) {
     //请求获取聊天消息
-    let backData = await this.fetchHistoryData(params);
-
-    let list = (backData.data.list || [])
+    let historyList = await this.fetchHistoryData(params);
+    console.log('historyList', historyList);
+    let list = (historyList.data.list || [])
       .map(item => {
         //处理普通内容
         item.data.text_content &&
@@ -74,8 +83,8 @@ class ChatServer extends BaseServer {
           //发起端的特殊处理，可以考虑统一
           item.context.atList = item.context.at_list;
         }
-        //格式化消息
-        return ChatServer._handleGenerateMsg.call(this, item, from);
+        //实例化消息
+        return ChatServer._handleGenerateMsg.call(this, item);
       })
       .reduce((acc, curr) => {
         const showTime = curr.showTime;
@@ -87,22 +96,22 @@ class ChatServer extends BaseServer {
       .reverse()
       .filter(item => !['customPraise'].includes(item.type));
 
-    if (['观看端'].includes(from)) {
-      list.forEach((msg, index) => {
-        if (index !== 0) {
-          const preMsgTime = list[index - 1].sendTime;
-          if (preMsgTime.slice(0, 13) === msg.sendTime.slice(0, 13)) {
-            msg.showTime = '';
-          }
-        }
-      });
-    }
-
+    // if (['观看端'].includes(from)) {
+    //   list.forEach((msg, index) => {
+    //     if (index !== 0) {
+    //       const preMsgTime = list[index - 1].sendTime;
+    //       if (preMsgTime.slice(0, 13) === msg.sendTime.slice(0, 13)) {
+    //         msg.showTime = '';
+    //       }
+    //     }
+    //   });
+    // }
     this.state.chatList.unshift(...list);
+    console.log('chatList', this.state.chatList);
 
     //返回原始数据等以方便使用
     return {
-      backData,
+      historyList,
       list,
       chatList: this.state.chatList,
       imgUrls: this.state.imgUrls || []
@@ -115,9 +124,10 @@ class ChatServer extends BaseServer {
   }
 
   //防抖处理发送聊天消息
-  sendMsg = debounce(this.sendMsgToMsg.bind(this), 3000, true);
+  sendMsg = debounce(this.sendMsgToMsg.bind(this), 300, true);
   //发送聊天消息
   sendMsgToMsg(params = {}) {
+    console.log(params);
     let { inputValue, needFilter = true, data = {}, context = {} } = params;
     // let filterStatus = checkHasKeyword(needFilter, inputValue);
     // return new Promise((resolve, reject) => {
@@ -129,7 +139,7 @@ class ChatServer extends BaseServer {
     //     }
     // });
     return new Promise((resolve, reject) => {
-      msgServer.sendChatMsg(data, context);
+      msgServer.sendChatMsg(params.data);
       resolve();
     });
   }
@@ -194,48 +204,22 @@ class ChatServer extends BaseServer {
 
   //私有方法，组装消息（暂时按照的h5版本的,大致数据一致，具体业务逻辑操作有差异，后续返回一个promise，并返回未处理的原始数据，由视图自己决定如何处理）
   static _handleGenerateMsg(item = {}, from = '') {
-    let params = {};
-
-    if (['观看端', '发起端'].includes(from)) {
-      params = {
-        type: item.data.type,
-        avatar: item.avatar ? item.avatar : this.state.defaultAvatar,
-        sendId: item.sender_id,
-        showTime: item.showTime,
-        nickName: item.nickname,
-        roleName: item.role_name,
-        sendTime: item.date_time,
-        content: item.data,
-        replyMsg: item.context.reply_msg,
-        atList: item.context.atList,
-        msgId: item.msg_id,
-        channel: item.channel_id,
-        isHistoryMsg: true
-      };
-
-      if (['发起端'].includes(from) && params.avatar === '') {
-        params.avatar =
-          'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png';
-      }
-    }
-
-    if (['h5'].includes(from)) {
-      params = {
-        type: item.data.type,
-        avatar: item.avatar ? item.avatar : this.state.defaultAvatar,
-        sendId: item.sender_id,
-        showTime: item.show_time,
-        nickName: item.nickname,
-        roleName: item.role_name,
-        sendTime: item.date_time,
-        content: item.data,
-        context: item.context,
-        replyMsg: item.context.reply_msg,
-        atList: item.context.at_list
-      };
-    }
-
-    let resultMsg = new Msg(params, from);
+    const params = {
+      type: item.data.type,
+      avatar: item.context.avatar ? item.context.avatar : this.state.defaultAvatar,
+      sendId: item.sender_id || item.sourceId,
+      showTime: item.context.showTime,
+      nickname: item.context.nickname,
+      roleName: item.context.role_name,
+      sendTime: item.date_time,
+      content: item.data,
+      replyMsg: item.context.reply_msg,
+      atList: item.context.atList,
+      msgId: item.msg_id,
+      channel: item.channel_id,
+      isHistoryMsg: true
+    };
+    const resultMsg = new Msg(params, from);
     if (item.data.event_type) {
       resultMsg = {
         ...resultMsg,
@@ -247,11 +231,6 @@ class ChatServer extends BaseServer {
           gift_url: item.data.gift_url
         }
       };
-      if (['观看端'].includes(from)) {
-        resultMsg.nickName =
-          item.nickname.length > 8 ? item.nickname.substr(0, 8) + '...' : item.nickname;
-        resultMsg.interactToolsStatus = true;
-      }
     }
     return resultMsg;
   }

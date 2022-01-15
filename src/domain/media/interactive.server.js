@@ -177,7 +177,7 @@ class InteractiveServer extends BaseServer {
       attributes: JSON.stringify({
         roleName: roomBaseServerState.watchInitData.join_info.role_name,
         accountId: roomBaseServerState.watchInitData.join_info.third_party_user_id,
-        nickName: roomBaseServerState.watchInitData.join_info.nickname
+        nickname: roomBaseServerState.watchInitData.join_info.nickname
       }) //选填，自定义信息，支持字符串类型
     };
     const params = merge.recursive({}, defaultOptions, options);

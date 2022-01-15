@@ -34,29 +34,17 @@ class MsgServer extends BaseServer {
   };
 
   // 初始化主房间聊天sdk
-  init(customOptions = {}) {
+  async init(customOptions = {}) {
     const defaultOptions = this.getDefaultOptions();
     const options = merge.recursive({}, defaultOptions, customOptions);
     console.log('聊天初始化参数', options);
-
     this.state.msgSdkInitOptions = options;
-
-    return new Promise((resolve, reject) => {
-      VhallPaasSDK.modules.VhallChat.createInstance(
-        options,
-        res => {
-          this.msgInstance = res;
-          console.log('聊天实例', this.msgInstance);
-          if (!this.groupMsgInstance) {
-            this._addListeners(this.msgInstance);
-          }
-          resolve(res);
-        },
-        () => {
-          reject();
-        }
-      );
-    });
+    const vhallchat = await VhallPaasSDK.modules.VhallChat.createInstance(options);
+    this.msgInstance = vhallchat;
+    console.log('聊天实例', this.msgInstance);
+    if (!this.groupMsgInstance) {
+      this._addListeners(this.msgInstance);
+    }
   }
 
   // 注册事件
@@ -65,7 +53,6 @@ class MsgServer extends BaseServer {
       this._eventhandlers[eventType].push(fn);
     } else {
       const registerMsgInstance = this.groupMsgInstance || this.msgInstance;
-
       this._eventhandlers[eventType] = [];
       this._eventhandlers[eventType].push(fn);
       console.log('聊天实例', registerMsgInstance);
@@ -190,11 +177,12 @@ class MsgServer extends BaseServer {
 
   // 发送聊天消息
   sendChatMsg(data, options) {
+    console.log('options', options);
     if (this.groupMsgInstance) {
-      this.groupMsgInstance.emitTextChat(data, options);
+      this.groupMsgInstance.emitCustomChat(data, options);
     } else {
-      console.log(this.msgInstance);
-      this.msgInstance.emitTextChat(data, options);
+      console.log(data);
+      this.msgInstance.emitCustomChat(data, options);
     }
   }
 
