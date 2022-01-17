@@ -449,6 +449,9 @@ function combinationStr(arr) {
 }
 
 function textToEmojiText(str) {
+  if (!str) {
+    return;
+  }
   const arr = textToEmoji(str);
   const result = combinationStr(arr);
   return result;

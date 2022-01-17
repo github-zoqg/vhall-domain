@@ -11,7 +11,7 @@ export default {
   //聊天sdk
   chat: {
     name: 'VhallChat',
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-chat/3.0.1/vhall-jssdk-chat-3.0.1.js?t=3'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-chat/latest/vhall-jssdk-chat-2.1.3.js'
   },
   //互动sdk
   interaction: {

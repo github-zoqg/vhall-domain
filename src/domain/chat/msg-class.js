@@ -2,134 +2,44 @@ let count = 0;
 let count2 = 0;
 let count3 = 0;
 export default class Msg {
-  constructor(params, type = '') {
-    switch (type) {
-      case '发起端':
-        this.generateLiveMsg(params);
-        break;
-      case '观看端':
-        this.generateWatchMsg(params);
-        break;
-      case 'h5':
-        this.generateH5Msg(params);
-        break;
-      default:
-        break;
+  constructor(params) {
+    this.data = {};
+  }
+  //给消息添加文本
+  addText() {}
+
+  addImge() {}
+  addReply() {}
+  addAt() {}
+  //私有方法，组装消息用于渲染（暂时按照的h5版本的,大致数据一致，具体业务逻辑操作有差异，后续返回一个promise，并返回未处理的原始数据，由视图自己决定如何处理）
+  static _handleGenerateMsg(item = {}) {
+    let resultMsg = {
+      type: item.data.type,
+      avatar: item.context.avatar ? item.context.avatar : this.state.defaultAvatar,
+      sendId: item.sender_id || item.sourceId,
+      showTime: item.context.showTime,
+      nickname: item.context.nickname,
+      roleName: item.context.role_name,
+      sendTime: item.date_time,
+      content: item.data,
+      replyMsg: item.context.reply_msg,
+      atList: item.context.atList,
+      msgId: item.msg_id,
+      channel: item.channel_id,
+      isHistoryMsg: true
+    };
+    if (item.data.event_type) {
+      resultMsg = {
+        ...resultMsg,
+        type: item.data.event_type,
+        event_type: item.data.event_type,
+        content: {
+          source_status: item.data.source_status,
+          gift_name: item.data.gift_name,
+          gift_url: item.data.gift_url
+        }
+      };
     }
-  }
-
-  //组装发起端消息
-  generateLiveMsg(params = {}) {
-    let {
-      avatar = '',
-      sendId = '',
-      nickName = '',
-      type = 'text',
-      showTime = '',
-      roleName = '',
-      content = {},
-      sendTime = '',
-      client = '',
-      replyMsg = {},
-      msgId = '',
-      channel = '',
-      atList = [],
-      isHistoryMsg = false
-    } = params;
-
-    // 用户id
-    this.type = type;
-    this.avatar = avatar;
-    this.sendId = sendId;
-    this.nickName = nickName;
-    this.roleName = roleName;
-    this.content = content;
-    this.showTime = showTime;
-    this.sendTime = sendTime;
-    this.client = client;
-    this.count = count++;
-    this.replyMsg = replyMsg;
-    this.msgId = msgId;
-    this.channel = channel;
-    this.atList = atList;
-    this.isHistoryMsg = isHistoryMsg;
-  }
-
-  //组装观看端消息
-  generateWatchMsg(params = {}) {
-    let {
-      avatar = '',
-      sendId = '',
-      nickName = '',
-      type = 'text',
-      showTime = '',
-      roleName = '',
-      content = {},
-      sendTime = '',
-      client = '',
-      replyMsg = {},
-      msgId = '',
-      channel = '',
-      atList = [],
-      isHistoryMsg = false,
-      interactStatus = false,
-      isCheck = false,
-      interactToolsStatus = false
-    } = params;
-    // 用户id
-    this.type = type;
-    this.avatar = avatar;
-    this.sendId = sendId;
-    this.nickName = nickName;
-    this.roleName = roleName;
-    this.content = content;
-    this.showTime = showTime;
-    this.sendTime = sendTime;
-    this.client = client;
-    this.count = count2++;
-    this.replyMsg = replyMsg;
-    this.msgId = msgId;
-    this.channel = channel;
-    this.atList = atList;
-    this.isHistoryMsg = isHistoryMsg;
-    this.interactStatus = interactStatus;
-    this.isCheck = isCheck;
-    this.interactToolsStatus = interactToolsStatus;
-  }
-
-  //组装wap端消息
-  generateH5Msg(params = {}) {
-    let {
-      avatar = '',
-      sendId = '',
-      nickName = '',
-      type = 'text',
-      showTime = '',
-      roleName = '',
-      content = {},
-      sendTime = '',
-      client = '',
-      self = false,
-      replyMsg = {},
-      atList = [],
-      context = {}, // 回复或者@消息集合
-      source = 'mobile' // 暂时没用到
-    } = params;
-    // 用户id
-    this.type = type;
-    this.avatar = avatar;
-    this.sendId = sendId;
-    this.nickName = nickName;
-    this.roleName = roleName;
-    this.content = content;
-    this.showTime = showTime;
-    this.sendTime = sendTime;
-    this.client = client;
-    this.count = count3++;
-    this.self = self;
-    this.replyMsg = replyMsg;
-    this.atList = atList;
-    this.context = context;
-    this.source = source;
+    return resultMsg;
   }
 }
