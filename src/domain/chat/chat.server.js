@@ -7,18 +7,19 @@ import { im as iMRequest } from '@/request/index.js';
 import BaseServer from '@/domain/common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
-import contextServer from '../common/context.server';
+import { debounce } from '@/utils';
+//基础服务
+const roomServer = useRoomBaseServer();
+//消息服务
+const msgServer = useMsgServer();
 class ChatServer extends BaseServer {
   constructor() {
     if (typeof ChatServer.instance === 'object') {
       return ChatServer.instance;
     }
     super();
-    //基础服务
-    const roomServer = useRoomBaseServer();
+
     const { roomId = '', roleName, avatar = '' } = roomServer.state.watchInitData;
-    //消息服务
-    this.msgServer = useMsgServer();
     //消息sdk
     this.state = {
       //聊天记录
@@ -27,15 +28,19 @@ class ChatServer extends BaseServer {
       keywordList: [],
       //预览图片地址
       imgUrls: [],
-
+      //当前用户禁言状态
+      banned: 0, //1禁言 0取消禁言
+      //当前频道全部禁言状态
+      allBanned: 0, //1禁言 0取消禁言
       page: 0,
       limit: 10,
-
       roomId,
       avatar,
       roleName,
-      defaultAvatar: ''
+      defaultAvatar: 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png',
+      curMsg: null //当前正在编辑的消息
     };
+    this.listenEvents();
     this.controller = null;
     ChatServer.instance = this;
     return this;
@@ -45,13 +50,26 @@ class ChatServer extends BaseServer {
   setState(key, value) {
     this.state[key] = value;
   }
-
+  //监听msgServer通知
+  listenEvents() {
+    msgServer.$onMsg('CHAT', rawMsg => {
+      rawMsg.data = JSON.parse(rawMsg.data);
+      rawMsg.context = JSON.parse(rawMsg.context);
+      if (['text', 'image'].includes(rawMsg.data.type)) {
+        //表情处理
+        rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
+        //格式化消息用于渲染并添加到消息列表
+        this.state.chatList.push(Msg._handleGenerateMsg(rawMsg));
+        console.log(roomServer);
+      }
+    });
+  }
   //接收聊天消息
-  async getHistoryMsg(params = {}, from = '观看端') {
+  async getHistoryMsg(params = {}) {
     //请求获取聊天消息
-    let backData = await this.fetchHistoryData(params);
-
-    let list = (backData.data.list || [])
+    let historyList = await this.fetchHistoryData(params);
+    console.log('historyList', historyList);
+    let list = (historyList.data.list || [])
       .map(item => {
         //处理普通内容
         item.data.text_content &&
@@ -70,8 +88,8 @@ class ChatServer extends BaseServer {
           //发起端的特殊处理，可以考虑统一
           item.context.atList = item.context.at_list;
         }
-        //格式化消息
-        return ChatServer._handleGenerateMsg.call(this, item, from);
+        //实例化消息
+        return Msg._handleGenerateMsg(item);
       })
       .reduce((acc, curr) => {
         const showTime = curr.showTime;
@@ -83,22 +101,22 @@ class ChatServer extends BaseServer {
       .reverse()
       .filter(item => !['customPraise'].includes(item.type));
 
-    if (['观看端'].includes(from)) {
-      list.forEach((msg, index) => {
-        if (index !== 0) {
-          const preMsgTime = list[index - 1].sendTime;
-          if (preMsgTime.slice(0, 13) === msg.sendTime.slice(0, 13)) {
-            msg.showTime = '';
-          }
-        }
-      });
-    }
-
+    // if (['观看端'].includes(from)) {
+    //   list.forEach((msg, index) => {
+    //     if (index !== 0) {
+    //       const preMsgTime = list[index - 1].sendTime;
+    //       if (preMsgTime.slice(0, 13) === msg.sendTime.slice(0, 13)) {
+    //         msg.showTime = '';
+    //       }
+    //     }
+    //   });
+    // }
     this.state.chatList.unshift(...list);
+    console.log('chatList', this.state.chatList);
 
     //返回原始数据等以方便使用
     return {
-      backData,
+      historyList,
       list,
       chatList: this.state.chatList,
       imgUrls: this.state.imgUrls || []
@@ -110,24 +128,17 @@ class ChatServer extends BaseServer {
     this.state.chatList.splice(0, this.state.chatList.length);
   }
 
+  //防抖处理发送聊天消息
+  sendMsg = debounce(this.sendChatMsg.bind(this), 300, true);
   //发送聊天消息
-  sendMsg(params = {}) {
-    let { inputValue, needFilter = true, data = {}, context = {} } = params;
-    // let filterStatus = checkHasKeyword(needFilter, inputValue);
-    // return new Promise((resolve, reject) => {
-    //     if (roleName != 2 || (roleName == 2 && filterStatus)) {
-    //         msgServer.$emit(data, context);
-    //         resolve();
-    //     } else {
-    //         reject();
-    //     }
-    // });
-    console.log('data', data);
-    console.log('data', context);
-    return new Promise((resolve, reject) => {
-      this.msgServer.sendChatMsg(data, context);
-      resolve();
-    });
+  sendChatMsg(data, context = {}) {
+    if (msgServer.groupMsgInstance) {
+      //调用passsdk方法
+      msgServer.groupMsgInstance.emit(data, context);
+    } else {
+      //调用passsdk方法
+      msgServer.msgInstance.emit(data, context);
+    }
   }
 
   //发起请求，或者聊天记录数据
@@ -188,75 +199,15 @@ class ChatServer extends BaseServer {
     }
   }
 
-  //私有方法，组装消息（暂时按照的h5版本的,大致数据一致，具体业务逻辑操作有差异，后续返回一个promise，并返回未处理的原始数据，由视图自己决定如何处理）
-  static _handleGenerateMsg(item = {}, from = '') {
-    let params = {};
-
-    if (['观看端', '发起端'].includes(from)) {
-      params = {
-        type: item.data.type,
-        avatar: item.avatar ? item.avatar : this.state.defaultAvatar,
-        sendId: item.sender_id,
-        showTime: item.showTime,
-        nickName: item.nickname,
-        roleName: item.role_name,
-        sendTime: item.date_time,
-        content: item.data,
-        replyMsg: item.context.reply_msg,
-        atList: item.context.atList,
-        msgId: item.msg_id,
-        channel: item.channel_id,
-        isHistoryMsg: true
-      };
-
-      if (['发起端'].includes(from) && params.avatar === '') {
-        params.avatar =
-          'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png';
-      }
-    }
-
-    if (['h5'].includes(from)) {
-      params = {
-        type: item.data.type,
-        avatar: item.avatar ? item.avatar : this.state.defaultAvatar,
-        sendId: item.sender_id,
-        showTime: item.show_time,
-        nickName: item.nickname,
-        roleName: item.role_name,
-        sendTime: item.date_time,
-        content: item.data,
-        context: item.context,
-        replyMsg: item.context.reply_msg,
-        atList: item.context.at_list
-      };
-    }
-
-    let resultMsg = new Msg(params, from);
-    if (item.data.event_type) {
-      resultMsg = {
-        ...resultMsg,
-        type: item.data.event_type,
-        event_type: item.data.event_type,
-        content: {
-          source_status: item.data.source_status,
-          gift_name: item.data.gift_name,
-          gift_url: item.data.gift_url
-        }
-      };
-      if (['观看端'].includes(from)) {
-        resultMsg.nickName =
-          item.nickname.length > 8 ? item.nickname.substr(0, 8) + '...' : item.nickname;
-        resultMsg.interactToolsStatus = true;
-      }
-    }
-    return resultMsg;
-  }
-
   /**
    * 禁言
    * */
   setBanned(params = {}) {
-    return iMRequest.chat.setBanned(params);
+    return iMRequest.chat.setBanned(params).then(res => {
+      if (res.code == 200) {
+        this.state.banned = params.status;
+      }
+    });
   }
 
   /**
@@ -264,7 +215,11 @@ class ChatServer extends BaseServer {
    * /v3/interacts/chat-user/set-all-banned
    * */
   setAllBanned(params = {}) {
-    return iMRequest.chat.setAllBanned(params);
+    return iMRequest.chat.setAllBanned(params).then(res => {
+      if (res.code == 200) {
+        this.state.allBanned = params.status;
+      }
+    });
   }
 
   /**

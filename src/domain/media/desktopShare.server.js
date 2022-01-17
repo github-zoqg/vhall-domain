@@ -59,7 +59,7 @@ export default function useDesktopShareServer() {
     const addConfig = {
       videoDevice: 'desktopScreen',
       attributes: JSON.stringify({
-        nickName: roomBaseServerState.watchInitData.join_info.nickname,
+        nickname: roomBaseServerState.watchInitData.join_info.nickname,
         role: roomBaseServerState.watchInitData.join_info.role_name
       })
     };

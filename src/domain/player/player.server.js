@@ -42,119 +42,119 @@ class PlayerServer extends BaseServer {
   }
 
   play() {
-    return state.playerInstance.play();
+    return this.state.playerInstance.play();
   }
 
   pause() {
-    return state.playerInstance.pause();
+    return this.state.playerInstance.pause();
   }
 
   isPause() {
-    return state.playerInstance.isPause();
+    return this.state.playerInstance.isPause();
   }
 
   getQualitys() {
-    return state.playerInstance.getQualitys();
+    return this.state.playerInstance.getQualitys();
   }
 
   getCurrentQuality() {
-    return state.playerInstance.getCurrentQuality();
+    return this.state.playerInstance.getCurrentQuality();
   }
 
   setQuality() {
-    return state.playerInstance.setQuality(item);
+    return this.state.playerInstance.setQuality(item);
   }
 
   enterFullScreen() {
-    return state.playerInstance.enterFullScreen();
+    return this.state.playerInstance.enterFullScreen();
   }
 
   exitFullScreen() {
-    return state.playerInstance.exitFullScreen();
+    return this.state.playerInstance.exitFullScreen();
   }
 
   setMute() {
-    return state.playerInstance.setMute();
+    return this.state.playerInstance.setMute();
   }
 
   getVolume() {
-    return state.playerInstance.getVolume();
+    return this.state.playerInstance.getVolume();
   }
 
   setVolume() {
     state.voice = val;
-    return state.playerInstance.setVolume(val);
+    return this.state.playerInstance.setVolume(val);
   }
 
   getDuration(onFail = () => {}) {
-    return state.playerInstance.getDuration(onFail);
+    return this.state.playerInstance.getDuration(onFail);
   }
 
   getCurrentTime() {
-    return state.playerInstance.getCurrentTime();
+    return this.state.playerInstance.getCurrentTime();
   }
 
   setCurrentTime(val) {
-    return state.playerInstance.setCurrentTime(val);
+    return this.state.playerInstance.setCurrentTime(val);
   }
 
   getUsableSpeed() {
-    return state.playerInstance.getUsableSpeed();
+    return this.state.playerInstance.getUsableSpeed();
   }
 
   setPlaySpeed(val) {
-    return state.playerInstance.setPlaySpeed(val);
+    return this.state.playerInstance.setPlaySpeed(val);
   }
 
   openControls(status) {
-    return state.playerInstance.openControls(status);
+    return this.state.playerInstance.openControls(status);
   }
 
   openUI(status) {
-    return state.playerInstance.openUI(status);
+    return this.state.playerInstance.openUI(status);
   }
 
   setResetVideo(val) {
-    return state.playerInstance.setResetVideo(val);
+    return this.state.playerInstance.setResetVideo(val);
   }
 
   setBarrageInfo(val) {
-    return state.playerInstance.setBarrageInfo(val);
+    return this.state.playerInstance.setBarrageInfo(val);
   }
 
   addBarrage(val) {
-    return state.playerInstance.addBarrage(val);
+    return this.state.playerInstance.addBarrage(val);
   }
 
   toggleBarrage() {
-    return state.playerInstance.toggleBarrage();
+    return this.state.playerInstance.toggleBarrage();
   }
 
   //开启弹幕显示
   openBarrage() {
-    return state.playerInstance.toggleBarrage(true);
+    return this.state.playerInstance.toggleBarrage(true);
   }
 
   //关闭弹幕显示
   closeBarrage() {
-    return state.playerInstance.toggleBarrage(false);
+    return this.state.playerInstance.toggleBarrage(false);
   }
 
   //清除弹幕显示
   clearBarrage() {
-    return state.playerInstance.clearBarrage();
+    return this.state.playerInstance.clearBarrage();
   }
 
   toggleSubtitle() {
-    return state.playerInstance.toggleSubtitle();
+    return this.state.playerInstance.toggleSubtitle();
   }
 
   onPlayer(type, cb) {
-    state.playerInstance.$on(type, cb);
+    this.state.playerInstance.$on(type, cb);
   }
 
   emitPlayer(type, params) {
-    state.playerInstance.$emit(type, params);
+    this.state.playerInstance.$emit(type, params);
   }
 }
 
