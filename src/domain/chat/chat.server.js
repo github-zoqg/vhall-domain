@@ -53,10 +53,15 @@ class ChatServer extends BaseServer {
   //监听msgServer通知
   listenEvents() {
     msgServer.$onMsg('CHAT', rawMsg => {
-      //表情处理
-      rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
-      //创建消息实例并添加到消息列表
-      this.state.chatList.push(ChatServer._handleGenerateMsg.call(this, rawMsg));
+      rawMsg.data = JSON.parse(rawMsg.data);
+      rawMsg.context = JSON.parse(rawMsg.context);
+      if (['text', 'image'].includes(rawMsg.data.type)) {
+        //表情处理
+        rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
+        //创建消息实例并添加到消息列表
+        this.state.chatList.push(ChatServer._handleGenerateMsg.call(this, rawMsg));
+        console.log(roomServer);
+      }
     });
   }
   //接收聊天消息
@@ -124,24 +129,16 @@ class ChatServer extends BaseServer {
   }
 
   //防抖处理发送聊天消息
-  sendMsg = debounce(this.sendMsgToMsg.bind(this), 300, true);
+  sendMsg = debounce(this.sendChatMsg.bind(this), 300, true);
   //发送聊天消息
-  sendMsgToMsg(params = {}) {
-    console.log(params);
-    let { inputValue, needFilter = true, data = {}, context = {} } = params;
-    // let filterStatus = checkHasKeyword(needFilter, inputValue);
-    // return new Promise((resolve, reject) => {
-    //     if (roleName != 2 || (roleName == 2 && filterStatus)) {
-    //         msgServer.$emit(data, context);
-    //         resolve();
-    //     } else {
-    //         reject();
-    //     }
-    // });
-    return new Promise((resolve, reject) => {
-      msgServer.sendChatMsg(params.data);
-      resolve();
-    });
+  sendChatMsg(data, context = {}) {
+    if (msgServer.groupMsgInstance) {
+      //调用passsdk方法
+      msgServer.groupMsgInstance.emit(data, context);
+    } else {
+      //调用passsdk方法
+      msgServer.msgInstance.emit(data, context);
+    }
   }
 
   //发起请求，或者聊天记录数据

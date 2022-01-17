@@ -40,7 +40,7 @@ class MsgServer extends BaseServer {
     console.log('聊天初始化参数', options);
     this.state.msgSdkInitOptions = options;
     const vhallchat = await VhallPaasSDK.modules.VhallChat.createInstance(options);
-    this.msgInstance = vhallchat;
+    this.msgInstance = vhallchat.message;
     console.log('聊天实例', this.msgInstance);
     if (!this.groupMsgInstance) {
       this._addListeners(this.msgInstance);
@@ -69,60 +69,63 @@ class MsgServer extends BaseServer {
   _handlePaasInstanceOn(instance, eventType, fn) {
     // 'room';
     // 'custom'
+    console.log(VhallChat);
     switch (eventType) {
       case 'ROOM_MSG':
-        instance.on('room', fn); // 这个小写的字符串是跟微吼云沟通添加的，现在房间消息还没有常量
+        instance.onRoomMsg(fn); // 这个小写的字符串是跟微吼云沟通添加的，现在房间消息还没有常量
         break;
       case 'CHAT':
-        instance.on(VhallChat.EVENTS.CHAT, fn);
+        instance.on(fn);
         break;
       case 'JOIN':
-        instance.on(VhallChat.EVENTS.JOIN, fn);
+        instance.join(fn);
         break;
       case 'JOIN_ANY':
-        instance.on(VhallChat.EVENTS.JOIN_ANY, fn);
+        // instance.on(VhallChat.EVENTS.JOIN_ANY, fn);
         break;
       case 'LEFT':
-        instance.on(VhallChat.EVENTS.LEFT, fn);
+        instance.leave(fn);
         break;
       case 'LEFT_ANY':
-        instance.on(VhallChat.EVENTS.LEFT_ANY, fn);
+        // instance.on(VhallChat.EVENTS.LEFT_ANY, fn);
         break;
       case 'KICK':
-        instance.on(VhallChat.EVENTS.KICK, fn);
+        // instance.on(VhallChat.EVENTS.KICK, fn);
         break;
-      case 'MUTE':
-        instance.on(VhallChat.EVENTS.MUTE, fn);
-        break;
-      case 'UNMUTE':
-        instance.on(VhallChat.EVENTS.UNMUTE, fn);
-        break;
-      case 'SUPER_ALLOW':
-        instance.on(VhallChat.EVENTS.SUPER_ALLOW, fn);
-        break;
-      case 'UNSUPER_ALLOW':
-        instance.on(VhallChat.EVENTS.UNSUPER_ALLOW, fn);
-        break;
-      case 'MUTE_ALL':
-        instance.on(VhallChat.EVENTS.MUTE_ALL, fn);
-        break;
-      case 'UNMUTE_ALL':
-        instance.on(VhallChat.EVENTS.UNMUTE_ALL, fn);
-        break;
+      // case 'MUTE':
+      //   instance.on(VhallChat.EVENTS.MUTE, fn);
+      //   break;
+      // case 'UNMUTE':
+      //   instance.on(VhallChat.EVENTS.UNMUTE, fn);
+      //   break;
+      // case 'SUPER_ALLOW':
+      //   instance.on(VhallChat.EVENTS.SUPER_ALLOW, fn);
+      //   break;
+      // case 'UNSUPER_ALLOW':
+      //   instance.on(VhallChat.EVENTS.UNSUPER_ALLOW, fn);
+      //   break;
+      // case 'MUTE_ALL':
+      //   instance.on(VhallChat.EVENTS.MUTE_ALL, fn);
+      //   break;
+      // case 'UNMUTE_ALL':
+      //   instance.on(VhallChat.EVENTS.UNMUTE_ALL, fn);
+      //   break;
       case 'OFFLINE':
-        instance.on(VhallChat.EVENTS.OFFLINE, fn);
+        instance.onOffLine(fn);
         break;
       case 'ONLINE':
-        instance.on(VhallChat.EVENTS.ONLINE, fn);
+        instance.onOnLine(fn);
         break;
-      case 'GROUP_NEW':
-        instance.on(VhallChat.EVENTS.GROUP_NEW, fn);
-        break;
-      case 'GROUP_DISSOLVE':
-        instance.on(VhallChat.EVENTS.GROUP_DISSOLVE, fn);
-        break;
+      // case 'GROUP_NEW':
+      // instance.on(VhallChat.EVENTS.GROUP_NEW, fn);
+      // break;
+      // case 'GROUP_DISSOLVE':
+      // instance.on(VhallChat.EVENTS.GROUP_DISSOLVE, fn);
+      // break;
+      case 'DocMsg':
+        instance.onDocMsg(fn);
       default:
-        instance.on(eventType, fn);
+        instance.onCustomMsg(fn);
     }
   }
 
@@ -176,13 +179,13 @@ class MsgServer extends BaseServer {
   }
 
   // 发送聊天消息
-  sendChatMsg(data, options) {
-    console.log('options', options);
+  sendChatMsg(data, context) {
+    console.log('context', context);
     if (this.groupMsgInstance) {
-      this.groupMsgInstance.emitCustomChat(data, options);
+      this.groupMsgInstance.emit(data, context);
     } else {
       console.log(data);
-      this.msgInstance.emitCustomChat(data, options);
+      this.msgInstance.emit(data, context);
     }
   }
 
