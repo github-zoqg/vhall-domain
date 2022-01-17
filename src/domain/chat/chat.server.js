@@ -34,11 +34,11 @@ class ChatServer extends BaseServer {
       allBanned: 0, //1禁言 0取消禁言
       page: 0,
       limit: 10,
-
       roomId,
       avatar,
       roleName,
-      defaultAvatar: 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png'
+      defaultAvatar: 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png',
+      curMsg: null //当前正在编辑的消息
     };
     this.listenEvents();
     this.controller = null;
@@ -58,8 +58,8 @@ class ChatServer extends BaseServer {
       if (['text', 'image'].includes(rawMsg.data.type)) {
         //表情处理
         rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
-        //创建消息实例并添加到消息列表
-        this.state.chatList.push(ChatServer._handleGenerateMsg.call(this, rawMsg));
+        //格式化消息用于渲染并添加到消息列表
+        this.state.chatList.push(Msg._handleGenerateMsg(rawMsg));
         console.log(roomServer);
       }
     });
@@ -89,7 +89,7 @@ class ChatServer extends BaseServer {
           item.context.atList = item.context.at_list;
         }
         //实例化消息
-        return ChatServer._handleGenerateMsg.call(this, item);
+        return Msg._handleGenerateMsg(item);
       })
       .reduce((acc, curr) => {
         const showTime = curr.showTime;
@@ -197,39 +197,6 @@ class ChatServer extends BaseServer {
         return a;
       });
     }
-  }
-
-  //私有方法，组装消息（暂时按照的h5版本的,大致数据一致，具体业务逻辑操作有差异，后续返回一个promise，并返回未处理的原始数据，由视图自己决定如何处理）
-  static _handleGenerateMsg(item = {}, from = '') {
-    const params = {
-      type: item.data.type,
-      avatar: item.context.avatar ? item.context.avatar : this.state.defaultAvatar,
-      sendId: item.sender_id || item.sourceId,
-      showTime: item.context.showTime,
-      nickname: item.context.nickname,
-      roleName: item.context.role_name,
-      sendTime: item.date_time,
-      content: item.data,
-      replyMsg: item.context.reply_msg,
-      atList: item.context.atList,
-      msgId: item.msg_id,
-      channel: item.channel_id,
-      isHistoryMsg: true
-    };
-    const resultMsg = new Msg(params, from);
-    if (item.data.event_type) {
-      resultMsg = {
-        ...resultMsg,
-        type: item.data.event_type,
-        event_type: item.data.event_type,
-        content: {
-          source_status: item.data.source_status,
-          gift_name: item.data.gift_name,
-          gift_url: item.data.gift_url
-        }
-      };
-    }
-    return resultMsg;
   }
 
   /**
