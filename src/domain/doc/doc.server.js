@@ -59,12 +59,14 @@ class DocServer extends BaseServer {
       // console.log('this.cid:', this.cid);
       // console.log('this.isFullscreen :', this.isFullscreen);
       this.state.allComplete = true;
+      this.state.docLoadComplete = true;
     });
     // 单个文档加载完成
     this.docInstance.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE, data => {
       console.log('==============文档加载完成===============');
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
+      this.state.docLoadComplete = true;
       const res = this.docInstance.getThumbnailList();
       this.state.thumbnailList = res && res[0] ? res[0].list : [];
     });
@@ -263,16 +265,6 @@ class DocServer extends BaseServer {
 
   createDocument(options) {
     return this.docInstance.createDocument(options);
-  }
-
-  /**
-   * 加载列表中文档或白板的实例
-   * @param {*} width
-   * @param {*} height
-   */
-  async loadDocumentOrBoradData(width, height) {
-    this.state.allComplete = false;
-    console.log('--loadDocumentOrBoradData--');
   }
 
   async recover({ width, height, bindCidFun }) {
