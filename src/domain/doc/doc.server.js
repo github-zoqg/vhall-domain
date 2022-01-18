@@ -61,20 +61,26 @@ class DocServer extends BaseServer {
       this.state.allComplete = true;
       this.state.docLoadComplete = true;
     });
-    // 单个文档加载完成
+    // 当前文档加载完成
     this.docInstance.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE, data => {
-      console.log('==============文档加载完成===============');
+      console.log('====当前文档加载完成=====');
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
       this.state.docLoadComplete = true;
-      const res = this.docInstance.getThumbnailList();
-      this.state.thumbnailList = res && res[0] ? res[0].list : [];
+
+      // 获取缩略图
+      setTimeout(() => {
+        // 延迟100ms获取，否则sdk中要用到的某个数据可能还是空
+        const res = this.docInstance.getThumbnailList();
+        let doc = Array.isArray(res) ? res.find(item => item.id === data.elId) : null;
+        this.state.thumbnailList = doc ? doc.list : [];
+      }, 100);
     });
     // 文档翻页事件
     this.docInstance.on(VHDocSDK.Event.PAGE_CHANGE, data => {
       console.log('==============文档翻页================');
       this.state.pageTotal = data.info.slidesTotal;
-      this.state.pageNum = Number(data.info.slideIndex) + 1;
+      this.state.pageNum = data.info.slideIndex;
     });
 
     this.docInstance.on(VHDocSDK.Event.SWITCH_CHANGE, status => {
@@ -282,6 +288,7 @@ class DocServer extends BaseServer {
       let { cid, active, docId, is_board } = item;
       const options = {
         id: cid,
+        cid: cid,
         elId: cid,
         docId: docId,
         width: width,
@@ -338,7 +345,7 @@ class DocServer extends BaseServer {
         strokeWidth: 7
       },
       is_board,
-      docType
+      doc_type: docType
     };
     this.state.fileOrBoardList.push(option);
     if (typeof bindCidFun === 'function') {
@@ -387,11 +394,11 @@ class DocServer extends BaseServer {
    * @returns
    */
   async selectContainer(cid, noDispatch = false) {
+    this.state.currentCid = cid;
     await this.docInstance.selectContainer({
       id: cid,
       noDispatch
     });
-    this.state.currentCid = cid;
     return cid;
   }
 
@@ -709,6 +716,12 @@ class DocServer extends BaseServer {
 
   setEditable(editable) {
     return this.docInstance.setEditable(editable);
+  }
+
+  getCurrentThumbnailList() {
+    const res = this.docInstance.getThumbnailList();
+    let doc = Array.isArray(res) ? res.find(item => item.id === this.state.currentCid) : null;
+    this.state.thumbnailList = doc ? doc.list : [];
   }
 
   getThumbnailList(options) {
