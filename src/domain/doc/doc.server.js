@@ -271,11 +271,19 @@ class DocServer extends BaseServer {
    * @param {*} height
    */
   async loadDocumentOrBoradData(width, height) {
+    this.state.allComplete = false;
+    console.log('--loadDocumentOrBoradData--');
+  }
+
+  async recover({ width, height, bindCidFun }) {
     if (!width || !height) {
       console.error('容器宽高错误', width, height);
     }
-    this.state.allComplete = false;
-    console.log('--loadDocumentOrBoradData--');
+    await this.getAllContainerInfo();
+
+    if (typeof bindCidFun === 'function') {
+      await bindCidFun();
+    }
 
     // 创建文档和白板的实例
     for (const item of this.state.fileOrBoardList) {
@@ -311,26 +319,26 @@ class DocServer extends BaseServer {
         });
       }
     }
-    // this.docInstance.setRemoteData2(this.state.fileOrBoardList);
+    await this.docInstance.setRemoteData2(this.state.fileOrBoardList);
   }
 
   /**
-   * 准备创建文档或白板的数据
-   * @param {*} width 容器宽
-   * @param {*} height 容器高
-   * @param {*} fileType fileType document:文档 board:白板,默认文档
-   * @param {*} docId docId 文档id，白板时为空
-   * @param {*} docType 演示类型：1：静态文档（jpg） 2：动态文档(PPT)
+   * 新增文档或白板
+   * @param {*} item
+   * @param {*}
    */
-  prepareDocumentOrBorad(width, height, fileType = 'document', docId = '', docType) {
-    const cid = this.docInstance.createUUID(fileType);
+  async addNewDocumentOrBorad(options) {
+    const { width, height, fileType, docId, docType, bindCidFun } = options;
+    const elId = this.docInstance.createUUID(fileType);
     const is_board = fileType === 'document' ? 1 : 2;
-    let options = {
-      id: cid,
+    let option = {
+      id: elId,
+      cid: elId,
       docId: docId,
-      elId: cid,
+      elId: elId,
       width,
       height,
+      backgroundColor: '#fff',
       option: {
         // 初始画笔
         graphicType: window.VHDocSDK.GRAPHIC.PEN,
@@ -340,73 +348,41 @@ class DocServer extends BaseServer {
       is_board,
       docType
     };
-    const item = {
-      cid: cid,
-      is_board,
-      docId,
-      docType
-    };
-    this.state.fileOrBoardList.push({ ...item });
-    return options;
-  }
+    this.state.fileOrBoardList.push(option);
+    if (typeof bindCidFun === 'function') {
+      await bindCidFun(elId);
+    }
+    try {
+      if (Number(is_board) === 1) {
+        await this.docInstance.createDocument(option);
+      } else {
+        await this.docInstance.createBoard(option);
+      }
+    } catch (ex) {
+      // 移除失败的容器fileOrBoardList
+      this.state.fileOrBoardList = this.state.fileOrBoardList.filter(item => item.elId === elId);
+      console.error(ex);
+    }
+    // 选中
+    console.log('-选中 elId-----:', elId);
+    await this.docInstance.selectContainer({ id: elId });
+    this.state.currentCid = elId;
+    this.state.currentType = fileType;
 
-  /**
-   * 新增文档或白板
-   * @param {*} item
-   * @param {*}
-   */
-  async addNewDocumentOrBorad(options) {
-    // console.log('-------addNewFile-----');
-    // this.allComplete = false;
-    // 创建
-    const { elId, docId, is_board, docType } = options;
     if (Number(is_board) === 1) {
-      try {
-        await this.docInstance.createDocument(options);
-        await this.docInstance.selectContainer({ id: elId });
-        const {
-          status,
-          status_jpeg,
-          slideIndex,
-          slidesTotal,
-          converted_page,
-          converted_page_jpeg
-        } = await this.docInstance.loadDoc({
+      const { status, status_jpeg, slideIndex, slidesTotal, converted_page, converted_page_jpeg } =
+        await this.docInstance.loadDoc({
           docId: docId,
           id: elId,
           docType
         });
 
-        if (Number(status) === 200) {
-          this.pageNum = Number(slideIndex) + 1;
-          this.pageTotal = slidesTotal;
-        } else if (Number(status_jpeg) === 200) {
-          this.pageNum = Number(converted_page) + 1;
-          this.pageTotal = converted_page_jpeg;
-        }
-        this.state.currentCid = elId;
-        this.state.currentType = 'document';
-      } catch (e) {
-        // 移除失败的容器fileOrBoardList
-        this.state.fileOrBoardList = this.state.fileOrBoardList.filter(item => item.elId === elId);
-        console.error(e);
-        // roomApi.report(this.$store.getters.roomId, e)
-      }
-    } else {
-      console.log('-------创建白板-------');
-      try {
-        await this.docInstance.createBoard({
-          ...options,
-          backgroundColor: '#fff'
-        });
-        await this.docInstance.selectContainer({ id: elId });
-        this.state.currentCid = elId;
-        this.state.currentType = 'board';
-      } catch (e) {
-        // 移除失败的容器
-        this.state.fileOrBoardList = this.state.fileOrBoardList.filter(item => item.elId === elId);
-        console.error(e);
-        // roomApi.report(this.$store.getters.roomId, e)
+      if (Number(status) === 200) {
+        this.state.pageNum = Number(slideIndex) + 1;
+        this.state.pageTotal = slidesTotal;
+      } else if (Number(status_jpeg) === 200) {
+        this.state.pageNum = Number(converted_page) + 1;
+        this.state.pageTotal = converted_page_jpeg;
       }
     }
   }
@@ -482,7 +458,6 @@ class DocServer extends BaseServer {
     if (this.state.isInGroup) {
       this.state.switchStatus = !!list.length;
     }
-
     this.state.docLoadComplete = true;
     if (!list.length) return;
     const activeItem = list.find(item => item.active == 1);
