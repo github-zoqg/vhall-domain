@@ -200,7 +200,6 @@ export default class AbstractDocServer extends BaseServer {
 
   /**
    * 加载远端实例数据2
-   * @deprecated
    * @param {Array} list
    * @returns
    */
@@ -352,23 +351,23 @@ export default class AbstractDocServer extends BaseServer {
 
   /**
    * 设置前文档的画笔粗细
-   * @param {?String} id 可选容器id，有传入id的话则会设置成当前文档
    * @param {Number} width 画笔粗细，数字，必填
+   * @param {?String} id 可选容器id，有传入id的话则会设置成当前文档
    * @returns
    */
   @checkDocInstance()
-  setStrokeWidth({ id, width }) {
+  setStrokeWidth(width, id) {
     return this.docInstance.setStrokeWidth({ id, width });
   }
 
   /**
    * 设置前文档的画笔颜色
-   * @param {?String} id 可选容器id，有传入id的话则会设置成当前文档
    * @param {String} width 画笔颜色，必填
+   * @param {?String} id 可选容器id，有传入id的话则会设置成当前文档
    * @returns
    */
   @checkDocInstance()
-  setStroke({ id, color }) {
+  setStroke(color, id) {
     return this.docInstance.setStroke({ id, color });
   }
 

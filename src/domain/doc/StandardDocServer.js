@@ -290,12 +290,12 @@ export default class StandardDocServer extends AbstractDocServer {
         docId: docId,
         width: width,
         height: height,
-        backgroundColor: item.backgroundColor || '#fff'
-        // option: {
-        //   graphicType: window.VHDocSDK.GRAPHIC.PEN,
-        //   stroke: '#FD2C0A',
-        //   strokeWidth: 7
-        // }
+        backgroundColor: item.backgroundColor || '#fff',
+        option: {
+          graphicType: window.VHDocSDK.GRAPHIC.PEN,
+          stroke: '#FD2C0A',
+          strokeWidth: 7
+        }
       };
 
       if (Number(is_board) === 1) {
@@ -353,8 +353,9 @@ export default class StandardDocServer extends AbstractDocServer {
       }
     } catch (ex) {
       // 移除失败的容器fileOrBoardList
-      this.state.fileOrBoardList = this.state.fileOrBoardList.filter(item => item.elId === elId);
+      this.state.fileOrBoardList = this.state.fileOrBoardList.filter(item => item.elId !== elId);
       console.error(ex);
+      return;
     }
     // 选中
     console.log('-选中 elId-----:', elId);
