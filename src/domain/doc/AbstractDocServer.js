@@ -25,7 +25,8 @@ function checkDocInstance() {
  * 主要是封装微吼云PaaS文档sdk的操作
  *
  * PaaS doc-JSSDK文档: http://www.vhallyun.com/docs/show/603
- *
+ * @author yangxy
+ * @date 2022/01/18
  * @class AbstractDocServer
  */
 export default class AbstractDocServer extends BaseServer {
