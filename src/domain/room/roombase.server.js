@@ -35,7 +35,9 @@ class RoomBaseServer extends BaseServer {
       watchInitErrorData: undefined, // 默认undefined，如果为其他值将触发特殊逻辑
       configList: {},
       isGroupWebinar: false, // 是否是分组直播
-      clientType: ''
+      clientType: '',
+      roomVisibleModules: [],
+      miniElement: 'stream-list' // 可能的值：doc  stream-list
     };
     RoomBaseServer.instance = this;
     return this;
@@ -57,6 +59,20 @@ class RoomBaseServer extends BaseServer {
   // 设置分组讨论是否正在讨论中
   setGroupDiscussState(type) {
     this.state.groupInitData.discussState = type;
+  }
+
+  // 设置miniELement
+  requestChangeMiniElement(requestEle) {
+    switch (requestEle) {
+      case 'stream-list':
+        this.state.miniElement = this.state.miniElement == 'doc' ? 'stream-list' : 'doc';
+        break;
+    }
+  }
+
+  // 更新roomVisibleModule
+  updateRoomVisibleModules(cb) {
+    this.state.roomVisibleModules = cb(this.state.roomVisibleModules);
   }
 
   // 设置子房间初始化信息
@@ -133,7 +149,12 @@ class RoomBaseServer extends BaseServer {
 
   // 开播startLive
   startLive(data = {}) {
-    return meeting.startLive(data);
+    return meeting.startLive(data).then(res => {
+      if (res.code == 200) {
+        this.state.watchInitData.webinar.type = 1;
+      }
+      return res;
+    });
   }
 
   // 结束直播

@@ -72,7 +72,12 @@ class MsgServer extends BaseServer {
     console.log(VhallChat);
     switch (eventType) {
       case 'ROOM_MSG':
-        instance.onRoomMsg(fn); // 这个小写的字符串是跟微吼云沟通添加的，现在房间消息还没有常量
+        instance.onRoomMsg(msg => {
+          // 房间消息统一parse
+          msg.context = msg.context && JSON.parse(msg.context);
+          msg.data = msg.context && JSON.parse(msg.data);
+          fn(msg);
+        }); // 这个小写的字符串是跟微吼云沟通添加的，现在房间消息还没有常量
         break;
       case 'CHAT':
         instance.on(fn);
