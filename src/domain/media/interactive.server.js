@@ -1,7 +1,8 @@
-import { mic } from '../../request';
+import { mic, room } from '../../request';
 import { merge } from '../../utils';
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
+import useMsgServer from '../common/msg.server';
 import VhallPaasSDK from '@/sdk/index';
 class InteractiveServer extends BaseServer {
   constructor() {
@@ -12,8 +13,29 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance = null; // 互动实例
     this.state = {
       streamId: null,
-      localStreamId: null, // 本地流id
-      remoteStreams: [] // 远端流数组
+      localStream: {
+        streamId: null, // 本地流id
+        videoMuted: false,
+        audioMuted: false,
+        attributes: {}
+      },
+      /**
+       * 房间流列表
+       * accountId: "16422770"
+        attributes: {
+          accountId: "16422770"
+          nickname: "春有百花秋有月 夏有凉风冬有雪，若无闲事挂心头便是人间好时节"
+          roleName: 1
+        }
+        audioMuted: false
+        streamId: "910274322990012300"
+        streamSource: "remote"
+        streamStatus: 0
+        streamType: 2
+        videoMuted: false
+       */
+      remoteStreams: [], // 远端流数组
+      mainScreen: '16422770'
     };
     InteractiveServer.instance = this;
     return this;
@@ -92,32 +114,63 @@ class InteractiveServer extends BaseServer {
 
   // 注册事件监听
   _addListeners() {
+    // -------------------------互动sdk内部消息--------------------------------------------
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_JOIN, e => {
       // 用户加入房间事件
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_JOIN, e);
     });
+
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_LEAVE, e => {
       // 用户离开房间事件
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_LEAVE, e);
     });
+
+    // 远端流加入事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
-      const event = {
-        ...e,
-        attributes: e.attributes && JSON.parse(e.attributes)
+      // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
+      e.data.attributes = e.data.attributes && JSON.parse(e.data.attributes);
+      const remoteStream = {
+        ...e.data,
+        audioMuted: e.data.stream.audioMuted,
+        videoMuted: e.data.stream.videoMuted
       };
-      // 远端流加入事件
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, event);
+      console.log('----流加入事件----', e);
+      this.state.remoteStreams.push(remoteStream);
+      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e);
     });
+
+    // 远端流离开事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
-      // 远端流离开事件
+      // 从流列表中删除
+      this.state.remoteStreams = this.state.remoteStreams.filter(
+        stream => stream.streamId != e.data.streamId
+      );
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e);
     });
+
+    // 房间信令异常断开事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e => {
-      // 房间信令异常断开事件
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e);
     });
+
+    // 远端流音视频状态改变事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_MUTE, e => {
-      // 远端流音视频状态改变事件
+      console.log('---远端流音视频状态改变事件----', e);
+      if (e.data.streamId == this.state.localStream.streamId) {
+        // 本地流处理
+        this.state.localStream.audioMuted = e.data.muteStream.audio;
+        this.state.localStream.videoMuted = e.data.muteStream.video;
+        console.log('----本地流处理----', this.state.localStream);
+      } else {
+        // 远端流处理
+        this.state.remoteStreams.some(stream => {
+          if (e.data.streamId == stream.streamId) {
+            stream.audioMuted = e.data.muteStream.audio;
+            stream.videoMuted = e.data.muteStream.video;
+            return true;
+          }
+        });
+      }
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_MUTE, e);
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
@@ -144,6 +197,54 @@ class InteractiveServer extends BaseServer {
       // 订阅流自动播放失败
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_PLAYABORT, e);
     });
+
+    // -------------------------房间业务消息--------------------------------------------
+    const msgServer = useMsgServer();
+    const { watchInitData } = useRoomBaseServer().state;
+    msgServer.$onMsg('ROOM_MSG', msg => {
+      if (
+        msg.data.type == 'vrtc_frames_forbid' && // 业务关闭摄像头消息
+        msg.data.target_id == watchInitData.join_info.third_party_user_id
+      ) {
+        // 本地流关闭视频
+        this.muteVideo({
+          streamId: this.state.localStream.streamId,
+          isMute: true
+        });
+        // 业务消息不需要透传到ui层,ui层通过远端流音视频状态改变事件更新ui状态
+        // this.$emit('vrtc_frames_forbid', msg)
+      } else if (
+        msg.data.type == 'vrtc_frames_display' && // 业务开启摄像头消息
+        msg.data.target_id == watchInitData.join_info.third_party_user_id
+      ) {
+        // 本地流开启视频
+        this.muteVideo({
+          streamId: this.state.localStream.streamId,
+          isMute: false
+        });
+        // this.$emit('vrtc_frames_display', msg);
+      } else if (
+        msg.data.type == 'vrtc_mute' && // 业务关闭麦克风消息
+        msg.data.target_id == watchInitData.join_info.third_party_user_id
+      ) {
+        // 本地流关闭音频
+        this.muteAudio({
+          streamId: this.state.localStream.streamId,
+          isMute: true
+        });
+        // this.$emit('vrtc_mute', msg);
+      } else if (
+        msg.data.type == 'vrtc_mute_cancel' && // 业务开启麦克风消息
+        msg.data.target_id == watchInitData.join_info.third_party_user_id
+      ) {
+        // 本地流开启音频
+        this.muteAudio({
+          streamId: this.state.localStream.streamId,
+          isMute: false
+        });
+        // this.$emit('vrtc_mute_cancel', msg);
+      }
+    });
   }
 
   // ---------------------------基础api---------------------------------------------
@@ -155,7 +256,12 @@ class InteractiveServer extends BaseServer {
    */
   createLocalStream(options = {}) {
     return this.interactiveInstance.createStream(options).then(data => {
-      this.state.localStreamId = data.streamId;
+      console.log('----创建本地流成功----', data);
+      this.state.localStream = {
+        streamId: data.streamId,
+        audioMuted: !options.audio,
+        videoMuted: !options.video
+      };
       return data;
     });
   }
@@ -203,10 +309,14 @@ class InteractiveServer extends BaseServer {
   // 推送本地流到远端
   publishStream() {
     const { state: roomBaseServerState } = useRoomBaseServer();
-    return this.interactiveInstance.publish({
-      streamId: this.state.localStreamId,
-      accountId: roomBaseServerState.watchInitData.join_info.third_party_user_id
-    });
+    return this.interactiveInstance
+      .publish({
+        streamId: this.state.localStream.streamId,
+        accountId: roomBaseServerState.watchInitData.join_info.third_party_user_id
+      })
+      .then(data => {
+        return data;
+      });
   }
 
   /**
@@ -216,7 +326,7 @@ class InteractiveServer extends BaseServer {
    */
   unpublishStream(options = {}) {
     return this.interactiveInstance.unpublish({
-      streamId: options.streamId || this.state.localStreamId
+      streamId: options.streamId || this.state.localStream.streamId
     });
   }
 
@@ -233,18 +343,7 @@ class InteractiveServer extends BaseServer {
   unSubscribeStream(streamId) {
     return this.interactiveInstance.unSubscribeStream(streamId);
   }
-  // 设置大小流
-  setDual(options = {}) {
-    return this.interactiveInstance.setDual(options);
-  }
-  // 改变视频的禁用和启用
-  muteVideo(options = {}) {
-    return this.interactiveInstance.muteVideo(options);
-  }
-  // 改变音频的禁用和启用
-  muteAudio(options = {}) {
-    return this.interactiveInstance.muteAudio(options);
-  }
+
   /**
    * 开启旁路
    * @param {Object} options --  layout: 旁路布局  profile: 旁路直播视频质量参数 paneAspectRatio:旁路混流窗格指定高宽比 border: 旁路边框属性
@@ -286,7 +385,7 @@ class InteractiveServer extends BaseServer {
   // 动态配置旁路主屏
   setBroadCastScreen(options = {}) {
     return this.interactiveInstance.setBroadCastScreen({
-      mainScreenStreamId: options.mainScreenStreamId || this.state.localStreamId
+      mainScreenStreamId: options.mainScreenStreamId || this.state.localStream.streamId
     });
   }
   // 获取全部音视频列表
@@ -322,21 +421,25 @@ class InteractiveServer extends BaseServer {
   getPacketLossRate() {
     return this.interactiveInstance.getPacketLossRate();
   }
-  // 获取流上下行丢包率
+  /**
+   * 获取流上下行丢包率
+   * @param {Object} options streamId: 流id
+   * @returns {Promise}
+   */
   getStreamPacketLoss(options = {}) {
     return this.interactiveInstance.getStreamPacketLoss(options);
-  }
-  // 获取房间流信息
-  getRoomStreams() {
-    return this.interactiveInstance.getRoomStreams();
   }
   // 获取房间总的流信息(本地流加远端流)
   getRoomInfo() {
     return this.interactiveInstance.getRoomInfo();
   }
-  // 获取流音频能量
-  getAudioLevel(streamId) {
-    return this.interactiveInstance.getAudioLevel(streamId);
+  /**
+   * 获取流音频级别
+   * @param {Object} options streamId: 流id
+   * @returns {Pormise}
+   */
+  getAudioLevel(options = {}) {
+    return this.interactiveInstance.getAudioLevel(options);
   }
   // 获取流的mute状态
   getStreamMute(streamId) {
@@ -441,31 +544,96 @@ class InteractiveServer extends BaseServer {
         console.log('getDevies is failed::', err);
       });
   }
-  pulishStream(streamId) {
-    interactive
-      .publishStream({ streamId })
-      .then(res => {
-        console.log('publish stream success::', streamId);
-      })
-      .catch(err => {
-        console.log('publish is failed::', err);
-      });
-  }
   // 订阅流列表
   getRoomStreams() {
-    this.state.remoteStreams = this.interactiveInstance.getRoomStreams();
+    const streamList = this.interactiveInstance.getRoomStreams();
+    this.state.remoteStreams = streamList.map(stream => ({
+      ...stream,
+      attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
+    }));
     return this.state.remoteStreams;
   }
-  // sdk的监听事件
-  listenerSdk() {
-    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
-      // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      // state.remoteStreams.push(e)
+  /**
+   * 互动流进入全屏
+   * @param {Object} options   streamId:"123456789123456789",  // 流ID vNode: 'xxx', // 选填 以ID为结点的Dom
+   * @returns {Promise} code 611035为全屏异常
+   */
+  setStreamFullscreen(options = {}) {
+    return this.interactiveInstance.setStreamFullscreen(options);
+  }
+  /**
+   * 互动流退出全屏
+   * @param {Object} options   streamId:"123456789123456789",  // 流ID vNode: 'xxx', // 选填 以ID为结点的Dom
+   * @returns {Promise} code 611035为全屏异常
+   */
+  exitStreamFullscreen(options = {}) {
+    return this.interactiveInstance.exitStreamFullscreen(options);
+  }
+  /**
+   * 设置大小流
+   * @param {Object} options streamId:"", // 远端流Id，必填  dual:1   // 双流订阅选项， 0 为小流， 1为大流 必填。
+   * @returns {Promise}
+   */
+  setDual(options = {}) {
+    return this.interactiveInstance.setDual(options);
+  }
+  /**
+   * 改变视频的禁用和启用
+   * @param {Object} options
+   * @returns {Promise}
+   */
+  muteVideo(options = {}) {
+    return this.interactiveInstance.muteVideo(options).then(data => {
+      if (options.streamId == this.state.localStream.streamId) {
+        // 更新本地流视频静默状态
+        this.state.localStream.videoMuted = options.isMute;
+      } else {
+        // 更新远端流视频静默状态
+        this.state.remoteStreams.some(item => {
+          if ((item.streamId = options.streamId)) {
+            item.videoMuted = options.videoMuted;
+            return true;
+          }
+        });
+      }
+      return data;
     });
-    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
-      // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      // state.remoteStreams.filter(item => item.streamId == e.streamId)
+  }
+  /**
+   * 改变音频的禁用和启用
+   * @param {Object} options
+   * @returns {Promise}
+   */
+  muteAudio(options = {}) {
+    return this.interactiveInstance.muteAudio(options).then(data => {
+      if (options.streamId == this.state.localStream.streamId) {
+        // 更新本地流音频静默状态
+        this.state.localStream.audioMuted = options.isMute;
+      } else {
+        // 更新远端流音频默状态
+        this.state.remoteStreams.some(item => {
+          if ((item.streamId = options.streamId)) {
+            item.audioMuted = options.isMute;
+            return true;
+          }
+        });
+      }
+      return data;
     });
+  }
+  /**
+   * 设置房间音视频设备状态
+   * @param {Object} params
+   * @returns {Promise}
+   */
+  setDeviceStatus(params = {}) {
+    const watchInitData = useRoomBaseServer().state.watchInitData;
+    const defaultParams = {
+      room_id: watchInitData.interact.room_id,
+      broadcast: 1
+    };
+    const retParams = merge.recursive({}, defaultParams, params);
+    return room.activity.setDeviceStatus(retParams);
   }
 }
 

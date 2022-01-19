@@ -34,17 +34,7 @@ const setSpeaker = (params = {}) => {
 };
 
 // 设置音视频设备开关
-const setRoomDevice = (params = {}) => {
-  const { state } = contextServer.get('roomBaseServer');
-
-  let retParams = {
-    room_id: params.room_id || state.watchInitData.interact.room_id,
-    device: params.device,
-    status: params.status,
-    receive_account_id: params.receive_account_id
-  };
-  retParams = Object.assign(retParams, params);
-
+const setDeviceStatus = (params = {}) => {
   return $http({
     url: '/v3/interacts/room/set-device-status',
     type: 'POST',
@@ -55,5 +45,5 @@ const setRoomDevice = (params = {}) => {
 export default {
   setMainScreen, // 设置主屏
   setSpeaker, // 设置主讲人
-  setRoomDevice // 设置音视频设备开关
+  setDeviceStatus // 设置音视频设备开关
 };
