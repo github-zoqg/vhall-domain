@@ -1,4 +1,5 @@
 import BaseServer from '../common/base.server';
+import VhallPaasSDK from '@/sdk/index.js';
 
 /**
  * 装饰器，检测docInstance是否初始化
@@ -9,7 +10,9 @@ function checkDocInstance() {
     const method = descriptor.value;
     descriptor.value = function (...args) {
       if (!this.docInstance) {
-        console.error(`Method call failed, the docInstance property is null`);
+        console.error(
+          `Method \`${name}\` call failed, the docInstance property is null。\r\n Before calling, Make sure the \`initialize\` method is called to initialize`
+        );
         return;
       }
       return method.apply(this, args);
@@ -27,6 +30,9 @@ function checkDocInstance() {
  */
 export default class AbstractDocServer extends BaseServer {
   constructor() {
+    if (new.target === AbstractDocServer) {
+      throw new Error('can`t instantiate AbstractDocServer class');
+    }
     super();
     this.docInstance = null; //pass 文档sdk的实例
   }
@@ -507,36 +513,11 @@ export default class AbstractDocServer extends BaseServer {
   }
 
   /**
-   * 获取当前文档的缩略图列表
+   * 获取缩略图列表
    * @returns
    */
   @checkDocInstance()
   getThumbnailList() {
     return this.docInstance.getThumbnailList();
-  }
-
-  // 获取文档列表(资料库所有文档)
-  getAllDocList(params) {
-    return docApi.getAllDocList(params);
-  }
-
-  // 获取文档列表(当前活动下)
-  getWebinarDocList(params) {
-    return docApi.getWebinarDocList(params);
-  }
-
-  // 获取文档详情
-  getDocDetail(params) {
-    return docApi.getDocDetail(params);
-  }
-
-  // 同步文档
-  syncDoc(params) {
-    return docApi.syncDoc(params);
-  }
-
-  // 删除文档(多选)
-  delDocList(params) {
-    return docApi.delDocList(params);
   }
 }
