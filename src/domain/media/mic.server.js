@@ -60,10 +60,9 @@ class MicServer extends BaseServer {
         // 主持人同意用户上麦申请
         case 'vrtc_connect_agree':
           if (
-            (join_info.role_name == 1 && msg.sourceId != join_info.third_party_user_id) || // 当前用户是主持人并且消息不是自己发的
-            (join_info.role_name == 3 && msg.sourceId != join_info.third_party_user_id) || // 当前用户是助理并且消息不是自己发的
-            (join_info.role_name == 2 &&
-              msg.data.receive_account_id == join_info.third_party_user_id) // 当前用户是观众
+            (join_info.role_name == 1 && msg.sender_id != join_info.third_party_user_id) || // 当前用户是主持人并且消息不是自己发的
+            (join_info.role_name == 3 && msg.sender_id != join_info.third_party_user_id) || // 当前用户是助理并且消息不是自己发的
+            (join_info.role_name == 2 && msg.data.room_join_id == join_info.third_party_user_id) // 当前用户是观众
           ) {
             this.$emit('vrtc_connect_agree', msg);
           }
@@ -130,14 +129,14 @@ class MicServer extends BaseServer {
   // 同意用户的上麦申请
   hostAgreeApply(data = {}) {
     const { watchInitData } = useRoomBaseServer().state;
-    const msgServer = useMsgServer();
+    // const msgServer = useMsgServer();
 
     // TODO:后续发消息统一由接口发，现阶段前端自己发消息，联调用
-    msgServer.sendRoomMsg({
-      type: 'user_apply_host_agree',
-      receive_account_id: data.receive_account_id,
-      nickname: watchInitData.join_info.nickname
-    });
+    // msgServer.sendRoomMsg({
+    //   type: 'user_apply_host_agree',
+    //   receive_account_id: data.receive_account_id,
+    //   nickname: watchInitData.join_info.nickname
+    // });
 
     const defaultParams = {
       room_id: watchInitData.interact.room_id
