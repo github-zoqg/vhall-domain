@@ -1,15 +1,18 @@
 {
+  "plugins": [
+    [
+      "@babel/plugin-proposal-decorators",
+      {
+        "legacy": true
+      }
+    ]
+  ],
   "presets": [
     [
       "@babel/preset-env",
       {
         "targets": {
-          "browsers": [
-            "> 5%",
-            "last 2 versions",
-            "not ie <= 8",
-            "safari >= 7"
-          ]
+          "browsers": ["> 5%", "last 2 versions", "not ie <= 8", "safari >= 7"]
         },
         "useBuiltIns": "usage",
         "corejs": 3

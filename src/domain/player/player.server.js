@@ -6,15 +6,14 @@ class PlayerServer extends BaseServer {
       return PlayerServer.instance;
     }
     super();
+    this.playerInstance = null; //播放器实例
     this.state = {
-      playerInstance: null,
       isPlaying: false,
       markPoints: [],
       type: 'live', // live or vod
       voice: 60
     };
-    //播放器实例
-    this.controller = null;
+
     PlayerServer.instance = this;
     return this;
   }
@@ -26,12 +25,15 @@ class PlayerServer extends BaseServer {
         VhallPlayer.createInstance(
           options,
           //创建播放器成功回调
-          instance => {
-            this.controller = instance;
-            resolve(instance);
+          event => {
+            this.playerInstance = event.vhallplayer;
+            this._addPlayerListeners();
+            resolve(event);
           },
           //创建播放器失败成功回调
-          () => {}
+          e => {
+            throw new Error(e.message);
+          }
         );
       });
     });
@@ -42,119 +44,156 @@ class PlayerServer extends BaseServer {
   }
 
   play() {
-    return this.state.playerInstance.play();
+    return this.playerInstance.play();
   }
 
   pause() {
-    return this.state.playerInstance.pause();
+    return this.playerInstance.pause();
   }
 
   isPause() {
-    return this.state.playerInstance.isPause();
+    return this.playerInstance.isPause();
   }
 
   getQualitys() {
-    return this.state.playerInstance.getQualitys();
+    return this.playerInstance.getQualitys();
   }
 
   getCurrentQuality() {
-    return this.state.playerInstance.getCurrentQuality();
+    return this.playerInstance.getCurrentQuality();
   }
 
   setQuality() {
-    return this.state.playerInstance.setQuality(item);
+    return this.playerInstance.setQuality(item);
   }
 
   enterFullScreen() {
-    return this.state.playerInstance.enterFullScreen();
+    return this.playerInstance.enterFullScreen();
   }
 
   exitFullScreen() {
-    return this.state.playerInstance.exitFullScreen();
+    return this.playerInstance.exitFullScreen();
   }
 
   setMute() {
-    return this.state.playerInstance.setMute();
+    return this.playerInstance.setMute();
   }
 
   getVolume() {
-    return this.state.playerInstance.getVolume();
+    return this.playerInstance.getVolume();
   }
 
   setVolume() {
     state.voice = val;
-    return this.state.playerInstance.setVolume(val);
+    return this.playerInstance.setVolume(val);
   }
 
   getDuration(onFail = () => {}) {
-    return this.state.playerInstance.getDuration(onFail);
+    return this.playerInstance.getDuration(onFail);
   }
 
   getCurrentTime() {
-    return this.state.playerInstance.getCurrentTime();
+    return this.playerInstance.getCurrentTime();
   }
 
   setCurrentTime(val) {
-    return this.state.playerInstance.setCurrentTime(val);
+    return this.playerInstance.setCurrentTime(val);
   }
 
   getUsableSpeed() {
-    return this.state.playerInstance.getUsableSpeed();
+    return this.playerInstance.getUsableSpeed();
   }
 
   setPlaySpeed(val) {
-    return this.state.playerInstance.setPlaySpeed(val);
+    return this.playerInstance.setPlaySpeed(val);
   }
 
   openControls(status) {
-    return this.state.playerInstance.openControls(status);
+    return this.playerInstance.openControls(status);
   }
 
   openUI(status) {
-    return this.state.playerInstance.openUI(status);
+    return this.playerInstance.openUI(status);
   }
 
   setResetVideo(val) {
-    return this.state.playerInstance.setResetVideo(val);
+    return this.playerInstance.setResetVideo(val);
   }
 
   setBarrageInfo(val) {
-    return this.state.playerInstance.setBarrageInfo(val);
+    return this.playerInstance.setBarrageInfo(val);
   }
 
   addBarrage(val) {
-    return this.state.playerInstance.addBarrage(val);
+    return this.playerInstance.addBarrage(val);
   }
 
   toggleBarrage() {
-    return this.state.playerInstance.toggleBarrage();
+    return this.playerInstance.toggleBarrage();
   }
 
   //开启弹幕显示
   openBarrage() {
-    return this.state.playerInstance.toggleBarrage(true);
+    return this.playerInstance.toggleBarrage(true);
   }
 
   //关闭弹幕显示
   closeBarrage() {
-    return this.state.playerInstance.toggleBarrage(false);
+    return this.playerInstance.toggleBarrage(false);
   }
 
   //清除弹幕显示
   clearBarrage() {
-    return this.state.playerInstance.clearBarrage();
+    return this.playerInstance.clearBarrage();
   }
 
   toggleSubtitle() {
-    return this.state.playerInstance.toggleSubtitle();
+    return this.playerInstance.toggleSubtitle();
   }
 
   onPlayer(type, cb) {
-    this.state.playerInstance.$on(type, cb);
+    this.playerInstance.$on(type, cb);
   }
 
   emitPlayer(type, params) {
-    this.state.playerInstance.$emit(type, params);
+    this.playerInstance.$emit(type, params);
+  }
+  // 播放器注册事件监听
+  _addPlayerListeners() {
+    // 视频加载完成
+    this.playerInstance.on(VhallPlayer.LOADED, e => {
+      this.$emit(VhallPlayer.LOADED, e);
+    });
+
+    // 播放时间改变时触发
+    this.playerInstance.on(VhallPlayer.TIMEUPDATE, e => {
+      this.$emit(VhallPlayer.TIMEUPDATE, e);
+    });
+
+    // 开始播放时触发
+    this.playerInstance.on(VhallPlayer.PLAY, e => {
+      this.$emit(VhallPlayer.PLAY, e);
+    });
+
+    // 暂停时触发
+    this.playerInstance.on(VhallPlayer.PAUSE, e => {
+      this.$emit(VhallPlayer.PAUSE, e);
+    });
+
+    // 视频播放完毕
+    this.playerInstance.on(VhallPlayer.ENDED, e => {
+      this.$emit(VhallPlayer.ENDED, e);
+    });
+
+    // 视频卡顿
+    this.playerInstance.on(VhallPlayer.LAG_REPORT, e => {
+      this.$emit(VhallPlayer.LAG_REPORT, e);
+    });
+
+    // 视频卡顿恢复时触发
+    this.playerInstance.on(VhallPlayer.LAG_RECOVER, e => {
+      this.$emit(VhallPlayer.LAG_RECOVER, e);
+    });
   }
 }
 
