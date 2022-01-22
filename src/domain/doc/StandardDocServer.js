@@ -2,7 +2,6 @@ import AbstractDocServer from './AbstractDocServer';
 import { merge } from '../../utils';
 import useRoomBaseServer from '../room/roombase.server';
 import { doc as docApi } from '../../request/index.js';
-import $http from '@/utils/http.js';
 
 /**
  * 标准（通用）直播场景下的文档白板服务
