@@ -42,9 +42,17 @@ class RoomBaseServer extends BaseServer {
     RoomBaseServer.instance = this;
     return this;
   }
+
+  setClientType(type) {
+    this.state.clientType = type;
+  }
+
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
-    console.log('options--->', options);
+    if (!['send', 'standard', 'embed', 'sdk'].includes(options.clientType)) {
+      throw new Error('不合法的客户端类型');
+    }
+    this.setClientType(options.clientType);
     return meeting[liveType.get(options.clientType)](options).then(res => {
       if (res.code === 200) {
         this.state.inited = true;
