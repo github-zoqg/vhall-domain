@@ -2,6 +2,7 @@ import AbstractDocServer from './AbstractDocServer';
 import { merge } from '../../utils';
 import useRoomBaseServer from '../room/roombase.server';
 import { doc as docApi } from '../../request/index.js';
+import $http from '@/utils/http.js';
 
 /**
  * 标准（通用）直播场景下的文档白板服务
@@ -430,6 +431,62 @@ export default class StandardDocServer extends AbstractDocServer {
     // this.state.thumbnailList = doc ? doc.list : [];
   }
 
+  /**
+   * 上传文档
+   * @param {Object}} param
+   */
+  uploadFile(param, uploadUrl) {
+    try {
+      const { watchInitData, groupInitData } = useRoomBaseServer().state;
+      // 创建form对象,必须使用这个,会自动把 content-type 设置成 multipart/form-data
+      const formData = new FormData();
+      formData.append('resfile', param.file);
+      formData.append('type', groupInitData.isInGroup ? 3 : 2);
+      formData.append('webinar_id', watchInitData.webinar.id);
+      // 当分组直播时必传 group_id 必传
+      // formData.append('group_id', ？);
+
+      //创建xhr
+      const xhr = new XMLHttpRequest();
+      // 设置 post 上传地址
+      xhr.open('POST', uploadUrl);
+
+      // 设置 headers
+      xhr.setRequestHeader('token', window.localStorage.getItem('token') || '');
+      xhr.setRequestHeader('platform', 7);
+      xhr.setRequestHeader('gray-id', watchInitData.join_info.user_id);
+      xhr.setRequestHeader('interact-token', watchInitData.interact.interact_token || '');
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          const json = JSON.parse(xhr.response);
+          // 根据后端给的信息判断是否上传成功
+          if (json.code === 200) {
+            json.data.webinar_id = watchInitData.webinar.id; // 补充字段
+            param.onSuccess(json, param.file, param.fileList);
+          } else {
+            param.onError(json, param.file, param.fileList);
+          }
+        }
+      };
+      //获取上传的进度
+      xhr.upload.onprogress = function (event) {
+        if (event.lengthComputable) {
+          var percent = (event.loaded / event.total) * 100;
+          // 上传进度回传
+          if (typeof param.onProgress === 'function') {
+            param.onProgress(percent, param.file, param.fileList);
+          }
+        }
+      };
+
+      //将formdata上传
+      xhr.send(formData);
+    } catch (e) {
+      param.onError(e, param.file, param.fileList);
+    }
+  }
+
   // 获取文档列表(资料库所有文档)
   getAllDocList(params) {
     return docApi.getAllDocList(params);
@@ -447,11 +504,25 @@ export default class StandardDocServer extends AbstractDocServer {
 
   // 同步文档
   syncDoc(params) {
+    const { watchInitData } = useRoomBaseServer().state;
+    if (!params.webinar_id) {
+      params.webinar_id = watchInitData.webinar.id;
+    }
+    if (!params.room_id) {
+      params.room_id = watchInitData.interact.room_id;
+    }
     return docApi.syncDoc(params);
   }
 
   // 删除文档(多选)
   delDocList(params) {
+    const { watchInitData } = useRoomBaseServer().state;
+    if (!params.webinar_id) {
+      params.webinar_id = watchInitData.webinar.id;
+    }
+    if (!params.room_id) {
+      params.room_id = watchInitData.interact.room_id;
+    }
     return docApi.delDocList(params);
   }
 }
