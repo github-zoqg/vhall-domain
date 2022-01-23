@@ -186,11 +186,8 @@ export default class AbstractDocServer extends BaseServer {
   }
 
   /**
-   * 加载远端实例数据
-   * NOTE:
-   *  This function is DEPRECATED (to be removed after 2.0.0). Users should use setRemoteData2 instead.
+   * 加载一条远端实例数据
    * @param {Object} item
-   * @deprecated
    * @returns
    */
   @checkDocInstance()
@@ -199,7 +196,12 @@ export default class AbstractDocServer extends BaseServer {
   }
 
   /**
-   * 加载远端实例数据2
+   * 加载多条远端实例数据
+   * 等价于：
+   * list.forEach(item => {
+   *     this.setRemoteData(item);
+   *   });
+   * }
    * @param {Array} list
    * @returns
    */

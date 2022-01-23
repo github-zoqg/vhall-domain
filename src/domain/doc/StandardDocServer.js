@@ -6,6 +6,10 @@ import { doc as docApi } from '../../request/index.js';
 /**
  * 标准（通用）直播场景下的文档白板服务
  * 继承自AbstractDocServer
+ * 规则：
+ * 1、当前最多只有一个文件和一个白板，当前展示其中一个
+ * 2、
+ *
  * @class StandardDocServer
  */
 export default class StandardDocServer extends AbstractDocServer {
@@ -13,15 +17,20 @@ export default class StandardDocServer extends AbstractDocServer {
     super();
     this.watchInitData = null;
     this.state = {
+      currentCid: '', //当前正在展示的容器id
+      docCid: '', // 当前文档容器Id
+      boardCid: '', // 当前白板容器Id
+      containerList: [], // 动态容器列表
+
+      pageTotal: 1, //总页数
+      pageNum: 1, // 当前页码
+
       allComplete: false,
       docLoadComplete: false, // 文档是否加载完成
-      currentCid: '', //当前激活的容器ID
-      currentType: 'document', // 当前激活的容器类型： 文档-document, 白板-board
-      fileOrBoardList: [], // 所有容器列表
+
       thumbnailList: [], // 缩略图列表
       switchStatus: false, // 观众是否可见
-      pageNum: 1, // 当前页码
-      pageTotal: 1, //总页数
+
       isInGroup: false,
       hasDocPermission: false,
       groupRole: '' // 小组内角色
@@ -67,10 +76,11 @@ export default class StandardDocServer extends AbstractDocServer {
   // 获取默认初始化参数
   _getDefaultOptions() {
     const { watchInitData, groupInitData } = useRoomBaseServer().state;
+    console.log('---useRoomBaseServer()----:', useRoomBaseServer());
     // console.log('---groupInitData---:', groupInitData);
     this.watchInitData = watchInitData;
 
-    console.log('获取默认初始化参数:', this.watchInitData);
+    console.log('获取默认初始化参数 watchInitData:', this.watchInitData);
     if (groupInitData && groupInitData.isInGroup) {
       // 小组房间内
       this.state.isInGroup = true;
@@ -149,7 +159,7 @@ export default class StandardDocServer extends AbstractDocServer {
     });
     // 当前文档加载完成
     this.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE, data => {
-      console.log('====当前文档加载完成=====');
+      console.log('[doc] ====当前文档加载完成=====', data);
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
       this.state.docLoadComplete = true;
@@ -164,65 +174,7 @@ export default class StandardDocServer extends AbstractDocServer {
     this.on(VHDocSDK.Event.PAGE_CHANGE, data => {
       console.log('==============文档翻页================');
       this.state.pageTotal = data.info.slidesTotal;
-      this.state.pageNum = data.info.slideIndex;
-    });
-
-    this.on(VHDocSDK.Event.SWITCH_CHANGE, status => {
-      // if (this.hasDocPermission) return;
-      console.log('==========控制文档开关=============', status);
-    });
-
-    this.on(VHDocSDK.Event.CREATE_CONTAINER, data => {
-      // if ((this.roleName != 1 && this.liveStatus != 1) || this.cids.includes(data.id)) {
-      //   return;
-      // }
-      console.log('===========创建容器===========', data);
-      // this.docInfo.docContainerShow = true;
-      // this.docInfo.docShowType = data.type;
-      // this.cids.push(data.id);
-      // this.$nextTick(() => {
-      //   this.initWidth(data.type);
-      //   this.initContainer(data.type, data.id, '');
-      // });
-    });
-
-    this.on(VHDocSDK.Event.DELETE_CONTAINER, data => {
-      // if (this.roleName != 1 && this.liveStatus != 1) {
-      //   return;
-      // }
-      console.log('=========删除容器=============', data);
-      // const index = this.cids.indexOf(data.id);
-      // if (index > -1) {
-      //   this.cids.splice(index, 1);
-      //   this.docServer.destroyContainer({ id: data.id });
-      // }
-      // if (this.currentCid == data.id) {
-      //   this.currentCid = '';
-      //   this.docInfo.docShowType = '';
-      // }
-    });
-
-    this.on(VHDocSDK.Event.SELECT_CONTAINER, async data => {
-      // if (this.currentCid == data.id || (this.roleName != 1 && this.liveStatus != 1)) {
-      //   return;
-      // }
-      console.log('===========选择容器======', data);
-      // this.docInfo.docShowType = data.id.split('-')[0];
-      // this.currentCid = data.id;
-      // // 判断容器是否存在
-      // if (this.cids.indexOf(data.id) > -1) {
-      //   this.activeContainer(data.id);
-      // } else {
-      //   this.cids.push(data.id);
-      //   await this.$nextTick();
-      //   this.initWidth(data.type);
-      //   this.initContainer(data.type, data.id, '');
-      //   this.activeContainer(data.id);
-      // }
-      // EventBus.$emit('docInfo', this.docInfo);
-      // console.log('a9');
-
-      // this.docServer.setControlStyle(this.styleOpts);
+      this.state.pageNum = Number(data.info.slideIndex) + 1;
     });
 
     this.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT, ({ cid, docId }) => {
@@ -270,107 +222,106 @@ export default class StandardDocServer extends AbstractDocServer {
     this.state.switchStatus = !!val;
   }
 
+  /**
+   * 获取容器列表信息
+   */
+  async getContainerList(channelId) {
+    const rebroadcastChannelId = useRoomBaseServer().state?.watchInitData?.rebroadcast?.channel_id;
+    if (rebroadcastChannelId) {
+      channelId = rebroadcastChannelId;
+    }
+    console.log('[doc] getContainerInfo channelId:', channelId);
+    // 获取该channelId下的所有容器列表信息
+    const { list, switch_status } = await this.getContainerInfo(channelId);
+    // 观众端是否可见
+    console.log('switch_status:', switch_status);
+    this.state.switchStatus = Boolean(switch_status);
+    console.log('this.state.switchStatus :', this.state.switchStatus);
+    // 小组内是否去显示文档判断根据是否有文档内容
+    if (this.state.isInGroup) {
+      this.state.switchStatus = !!list.length;
+    }
+    console.log('[doc] list:', list);
+    this.state.containerList = list;
+  }
+
+  // 设置文档加载完成
+  setDocLoadComplete() {
+    this.state.docLoadComplete = true;
+  }
+
+  /**
+   * 退出重进或刷新恢复数据
+   * @param {Number} width 容器宽，必填
+   * @param {height} height 容器高，必填
+   * @param {Function} bindCidFun 等待cid绑定的处理函数
+   * @returns
+   */
   async recover({ width, height, bindCidFun }) {
+    console.log('[doc] recover start：');
     if (!width || !height) {
       console.error('容器宽高错误', width, height);
+      this.setDocLoadComplete();
     }
-    await this.getAllContainerInfo();
-
-    if (typeof bindCidFun === 'function') {
-      await bindCidFun();
-    }
-
-    // 创建文档和白板的实例
-    for (const item of this.state.fileOrBoardList) {
-      let { cid, active, docId, is_board } = item;
-      const options = {
-        id: cid,
-        cid: cid,
-        elId: cid,
-        docId: docId,
-        width: width,
-        height: height,
-        backgroundColor: item.backgroundColor || '#fff',
-        option: {
-          graphicType: window.VHDocSDK.GRAPHIC.PEN,
-          stroke: '#FD2C0A',
-          strokeWidth: 7
-        }
-      };
-
-      if (Number(is_board) === 1) {
-        console.log('创建文档:', options);
-        await this.createDocument(options);
-      } else {
-        console.log('创建白板:', options);
-        await this.createBoard(options);
+    for (const item of this.state.containerList) {
+      const fileType = item.is_board === 1 ? 'document' : 'board';
+      await this.initDocumentOrBoardContainer({
+        width,
+        height,
+        fileType,
+        cid: item.cid,
+        docId: item.docId,
+        bindCidFun
+      });
+      console.log('[doc] initDocumentOrBoardContainer:', item.cid);
+      if (fileType == 'document') {
+        this.state.docCid = item.cid;
+      } else if (fileType == 'board') {
+        this.state.boardCid = item.cid;
       }
-      if (active != 0) {
-        this.state.currentCid = cid;
-        this.state.currentType = Number(is_board) === 1 ? 'document' : 'board';
-        // 设置选中
-        await this.selectContainer(cid);
-      }
+      console.log('[doc] setRemoteData:', item.cid);
+      this.setRemoteData(item);
     }
-    await this.setRemoteData2(this.state.fileOrBoardList);
+    const activeItem = this.state.containerList.find(item => item.active === 1);
+    console.log('[doc] activeItem:', activeItem);
+    if (activeItem) {
+      if (activeItem.is_board === 1) {
+        this.state.pageNum = activeItem.show_page + 1;
+        this.state.pageTotal = activeItem.page;
+      }
+      // 激活选中
+      await this.activeContainer(activeItem.cid);
+    }
   }
 
   /**
    * 新增文档或白板
-   * @param {*} item
-   * @param {*}
+   * @param {Number} width 容器宽，必填
+   * @param {height} height 容器高，必填
+   * @param {String} fileType 创建类型，非必填，默认文档。 document：文档, board：白板
+   * @param {String} cid 容器id，非必填，如果不存在需要调用 createUUID 新建
+   * @param {String} docId 具体演示文件id,演示文档时必填，白板为空
+   * @param {String} docType 具体演示文件类型,非必填，1:动态文档，即ppt；2:静态文档,即JPG
+   * @param {Function} bindCidFun 等待cid绑定的处理函数
    */
-  async addNewDocumentOrBorad(options) {
-    const { width, height, fileType, docId, docType, bindCidFun } = options;
-    const elId = this.createUUID(fileType);
-    const is_board = fileType === 'document' ? 1 : 2;
-    let option = {
-      id: elId,
-      cid: elId,
-      docId: docId,
-      elId: elId,
+  async addNewDocumentOrBorad({ width, height, fileType, cid, docId, docType, bindCidFun }) {
+    const elId = await this.initDocumentOrBoardContainer({
       width,
       height,
-      backgroundColor: '#fff',
-      option: {
-        // 初始画笔
-        graphicType: window.VHDocSDK.GRAPHIC.PEN,
-        stroke: '#FD2C0A',
-        strokeWidth: 7
-      },
-      is_board,
-      doc_type: docType
-    };
-    this.state.fileOrBoardList.push(option);
-    if (typeof bindCidFun === 'function') {
-      await bindCidFun(elId);
-    }
-    try {
-      if (Number(is_board) === 1) {
-        await this.createDocument(option);
-      } else {
-        await this.createBoard(option);
-      }
-    } catch (ex) {
-      // 移除失败的容器fileOrBoardList
-      this.state.fileOrBoardList = this.state.fileOrBoardList.filter(item => item.elId !== elId);
-      console.error(ex);
-      return;
-    }
-    // 选中
-    console.log('-选中 elId-----:', elId);
-    await this.selectContainer(elId);
-    this.state.currentCid = elId;
-    this.state.currentType = fileType;
-
-    if (Number(is_board) === 1) {
+      fileType,
+      cid,
+      docId,
+      docType,
+      bindCidFun
+    });
+    await this.activeContainer(elId);
+    if (fileType === 'document') {
       const { status, status_jpeg, slideIndex, slidesTotal, converted_page, converted_page_jpeg } =
         await this.loadDoc({
           id: elId,
-          docId: docId,
+          docId,
           docType
         });
-
       if (Number(status) === 200) {
         this.state.pageNum = Number(slideIndex) + 1;
         this.state.pageTotal = slidesTotal;
@@ -382,31 +333,89 @@ export default class StandardDocServer extends AbstractDocServer {
   }
 
   /**
-   * 当前channelId下的所有容器列表
-   * @returns
+   * 初始化文档或白板容器
+   * @param {Number} width 容器宽，必填
+   * @param {height} height 容器高，必填
+   * @param {String} fileType 创建类型，非必填，默认文档。 document：文档, board：白板
+   * @param {String} cid 容器id，非必填，如果不存在需要调用 createUUID 新建
+   * @param {String} docId 具体演示文件id,演示文档时必填，白板为空
+   * @param {String} docType 具体演示文件类型,非必填，1:动态文档，即ppt；2:静态文档,即JPG
+   * @param {Function} bindCidFun 等待cid绑定的处理函数
    */
-  async getAllContainerInfo(channelId = null) {
-    const rebroadcastChannelId = this.roomBaseServer?.watchInitData?.rebroadcast?.channel_id;
-    if (rebroadcastChannelId) {
-      channelId = rebroadcastChannelId;
+  async initDocumentOrBoardContainer({
+    width,
+    height,
+    fileType = 'document',
+    cid,
+    docId = '',
+    bindCidFun
+  }) {
+    if (fileType === 'document' && !docId) {
+      throw new Error('required docment param docId');
     }
-    console.log('getAllContainerInfo channelId:', channelId);
-    const { list, switch_status } = await this.getContainerInfo(channelId);
-    // 观众端是否可见
-    this.state.switchStatus = Boolean(switch_status);
-    // 文档列表
-    this.state.fileOrBoardList = list;
+    console.log('[doc] initDocumentOrBoardContainer:', {
+      width,
+      height,
+      fileType,
+      cid,
+      docId,
+      bindCidFun
+    });
+    if (!cid) {
+      cid = this.createUUID(fileType);
+      console.log('[doc] 新建的cid:', cid);
+    } else {
+      console.log('[doc] 指定的cid:', cid);
+    }
 
-    // 小组内是否去显示文档判断根据是否有文档内容
-    if (this.state.isInGroup) {
-      this.state.switchStatus = !!list.length;
+    let opt = {
+      elId: cid, // 创建时，该参数就是cid
+      docId: docId,
+      width,
+      height,
+      backgroundColor: '#fff',
+      noDispatch: false,
+      option: {
+        // 初始画笔
+        graphicType: window.VHDocSDK.GRAPHIC.PEN,
+        stroke: '#FD2C0A',
+        strokeWidth: 7
+      }
+    };
+    if (this.state.containerList.findIndex(item => item.cid === cid) === -1) {
+      // 说明容器不在列表中，主动添加
+      console.log('[doc] --------向列表中添加容器------');
+      this.state.containerList.push({ cid, docId });
+      if (typeof bindCidFun === 'function') {
+        await bindCidFun(cid);
+      }
     }
-    this.state.docLoadComplete = true;
-    if (!list.length) return;
-    const activeItem = list.find(item => item.active == 1);
-    if (activeItem) {
-      this.state.pageNum = Number(activeItem.show_page) + 1;
-      this.state.pageTotal = activeItem.page;
+    try {
+      if (fileType === 'document') {
+        await this.createDocument(opt);
+      } else {
+        await this.createBoard(opt);
+      }
+    } catch (ex) {
+      // 移除失败的容器
+      this.state.containerList = this.state.containerList.filter(item => item.cid !== cid);
+      console.error('[doc]:--------移除失败的容器------', ex);
+      return;
+    }
+    return cid;
+  }
+
+  /**
+   * 激活容器
+   */
+  activeContainer(cid) {
+    this.selectContainer(cid);
+    this.state.currentCid = cid;
+    const type = cid.split('-')[0];
+    if (type === 'document') {
+      this.state.docCid = cid;
+    } else {
+      this.state.boardCid = cid;
     }
   }
 
@@ -415,8 +424,66 @@ export default class StandardDocServer extends AbstractDocServer {
    */
   getCurrentThumbnailList() {
     const res = this.docInstance.getThumbnailList();
-    let doc = Array.isArray(res) ? res.find(item => item.id === this.state.currentCid) : null;
-    this.state.thumbnailList = doc ? doc.list : [];
+    console.log('[doc] getCurrentThumbnailList res:', res);
+    this.state.thumbnailList = res && res[0] ? res[0].list : [];
+    // let doc = Array.isArray(res) ? res.find(item => item.id === this.state.currentCid) : null;
+    // this.state.thumbnailList = doc ? doc.list : [];
+  }
+
+  /**
+   * 上传文档
+   * @param {Object}} param
+   */
+  uploadFile(param, uploadUrl) {
+    try {
+      const { watchInitData, groupInitData } = useRoomBaseServer().state;
+      // 创建form对象,必须使用这个,会自动把 content-type 设置成 multipart/form-data
+      const formData = new FormData();
+      formData.append('resfile', param.file);
+      formData.append('type', groupInitData.isInGroup ? 3 : 2);
+      formData.append('webinar_id', watchInitData.webinar.id);
+      // 当分组直播时必传 group_id 必传
+      // formData.append('group_id', ？);
+
+      //创建xhr
+      const xhr = new XMLHttpRequest();
+      // 设置 post 上传地址
+      xhr.open('POST', uploadUrl);
+
+      // 设置 headers
+      xhr.setRequestHeader('token', window.localStorage.getItem('token') || '');
+      xhr.setRequestHeader('platform', 7);
+      xhr.setRequestHeader('gray-id', watchInitData.join_info.user_id);
+      xhr.setRequestHeader('interact-token', watchInitData.interact.interact_token || '');
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          const json = JSON.parse(xhr.response);
+          // 根据后端给的信息判断是否上传成功
+          if (json.code === 200) {
+            json.data.webinar_id = watchInitData.webinar.id; // 补充字段
+            param.onSuccess(json, param.file, param.fileList);
+          } else {
+            param.onError(json, param.file, param.fileList);
+          }
+        }
+      };
+      //获取上传的进度
+      xhr.upload.onprogress = function (event) {
+        if (event.lengthComputable) {
+          var percent = (event.loaded / event.total) * 100;
+          // 上传进度回传
+          if (typeof param.onProgress === 'function') {
+            param.onProgress(percent, param.file, param.fileList);
+          }
+        }
+      };
+
+      //将formdata上传
+      xhr.send(formData);
+    } catch (e) {
+      param.onError(e, param.file, param.fileList);
+    }
   }
 
   // 获取文档列表(资料库所有文档)
@@ -436,11 +503,25 @@ export default class StandardDocServer extends AbstractDocServer {
 
   // 同步文档
   syncDoc(params) {
+    const { watchInitData } = useRoomBaseServer().state;
+    if (!params.webinar_id) {
+      params.webinar_id = watchInitData.webinar.id;
+    }
+    if (!params.room_id) {
+      params.room_id = watchInitData.interact.room_id;
+    }
     return docApi.syncDoc(params);
   }
 
   // 删除文档(多选)
   delDocList(params) {
+    const { watchInitData } = useRoomBaseServer().state;
+    if (!params.webinar_id) {
+      params.webinar_id = watchInitData.webinar.id;
+    }
+    if (!params.room_id) {
+      params.room_id = watchInitData.interact.room_id;
+    }
     return docApi.delDocList(params);
   }
 }
