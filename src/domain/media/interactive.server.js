@@ -1,5 +1,5 @@
 import { mic, room } from '../../request';
-import { merge } from '../../utils';
+import { merge, sleep } from '../../utils';
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useMsgServer from '../common/msg.server';
@@ -12,7 +12,6 @@ class InteractiveServer extends BaseServer {
     }
     this.interactiveInstance = null; // 互动实例
     this.state = {
-      streamId: null,
       localStream: {
         streamId: null, // 本地流id
         videoMuted: false,
@@ -139,8 +138,9 @@ class InteractiveServer extends BaseServer {
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e);
     });
 
-    // 远端流离开事件
+    // 远端流离开事件,自己的流删除事件收不到
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
+      console.log('---流删除事件---', e);
       // 从流列表中删除
       this.state.remoteStreams = this.state.remoteStreams.filter(
         stream => stream.streamId != e.data.streamId
@@ -255,15 +255,28 @@ class InteractiveServer extends BaseServer {
    *
    */
   createLocalStream(options = {}) {
-    return this.interactiveInstance.createStream(options).then(data => {
-      console.log('----创建本地流成功----', data);
-      this.state.localStream = {
-        streamId: data.streamId,
-        audioMuted: !options.audio,
-        videoMuted: !options.video
-      };
-      return data;
-    });
+    return this.interactiveInstance
+      .createStream(options)
+      .then(data => {
+        console.log('----创建本地流成功----', data);
+        this.state.localStream = {
+          streamId: data.streamId,
+          audioMuted: !options.audio,
+          videoMuted: !options.video
+        };
+        return data;
+      })
+      .catch(err => {
+        // 创建失败重试三次
+        if (InteractiveServer._createLocalStreamRetryCount >= 3) {
+          InteractiveServer._createLocalStreamRetryCount = 0;
+          return err;
+        }
+        InteractiveServer._createLocalStreamRetryCount
+          ? InteractiveServer._createLocalStreamRetryCount++
+          : (InteractiveServer._createLocalStreamRetryCount = 1);
+        this.createLocalStream(options);
+      });
   }
 
   // 创建摄像头视频流
@@ -331,6 +344,18 @@ class InteractiveServer extends BaseServer {
   }
 
   /**
+   * 清空本地流参数
+   */
+  clearLocalStream() {
+    this.state.localStream = {
+      streamId: null, // 本地流id
+      videoMuted: false,
+      audioMuted: false,
+      attributes: {}
+    };
+  }
+
+  /**
    * 订阅远端流
    * @param {Object} options -- streamId:订阅的流id videoNode: 页面显示的容器 mute: 远端流的音视频 dual: 大小流 0小流 1大流
    * @returns {Promise} - 订阅成功后的promise 回调
@@ -368,7 +393,19 @@ class InteractiveServer extends BaseServer {
       delete params.layout;
     }
 
-    return this.interactiveInstance.startBroadCast(params);
+    return this.interactiveInstance.startBroadCast(params).catch(async err => {
+      // 开启失败重试三次
+      if (InteractiveServer._startBroadCastRetryCount >= 3) {
+        InteractiveServer._startBroadCastRetryCount = 0;
+        return err;
+      }
+      // 等待 1s 重试
+      await sleep(1000);
+      InteractiveServer._startBroadCastRetryCount
+        ? InteractiveServer._startBroadCastRetryCount++
+        : (InteractiveServer._startBroadCastRetryCount = 1);
+      this.startBroadCast(options);
+    });
   }
   // 停止旁路
   stopBroadCast() {
@@ -384,9 +421,23 @@ class InteractiveServer extends BaseServer {
   }
   // 动态配置旁路主屏
   setBroadCastScreen(options = {}) {
-    return this.interactiveInstance.setBroadCastScreen({
-      mainScreenStreamId: options.mainScreenStreamId || this.state.localStream.streamId
-    });
+    return this.interactiveInstance
+      .setBroadCastScreen({
+        mainScreenStreamId: options.mainScreenStreamId || this.state.localStream.streamId
+      })
+      .catch(async err => {
+        // 设置失败重试三次
+        if (InteractiveServer._setBroadCastScreenRetryCount >= 3) {
+          InteractiveServer._setBroadCastScreenRetryCount = 0;
+          return err;
+        }
+        // 等待 50ms 重试
+        await sleep(50);
+        InteractiveServer._setBroadCastScreenRetryCount
+          ? InteractiveServer._setBroadCastScreenRetryCount++
+          : (InteractiveServer._setBroadCastScreenRetryCount = 1);
+        return this.setBroadCastScreen(options);
+      });
   }
   // 获取全部音视频列表
   getDevices() {

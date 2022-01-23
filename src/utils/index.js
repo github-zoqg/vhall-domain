@@ -68,6 +68,14 @@ function throttling(fn, time, immediate) {
     }, time);
   };
 }
+
+// sleep
+function sleep(sleepTime) {
+  return new Promise(resolve => {
+    setTimeout(resolve, sleepTime);
+  });
+}
+
 function logPrint(dec, tem) {
   if (globalCommon.showLog) {
     let date = new Date();
@@ -104,4 +112,4 @@ function logOnlinePrint(content, type) {
       break;
   }
 }
-export { merge, isPc, uploadFile, isChrome88, randomNumGenerator, debounce, throttling };
+export { merge, isPc, uploadFile, isChrome88, randomNumGenerator, debounce, throttling, sleep };

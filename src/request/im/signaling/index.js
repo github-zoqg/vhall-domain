@@ -37,7 +37,7 @@ const userSpeakOn = (params = {}) => {
  * */
 function userCancelApply(params = {}) {
   return $http({
-    url: '/v4/interacts/inav/user-cancel-apply',
+    url: '/v3/interacts/inav-user/cancel-apply',
     type: 'POST',
     data: params
   });
@@ -81,7 +81,7 @@ function userSpeak(params = {}) {
  * */
 function userSpeakOff(params = {}) {
   return $http({
-    url: '/v3/interacts/inav/nospeak',
+    url: '/v3/interacts/inav-user/nospeak',
     type: 'POST',
     data: params
   });
@@ -189,7 +189,7 @@ function userUnableSpeak(params = {}) {
 export default {
   // setHandsUp,
   userApply,
-  // userCancelApply,
+  userCancelApply,
   hostAgreeApply,
   // hostRejectApply,
   // userSpeak,
