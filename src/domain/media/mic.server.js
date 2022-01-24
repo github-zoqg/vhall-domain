@@ -3,13 +3,17 @@ import { mic, im } from '../../request';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
+import useInteractiveServer from './interactive.server';
 class MicServer extends BaseServer {
   constructor() {
     super();
     if (typeof MicServer.instance === 'object') {
       return MicServer.instance;
     }
-    this.state = {};
+    this.state = {
+      isAllowhandup: false, // 是否开始允许举手
+      isSpeakOn: false // 是否上麦
+    };
     MicServer.instance = this;
     this._init();
     return this;
@@ -19,8 +23,8 @@ class MicServer extends BaseServer {
   }
   _initEventListeners() {
     const msgServer = useMsgServer();
-    const { join_info } = useRoomBaseServer().state.watchInitData;
     msgServer.$onMsg('ROOM_MSG', msg => {
+      const { join_info } = useRoomBaseServer().state.watchInitData;
       console.log(
         '----连麦服务----房间消息',
         msg,
@@ -30,18 +34,18 @@ class MicServer extends BaseServer {
       switch (msg.data.type) {
         // 开启允许举手
         case 'vrtc_connect_open':
-          if (join_info.role_name == 1) {
-            this.$emit('vrtc_connect_open', msg);
-          }
+          this.state.isAllowhandup = true;
+          console.log('允许举手状态改变', this.state.isAllowhandup);
+          this.$emit('vrtc_connect_open', msg);
           break;
         // 关闭允许举手
         case 'vrtc_connect_close':
+          this.state.isAllowhandup = false;
+          this.$emit('vrtc_connect_close', msg);
           break;
         // 用户申请上麦
         case 'vrtc_connect_apply':
-          if (join_info.role_name == 1) {
-            this.$emit('vrtc_connect_apply', msg);
-          }
+          this.$emit('vrtc_connect_apply', msg);
           break;
         // 用户取消申请上麦
         case 'vrtc_connect_apply_cancel':
@@ -69,9 +73,17 @@ class MicServer extends BaseServer {
           break;
         // 用户成功上麦
         case 'vrtc_connect_success':
+          if (join_info.third_party_user_id == msg.data.room_join_id) {
+            this.state.isSpeakOn = true;
+          }
+          this.$emit('vrtc_connect_success', msg);
           break;
         // 用户成功下麦
         case 'vrtc_disconnect_success':
+          if (join_info.third_party_user_id == msg.data.room_join_id) {
+            this.state.isSpeakOn = false;
+          }
+          this.$emit('vrtc_disconnect_success', msg);
           break;
         // 主持人邀请观众上麦
         case 'vrtc_connect_invite':
@@ -96,12 +108,18 @@ class MicServer extends BaseServer {
   }
   // 用户下麦
   userSpeakOff(data = {}) {
+    // 停止推流 ——> 调下麦接口
+    const interactiveServer = useInteractiveServer();
     const { watchInitData } = useRoomBaseServer().state;
     const defaultParams = {
       room_id: watchInitData.interact.room_id
     };
     const retParams = merge.recursive({}, defaultParams, data);
-    return im.signaling.userSpeakOff(retParams);
+
+    return interactiveServer.unpublishStream().then(() => {
+      interactiveServer.clearLocalStream();
+      return im.signaling.userSpeakOff(retParams);
+    });
   }
   // 允许举手
   setHandsUp(data = {}) {
@@ -151,11 +169,11 @@ class MicServer extends BaseServer {
     const msgServer = useMsgServer();
 
     // TODO:后续发消息统一由接口发，现阶段前端自己发消息，联调用
-    msgServer.sendRoomMsg({
-      type: 'user_apply_host_reject',
-      receive_account_id: data.receive_account_id,
-      nickname: watchInitData.join_info.nickname
-    });
+    // msgServer.sendRoomMsg({
+    //   type: 'user_apply_host_reject',
+    //   receive_account_id: data.receive_account_id,
+    //   nickname: watchInitData.join_info.nickname
+    // });
 
     const defaultParams = {
       room_id: watchInitData.interact.room_id
@@ -169,8 +187,13 @@ class MicServer extends BaseServer {
     return mic.inviteMic(data);
   }
   // 取消申请
-  cancelApply(data = {}) {
-    return mic.cancelApply(data);
+  userCancelApply(data = {}) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const defaultParams = {
+      room_id: watchInitData.interact.room_id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return im.signaling.userCancelApply(retParams);
   }
   // 拒绝邀请
   refuseInvite(data = {}) {
