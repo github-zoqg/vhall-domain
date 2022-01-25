@@ -1,13 +1,13 @@
-import $http from '@/utils/http.js';
+import request from '@/utils/http.js';
 
 /**
  * 获取聊天关键词
  *
  * */
 function getKeyWordsList(params = {}) {
-  return $http({
+  return request({
     url: '/v4/interacts/keyword/get-list',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
