@@ -83,7 +83,7 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.getVolume();
   }
 
-  setVolume() {
+  setVolume(val) {
     state.voice = val;
     return this.playerInstance.setVolume(val);
   }
@@ -149,6 +149,10 @@ class PlayerServer extends BaseServer {
 
   toggleSubtitle() {
     return this.playerInstance.toggleSubtitle();
+  }
+  // 销毁实例
+  destroy() {
+    return this.playerInstance.destroy();
   }
 
   onPlayer(type, cb) {
