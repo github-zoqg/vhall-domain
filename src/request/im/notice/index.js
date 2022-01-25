@@ -1,11 +1,11 @@
-import $http from '@/utils/http.js';
+import request from '@/utils/http.js';
 /**
  * 发送公告消息
  * */
 function sendNotice(params = {}) {
-  return $http({
+  return request({
     url: '/v4/im-chat/notice/send',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -14,9 +14,9 @@ function sendNotice(params = {}) {
  * 获取公告列表
  * */
 function getNoticeList(params = {}) {
-  return $http({
+  return request({
     url: '/v4/im-chat/notice/get-list',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }

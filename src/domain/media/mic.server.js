@@ -1,5 +1,5 @@
 import { merge } from '../../utils/index';
-import { mic, im } from '../../request';
+import { im } from '../../request';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
@@ -122,9 +122,7 @@ class MicServer extends BaseServer {
     });
   }
   // 允许举手
-  setHandsUp(data = {}) {
-    return mic.setHandsUp(data);
-  }
+  setHandsUp(data = {}) {}
   // 用户举手申请上麦
   userApply(data = {}) {
     const { watchInitData } = useRoomBaseServer().state;
@@ -183,9 +181,7 @@ class MicServer extends BaseServer {
     return im.signaling.hostRejectApply(retParams);
   }
   // 邀请上麦
-  inviteMic(data = {}) {
-    return mic.inviteMic(data);
-  }
+  inviteMic(data = {}) {}
   // 取消申请
   userCancelApply(data = {}) {
     const { watchInitData } = useRoomBaseServer().state;
@@ -196,9 +192,7 @@ class MicServer extends BaseServer {
     return im.signaling.userCancelApply(retParams);
   }
   // 拒绝邀请
-  refuseInvite(data = {}) {
-    return mic.refuseInvite(data);
-  }
+  refuseInvite(data = {}) {}
 }
 
 export default function useMicServer() {

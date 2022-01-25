@@ -1,4 +1,4 @@
-import $http from '@/utils/http.js';
+import request from '@/utils/http.js';
 import contextServer from '@/domain/common/context.server.js';
 
 // 设置主屏
@@ -10,9 +10,9 @@ const setMainScreen = (params = {}) => {
   };
   retParams = Object.assign(retParams, params);
 
-  return $http({
+  return request({
     url: '/v3/interacts/room/set-main-screen',
-    type: 'POST',
+    method: 'POST',
     data: retParams
   });
 };
@@ -26,18 +26,18 @@ const setSpeaker = (params = {}) => {
   };
   retParams = Object.assign(retParams, params);
 
-  return $http({
+  return request({
     url: '/v3/interacts/room/set-doc-permission',
-    type: 'POST',
+    method: 'POST',
     data: retParams
   });
 };
 
 // 设置音视频设备开关
 const setDeviceStatus = (params = {}) => {
-  return $http({
+  return request({
     url: '/v3/interacts/room/set-device-status',
-    type: 'POST',
+    method: 'POST',
     data: retParams
   });
 };

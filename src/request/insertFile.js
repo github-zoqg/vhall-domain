@@ -1,4 +1,4 @@
-import $http from '@/utils/http.js';
+import request from '@/utils/http.js';
 import contextServer from '@/domain/common/context.server.js';
 
 // 获取插播文件列表
@@ -16,18 +16,18 @@ const getInsertFileList = (params = {}) => {
     retParmams.name = params.name;
   }
 
-  return $http({
+  return request({
     url: '/v3/webinars/waiting-file/get-list',
-    type: 'POST',
+    method: 'POST',
     data: retParmams
   });
 };
 
 // 删除插播文件
 const deleteInsertFile = (params = {}) => {
-  return $http({
+  return request({
     url: '/v3/webinars/waiting-file/deletes',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 };

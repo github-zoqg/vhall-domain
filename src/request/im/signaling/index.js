@@ -1,11 +1,11 @@
-import $http from '@/utils/http.js';
+import request from '@/utils/http.js';
 /**
  * 发起端-设置房间举手状态
  * */
 function setHandsUp(params = {}) {
-  return $http({
+  return request({
     url: '/v4/interacts/inav/set-handsup',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -14,9 +14,9 @@ function setHandsUp(params = {}) {
  * 观看端-用户举手申请上麦
  * */
 function userApply(params = {}) {
-  return $http({
+  return request({
     url: '/v3/interacts/inav-user/apply',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -25,9 +25,9 @@ function userApply(params = {}) {
  * 观看端-用户上麦
  * */
 const userSpeakOn = (params = {}) => {
-  return $http({
+  return request({
     url: '/v3/interacts/inav-user/speak',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 };
@@ -36,9 +36,9 @@ const userSpeakOn = (params = {}) => {
  * 观看端-用户取消申请上麦
  * */
 function userCancelApply(params = {}) {
-  return $http({
+  return request({
     url: '/v3/interacts/inav-user/cancel-apply',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -47,9 +47,9 @@ function userCancelApply(params = {}) {
  * 发起端-允许（同意）用户上麦
  * */
 function hostAgreeApply(params = {}) {
-  return $http({
+  return request({
     url: '/v3/interacts/inav/agree-apply',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -58,9 +58,9 @@ function hostAgreeApply(params = {}) {
  * 发起端-拒绝用户上麦
  * */
 function hostRejectApply(params = {}) {
-  return $http({
+  return request({
     url: '/v3/interacts/inav/reject-apply',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -69,9 +69,9 @@ function hostRejectApply(params = {}) {
  * 观看端-用户上麦（接受邀请）
  * */
 function userSpeak(params = {}) {
-  return $http({
+  return request({
     url: '/v4/interacts/inav/user-speak',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -80,9 +80,9 @@ function userSpeak(params = {}) {
  * 发起端&观看端-用户下麦
  * */
 function userSpeakOff(params = {}) {
-  return $http({
+  return request({
     url: '/v3/interacts/inav-user/nospeak',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -91,9 +91,9 @@ function userSpeakOff(params = {}) {
  * 发起端-邀请用户上麦
  * */
 function hostInviteUser(params = {}) {
-  return $http({
+  return request({
     url: '/v4/interacts/inav/invite',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -102,9 +102,9 @@ function hostInviteUser(params = {}) {
  * 观看端-用户同意上麦邀请
  * */
 function userAgreeInvite(params = {}) {
-  return $http({
+  return request({
     url: '/v4/interacts/inav/user-agree-invite',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -113,9 +113,9 @@ function userAgreeInvite(params = {}) {
  * 观看端-用户拒绝上麦邀请
  * */
 function userRejectInvite(params = {}) {
-  return $http({
+  return request({
     url: '/v4/interacts/inav/user-reject-invite',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -124,9 +124,9 @@ function userRejectInvite(params = {}) {
  * 发起端-获取当前上麦用户列表
  * */
 function getSpeakList(params = {}) {
-  return $http({
+  return request({
     url: '/v4/interacts/inav/get-speak-list',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -135,9 +135,9 @@ function getSpeakList(params = {}) {
  * 用户上麦并开始演示
  * */
 function userPresentation(params = {}) {
-  return $http({
+  return request({
     url: '/v4/interacts/inav/user-presentation',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -146,9 +146,9 @@ function userPresentation(params = {}) {
  * 发起端-结束用户演示
  * */
 function endUserPresentation(params = {}) {
-  return $http({
+  return request({
     url: '/v3/interacts/inav/nopresentation',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -157,9 +157,9 @@ function endUserPresentation(params = {}) {
  * 观看端-用户结束演示
  * */
 function userEndPresentation(params = {}) {
-  return $http({
+  return request({
     url: '/v4/interacts/inav/user-nopresentation',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -168,9 +168,9 @@ function userEndPresentation(params = {}) {
  * 发起端-预下麦
  * */
 function preBreakSpeak(params = {}) {
-  return $http({
+  return request({
     url: '/v4/interacts/inav/pre-break-speak',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }
@@ -179,9 +179,9 @@ function preBreakSpeak(params = {}) {
  * 观看端-无法上麦
  * */
 function userUnableSpeak(params = {}) {
-  return $http({
+  return request({
     url: '/v4/interacts/inav/user-unable-speak',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 }

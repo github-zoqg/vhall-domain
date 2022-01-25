@@ -1,4 +1,4 @@
-import { mic, room } from '../../request';
+import { room } from '../../request';
 import { merge, sleep } from '../../utils';
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
@@ -500,17 +500,6 @@ class InteractiveServer extends BaseServer {
   currentStreams() {
     return this.interactiveInstance.currentStreams;
   }
-  // 上麦
-  speakOn(data = {}) {
-    return mic.speakOn(data);
-  }
-  // 下麦
-  speakOff(data = {}) {
-    return mic.speakOff(data);
-  }
-  speakUserOff(data = {}) {
-    return mic.speakUserOff(data);
-  }
   // 设置主屏
   setMainScreen(data = {}) {
     return interactive.setMainScreen(data);
@@ -522,22 +511,6 @@ class InteractiveServer extends BaseServer {
   // 设置（麦克风-1 摄像头-2）
   setRoomDevice(data = {}) {
     return interactive.setRoomDevice(data);
-  }
-  // 允许举手
-  setHandsup(data = {}) {
-    return mic.setHandsUp(data);
-  }
-  // 邀请上麦
-  inviteMic(data = {}) {
-    return mic.inviteMic(data);
-  }
-  // 取消申请
-  cancelApply(data = {}) {
-    return mic.cancelApply(data);
-  }
-  // 拒绝邀请
-  refuseInvite(data = {}) {
-    return mic.refuseInvite(data);
   }
   // 组合api
   startPushStream() {

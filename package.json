@@ -45,6 +45,7 @@
     ]
   },
   "dependencies": {
+    "axios": "^0.25.0",
     "merge": "^2.1.1"
   }
 }
