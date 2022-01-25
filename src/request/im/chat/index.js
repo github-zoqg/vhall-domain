@@ -1,12 +1,14 @@
-import $http from '@/utils/http.js';
+import request from '@/utils/http.js';
+import env from '../../env';
 
 /**
  * 获取历史聊天消息
  * */
 function getChatList(params = {}) {
-  return $http({
-    url: '/v3/interacts/chat/get-list',
-    type: 'POST',
+  const url = env.imChat === 'v3' ? '/v3/interacts/chat/get-list' : '/v4/interacts/chat/get-list';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
@@ -15,9 +17,10 @@ function getChatList(params = {}) {
  * 删除聊天消息
  * */
 function deleteMessage(params = {}) {
-  return $http({
-    url: '/v4/im-chat/chat/delete',
-    type: 'POST',
+  const url = env.imChat === 'v3' ? '/v3/interacts/chat/delete' : '/v4/im-chat/chat/delete';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
@@ -25,9 +28,13 @@ function deleteMessage(params = {}) {
  * 批量删除聊天消息
  * */
 function batchDeleteMessage(params = {}) {
-  return $http({
-    url: '/v4/interacts/chat/batch-delete-message',
-    type: 'POST',
+  const url =
+    env.imChat === 'v3'
+      ? '/v3/interacts/chat/batch-delete-message'
+      : '/v4/interacts/chat/batch-delete-message';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
@@ -36,9 +43,13 @@ function batchDeleteMessage(params = {}) {
  * 删除活动所有聊天的消息
  * */
 function deleteRoomMessage(params = {}) {
-  return $http({
-    url: '/v3/interacts/chat/delete-room-message',
-    type: 'POST',
+  const url =
+    env.imChat === 'v3'
+      ? '/v3/interacts/chat/delete-room-message'
+      : '/v4/interacts/chat/delete-room-message';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
@@ -47,9 +58,13 @@ function deleteRoomMessage(params = {}) {
  * 删除用户所有聊天的消息
  * */
 function deleteUserMessage(params = {}) {
-  return $http({
-    url: '/v4/im-chat/chat/delete-user-message',
-    type: 'POST',
+  const url =
+    env.imChat === 'v3'
+      ? '/v3/interacts/chat/delete-user-message'
+      : '/v4/im-chat/chat/delete-user-message';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
@@ -58,9 +73,13 @@ function deleteUserMessage(params = {}) {
  * 获取禁言用户列表
  * */
 function getBannedList(params = {}) {
-  return $http({
-    url: '/v4/interacts/chat-user/get-banned-list',
-    type: 'POST',
+  const url =
+    env.imChat === 'v3'
+      ? '/v3/interacts/chat/get-banned-list'
+      : '/v4/interacts/chat-user/get-banned-list';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
@@ -69,9 +88,13 @@ function getBannedList(params = {}) {
  * 获取踢出用户列表
  * */
 function getKickedList(params = {}) {
-  return $http({
-    url: '/v4/interacts/chat-user/get-kicked-list',
-    type: 'POST',
+  const url =
+    env.imChat === 'v3'
+      ? '/v3/interacts/chat/get-kicked-list'
+      : '/v4/interacts/chat-user/get-kicked-list';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
@@ -80,9 +103,13 @@ function getKickedList(params = {}) {
  * 获取在线用户列表
  * */
 function getOnlineList(params = {}) {
-  return $http({
-    url: '/v4/interacts/chat-user/get-online-list',
-    type: 'POST',
+  const url =
+    env.imChat === 'v3'
+      ? '/v3/interacts/chat/get-online-list'
+      : '/v4/interacts/chat-user/get-online-list';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
@@ -91,9 +118,13 @@ function getOnlineList(params = {}) {
  * 获取受限用户列表
  * */
 function getBoundedList(params = {}) {
-  return $http({
-    url: '/v4/interacts/chat-user/get-bounded-list',
-    type: 'POST',
+  const url =
+    env.imChat === 'v3'
+      ? '/v3/interacts/chat/get-bounded-list'
+      : '/v4/interacts/chat-user/get-bounded-list';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
@@ -102,9 +133,11 @@ function getBoundedList(params = {}) {
  * 设置 / 取消用户禁言
  * */
 function setBanned(params = {}) {
-  return $http({
-    url: '/v4/interacts/chat-user/set-banned',
-    type: 'POST',
+  const url =
+    env.imChat === 'v3' ? '/v3/interacts/chat/set-banned' : '/v4/interacts/chat-user/set-banned';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
@@ -113,9 +146,13 @@ function setBanned(params = {}) {
  * 设置 / 取消全体用户禁言
  * */
 function setAllBanned(params = {}) {
-  return $http({
-    url: '/v4/interacts/chat-user/set-all-banned',
-    type: 'POST',
+  const url =
+    env.imChat === 'v3'
+      ? '/v3/interacts/chat/set-all-banned'
+      : '/v4/interacts/chat-user/set-all-banned';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
@@ -124,9 +161,11 @@ function setAllBanned(params = {}) {
  * 踢出用户 / 取消踢出
  * */
 function setKicked(params = {}) {
-  return $http({
-    url: '/v4/interacts/chat-user/set-kicked',
-    type: 'POST',
+  const url =
+    env.imChat === 'v3' ? '/v3/interacts/chat/set-kicked' : '/v4/interacts/chat-user/set-kicked';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
@@ -135,9 +174,13 @@ function setKicked(params = {}) {
  * 发送自定义消息
  * */
 function sendCustomMessage(params = {}) {
-  return $http({
-    url: '/v4/interacts/chat/send-custom-message',
-    type: 'POST',
+  const url =
+    env.imChat === 'v3'
+      ? '/v3/interacts/chat/send-custom-message'
+      : '/v4/interacts/chat/send-custom-message';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
