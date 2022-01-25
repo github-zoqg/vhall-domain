@@ -17,7 +17,7 @@ import useNoticeServer from '@/domain/notice/notice.server.js';
 import useMemberServer from '@/domain/member/member.server.js';
 import useGroupDiscussionServer from '@/domain/room/groupDiscussion.server.js';
 
-import { getBaseUrl, setToken, setRequestHeaders } from '@/utils/http.js';
+import { setToken, setRequestHeaders } from '@/utils/http.js';
 import VhallPaasSDK from '../sdk';
 import { Dep } from '@/domain/common/base.server';
 import { INIT_DOMAIN } from '@/domain/common/dep.const';

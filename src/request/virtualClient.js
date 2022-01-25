@@ -1,4 +1,4 @@
-import $http from '@/utils/http.js';
+import request from '@/utils/http.js';
 import { merge } from '../utils/index.js';
 import contextServer from '../domain/common/context.server';
 
@@ -8,9 +8,9 @@ const virtualClientStart = (params = {}) => {
 
   const retParmams = params;
 
-  return $http({
+  return request({
     url: '/v3/webinars/virtual/start',
-    type: 'GET',
+    method: 'GET',
     data: retParmams
   });
 };
@@ -21,9 +21,9 @@ const virtualAccumulation = (params = {}) => {
 
   const retParmams = params;
 
-  return $http({
+  return request({
     url: '/v3/webinars/virtual/accumulation',
-    type: 'GET',
+    method: 'GET',
     data: retParmams
   });
 };
@@ -34,9 +34,9 @@ const virtualClientGet = (params = {}) => {
 
   const retParmams = params;
 
-  return $http({
+  return request({
     url: '/v3/webinars/virtual/get-base',
-    type: 'GET',
+    method: 'GET',
     data: retParmams
   });
 };

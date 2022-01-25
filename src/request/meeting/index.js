@@ -1,135 +1,152 @@
-import $http from '@/utils/http.js';
+import request from '@/utils/http.js';
+import env from '../env';
+
 // 发起端初始化
 function initSendLive(params) {
-  return $http({
-    url: '/v3/webinars/live/init',
-    type: 'GET',
+  const url = env.meeting === 'v3' ? '/v3/webinars/live/init' : '';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
 
 // 观看端初始化（标品）
 function initStandardReceiveLive(params) {
-  return $http({
-    url: '/v3/webinars/watch/init',
-    type: 'GET',
+  const url = env.meeting === 'v3' ? '/v3/webinars/watch/init' : '';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
 
 // 观看端初始化（嵌入页）
 function initEmbeddedReceiveLive(params) {
-  return $http({
-    url: '/v3/webinars/watch/inline-init',
-    type: 'GET',
+  const url = env.meeting === 'v3' ? '/v3/webinars/watch/inline-init' : '';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
 
 // 观看端初始化（SDK）
 function initSdkReceiveLive(params) {
-  return $http({
-    url: '/v3/webinars/watch/sdk-init',
-    type: 'GET',
+  const url = env.meeting === 'v3' ? '/v3/webinars/watch/sdk-init' : '';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
 
 // 开始直播
 function startLive(params) {
-  return $http({
-    url: '/v3/webinars/live/start',
-    type: 'POST',
+  const url = env.meeting === 'v3' ? '/v3/webinars/live/start' : '';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
 
 // 结束直播
 function endLive(params) {
-  return $http({
-    url: '/v3/webinars/live/end',
-    type: 'POST',
+  const url = env.meeting === 'v3' ? '/v3/webinars/live/end' : '';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
 
 // 进入直播前检测
 function checkLive(params) {
-  return $http({
-    url: '/v3/webinars/live/check',
-    type: 'GET',
+  const url = env.meeting === 'v3' ? '/v3/webinars/live/check' : '';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
 
 // 查询活动配置信息
 const getConfigList = (params = {}) => {
-  return $http({
+  const url = env.meeting === 'v3' ? '/v3/users/permission/get-config-list' : '';
+  return request({
     url: '/v3/users/permission/get-config-list',
-    type: 'POST',
+    method: 'POST',
     data: params
   });
 };
 
 // 查询活动互动状态
 const getInavToolStatus = (params = {}) => {
-  return $http({
-    url: '/v3/interacts/room/get-inav-tool-status',
-    type: 'POST',
+  const url = env.meeting === 'v3' ? '/v3/interacts/room/get-inav-tool-status' : '';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 };
 
 // 观看端聚合接口
 const getCommonConfig = (params = {}) => {
-  return $http({
-    url: '/v3/interacts/union/common-config',
-    type: 'POST',
+  const url = env.meeting === 'v3' ? '/v3/interacts/union/common-config' : '';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 };
 
 // 获取聊天服务链接参数
 function getChatInitOptions(params) {
-  return $http({
-    url: '/v3/webinars/live/get-connect',
-    type: 'GET',
+  const url = env.meeting === 'v3' ? '/v3/webinars/live/get-connect' : '';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
 
 // 心跳检测
 function liveHeartBeat(params) {
-  return $http({
-    url: '/v3/webinars/live/heartbeat',
-    type: 'GET',
+  const url = env.meeting === 'v3' ? '/v3/webinars/live/heartbeat' : '';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
 
 // 获取live_token
 function getLiveToken(params) {
-  $http({
-    url: '/v3/webinars/live/get-live-token',
-    type: 'GET',
+  const url = env.meeting === 'v3' ? '/v3/webinars/live/get-live-token' : '';
+  request({
+    url,
+    method: 'POST',
     data: params
   });
 }
 
 // 获取推流地址
 function getStreamPushAddress(params) {
-  return $http({
-    url: '/v3/webinars/live/get-stream-push-address',
-    type: 'GET',
+  const url = env.meeting === 'v3' ? '/v3/webinars/live/get-stream-push-address' : '';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }
 
 // 设置设备检测状态
 function setDevice(params) {
-  return $http({
-    url: '/v3/interacts/room/set-device',
-    type: 'POST',
+  const url = env.meeting === 'v3' ? '/v3/interacts/room/set-device' : '';
+  return request({
+    url,
+    method: 'POST',
     data: params
   });
 }

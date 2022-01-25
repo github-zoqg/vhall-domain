@@ -1,10 +1,8 @@
 import meeting from './meeting/index.js';
-import roomBase from './roomBase.js';
 import user from './user.js';
 import insertFile from './insertFile.js';
 import virtualClient from './virtualClient.js';
 import interactive from './interactive.js';
-import mic from './mic.js';
 import doc from './doc.js';
 import imChat from './im/chat/index.js';
 import imKeyWords from './im/keyWords/index.js';
@@ -25,4 +23,4 @@ const im = {
 const room = {
   activity: activity
 };
-export { meeting, user, insertFile, virtualClient, interactive, mic, doc, player, im, room };
+export { meeting, user, insertFile, virtualClient, interactive, doc, player, im, room };
