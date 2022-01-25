@@ -37,7 +37,6 @@ class ChatServer extends BaseServer {
       roomId,
       avatar,
       roleName,
-      defaultAvatar: 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png',
       curMsg: null //当前正在编辑的消息
     };
     this.listenEvents();

@@ -1,7 +1,6 @@
 let count = 0;
-let count2 = 0;
-let count3 = 0;
 import useRoomBaseServer from '../room/roombase.server';
+const defaultAvatar = 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png';
 export default class Msg {
   constructor(params) {
     const roomserver = useRoomBaseServer();
@@ -13,6 +12,8 @@ export default class Msg {
       image_urls: []
     };
     this.context = {
+      atList: [],
+      replyMsg: {},
       avatar,
       nickname,
       role_name: groupInitData.isInGroup && groupInitData.join_role == 20 ? 20 : role_name,
@@ -44,18 +45,19 @@ export default class Msg {
   static _handleGenerateMsg(item = {}) {
     let resultMsg = {
       type: item.data.type,
-      avatar: item.context.avatar,
+      avatar: item.context.avatar || defaultAvatar,
       sendId: item.sender_id || item.sourceId,
       showTime: item.context.showTime,
-      nickname: item.context.nickname,
+      nickname: item.nickname || item.context.nickname,
       roleName: item.context.role_name,
       sendTime: item.date_time,
       content: item.data,
-      replyMsg: item.context.reply_msg,
-      atList: item.context.atList,
+      replyMsg: item.context.reply_msg || {},
+      atList: item.context.atList || [],
       msgId: item.msg_id,
       channel: item.channel_id,
-      isHistoryMsg: true
+      isHistoryMsg: true,
+      count: count++
     };
     if (item.data.event_type) {
       resultMsg = {
