@@ -90,7 +90,7 @@ function getBannedList(params = {}) {
 function getKickedList(params = {}) {
   const url =
     env.imChat === 'v3'
-      ? '/v3/interacts/chat/get-kicked-list'
+      ? '/v3/interacts/chat-user/get-kicked-list'
       : '/v4/interacts/chat-user/get-kicked-list';
   return request({
     url,
@@ -105,7 +105,7 @@ function getKickedList(params = {}) {
 function getOnlineList(params = {}) {
   const url =
     env.imChat === 'v3'
-      ? '/v3/interacts/chat/get-online-list'
+      ? '/v3/interacts/chat-user/get-online-list'
       : '/v4/interacts/chat-user/get-online-list';
   return request({
     url,
@@ -120,7 +120,7 @@ function getOnlineList(params = {}) {
 function getBoundedList(params = {}) {
   const url =
     env.imChat === 'v3'
-      ? '/v3/interacts/chat/get-bounded-list'
+      ? '/v3/interacts/chat-user/get-bounded-list'
       : '/v4/interacts/chat-user/get-bounded-list';
   return request({
     url,
