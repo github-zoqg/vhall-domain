@@ -487,18 +487,56 @@ export default class StandardDocServer extends AbstractDocServer {
   }
 
   // 获取文档列表(资料库所有文档)
-  getAllDocList(params) {
-    return docApi.getAllDocList(params);
+  async getAllDocList(params) {
+    const result = await docApi.getAllDocList(params);
+    if (result && result.code === 200) {
+      this._formatDocList(result.data?.list);
+    }
+    return result;
   }
 
-  // 获取文档列表(当前活动下)
-  getWebinarDocList(params) {
-    return docApi.getWebinarDocList(params);
+  /**
+   * 获取文档列表(当前活动下)
+   * @param {Object} params
+   * @returns
+   */
+  async getWebinarDocList(params) {
+    const result = await docApi.getWebinarDocList(params);
+    if (result && result.code === 200) {
+      this._formatDocList(result.data?.list);
+    }
+    return result;
   }
 
-  // 获取文档详情
-  getDocDetail(params) {
-    return docApi.getDocDetail(params);
+  _formatDocList(list) {
+    if (Array.isArray(list) && list.length) {
+      // 补充数据
+      // TODO 前端显示是否要区分静态转码和动态转码状态
+      for (let item of list) {
+        const statusJpeg = Number(item.status_jpeg);
+        const status = Number(item.status);
+        let docStatus = ''; // 文档状态 (前端上传时会有几个状态用这个字段)
+        let transformProcess = 0;
+        if (statusJpeg === 0 && status === 0) {
+          docStatus = 'transwait'; // 等待转码
+        } else if (statusJpeg === 100) {
+          docStatus = 'transdoing'; // 转码中(静态转码中)
+          const _percent = (parseInt(item.converted_page_jpeg) / parseInt(item.page)) * 100;
+          transformProcess = parseInt(_percent);
+        } else if (status === 100) {
+          docStatus = 'transdoing'; // 转码中(动态转码中)
+        } else if (statusJpeg === 200 || status === 200) {
+          docStatus = 'transcompleted'; // 转码完成
+          transformProcess = 100;
+        } else {
+          docStatus = 'transfailed'; // 转码失败
+          transformProcess = 100;
+        }
+        item.docStatus = docStatus;
+        item.transformProcess = transformProcess;
+      }
+    }
+    return list;
   }
 
   // 同步文档
