@@ -1,5 +1,6 @@
 import VhallPaasSDK from '@/sdk/index';
 import { merge } from '../../utils';
+import useDocServer from '../doc/doc.server';
 import useInteractiveServer from './interactive.server';
 class MediaCheckServer {
   constructor() {
@@ -17,6 +18,14 @@ class MediaCheckServer {
     };
     MediaCheckServer.instance = this;
     return this;
+  }
+
+  resetDevices() {
+    this.state.devices = {
+      videoInputDevices: [], //视频采集设备，如摄像头
+      audioInputDevices: [], //音频采集设备，如麦克风
+      audioOutputDevices: [] //音频输出设备，如扬声器
+    };
   }
 
   // 检查当前浏览器支持性
@@ -61,8 +70,8 @@ class MediaCheckServer {
    * 获取全部音视频设备列表
    * @returns {Promise}
    */
-  getDevices() {
-    return VhallPaasSDK.modules.VhallRTC.getDevices(opt).then(devices => {
+  getDevices(customOptions = {}) {
+    return VhallPaasSDK.modules.VhallRTC.getDevices(customOptions).then(devices => {
       this.state.devices = devices;
       return devices;
     });
@@ -72,10 +81,11 @@ class MediaCheckServer {
    * 获取摄像头设备列表
    * @returns {Promise}
    */
-  getCameras() {
+  getCameras(filterFn = item => item) {
     return VhallPaasSDK.modules.VhallRTC.getCameras().then(mediaDeviceList => {
-      this.state.devices.videoInputDevices = mediaDeviceList;
-      return mediaDeviceList;
+      const filterMediaDevice = mediaDeviceList.filter(filterFn);
+      this.state.devices.videoInputDevices = filterMediaDevice;
+      return filterMediaDevice;
     });
   }
 
@@ -83,10 +93,11 @@ class MediaCheckServer {
    * 获取麦克风设备列表
    * @returns {Promise}
    */
-  getMicrophones() {
+  getMicrophones(filterFn = item => item) {
     return VhallPaasSDK.modules.VhallRTC.getMicrophones().then(mediaDeviceList => {
-      this.state.devices.audioInputDevices = mediaDeviceList;
-      return mediaDeviceList;
+      const filterMediaDeviceList = mediaDeviceList.filter(filterFn);
+      this.state.devices.audioInputDevices = filterMediaDeviceList;
+      return filterMediaDeviceList;
     });
   }
 
@@ -94,10 +105,11 @@ class MediaCheckServer {
    * 获取扬声器设备列表
    * @returns {Promise}
    */
-  getSpeakers() {
+  getSpeakers(filterFn = item => item) {
     return VhallPaasSDK.modules.VhallRTC.getSpeakers().then(mediaDeviceList => {
-      this.state.devices.audioOutputDevices = mediaDeviceList;
-      return mediaDeviceList;
+      const filterMediaDeviceList = mediaDeviceList.filter(filterFn);
+      this.state.devices.audioOutputDevices = filterMediaDeviceList;
+      return filterMediaDeviceList;
     });
   }
 
@@ -125,9 +137,9 @@ class MediaCheckServer {
    */
   startVideoPreview(customOptions = {}) {
     const defaultOptions = {
-      videoNode: opts.videoNode, // 传入本地视频显示容器，必填
+      videoNode: '', // 传入本地视频显示容器，必填
       audio: false, // 是否获取音频，选填，默认为true
-      videoDevice: state.selectedVideoDeviceId,
+      videoDevice: this.state.selectedVideoDeviceId,
       profile: VhallRTC.RTC_VIDEO_PROFILE_240P_16x9_M
     };
     const options = merge.recursive({}, defaultOptions, customOptions);
@@ -169,5 +181,9 @@ class MediaCheckServer {
 }
 
 export default function useMediaServer() {
-  return new MediaCheckServer();
+  if (!useMediaServer.instance) {
+    useMediaServer.instance = new MediaCheckServer();
+  }
+
+  return useMediaServer.instance;
 }
