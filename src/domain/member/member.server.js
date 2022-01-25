@@ -26,33 +26,26 @@ export default function userMemberServer() {
   //请求在线成员列表然后处理
   function getOnlineUserList(params = {}) {
     return imRequest.chat.getOnlineList(params).then(res => {
-      console.warn('当前在线人员列表', res);
-
       if (res && [200, '200'].includes(res.code)) {
-        if (state.isRefesh) {
-          state.onlineUsers = _sortUsers(res.data.list);
-          state.isRefesh = false;
-          console.log('>>>>>>aaaa2', state.applyUsers);
-          state.applyUsers.forEach(element => {
-            state.onlineUsers.forEach(item => {
-              if (element.accountId == item.accountId) {
-                item.isApply = true;
-              }
-            });
-          });
-        }
 
-        if (!state.isRefesh && res.data.list.length === 0) {
+        state.onlineUsers = _sortUsers(res.data.list);
+        state.applyUsers.forEach(element => {
+          state.onlineUsers.forEach(item => {
+            if (element.accountId === item.accountId) {
+              item.isApply = true;
+            }
+          });
+        });
+
+        if (res.data.list.length === 0) {
           state.page--;
         }
 
         state.totalNum = res.data.total;
       }
-
       if (![200, '200'].includes(res.code)) {
         state.page--;
       }
-
       return res;
     });
   }
