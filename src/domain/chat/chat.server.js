@@ -37,7 +37,6 @@ class ChatServer extends BaseServer {
       roomId,
       avatar,
       roleName,
-      defaultAvatar: 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png',
       curMsg: null //当前正在编辑的消息
     };
     this.listenEvents();
@@ -127,11 +126,19 @@ class ChatServer extends BaseServer {
   clearHistoryMsg() {
     this.state.chatList.splice(0, this.state.chatList.length);
   }
-
+  //创建当前编辑消息
+  createCurMsg() {
+    this.curMsg = this.curMsg || new Msg();
+    return this.curMsg;
+  }
+  //销毁当前编辑消息
+  clearCurMsg() {
+    this.curMsg = null;
+  }
   //防抖处理发送聊天消息
   sendMsg = debounce(this.sendChatMsg.bind(this), 300, true);
   //发送聊天消息
-  sendChatMsg(data, context = {}) {
+  sendChatMsg({ data, context }) {
     if (msgServer.groupMsgInstance) {
       //调用passsdk方法
       msgServer.groupMsgInstance.emit(data, context);
