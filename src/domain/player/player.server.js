@@ -1,7 +1,20 @@
 import VhallPaasSDK from '@/sdk/index.js';
 import BaseServer from '@/domain/common/base.server';
 class PlayerServer extends BaseServer {
-  constructor() {
+  constructor(options) {
+    // // 创建单例之外的额外的实例
+    if (options.extra) {
+      super();
+      this.playerInstance = null; //播放器实例
+      this.state = {
+        isPlaying: false,
+        markPoints: [],
+        type: 'live', // live or vod
+        voice: 60
+      };
+      return this;
+    }
+
     if (typeof PlayerServer.instance === 'object') {
       return PlayerServer.instance;
     }
@@ -197,6 +210,6 @@ class PlayerServer extends BaseServer {
   }
 }
 
-export default function usePlayerServer(options) {
-  return new PlayerServer();
+export default function usePlayerServer(options = { extra: false }) {
+  return new PlayerServer(options);
 }

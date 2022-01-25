@@ -18,18 +18,20 @@ function setRequestHeaders(options) {
 }
 
 console.dir(axios);
-const request = axios.create();
+const service = axios.create({ headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
 
 // request interceptor
-request.interceptors.request.use(
+service.interceptors.request.use(
   config => {
     console.log('----axios----请求配置', config);
     // set baseURL
     config.baseURL = BASE_URL;
+
     // 如果有 live_token 就不需要传 token
     if (TOKEN && !LIVETOKEN) {
       config.headers['token'] = TOKEN;
     }
+
     // live_token 放在 body 中传
     if (LIVETOKEN) {
       config.data = (config.data && JSON.parse(config.data)) || {};
@@ -39,10 +41,12 @@ request.interceptors.request.use(
       };
       config.data = JSON.stringify(config.data);
     }
+
     config.headers = {
       ...HEADERS,
       ...config.headers
     };
+
     console.log('---请求拦截----', config);
     return config;
   },
@@ -54,9 +58,9 @@ request.interceptors.request.use(
 );
 
 // response interceptor
-request.interceptors.response.use(response => {
+service.interceptors.response.use(response => {
   return response.data;
 });
 
-export default request;
+export default service;
 export { setBaseUrl, setToken, setRequestHeaders };

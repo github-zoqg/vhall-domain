@@ -6,7 +6,7 @@ const getAllDocList = (params = {}) => {
   return request({
     url: '/v3/interacts/document/get-shared-document-list',
     method: 'GET',
-    data: params
+    params: params
   });
 };
 
