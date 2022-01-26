@@ -117,7 +117,6 @@ class MicServer extends BaseServer {
     const retParams = merge.recursive({}, defaultParams, data);
 
     return interactiveServer.unpublishStream().then(() => {
-      interactiveServer.clearLocalStream();
       return im.signaling.userSpeakOff(retParams);
     });
   }

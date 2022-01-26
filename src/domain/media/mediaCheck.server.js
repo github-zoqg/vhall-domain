@@ -1,6 +1,5 @@
 import VhallPaasSDK from '@/sdk/index';
 import { merge } from '../../utils';
-import useDocServer from '../doc/doc.server';
 import useInteractiveServer from './interactive.server';
 class MediaCheckServer {
   constructor() {
@@ -181,9 +180,5 @@ class MediaCheckServer {
 }
 
 export default function useMediaServer() {
-  if (!useMediaServer.instance) {
-    useMediaServer.instance = new MediaCheckServer();
-  }
-
-  return useMediaServer.instance;
+  return new MediaCheckServer();
 }
