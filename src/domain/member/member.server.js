@@ -5,16 +5,10 @@ export default function userMemberServer() {
     onlineUsers: [],
     //申请上麦的人员
     applyUsers: [],
-    //是否刷新了
-    isRefresh: false,
-
     //总数
     totalNum: 0,
     //当前页数
-    page: 1,
-
-    //举手状态
-    raiseHandTip: false
+    page: 1
   };
 
 

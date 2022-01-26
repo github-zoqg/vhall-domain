@@ -75,7 +75,7 @@ function deleteUserMessage(params = {}) {
 function getBannedList(params = {}) {
   const url =
     env.imChat === 'v3'
-      ? '/v3/interacts/chat/get-banned-list'
+      ? '/v3/interacts/chat-user/get-banned-list'
       : '/v4/interacts/chat-user/get-banned-list';
   return request({
     url,
