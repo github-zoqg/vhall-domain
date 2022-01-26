@@ -1,4 +1,4 @@
-import $http from '@/utils/http.js';
+import request from '@/utils/http.js';
 import useRoomBaseServer from '@/domain/room/roombase.server';
 
 // 获取插播文件列表
