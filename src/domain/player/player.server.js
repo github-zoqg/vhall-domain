@@ -97,7 +97,7 @@ class PlayerServer extends BaseServer {
   }
 
   setVolume(val) {
-    state.voice = val;
+    this.state.voice = val;
     return this.playerInstance.setVolume(val);
   }
 
