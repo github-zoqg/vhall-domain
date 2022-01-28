@@ -15,35 +15,43 @@ import imChatAuth from './im/chatAuth/index.js';
 import activity from './room/activity/index.js';
 import player from './player.js'
 
+//问答
+import qaList from './qa/list/index.js'
+import qaPrivateChat from './qa/privateChat/index.js'
 
 class RequestApi {
-    constructor() {
-        this.live = window.VhallSaasSDK.requestApi.live;
-        this.roomBase = roomBase;
-        this.user = user;
-        this.insertFile = insertFile;
-        this.virtualClient = virtualClient;
-        this.interactive = interactive;
-        this.mic = mic;
-        this.doc = doc;
-        this.player = player;
+  constructor() {
+    this.live = window.VhallSaasSDK.requestApi.live;
+    this.roomBase = roomBase;
+    this.user = user;
+    this.insertFile = insertFile;
+    this.virtualClient = virtualClient;
+    this.interactive = interactive;
+    this.mic = mic;
+    this.doc = doc;
+    this.player = player;
 
+    this.im = {
+      chat: imChat,
+      keyWords: imKeyWords,
+      privateChat: imPrivateChat,
+      signaling: imSignaling,
+      notice: imNotice,
+      chatAuth: imChatAuth
+    };
 
-        this.im = {
-            chat:imChat,
-            keyWords:imKeyWords,
-            privateChat:imPrivateChat,
-            signaling:imSignaling,
-            notice:imNotice,
-            chatAuth:imChatAuth
-        };
+    this.meeting = {};
 
-        this.meeting = {};
+    this.room = {
+      activity: activity
+    };
 
-        this.room = {
-            activity:activity
-        };
+    //问答api
+    this.qa = {
+      list: qaList,
+      privateChat: qaPrivateChat
     }
+  }
 }
 
 const requestApi = new RequestApi()

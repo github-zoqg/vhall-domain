@@ -19,6 +19,9 @@ import useNoticeServer from "@/domain/im/notice.server.js";
 import useMemberServer from "@/domain/member/member.server.js";
 import useGroupDiscussionServer from "@/domain/room/groupDiscussion.server.js";
 
+// 问答
+import useQaServer from "@/domain/interactiveTools/qa.server.js";
+
 export {
     contextServer,
     useMsgServer,
@@ -36,5 +39,6 @@ export {
     useDocServer,
     useNoticeServer,
     useMemberServer,
-    useGroupDiscussionServer
+    useGroupDiscussionServer,
+    useQaServer
 };
