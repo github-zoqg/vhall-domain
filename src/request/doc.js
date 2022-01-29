@@ -1,57 +1,61 @@
-import $http from '@/utils/http.js'
-// import contextServer from "@/domain/common/context.server.js"
+import request from '@/utils/http.js';
+import env from './env';
 
+// 获取资料库文档列表
+const getSharedDocList = (params = {}) => {
+  const url =
+    env.doc === 'v3'
+      ? '/v3/interacts/document/get-shared-document-list'
+      : '/v4/im-whiteboard/document/get-shared-document-list';
+  return request({
+    url,
+    method: 'GET',
+    params: params
+  });
+};
 
-// 获取文档列表(资料库所有文档)
-const getAllDocList = (params = {}) => {
-    return $http({
-        url: '/v3/interacts/document/get-shared-document-list',
-        type: 'GET',
-        data: params
-    })
-}
-
-// 获取文档列表(当前活动下)
+// 获取当前活动下文档列表
 const getWebinarDocList = (params = {}) => {
-    return $http({
-        url: '/v3/interacts/document/get-webinar-document-list',
-        type: 'POST',
-        data: params
-    })
-}
-
-// 获取文档详情
-const getDocDetail = (params = {}) => {
-    return $http({
-        url: '/v3/interacts/document/get-shared-document-list',
-        type: 'GET',
-        data: params
-    })
-}
+  const url =
+    env.doc === 'v3'
+      ? '/v3/interacts/document/get-webinar-document-list'
+      : '/v4/im-whiteboard/document/get-webinar-document-list';
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+};
 
 // 同步文档
-const syncDoc= (params = {}) => {
-    return $http({
-        url: '/v3/interacts/document/clone-from-shared-document',
-        type: 'GET',
-        data: params
-    })
-}
+const syncDoc = (params = {}) => {
+  const url =
+    env.doc === 'v3'
+      ? '/v3/interacts/document/clone-from-shared-document'
+      : '/v4/im-whiteboard/document/document-bind';
+  return request({
+    url,
+    method: 'GET',
+    data: params
+  });
+};
 
 // 删除文档(多选)
 const delDocList = (params = {}) => {
-    return $http({
-        url: '/v3/interacts/document/batch-remove-reference',
-        type: 'POST',
-        data: params
-    })
-}
-
+  const url =
+    env.doc === 'v3'
+      ? '/v3/interacts/document/batch-remove-reference'
+      : '/v4/im-whiteboard/document/batch-detele'; // 控制台
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+};
 
 export default {
-    getAllDocList,
-    getWebinarDocList,
-    getDocDetail,
-    syncDoc,
-    delDocList
-}
+  getSharedDocList,
+  getWebinarDocList,
+  syncDoc,
+  delDocList
+};

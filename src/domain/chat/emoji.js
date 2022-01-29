@@ -1,5 +1,5 @@
 // import { emojiUrl } from './config.js'
-const emojiUrl = 'https://cnstatic01.e.vhall.com/static/img/arclist'
+const emojiUrl = 'https://cnstatic01.e.vhall.com/static/img/arclist';
 const faceArr_v2 = [
   {
     '[微笑]': '1'
@@ -271,7 +271,7 @@ const faceArr_v2 = [
   {
     '[OK]': '90'
   }
-]
+];
 // TODO暂时先用直接加元素的方式处理，后面封装
 const faceArr = {
   '[微笑]': '1',
@@ -364,15 +364,16 @@ const faceArr = {
   '[爱你]': '88',
   '[NO]': '89',
   '[OK]': '90'
-}
-const textToEmoji = s => {
-  s = s.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>')
+};
+
+function textToEmoji(s) {
+  s = s.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
 
   // eslint-disable-next-line no-useless-escape
-  const reg = /\[[^\[\]]+?\]/g
-  const ret = []
-  const textArr = s.split(reg) // 字符串分割，返回一个数组
-  const emojiArr = s.match(reg) // 返回一个数组，成员是所有匹配的子字符串
+  const reg = /\[[^\[\]]+?\]/g;
+  const ret = [];
+  const textArr = s.split(reg); // 字符串分割，返回一个数组
+  const emojiArr = s.match(reg); // 返回一个数组，成员是所有匹配的子字符串
 
   // 文字与表情 轮流添加到a
   // textArr 的长度 永远比 emojiArr 大 1
@@ -383,7 +384,7 @@ const textToEmoji = s => {
       ret.push({
         msgType: 'text',
         msgCont: cont
-      })
+      });
 
     // 最后一次循环，肯定没有表情与之对应，所以忽略
     // 如果不是最后一次，添加表情到a
@@ -394,12 +395,12 @@ const textToEmoji = s => {
           msgType: 'emoji',
           msgCont: emojiArr[i],
           msgImage: emojiToPath(emojiArr[i])
-        })
+        });
       } else {
         ret.push({
           msgType: 'text',
           msgCont: emojiArr[i]
-        })
+        });
       }
     }
     // i !== textArr.length - 1 &&
@@ -415,49 +416,51 @@ const textToEmoji = s => {
     //           msgCont: emojiArr[i]
     //         }
     //   )
-  })
-  return ret
+  });
+  return ret;
 }
+
 function getEmojiList() {
-  const result = []
+  const result = [];
   for (const key in faceArr) {
     result.push({
       name: key,
       value: faceArr[key],
       src: emojiToPath(key)
-    })
+    });
   }
 
-  return result
+  return result;
 }
+
 // 将拆分开的消息数组转换成字符串
 function combinationStr(arr) {
-  let result = ''
+  let result = '';
 
   arr.forEach(item => {
     const str =
       item.msgType === 'text'
         ? item.msgCont
-        : `<img width="24" height="24" style="vertical-align:text-bottom;" src="${item.msgImage}"/>`
-    result += str
-  })
+        : `<img width="24" height="24" style="vertical-align:text-bottom;" src="${item.msgImage}"/>`;
+    result += str;
+  });
 
-  return result
+  return result;
 }
+
 function textToEmojiText(str) {
-  const arr = textToEmoji(str)
-  const result = combinationStr(arr)
-  return result
+  if (!str) {
+    return;
+  }
+  const arr = textToEmoji(str);
+  const result = combinationStr(arr);
+  return result;
 }
-const emojiToPath = key =>
-  key.includes('[删除]')
+
+function emojiToPath(key) {
+  return key.includes('[删除]')
     ? `${emojiUrl}/${faceArr[key]}@2x.png`
-    : `${emojiUrl}/Expression_${faceArr[key]}@2x.png`
-export {
-  getEmojiList,
-  textToEmojiText,
-  emojiToPath,
-  textToEmoji,
-  faceArr,
-  faceArr_v2
+    : `${emojiUrl}/Expression_${faceArr[key]}@2x.png`;
 }
+
+export { getEmojiList, textToEmojiText, emojiToPath, textToEmoji, faceArr, faceArr_v2 };

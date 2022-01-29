@@ -1,2 +1,1 @@
-export default function useOfficalServer(){
-}
+export default function useOfficalServer() {}

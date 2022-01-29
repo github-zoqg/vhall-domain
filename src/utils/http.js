@@ -1,177 +1,66 @@
+import axios from 'axios/dist/axios';
 
-/**
- * ajax请求 jsonp处理
- * 1.jsonp 请求格式
- *   $fetch({
- *      url:'',
- *      type: 'GET',
- *      jsonp: 'callback',
- *      data: {
- *        name: 123
- *      }
- *   })
- */
-import { isPc } from './index.js'
-
-
-let BUSE_URL = ''
-let TOKEN = ''
-let LIVETOKEN = ''
-let HEADERS = {}
-
+let TOKEN = '';
+let BASE_URL = '';
+let LIVETOKEN = '';
+let HEADERS = {};
 
 function setBaseUrl(url) {
-    BUSE_URL = url
-}
-function getBaseUrl() {
-    return BUSE_URL
+  console.log('---BASE_URL----', url);
+  BASE_URL = url;
 }
 function setToken(token, livetoken) {
-    console.log(token, livetoken, 888)
-    TOKEN = token
-    LIVETOKEN = livetoken
+  TOKEN = token;
+  LIVETOKEN = livetoken;
 }
 function setRequestHeaders(options) {
-    Object.assign(HEADERS,options)
+  Object.assign(HEADERS, options);
 }
 
-function $fetch(options) {
-    // if (process.env.NODE_ENV != 'development') {
-    //
-    // }
-    options.url = BUSE_URL + options.url
-    console.log('接口环境', options.url)
+console.dir(axios);
+const service = axios.create({ headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
 
-    return new Promise((resolve, reject) => {
-        options = options || {}
-        if (options.data) {
-            if (LIVETOKEN) {
-                options.data.live_token = LIVETOKEN
-            }
-            options.data = formatParams(options.data)
-        }
-        options.dataType ? jsonp(options, resolve, reject) : json(options, resolve, reject)
-    })
-}
+// request interceptor
+service.interceptors.request.use(
+  config => {
+    console.log('----axios----请求配置', config);
+    // set baseURL
+    config.baseURL = BASE_URL;
 
-// JSON请求
-function json(params, success, fail) {
-    let xhr = null
-    // interactToken = sessionStorage.getItem('interact-token') || '',
-    // grayId = sessionStorage.getItem('grayId') || '',
-    // vhallJSSDKUserInfo = localStorage.getItem('vhallJSSDKUserInfo') ? JSON.parse(localStorage.getItem('vhallJSSDKUserInfo')) : {},
-    params.type = (params.type || 'GET').toUpperCase()
-
-    if (window.XMLHttpRequest) {
-        xhr = new XMLHttpRequest()
-    } else {
-        xhr = new ActiveXObject('Microsoft.XMLHTTP')
+    // 如果有 live_token 就不需要传 token
+    if (TOKEN && !LIVETOKEN) {
+      config.headers['token'] = TOKEN;
     }
 
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState == 4) {
-            let status = xhr.status
-            if (status >= 200 && status < 300) {
-                let response = ''
-                let type = xhr.getResponseHeader('Content-type')
-
-                if (type.indexOf('xml') !== -1 && xhr.responseXML) {
-                    response = xhr.responseXML
-                } else if (type === 'application/json' || type === 'application/json;charset=UTF-8') {
-                    response = JSON.parse(xhr.responseText)
-
-                } else {
-                    response = xhr.responseText
-                }
-                console.log('调试模式DOMAIN******response.then******', response)
-                success && success(response)
-            } else {
-                fail && fail(status)
-            }
-        }
+    // live_token 放在 body 中传
+    if (LIVETOKEN) {
+      config.data = (config.data && JSON.parse(config.data)) || {};
+      config.data = {
+        live_token: LIVETOKEN,
+        ...config.data
+      };
+      config.data = JSON.stringify(config.data);
     }
 
-    if (params.type == 'GET') {
-        if (params.data) {
-            xhr.open(params.type, params.url + '?' + params.data, true)
-        } else {
-            xhr.open(params.type, params.url, true)
-        }
-    } else if (params.type == 'POST') {
-        xhr.open(params.type, params.url, true)
-    }
+    config.headers = {
+      ...HEADERS,
+      ...config.headers
+    };
 
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
-    if (!LIVETOKEN) {
-        TOKEN && xhr.setRequestHeader('token', TOKEN)
-    }
-    // console.log('HEADERS', HEADERS, TOKEN)
-    if (HEADERS) {
-        Object.getOwnPropertyNames(HEADERS).forEach(item => {
-            xhr.setRequestHeader(item, HEADERS[item])
-        })
-    }
-    // if (params.headers && params.headers.activeType == 'new') {
-    //     xhr.setRequestHeader('platform', 18)
-    //     xhr.setRequestHeader('request-id', uuid())
-    //     grayId && xhr.setRequestHeader('gray-id', grayId)
-    //     interactToken && xhr.setRequestHeader('interact-token', interactToken)
-    //     token && xhr.setRequestHeader('token', token)
-    // }
-    console.log('调试模式DOMAIN******request.then******', xhr)
-    if (params.type == 'GET') {
-        xhr.send(null)
-    } else {
-        xhr.send(params.data)
-    }
-}
+    console.log('---请求拦截----', config);
+    return config;
+  },
+  error => {
+    // do something with request error
+    console.log(error); // for debug
+    return Promise.reject(error);
+  }
+);
 
-// JSONP请求
-function jsonp(params, success, fail) {
-    let callbackName = params.dataType
-    params['callback'] = callbackName
+// response interceptor
+service.interceptors.response.use(response => {
+  return response.data;
+});
 
-    let script = document.createElement('script')
-    script.type = "text/javascript"
-    script.charset = "utf-8"
-    document.body.appendChild(script)
-
-    // 创建回调函数
-    window[callbackName] = function (val) {
-        document.body.removeChild(script)
-        clearTimeout(script.timer)
-        window[callbackName] = null
-        success && success(val)
-    }
-    let stemp = random()
-    script.src = `${params.url}?${params.data}&_=${1594014089800}`
-
-    // 超时处理
-    if (params.time) {
-        script.timer = setTimeout(function () {
-            window[callbackName] = null;
-            head.removeChild(script);
-            fail && fail('请求超时')
-        }, parmas.time * 1000);
-    }
-}
-
-// 格式化数据
-function formatParams(data) {
-    var arr = []
-    if (data) {
-        for (let item in data) {
-            arr.push(encodeURIComponent(item) + '=' + encodeURIComponent(data[item]))
-        }
-    }
-    return arr.join('&')
-}
-
-// 随机数
-function random() {
-    return Math.floor(Math.random() * 10000 + 500);
-}
-
-
-export default $fetch
-export { setBaseUrl, getBaseUrl, setToken, setRequestHeaders }
+export default service;
+export { setBaseUrl, setToken, setRequestHeaders };
