@@ -134,7 +134,7 @@ function getBoundedList(params = {}) {
  * */
 function setBanned(params = {}) {
   const url =
-    env.imChat === 'v3' ? '/v3/interacts/chat/set-banned' : '/v4/interacts/chat-user/set-banned';
+    env.imChat === 'v3' ? '/v3/interacts/chat-user/set-banned' : '/v4/interacts/chat-user/set-banned';
   return request({
     url,
     method: 'POST',
@@ -148,7 +148,7 @@ function setBanned(params = {}) {
 function setAllBanned(params = {}) {
   const url =
     env.imChat === 'v3'
-      ? '/v3/interacts/chat/set-all-banned'
+      ? '/v3/interacts/chat-user/set-all-banned'
       : '/v4/interacts/chat-user/set-all-banned';
   return request({
     url,
@@ -162,7 +162,7 @@ function setAllBanned(params = {}) {
  * */
 function setKicked(params = {}) {
   const url =
-    env.imChat === 'v3' ? '/v3/interacts/chat/set-kicked' : '/v4/interacts/chat-user/set-kicked';
+    env.imChat === 'v3' ? '/v3/interacts/chat-user/set-kicked' : '/v4/interacts/chat-user/set-kicked';
   return request({
     url,
     method: 'POST',

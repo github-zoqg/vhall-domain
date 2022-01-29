@@ -151,6 +151,13 @@ export default function userMemberServer() {
     return imRequest.signaling.userPresentation(params);
   }
 
+  /**
+   * 升为组长 todo 这里缺个接口，待查找后补充到api里 也可以考虑放到分组讨论server
+   * */
+  function setGroupLeader(params={}){
+    return Promise.resolve();
+  }
+
   return {
     state,
     setState,
@@ -164,6 +171,7 @@ export default function userMemberServer() {
     userEndPresentation,
     hostAgreeApply,
     userNoSpeak,
-    userPresentation
+    userPresentation,
+    setGroupLeader
   };
 }
