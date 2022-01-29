@@ -112,4 +112,20 @@ function logOnlinePrint(content, type) {
       break;
   }
 }
-export { merge, isPc, uploadFile, isChrome88, randomNumGenerator, debounce, throttling, sleep };
+
+// 抽离成公共方法
+function awaitWrap(promise) {
+  return promise.then(data => [null, data]).catch(err => [err, null]);
+}
+
+export {
+  merge,
+  isPc,
+  uploadFile,
+  isChrome88,
+  randomNumGenerator,
+  debounce,
+  throttling,
+  sleep,
+  awaitWrap
+};
