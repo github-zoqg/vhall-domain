@@ -35,7 +35,7 @@ const syncDoc = (params = {}) => {
       : '/v4/im-whiteboard/document/document-bind';
   return request({
     url,
-    method: 'GET',
+    method: 'POST',
     data: params
   });
 };

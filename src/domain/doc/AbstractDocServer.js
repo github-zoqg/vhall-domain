@@ -113,7 +113,7 @@ export default class AbstractDocServer extends BaseServer {
   /**
    * 设置选中容器(激活某容器)
    * 如果找到了对应id的容器，返回容器，否则返回null
-   * @param {String} cid 容器ID
+   * @param {String} id 容器ID
    * @param {Boolean} noDispatch //非必填，默认false，是否推送消息到远端，false为推送，true为不推送
    * @returns {Promise}
    */
