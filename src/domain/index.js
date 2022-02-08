@@ -2,6 +2,7 @@
 import useMsgServer from '@/domain/common/msg.server.js';
 import useInteractiveServer from '@/domain/media/interactive.server.js';
 import useMediaCheckServer from '@/domain/media/mediaCheck.server.js';
+import useMediaSettingServer from '@/domain/media/mediaSetting.server.js';
 import usePlayerServer from '@/domain/player/player.server.js';
 import useDocServer from '@/domain/doc/doc.server.js';
 
@@ -74,6 +75,7 @@ export {
   // useRoomInitGroupServer,
   useInteractiveServer,
   useMediaCheckServer,
+  useMediaSettingServer,
   useInsertFileServer,
   useDesktopShareServer,
   useChatServer,

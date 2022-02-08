@@ -1,23 +1,43 @@
 import VhallPaasSDK from '@/sdk/index';
 import { merge } from '../../utils';
 import useInteractiveServer from './interactive.server';
+import roomBaseRequest from '@/request/roomBase';
 
-class MediaCheckServer {
+class MediaSettingServer {
   constructor() {
-    if (typeof MediaCheckServer.instance === 'object') {
-      return MediaCheckServer.instance;
+    if (typeof MediaSettingServer.instance === 'object') {
+      return MediaSettingServer.instance;
     }
-    this.state = {
+    this.state = this.resetState();
+    MediaSettingServer.instance = this;
+    return this;
+  }
+
+  resetState() {
+    return {
       selectedVideoDeviceId: '', // 当前选取的设备id
       localStreamId: '', // 本地流id
+      videoPreivewStreamId: '',
+      canvasImgUrl: '',
+      selected: {
+        rate: '', // 画质
+        screenRate: '', //桌面共享画质
+        videoType: 'camera', // camera||pictrue
+        layout: 'CANVAS_ADAPTIVE_LAYOUT_FLOAT_MODE', // 布局(默认主次浮窗)
+        video: '', // 摄像头或图片等
+        audioInput: '', // 麦克风
+        audioOutput: '' // 扬声器
+      },
       devices: {
         videoInputDevices: [], //视频采集设备，如摄像头
         audioInputDevices: [], //音频采集设备，如麦克风
         audioOutputDevices: [] //音频输出设备，如扬声器
       }
     };
-    MediaCheckServer.instance = this;
-    return this;
+  }
+
+  setSelected(key, value) {
+    this.state.selected[key] = value;
   }
 
   resetDevices() {
@@ -169,13 +189,11 @@ class MediaCheckServer {
    * 结束视频预览
    * @returns {Promise}
    */
-  stopVideoPreview() {
+  stopVideoPreview(streamId = this.state.videoPreivewStreamId) {
     return new Promise((resolve, reject) => {
-      VhallPaasSDK.modules.VhallRTC.stopPreview(
-        { streamId: this.state.videoPreivewStreamId },
-        resolve,
-        reject
-      );
+      VhallPaasSDK.modules.VhallRTC.stopPreview({ streamId }, resolve, reject);
+    }).then(() => {
+      this.state.videoPreivewStreamId = null;
     });
   }
 
@@ -184,12 +202,16 @@ class MediaCheckServer {
       sessionStorage.setItem(key, value);
     }
   }
+
+  async setStream(params = {}) {
+    return roomBaseRequest.setStream(params);
+  }
 }
 
-export default function useMediaServer() {
-  if (!useMediaServer.instance) {
-    useMediaServer.instance = new MediaCheckServer();
+export default function useMediaSettingServer() {
+  if (!useMediaSettingServer.instance) {
+    useMediaSettingServer.instance = new MediaSettingServer();
   }
 
-  return useMediaServer.instance;
+  return useMediaSettingServer.instance;
 }
