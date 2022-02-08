@@ -15,7 +15,10 @@ import useChatServer from '@/domain/chat/chat.server.js';
 import useMicServer from '@/domain/media/mic.server.js';
 import useNoticeServer from '@/domain/notice/notice.server.js';
 import useMemberServer from '@/domain/member/member.server.js';
-import useGroupDiscussionServer from '@/domain/room/groupDiscussion.server.js';
+import useGroupServer from '@/domain/group/StandardGroupServer';
+
+// 问答
+import useQaServer from '@/domain/interactiveTools/qa.server.js';
 
 import { setToken, setRequestHeaders } from '@/utils/http.js';
 import VhallPaasSDK from '../sdk';
@@ -81,5 +84,6 @@ export {
   useDocServer,
   useNoticeServer,
   useMemberServer,
-  useGroupDiscussionServer
+  useGroupServer,
+  useQaServer
 };

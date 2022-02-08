@@ -15,5 +15,6 @@ export default {
   imChatAuth: 'v3',
   activity: 'v3',
   player: 'v3',
-  brand: 'v3'
+  brand: 'v3',
+  qa: 'v3'
 };

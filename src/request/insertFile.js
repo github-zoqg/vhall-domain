@@ -1,12 +1,12 @@
 import request from '@/utils/http.js';
-import contextServer from '@/domain/common/context.server.js';
+import useRoomBaseServer from '@/domain/room/roombase.server';
 
 // 获取插播文件列表
 const getInsertFileList = (params = {}) => {
-  const { state } = contextServer.get('roomBaseServer');
+  const { watchInitData } = useRoomBaseServer().state;
 
   const retParmams = {
-    webinar_id: params.webinarId || state.watchInitData.webinar.id,
+    webinar_id: params.webinar_id || watchInitData.webinar.id,
     is_no_check: params.is_no_check || 1,
     pos: params.pos || 0,
     limit: params.limit || 10,

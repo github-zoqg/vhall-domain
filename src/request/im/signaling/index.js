@@ -1,4 +1,5 @@
 import request from '@/utils/http.js';
+import env from '../../env';
 /**
  * 发起端-设置房间举手状态
  * */
@@ -77,7 +78,7 @@ function userSpeak(params = {}) {
 }
 
 /**
- * 发起端&观看端-用户下麦
+ * 发起端/观看端-用户下麦
  * */
 function userSpeakOff(params = {}) {
   return request({
@@ -92,7 +93,7 @@ function userSpeakOff(params = {}) {
  * */
 function hostInviteUser(params = {}) {
   return request({
-    url: '/v4/interacts/inav/invite',
+    url: env.imChat === 'v3'?'/v3/interacts/inav/invite':'/v4/interacts/inav/invite',
     method: 'POST',
     data: params
   });
@@ -194,7 +195,7 @@ export default {
   // hostRejectApply,
   // userSpeak,
   userSpeakOff,
-  // hostInviteUser,
+  hostInviteUser,
   // userAgreeInvite,
   // userRejectInvite,
   // getSpeakList,

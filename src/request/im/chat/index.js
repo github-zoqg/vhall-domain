@@ -75,7 +75,7 @@ function deleteUserMessage(params = {}) {
 function getBannedList(params = {}) {
   const url =
     env.imChat === 'v3'
-      ? '/v3/interacts/chat/get-banned-list'
+      ? '/v3/interacts/chat-user/get-banned-list'
       : '/v4/interacts/chat-user/get-banned-list';
   return request({
     url,
@@ -90,7 +90,7 @@ function getBannedList(params = {}) {
 function getKickedList(params = {}) {
   const url =
     env.imChat === 'v3'
-      ? '/v3/interacts/chat/get-kicked-list'
+      ? '/v3/interacts/chat-user/get-kicked-list'
       : '/v4/interacts/chat-user/get-kicked-list';
   return request({
     url,
@@ -105,7 +105,7 @@ function getKickedList(params = {}) {
 function getOnlineList(params = {}) {
   const url =
     env.imChat === 'v3'
-      ? '/v3/interacts/chat/get-online-list'
+      ? '/v3/interacts/chat-user/get-online-list'
       : '/v4/interacts/chat-user/get-online-list';
   return request({
     url,
@@ -120,7 +120,7 @@ function getOnlineList(params = {}) {
 function getBoundedList(params = {}) {
   const url =
     env.imChat === 'v3'
-      ? '/v3/interacts/chat/get-bounded-list'
+      ? '/v3/interacts/chat-user/get-bounded-list'
       : '/v4/interacts/chat-user/get-bounded-list';
   return request({
     url,
@@ -134,7 +134,7 @@ function getBoundedList(params = {}) {
  * */
 function setBanned(params = {}) {
   const url =
-    env.imChat === 'v3' ? '/v3/interacts/chat/set-banned' : '/v4/interacts/chat-user/set-banned';
+    env.imChat === 'v3' ? '/v3/interacts/chat-user/set-banned' : '/v4/interacts/chat-user/set-banned';
   return request({
     url,
     method: 'POST',
@@ -148,7 +148,7 @@ function setBanned(params = {}) {
 function setAllBanned(params = {}) {
   const url =
     env.imChat === 'v3'
-      ? '/v3/interacts/chat/set-all-banned'
+      ? '/v3/interacts/chat-user/set-all-banned'
       : '/v4/interacts/chat-user/set-all-banned';
   return request({
     url,
@@ -162,7 +162,7 @@ function setAllBanned(params = {}) {
  * */
 function setKicked(params = {}) {
   const url =
-    env.imChat === 'v3' ? '/v3/interacts/chat/set-kicked' : '/v4/interacts/chat-user/set-kicked';
+    env.imChat === 'v3' ? '/v3/interacts/chat-user/set-kicked' : '/v4/interacts/chat-user/set-kicked';
   return request({
     url,
     method: 'POST',

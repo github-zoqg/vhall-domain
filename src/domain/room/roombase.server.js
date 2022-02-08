@@ -23,9 +23,6 @@ class RoomBaseServer extends BaseServer {
     }
     super();
     this.state = {
-      inited: false,
-      isLiveOver: false,
-      webinarVo: {},
       watchInitData: {}, // 活动信息
       groupInitData: {
         isBanned: false, // 小组禁言
@@ -34,8 +31,8 @@ class RoomBaseServer extends BaseServer {
       }, // 分组信息
       watchInitErrorData: undefined, // 默认undefined，如果为其他值将触发特殊逻辑
       configList: {},
-      isGroupWebinar: false, // 是否是分组直播
       clientType: '',
+      interactToolStatus: {},
       roomVisibleModules: [],
       miniElement: 'stream-list' // 可能的值：doc  stream-list
     };
@@ -55,7 +52,6 @@ class RoomBaseServer extends BaseServer {
     this.setClientType(options.clientType);
     return meeting[liveType.get(options.clientType)](options).then(res => {
       if (res.code === 200) {
-        this.state.inited = true;
         this.state.watchInitData = res.data;
         setRequestHeaders({
           'interact-token': res.data.interact.interact_token
@@ -107,7 +103,7 @@ class RoomBaseServer extends BaseServer {
   // 获取活动信息
   getWebinarInfo(data) {
     return meeting.getWebinarInfo(data).then(res => {
-      this.state.webinarVo = res.data;
+      // this.state.webinarVo = res.data;
       return res;
     });
   }
@@ -136,7 +132,7 @@ class RoomBaseServer extends BaseServer {
     const retParams = merge.recursive({}, defaultParams, data);
     return meeting.getInavToolStatus(retParams).then(res => {
       if (res.code == 200) {
-        this.state.tnavToolStatus = res.data;
+        this.state.interactToolStatus = res.data;
       }
       return res;
     });

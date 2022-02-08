@@ -245,9 +245,11 @@ export default class StandardDocServer extends AbstractDocServer {
     this.state.containerList = list;
   }
 
-  // 设置文档加载完成
-  setDocLoadComplete() {
-    this.state.docLoadComplete = true;
+  /***
+   * 设置文档加载完成
+   */
+  setDocLoadComplete(val = true) {
+    this.state.docLoadComplete = val;
   }
 
   /**
@@ -486,9 +488,9 @@ export default class StandardDocServer extends AbstractDocServer {
     }
   }
 
-  // 获取文档列表(资料库所有文档)
-  async getAllDocList(params) {
-    const result = await docApi.getAllDocList(params);
+  // 获取资料库文档列表
+  async getSharedDocList(params) {
+    const result = await docApi.getSharedDocList(params);
     if (result && result.code === 200) {
       this._formatDocList(result.data?.list);
     }
@@ -496,7 +498,7 @@ export default class StandardDocServer extends AbstractDocServer {
   }
 
   /**
-   * 获取文档列表(当前活动下)
+   * 获取当前活动下文档列表
    * @param {Object} params
    * @returns
    */

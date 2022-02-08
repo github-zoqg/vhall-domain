@@ -281,22 +281,25 @@ class InteractiveServer extends BaseServer {
 
   // 创建摄像头视频流
   createLocalVideoStream(options = {}) {
-    const { state: roomBaseServerState } = useRoomBaseServer();
+    const { watchInitData } = useRoomBaseServer().state;
+
+    const { interactToolStatus } = useRoomBaseServer().state;
 
     let defaultOptions = {
       videoNode: options.videoNode, // 必填，传入本地视频显示容器ID
       audio: true, // 选填，是否采集音频设备，默认为true
       video: true, // 选填，是否采集视频设备，默认为true
-      audioDevice: options.audioDevice, // 选填，指定的音频设备id，默认为系统缺省
-      videoDevice: options.videoDevice, // 选填，指定的视频设备id，默认为系统缺省
+      audioDevice: options.audioDevice || sessionStorage.getItem('selectedAudioDeviceId'), // 选填，指定的音频设备id，默认为系统缺省
+      videoDevice: options.videoDevice || sessionStorage.getItem('selectedVideoDeviceId'), // 选填，指定的视频设备id，默认为系统缺省
       profile:
-        VhallPaasSDK.modules.VhallRTC[options.profile] ||
-        VhallPaasSDK.modules.VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
+        VhallRTC[options.profile] ||
+        VhallRTC[interactToolStatus.definition] ||
+        VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
       streamType: 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。
       attributes: JSON.stringify({
-        roleName: roomBaseServerState.watchInitData.join_info.role_name,
-        accountId: roomBaseServerState.watchInitData.join_info.third_party_user_id,
-        nickname: roomBaseServerState.watchInitData.join_info.nickname
+        roleName: watchInitData.join_info.role_name,
+        accountId: watchInitData.join_info.third_party_user_id,
+        nickname: watchInitData.join_info.nickname
       }) //选填，自定义信息，支持字符串类型
     };
     const params = merge.recursive({}, defaultOptions, options);
@@ -315,10 +318,12 @@ class InteractiveServer extends BaseServer {
   createLocalPhotoStream(options = {}, addConfig = {}) {
     return this.interactiveInstance.createLocalPhotoStream(options, addConfig);
   }
+
   // 销毁本地流
   destroyStream(streamId) {
     return this.interactiveInstance.destroyStream(streamId || this.state.streamId);
   }
+
   // 推送本地流到远端
   publishStream() {
     const { state: roomBaseServerState } = useRoomBaseServer();
@@ -338,15 +343,20 @@ class InteractiveServer extends BaseServer {
    * @returns {Promise}
    */
   unpublishStream(options = {}) {
-    return this.interactiveInstance.unpublish({
-      streamId: options.streamId || this.state.localStream.streamId
-    });
+    return this.interactiveInstance
+      .unpublish({
+        streamId: options.streamId || this.state.localStream.streamId
+      })
+      .then(res => {
+        this._clearLocalStream();
+        return res;
+      });
   }
 
   /**
    * 清空本地流参数
    */
-  clearLocalStream() {
+  _clearLocalStream() {
     this.state.localStream = {
       streamId: null, // 本地流id
       videoMuted: false,
@@ -513,61 +523,61 @@ class InteractiveServer extends BaseServer {
     return interactive.setRoomDevice(data);
   }
   // 组合api
-  startPushStream() {
-    console.log('state:', this.state);
-    createLocalAndStream(this.interactiveInstance);
-  }
+  // startPushStream() {
+  //   console.log('state:', this.state);
+  //   createLocalAndStream(this.interactiveInstance);
+  // }
   // 创建本地的推流和推流
-  createLocalAndStream(interactive) {
-    let camerasList = null,
-      micropsList = null,
-      videoConstraintsList = null,
-      streamId = null;
-    return interactive
-      .getDevices()
-      .then(data => {
-        console.log('devices list::', data);
-        camerasList = data.videoInputDevices.filter(d => d.label && d.deviceId != 'desktopScreen');
-        micropsList = data.audioInputDevices.filter(
-          d => d.deviceId != 'default' && d.deviceId != 'communications' && d.label
-        );
-      })
-      .then(() => {
-        const RESOLUTION_REG =
-          /((^VIDEO_PROFILE_(720P|540P|480P|360P)_1$)|(^RTC_VIDEO_PROFILE_(720P|540P|480P|360P)_16x9_M$))/;
-        interactive
-          .getVideoConstraints(camerasList[0].deviceId)
-          .then(data => {
-            console.log('constrainList', data);
-            videoConstraintsList = data.filter(item => RESOLUTION_REG.test(item.label));
-          })
-          .then(() => {
-            let params = {
-              videoNode: 'vhall-video',
-              videoDevice: camerasList[0].deviceId,
-              audioDevice: micropsList[0].deviceId,
-              profile: videoConstraintsList[0]
-            };
-            interactive
-              .createLocalVideoStream(params)
-              .then(res => {
-                console.log('create local stream success::', res);
-                this.state.streamId = res;
-                streamId = res;
-                return res;
-              })
-              .catch(err => {
-                console.log('local stream failed::', err);
-              });
-          })
-          .catch(err => {
-            console.log('constrainlist is failed::', err);
-          });
-      })
-      .catch(err => {
-        console.log('getDevies is failed::', err);
-      });
-  }
+  // createLocalAndStream(interactive) {
+  //   let camerasList = null,
+  //     micropsList = null,
+  //     videoConstraintsList = null,
+  //     streamId = null;
+  //   return interactive
+  //     .getDevices()
+  //     .then(data => {
+  //       console.log('devices list::', data);
+  //       camerasList = data.videoInputDevices.filter(d => d.label && d.deviceId != 'desktopScreen');
+  //       micropsList = data.audioInputDevices.filter(
+  //         d => d.deviceId != 'default' && d.deviceId != 'communications' && d.label
+  //       );
+  //     })
+  //     .then(() => {
+  //       const RESOLUTION_REG =
+  //         /((^VIDEO_PROFILE_(720P|540P|480P|360P)_1$)|(^RTC_VIDEO_PROFILE_(720P|540P|480P|360P)_16x9_M$))/;
+  //       interactive
+  //         .getVideoConstraints(camerasList[0].deviceId)
+  //         .then(data => {
+  //           console.log('constrainList', data);
+  //           videoConstraintsList = data.filter(item => RESOLUTION_REG.test(item.label));
+  //         })
+  //         .then(() => {
+  //           let params = {
+  //             videoNode: 'vhall-video',
+  //             videoDevice: camerasList[0].deviceId,
+  //             audioDevice: micropsList[0].deviceId,
+  //             profile: videoConstraintsList[0]
+  //           };
+  //           interactive
+  //             .createLocalVideoStream(params)
+  //             .then(res => {
+  //               console.log('create local stream success::', res);
+  //               this.state.streamId = res;
+  //               streamId = res;
+  //               return res;
+  //             })
+  //             .catch(err => {
+  //               console.log('local stream failed::', err);
+  //             });
+  //         })
+  //         .catch(err => {
+  //           console.log('constrainlist is failed::', err);
+  //         });
+  //     })
+  //     .catch(err => {
+  //       console.log('getDevies is failed::', err);
+  //     });
+  // }
   // 订阅流列表
   getRoomStreams() {
     const streamList = this.interactiveInstance.getRoomStreams();
