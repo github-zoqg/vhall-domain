@@ -44,6 +44,7 @@ class Domain {
     return Promise.all(taskList).then(res => {
       //触发所有注册的依赖passsdk和房间初始化的回调
       // Dep.expenseDep(INIT_DOMAIN, res);
+      return this;
     });
   }
 
@@ -70,6 +71,12 @@ class Domain {
   initRoom(options) {
     const roomBaseServer = useRoomBaseServer();
     return roomBaseServer.initLive(options);
+  }
+
+  // 初始化数据上报
+  initVhallReport(reportOptions, logOptions) {
+    window.vhallReport = new VhallReport(reportOptions);
+    window.vhallLog = ITextbookLog(logOptions);
   }
 }
 export {
