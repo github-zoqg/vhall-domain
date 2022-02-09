@@ -179,6 +179,6 @@ class MediaCheckServer {
   }
 }
 
-export default function useMediaServer() {
+export default function useMediaCheckServer() {
   return new MediaCheckServer();
 }
