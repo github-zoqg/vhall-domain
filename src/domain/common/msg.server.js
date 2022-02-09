@@ -67,29 +67,42 @@ class MsgServer extends BaseServer {
   }
 
   _handlePaasInstanceOn(instance, eventType, fn) {
+    function cb(msg) {
+      // 房间消息统一parse
+      try {
+        if (typeof msg === 'string') {
+          msg = JSON.parse(msg);
+        }
+        if (typeof msg.context === 'string') {
+          msg.context = JSON.parse(msg.context);
+        }
+        if (typeof msg.data === 'string') {
+          msg.data = JSON.parse(msg.data);
+        }
+      } catch (ex) {
+        console.log('消息转换错误：', ex);
+        return;
+      }
+      fn(msg);
+    }
     // 'room';
     // 'custom'
     console.log(VhallChat);
     switch (eventType) {
       case 'ROOM_MSG':
-        instance.onRoomMsg(msg => {
-          // 房间消息统一parse
-          msg.context = msg.context && JSON.parse(msg.context);
-          msg.data = msg.context && JSON.parse(msg.data);
-          fn(msg);
-        }); // 这个小写的字符串是跟微吼云沟通添加的，现在房间消息还没有常量
+        instance.onRoomMsg(cb); // 这个小写的字符串是跟微吼云沟通添加的，现在房间消息还没有常量
         break;
       case 'CHAT':
-        instance.on(fn);
+        instance.on(cb);
         break;
       case 'JOIN':
-        instance.join(fn);
+        instance.join(cb);
         break;
       case 'JOIN_ANY':
         // instance.on(VhallChat.EVENTS.JOIN_ANY, fn);
         break;
       case 'LEFT':
-        instance.leave(fn);
+        instance.leave(cb);
         break;
       case 'LEFT_ANY':
         // instance.on(VhallChat.EVENTS.LEFT_ANY, fn);
@@ -116,10 +129,10 @@ class MsgServer extends BaseServer {
       //   instance.on(VhallChat.EVENTS.UNMUTE_ALL, fn);
       //   break;
       case 'OFFLINE':
-        instance.onOffLine(fn);
+        instance.onOffLine(cb);
         break;
       case 'ONLINE':
-        instance.onOnLine(fn);
+        instance.onOnLine(cb);
         break;
       // case 'GROUP_NEW':
       // instance.on(VhallChat.EVENTS.GROUP_NEW, fn);
@@ -128,9 +141,9 @@ class MsgServer extends BaseServer {
       // instance.on(VhallChat.EVENTS.GROUP_DISSOLVE, fn);
       // break;
       case 'DocMsg':
-        instance.onDocMsg(fn);
+        instance.onDocMsg(cb);
       default:
-        instance.onCustomMsg(fn);
+        instance.onCustomMsg(cb);
     }
   }
 
