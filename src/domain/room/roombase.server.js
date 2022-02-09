@@ -171,7 +171,12 @@ class RoomBaseServer extends BaseServer {
 
   // 结束直播
   endLive(data = {}) {
-    return meeting.endLive(data);
+    return meeting.endLive(data).then(res => {
+      if (res.code == 200) {
+        this.state.watchInitData.webinar.type = 3;
+      }
+      return res;
+    });
   }
 
   // 开始/恢复录制
