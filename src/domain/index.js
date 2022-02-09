@@ -34,12 +34,17 @@ import { INIT_DOMAIN } from '@/domain/common/dep.const';
 class Domain {
   constructor(options) {
     this.setRequestConfig(options.requestHeaders);
-    return Promise.all([this.paasSdkInit(options.plugins), this.initRoom(options.initRoom)]).then(
-      res => {
-        //触发所有注册的依赖passsdk和房间初始化的回调
-        // Dep.expenseDep(INIT_DOMAIN, res);
-      }
-    );
+    let taskList = [];
+    // 是否在创建domain实例的时候初始化房间
+    if (options.isNotInitRoom) {
+      taskList = [this.paasSdkInit(options.plugins)];
+    } else {
+      taskList = [this.paasSdkInit(options.plugins), this.initRoom(options.initRoom)];
+    }
+    return Promise.all(taskList).then(res => {
+      //触发所有注册的依赖passsdk和房间初始化的回调
+      // Dep.expenseDep(INIT_DOMAIN, res);
+    });
   }
 
   // 加载paasSdk
