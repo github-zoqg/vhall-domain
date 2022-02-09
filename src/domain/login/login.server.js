@@ -1,5 +1,27 @@
+/**
+ * @description 用户登录-注册-三方登录
+ */
+import { login as loginApi } from '@/request/index.js';
 export default function useLoginServer() {
-  let state = {};
+  const state = {
+    capInstance: null, // 云盾本身
+    captchaKey: null, // 云盾key
+    captchaVal: null // 图片验证码值
+  };
+  /**
+   * @description 获取易盾的key
+   * */
+  function getCapthaKey() {
+    state.captchaKey = 'b7982ef659d64141b7120a6af27e19a0'; // 识别
+  }
+
+  /**
+   * @description 初始化易盾
+   * /v3/users/code-consumer/send
+   * */
+  function initNECaptcha(element = '#codeLoginCaptcha') {
+    // const
+  }
 
   /**
    * 校验验证码,获取验证码（图形验证码）
@@ -11,7 +33,9 @@ export default function useLoginServer() {
    * 发送手机短信验证码、邮件验证码
    * /v3/users/code/send
    * */
-  function sendCode() {}
+  function sendCode(params) {
+    return loginApi.sendCode(params);
+  }
 
   /**
    * 校验手机验证码、邮件验证码
