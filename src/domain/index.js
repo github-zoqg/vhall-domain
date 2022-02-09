@@ -33,7 +33,9 @@ import { INIT_DOMAIN } from '@/domain/common/dep.const';
  */
 class Domain {
   constructor(options) {
-    this.setRequestConfig(options.requestHeaders);
+    if (options.requestHeaders) {
+      this.setRequestConfig(options.requestHeaders);
+    }
     let taskList = [];
     // 是否在创建domain实例的时候初始化房间
     if (options.isNotInitRoom) {

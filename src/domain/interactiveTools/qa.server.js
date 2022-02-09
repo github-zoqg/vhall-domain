@@ -1,11 +1,8 @@
 import BaseServer from '@/domain/common/base.server.js';
+import { Domain } from '@/domain';
 import VhallPaasSDK from '@/sdk/index.js';
-import useMsgServer from '@/domain/common/msg.server';
 import { qa } from '@/request/index.js';
-import { textToEmojiText, textToEmoji } from '@/domain/chat/emoji.js';
-
-//消息服务
-const msgServer = useMsgServer();
+import { textToEmojiText, emojiToText } from '@/domain/chat/emoji.js';
 
 /**
  * 问答服务
@@ -65,8 +62,6 @@ class QaServer extends BaseServer {
       priteChatList: [] // 私聊列表
     };
 
-    this.listenEvents();
-
     this.chatInstance = null; // 聊天实例
     // this.privateChat = null;
 
@@ -81,23 +76,16 @@ class QaServer extends BaseServer {
 
   //监听msgServer通知
   listenEvents() {
-    msgServer.$onMsg('question_answer_create', rawMsg => {
-      // 发起端收到消息
-      rawMsg.content = this.emojiToText(rawMsg.content);
-      this.awaitList.push(e);
-      this.List[0].count = this.awaitList.length;
-      console.warn('domain qa listenEvents------>', this.awaitList);
+    this.chatInstance.onRoomMsg(msg => {
+      // msg.context = msg.context && JSON.parse(msg.context);
+      let msgData = msg.context && JSON.parse(msg.data);
+      if (msgData.type == 'question_answer_create') {
+        // 发起端收到消息
+        msgData.content = emojiToText(msgData.content);
+        this.state.awaitList.push(msgData);
+        this.state.List[0].count = this.state.awaitList.length;
+      }
     });
-  }
-
-  emojiToText(content) {
-    return textToEmoji(content)
-      .map(c => {
-        return c.msgType == 'text'
-          ? c.msgCont
-          : `<img width="24" src="${c.msgImage}" border="0" />`;
-      })
-      .join(' ');
   }
 
   // 初始化聊天实例
@@ -109,25 +97,22 @@ class QaServer extends BaseServer {
       token: this.state.baseObj.interact.paas_access_token, // 必须， token，初始化接口获取
       hide: true
     };
+
+    // 创建domain实例
+    await new Domain({
+      plugins: ['chat'],
+      isNotInitRoom: true
+    });
+
+    // 创建聊天实例
     const vhallchat = await VhallPaasSDK.modules.VhallChat.createInstance(options);
     this.chatInstance = vhallchat.message; // 聊天实例句柄
+    this.listenEvents();
 
-    console.log('this.chatInstance--------->', this.chatInstance);
-    // VhallPaasSDK.modules.VhallChat.createInstance(
-    //   option,
-    //   event => {
-    //     this.chatInstance = event.message; // 聊天实例句柄
-
-    //     console.log('this.chatInstance--------->', this.chatInstance);
-
-    //     if (callbackFn) {
-    //       callbackFn(event);
-    //     }
-    //   },
-    //   err => {
-    //     console.error('domain qa initChatInstance-------->', err);
-    //   }
-    // );
+    // 使用侧可以添加回调函数
+    if (callbackFn) {
+      callbackFn(vhallchat);
+    }
   }
 
   // 根据问题id查询索引值
@@ -151,7 +136,6 @@ class QaServer extends BaseServer {
       index: index
     });
     this.state.textDialogStatus = true;
-    console.log('qa domain replayIsText-------->', this.state);
   }
 
   handlerAnswer(status) {
