@@ -2,7 +2,6 @@
  * @description 用户登录-注册-三方登录
  */
 import { login as loginApi } from '@/request/index.js';
-
 export default function useLoginServer() {
   let capInstance, // 云盾实例
     captchaId, // 云盾key
@@ -42,6 +41,7 @@ export default function useLoginServer() {
       onReady(instance) {
         console.log('🚀 ~ initNECaptcha onReady ', instance);
         capInstance = instance;
+        refreshNECaptha(false); // 方式多个模块之间计时器互相影响
       },
       onVerify(err, data) {
         // 易盾验证(成功or失败)
@@ -65,18 +65,15 @@ export default function useLoginServer() {
     );
     window.initNECaptcha(NECaptchaOpts);
   }
-
   /**
    * @description 刷新易盾
    * */
-  function refreshNECaptha() {
+  function refreshNECaptha(refreshInstance = true) {
     clearInterval(countDownTimer);
     countDownTimer = null;
     state.second = -1;
     state.captchaVal = null;
-
-    console.log('🚀 ~ file: loginServer.js ~ line 72 ~ refreshNECaptha ~ capInstance', capInstance);
-    capInstance?.refresh();
+    refreshInstance && capInstance?.refresh();
   }
 
   /**
@@ -153,6 +150,88 @@ export default function useLoginServer() {
   }
 
   /**
+   * 登录状态检查
+   * */
+  function loginCheck(account) {
+    return loginApi.loginCheck({
+      account,
+      channel: 'C' // B端用户还是C端用户
+    });
+  }
+
+  /**
+   * 明文密码加密
+   * */
+  function handleEncryptPassword(password, publicKey) {
+    let retPassword = '';
+    const encryptor = new window.JSEncrypt(); // 新建JSEncrypt对象(依赖在中台导入)
+    // 设置公钥
+    encryptor.setPublicKey(publicKey);
+    // 加密数据
+    retPassword = encryptor.encrypt(password);
+    retPassword = retPassword.replace(/\+/g, '-').replace(/\//g, '_');
+    while (retPassword[retPassword.length - 1] === '=') {
+      retPassword = retPassword.substr(0, retPassword.length - 1);
+    }
+    return retPassword;
+  }
+  /**
+   * 明文密码加密
+   * */
+  async function handlePassword(password) {
+    const getKeyRelt = await loginApi.getKeyLogin();
+    if (getKeyRelt.code !== 200) {
+      getKeyRelt.pass = false; // 是否通过此步骤标识
+      getKeyRelt.type = 'getKeyLogin';
+      return Object.assign(getKeyRelt, {
+        type: 'getKeyLogin',
+        pass: false
+      });
+    }
+    let retPassword;
+    try {
+      const publicKey = getKeyRelt.data.public_key;
+      retPassword = handleEncryptPassword(password, publicKey);
+    } catch (error) {
+      refreshNECaptha();
+      return {
+        pass: false,
+        type: 'Encrypt'
+      };
+    }
+    return {
+      pass: true,
+      retPassword,
+      uuid: getKeyRelt.data.uuid
+    };
+  }
+
+  /**
+   * 注册
+   * */
+  function register(params) {
+    const failure = () => {
+      refreshNECaptha();
+    };
+    return loginApi
+      .register({
+        text: state.captchaVal,
+        captcha: state.captchaVal,
+        ...params
+      })
+      .then(res => {
+        if (res.code !== 200) {
+          failure(res);
+        }
+        return res;
+      })
+      .catch(err => {
+        failure(err);
+        return err;
+      });
+  }
+
+  /**
    * 跳转到qq授权登录链接、跳转到微信授权登录链接
    * /v3/users/oauth/callback
    * */
@@ -179,28 +258,10 @@ export default function useLoginServer() {
   function checkCode() {}
 
   /**
-   * 登录状态检查
-   * /v3/users/user/login-check
-   * */
-  function loginCheck() {}
-
-  /**
-   * 获取手机短信验证码
-   * /v3/users/user/get-key-login
-   * */
-  function getKeyLogin() {}
-
-  /**
    * 重置密码
    * /v3/users/user/reset-password
    * */
   function resetPassword() {}
-
-  /**
-   * 注册
-   * /v3/users/user-consumer/register
-   * */
-  function register() {}
 
   /**
    * 角度口令登录
@@ -216,12 +277,12 @@ export default function useLoginServer() {
     userLogin,
     authLogin,
     loginCheck,
-    getKeyLogin,
     sendCode,
     checkCode,
     resetPassword,
     register,
     authLoginByWx,
-    roleLogin
+    roleLogin,
+    handlePassword
   };
 }

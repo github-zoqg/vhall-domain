@@ -41,6 +41,7 @@ const sendCode = (params = {}) => {
 // 发送验证码(c端)
 const userLogin = (params = {}) => {
   // const params = {
+  // way: 2, // 手机号验证码登录
   //   phone: this.ruleForm.phone,  // 手机号
   //   code: this.ruleForm.captchas, // 动态密码【快捷登录（短信验证码登录）必传】
   //   remember: Number(this.autoLoginStatus) // 自动登录
@@ -48,19 +49,51 @@ const userLogin = (params = {}) => {
   // if (this.options.visitorId) {
   //   params.visitor_id = this.options.visitorId; // 游客id 登录方式为账号密码或者手机号验证码方式，如果传入游客ID会将访客和登录账户进行绑定
   // }
-  const retParmams = {
-    // way: 2, // 手机号验证码登录
-    ...params
-  };
   return request({
     url: '/v3/users/user-consumer/login',
     method: 'POST',
-    data: retParmams
+    data: params
+  });
+};
+
+// 发送验证码(c端)
+const loginCheck = (params = {}) => {
+  return request({
+    url: '/v3/users/user/login-check',
+    method: 'POST',
+    data: params
+  });
+};
+
+/**
+ * 获取登录秘钥
+ * */
+function getKeyLogin() {
+  return request({
+    url: '/v3/users/user/get-key-login',
+    method: 'POST'
+  });
+}
+
+/**
+ * 注册
+ * */
+const register = (params = {}) => {
+  return request({
+    url: '/v3/users/user-consumer/register',
+    method: 'POST',
+    data: {
+      biz_id: biz_id,
+      ...params
+    }
   });
 };
 
 export default {
   getCapthaKey,
   sendCode,
-  userLogin
+  userLogin,
+  loginCheck,
+  register,
+  getKeyLogin
 };
