@@ -19,7 +19,7 @@ import useGroupServer from '@/domain/group/StandardGroupServer';
 
 // 问答
 import useQaServer from '@/domain/interactiveTools/qa.server.js';
-import useLoginServer from '@/domain/login/login.server.js';
+import useLoginServer from '@/domain/login/loginServer.js';
 
 import { setToken, setRequestHeaders } from '@/utils/http.js';
 import VhallPaasSDK from '../sdk';
