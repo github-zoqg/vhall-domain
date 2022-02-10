@@ -18,6 +18,8 @@ import useNoticeServer from '@/domain/notice/notice.server.js';
 import useMemberServer from '@/domain/member/member.server.js';
 import useGroupServer from '@/domain/group/StandardGroupServer';
 
+import useCustomMenuServer from '@/domain/brand/customMenu.server';
+
 // 问答
 import useQaServer from '@/domain/interactiveTools/qa.server.js';
 
@@ -101,5 +103,6 @@ export {
   useNoticeServer,
   useMemberServer,
   useGroupServer,
-  useQaServer
+  useQaServer,
+  useCustomMenuServer
 };
