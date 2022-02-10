@@ -80,7 +80,7 @@ export default function useLoginServer() {
    * 发送手机短信验证码、邮件验证码
    * @param phoneNum
    * */
-  function sendCode(phoneNum) {
+  function sendCode(phoneNum, sceneId = 7) {
     // 开始倒计时
     const startCountDown = () => {
       state.second = 60;
@@ -100,7 +100,7 @@ export default function useLoginServer() {
       data: phoneNum,
       type: 1, // 1手机  2邮箱,
       validate: state.captchaVal, // 图形验证码数据
-      scene_id: 7 // scene_id场景ID：1账户信息-修改密码  2账户信息-修改密保手机 3账户信息-修改关联邮箱 4忘记密码-邮箱方式找回 5忘记密码-短信方式找回 6提现绑定时手机号验证 7快捷方式登录（短信验证码登录） 8注册-验证码
+      scene_id: sceneId // scene_id场景ID：1账户信息-修改密码  2账户信息-修改密保手机 3账户信息-修改关联邮箱 4忘记密码-邮箱方式找回 5忘记密码-短信方式找回 6提现绑定时手机号验证 7快捷方式登录（短信验证码登录） 8注册-验证码
     };
     return loginApi
       .sendCode(params)
@@ -235,7 +235,7 @@ export default function useLoginServer() {
    * 跳转到qq授权登录链接、跳转到微信授权登录链接
    * /v3/users/oauth/callback
    * */
-  function authLogin() {}
+  function authLogin(params) {}
 
   /**
    * 微信浏览器微信授权登录
