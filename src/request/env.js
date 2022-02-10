@@ -17,5 +17,6 @@ export default {
   activity: 'v3',
   player: 'v3',
   brand: 'v3',
-  qa: 'v3'
+  qa: 'v3',
+  rebroadcast: 'v3'
 };

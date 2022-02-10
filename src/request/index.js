@@ -14,6 +14,7 @@ import imNotice from './im/notice/index.js';
 import imChatAuth from './im/chatAuth/index.js';
 import activity from './room/activity/index.js';
 import player from './player.js';
+import rebroadcast from './room/rebroadcast';
 
 // 问答
 import qaList from './qa/list/index.js';
@@ -47,5 +48,6 @@ export {
   player,
   im,
   room,
-  qa
+  qa,
+  rebroadcast
 };
