@@ -3,7 +3,7 @@ import { Domain } from '@/domain';
 import VhallPaasSDK from '@/sdk/index.js';
 import { qa } from '@/request/index.js';
 import { textToEmojiText, emojiToText } from '@/domain/chat/emoji.js';
-
+import useRoomBaseServer from '../room/roombase.server';
 /**
  * 问答服务
  * @returns
@@ -156,12 +156,14 @@ class QaServer extends BaseServer {
     });
   }
 
-  qaEnable(params = {}) {
-    return qa.list.qaEnable(params);
+  qaEnable() {
+    const { watchInitData } = useRoomBaseServer().state;
+    return qa.list.qaEnable({ room_id: watchInitData.interact.room_id });
   }
 
-  qaDisable(params = {}) {
-    return qa.list.qaDisable(params);
+  qaDisable() {
+    const { watchInitData } = useRoomBaseServer().state;
+    return qa.list.qaDisable({ room_id: watchInitData.interact.room_id });
   }
 
   getCurrentPlayQuestionNum(params = {}) {

@@ -52,8 +52,6 @@ class ChatServer extends BaseServer {
   //监听msgServer通知
   listenEvents() {
     msgServer.$onMsg('CHAT', rawMsg => {
-      rawMsg.data = JSON.parse(rawMsg.data);
-      rawMsg.context = JSON.parse(rawMsg.context);
       if (['text', 'image'].includes(rawMsg.data.type)) {
         //表情处理
         rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
