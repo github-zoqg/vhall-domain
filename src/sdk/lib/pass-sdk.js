@@ -22,5 +22,10 @@ export default {
   doc: {
     name: 'VHDocSDK',
     url: '//static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.2.0.js'
+  },
+  // 数据上报sdk
+  report: {
+    name: 'VhallReport',
+    url: '//cnstatic01.e.vhall.com/common-static/middle/middle-log/1.0.1/index.min.js'
   }
 };

@@ -13,7 +13,7 @@ class VhallPaasSDK {
     return this;
   }
   static async loadSdk(plugins) {
-    const sdklist = ['base', ...plugins].map(item => {
+    const sdklist = ['report', 'base', ...plugins].map(item => {
       return mountSDK(passSdk[item]);
     });
     try {
