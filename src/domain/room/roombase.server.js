@@ -138,6 +138,14 @@ class RoomBaseServer extends BaseServer {
     });
   }
 
+  // 设置互动
+  setInavToolStatus(props, val) {
+    if (!props || typeof props !== 'string') return;
+    const its = merge.recursive({}, this.state.interactToolStatus);
+    its[props] = val;
+    this.state.interactToolStatus = its;
+  }
+
   // 设置设备检测状态
   setDevice(data = {}) {
     const defaultParams = {
