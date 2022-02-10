@@ -1,3 +1,4 @@
+import customMenu from './brand/customMenu/index';
 import meeting from './meeting/index.js';
 import user from './user.js';
 import insertFile from './insertFile.js';
@@ -34,4 +35,17 @@ const qa = {
   list: qaList,
   privateChat: qaPrivateChat
 };
-export { meeting, user, insertFile, virtualClient, interactive, doc, group, player, im, room, qa };
+export {
+  customMenu,
+  meeting,
+  user,
+  insertFile,
+  virtualClient,
+  interactive,
+  doc,
+  group,
+  player,
+  im,
+  room,
+  qa
+};
