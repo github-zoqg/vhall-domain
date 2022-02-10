@@ -27,6 +27,7 @@ import { setToken, setRequestHeaders } from '@/utils/http.js';
 import VhallPaasSDK from '../sdk';
 import { Dep } from '@/domain/common/base.server';
 import { INIT_DOMAIN } from '@/domain/common/dep.const';
+import useChatAuthServer from "./chat/chatAuth.server";
 /**
  * options:{
     token,
@@ -98,6 +99,7 @@ export {
   useInsertFileServer,
   useDesktopShareServer,
   useChatServer,
+  useChatAuthServer,
   useMicServer,
   useDocServer,
   useNoticeServer,
