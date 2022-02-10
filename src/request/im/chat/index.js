@@ -5,7 +5,7 @@ import env from '../../env';
  * 获取历史聊天消息
  * */
 function getChatList(params = {}) {
-  const url = env.imChat === 'v3' ? '/v3/interacts/chat/get-list' : '/v4/interacts/chat/get-list';
+  const url = env.imChat === 'v3' ? '/v3/interacts/chat/get-list' : '/v4/im-chat/chat/get-list';
   return request({
     url,
     method: 'POST',
@@ -75,7 +75,7 @@ function deleteUserMessage(params = {}) {
 function getBannedList(params = {}) {
   const url =
     env.imChat === 'v3'
-      ? '/v3/interacts/chat/get-banned-list'
+      ? '/v3/interacts/chat-user/get-banned-list'
       : '/v4/interacts/chat-user/get-banned-list';
   return request({
     url,
@@ -134,7 +134,7 @@ function getBoundedList(params = {}) {
  * */
 function setBanned(params = {}) {
   const url =
-    env.imChat === 'v3' ? '/v3/interacts/chat/set-banned' : '/v4/interacts/chat-user/set-banned';
+    env.imChat === 'v3' ? '/v3/interacts/chat-user/set-banned' : '/v4/interacts/chat-user/set-banned';
   return request({
     url,
     method: 'POST',
@@ -148,7 +148,7 @@ function setBanned(params = {}) {
 function setAllBanned(params = {}) {
   const url =
     env.imChat === 'v3'
-      ? '/v3/interacts/chat/set-all-banned'
+      ? '/v3/interacts/chat-user/set-all-banned'
       : '/v4/interacts/chat-user/set-all-banned';
   return request({
     url,
@@ -162,7 +162,7 @@ function setAllBanned(params = {}) {
  * */
 function setKicked(params = {}) {
   const url =
-    env.imChat === 'v3' ? '/v3/interacts/chat/set-kicked' : '/v4/interacts/chat-user/set-kicked';
+    env.imChat === 'v3' ? '/v3/interacts/chat-user/set-kicked' : '/v4/interacts/chat-user/set-kicked';
   return request({
     url,
     method: 'POST',

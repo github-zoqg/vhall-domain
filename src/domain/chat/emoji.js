@@ -463,4 +463,25 @@ function emojiToPath(key) {
     : `${emojiUrl}/Expression_${faceArr[key]}@2x.png`;
 }
 
-export { getEmojiList, textToEmojiText, emojiToPath, textToEmoji, faceArr, faceArr_v2 };
+/**
+ * 表情转换成文字
+ * @param {*} content
+ * @returns
+ */
+function emojiToText(content) {
+  return textToEmoji(content)
+    .map(c => {
+      return c.msgType == 'text' ? c.msgCont : `<img width="24" src="${c.msgImage}" border="0" />`;
+    })
+    .join(' ');
+}
+
+export {
+  getEmojiList,
+  textToEmojiText,
+  emojiToPath,
+  textToEmoji,
+  emojiToText,
+  faceArr,
+  faceArr_v2
+};

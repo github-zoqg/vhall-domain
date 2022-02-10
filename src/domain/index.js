@@ -2,6 +2,7 @@
 import useMsgServer from '@/domain/common/msg.server.js';
 import useInteractiveServer from '@/domain/media/interactive.server.js';
 import useMediaCheckServer from '@/domain/media/mediaCheck.server.js';
+import useMediaSettingServer from '@/domain/media/mediaSetting.server.js';
 import usePlayerServer from '@/domain/player/player.server.js';
 import useDocServer from '@/domain/doc/doc.server.js';
 
@@ -15,7 +16,10 @@ import useChatServer from '@/domain/chat/chat.server.js';
 import useMicServer from '@/domain/media/mic.server.js';
 import useNoticeServer from '@/domain/notice/notice.server.js';
 import useMemberServer from '@/domain/member/member.server.js';
-import useGroupDiscussionServer from '@/domain/room/groupDiscussion.server.js';
+import useGroupServer from '@/domain/group/StandardGroupServer';
+
+// 问答
+import useQaServer from '@/domain/interactiveTools/qa.server.js';
 
 import { setToken, setRequestHeaders } from '@/utils/http.js';
 import VhallPaasSDK from '../sdk';
@@ -30,13 +34,20 @@ import { INIT_DOMAIN } from '@/domain/common/dep.const';
  */
 class Domain {
   constructor(options) {
-    this.setRequestConfig(options.requestHeaders);
-    return Promise.all([this.paasSdkInit(options.plugins), this.initRoom(options.initRoom)]).then(
-      res => {
-        //触发所有注册的依赖passsdk和房间初始化的回调
-        // Dep.expenseDep(INIT_DOMAIN, res);
-      }
-    );
+    if (options.requestHeaders) {
+      this.setRequestConfig(options.requestHeaders);
+    }
+    let taskList = [];
+    // 是否在创建domain实例的时候初始化房间
+    if (options.isNotInitRoom) {
+      taskList = [this.paasSdkInit(options.plugins)];
+    } else {
+      taskList = [this.paasSdkInit(options.plugins), this.initRoom(options.initRoom)];
+    }
+    return Promise.all(taskList).then(res => {
+      //触发所有注册的依赖passsdk和房间初始化的回调
+      // Dep.expenseDep(INIT_DOMAIN, res);
+    });
   }
 
   // 加载paasSdk
@@ -74,6 +85,7 @@ export {
   // useRoomInitGroupServer,
   useInteractiveServer,
   useMediaCheckServer,
+  useMediaSettingServer,
   useInsertFileServer,
   useDesktopShareServer,
   useChatServer,
@@ -81,5 +93,6 @@ export {
   useDocServer,
   useNoticeServer,
   useMemberServer,
-  useGroupDiscussionServer
+  useGroupServer,
+  useQaServer
 };

@@ -138,6 +138,14 @@ class RoomBaseServer extends BaseServer {
     });
   }
 
+  // 设置互动
+  setInavToolStatus(props, val) {
+    if (!props || typeof props !== 'string') return;
+    this.state.interactToolStatus = merge.recursive({}, this.state.interactToolStatus, {
+      props: val
+    });
+  }
+
   // 设置设备检测状态
   setDevice(data = {}) {
     const defaultParams = {
@@ -163,7 +171,12 @@ class RoomBaseServer extends BaseServer {
 
   // 结束直播
   endLive(data = {}) {
-    return meeting.endLive(data);
+    return meeting.endLive(data).then(res => {
+      if (res.code == 200) {
+        this.state.watchInitData.webinar.type = 3;
+      }
+      return res;
+    });
   }
 
   // 开始/恢复录制
