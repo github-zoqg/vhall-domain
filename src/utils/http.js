@@ -23,7 +23,7 @@ const service = axios.create({ headers: { 'Content-Type': 'application/x-www-for
 // request interceptor
 service.interceptors.request.use(
   config => {
-    console.log('----axios----请求配置', config);
+    // console.log('----axios----请求配置', config);
     // set baseURL
     config.baseURL = BASE_URL;
 
@@ -47,7 +47,7 @@ service.interceptors.request.use(
       ...config.headers
     };
 
-    console.log('---请求拦截----', config);
+    // console.log('---请求拦截----', config);
     return config;
   },
   error => {

@@ -113,6 +113,14 @@ const getRoomToolStatus = (params = {}) => {
   });
 };
 
+const setStream = (params = {}) => {
+  return $http({
+    url: '/v3/interacts/room/set-stream',
+    method: 'POST',
+    data: params
+  });
+};
+
 const roomBase = {
   getWebinarInfo,
   getConfigList,
@@ -120,7 +128,8 @@ const roomBase = {
   recordApi,
   getGroupInitData,
   initRecordApi,
-  getRoomToolStatus
+  getRoomToolStatus,
+  setStream
 };
 
 export default roomBase;
