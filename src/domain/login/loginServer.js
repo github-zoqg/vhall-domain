@@ -39,23 +39,25 @@ export default function useLoginServer() {
       // FIXME: 网易易顿多语言字段 lang 需要翻译(暂时写死)
       lang: 'zh-CN',
       // lang: window.$globalConfig.currentLang || 'zh-CN',
-      // onReady(instance) {},
+      onReady(instance) {
+        console.log('🚀 ~ initNECaptcha onReady ', instance);
+        capInstance = instance;
+      },
       onVerify(err, data) {
         // 易盾验证(成功or失败)
         if (data) {
           state.captchaVal = data.validate;
-          // that.codeBtnDisabledCheck();
         } else {
           state.captchaVal = null;
         }
         if (err) {
           console.error('🚀 ~ initNECaptcha err ', err);
         }
-      },
-      onload(instance) {
-        console.log('🚀 ~ initNECaptcha onload ', instance);
-        capInstance = instance;
       }
+      // onload(instance) {
+      //   console.log('🚀 ~ initNECaptcha onload ', instance);
+      //   capInstance = instance;
+      // }
     };
     console.log(
       '🚀 ~ file: code-login.vue ~ line 243 ~ callCaptcha ~ NECaptchaOpts',
@@ -72,6 +74,8 @@ export default function useLoginServer() {
     countDownTimer = null;
     state.second = -1;
     state.captchaVal = null;
+
+    console.log('🚀 ~ file: loginServer.js ~ line 72 ~ refreshNECaptha ~ capInstance', capInstance);
     capInstance?.refresh();
   }
 
@@ -125,19 +129,20 @@ export default function useLoginServer() {
   function userLogin(params) {
     // 登录失败,清空缓存信息
     const failure = res => {
-      localStorage.setItem('token', '');
+      console.warn('获取C端登录后用户信息失败', res);
+      localStorage.removeItem('token');
+      localStorage.removeItem('userInfo');
       // 刷新易盾
-      if (state.captchaVal) {
-        refreshNECaptha();
-      }
+      refreshNECaptha();
     };
     return loginApi
       .userLogin(params)
       .then(res => {
         if (res.code === 200) {
           localStorage.setItem('token', res.data.token || '');
+          localStorage.setItem('userInfo', JSON.stringify(res.data));
         } else {
-          failure(err);
+          failure(res);
         }
         return res;
       })
