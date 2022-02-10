@@ -13,6 +13,7 @@ import imNotice from './im/notice/index.js';
 import imChatAuth from './im/chatAuth/index.js';
 import activity from './room/activity/index.js';
 import player from './player.js';
+import liveTimerApi from './live-timer';
 
 // 问答
 import qaList from './qa/list/index.js';
@@ -34,4 +35,17 @@ const qa = {
   list: qaList,
   privateChat: qaPrivateChat
 };
-export { meeting, user, insertFile, virtualClient, interactive, doc, group, player, im, room, qa };
+export {
+  meeting,
+  user,
+  insertFile,
+  virtualClient,
+  interactive,
+  doc,
+  group,
+  player,
+  im,
+  room,
+  qa,
+  liveTimerApi
+};
