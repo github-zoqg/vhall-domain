@@ -242,8 +242,6 @@ export default class AbstractDocServer extends BaseServer {
 
   /**
    * 取消缩放、移动模式。 恢复默认行为：画笔
-   * NOTE:
-   *  This function is DEPRECATED (to be removed after 2.0.0).
    * @deprecated
    * @param {?String} id 可选容器id，有传入id的话则会设置成当前文档
    * @returns

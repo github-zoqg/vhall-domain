@@ -82,9 +82,7 @@ class RoomBaseServer extends BaseServer {
   // 设置子房间初始化信息
   setGroupInitData(data) {
     this.state.groupInitData = merge.recursive({}, data, this.state.groupInitData);
-    if (this.state.groupInitData.group_id === 0) {
-      this.state.groupInitData.isInGroup = false;
-    }
+    this.state.groupInitData.isInGroup = !!this.state.groupInitData.group_id;
   }
 
   // 获取分组初始化信息
@@ -164,6 +162,7 @@ class RoomBaseServer extends BaseServer {
     return meeting.startLive(data).then(res => {
       if (res.code == 200) {
         this.state.watchInitData.webinar.type = 1;
+        this.state.watchInitData.switch = res.data;
       }
       return res;
     });

@@ -31,9 +31,7 @@ export default class StandardDocServer extends AbstractDocServer {
       thumbnailList: [], // 缩略图列表
       switchStatus: false, // 观众是否可见
 
-      isInGroup: false,
-      hasDocPermission: false,
-      groupRole: '' // 小组内角色
+      hasDocPermission: false
     };
   }
 
@@ -75,40 +73,34 @@ export default class StandardDocServer extends AbstractDocServer {
 
   // 获取默认初始化参数
   _getDefaultOptions() {
-    const { watchInitData, groupInitData } = useRoomBaseServer().state;
+    const { watchInitData, groupInitData, interactToolStatus } = useRoomBaseServer().state;
     console.log('---useRoomBaseServer()----:', useRoomBaseServer());
     // console.log('---groupInitData---:', groupInitData);
     this.watchInitData = watchInitData;
-
     console.log('获取默认初始化参数 watchInitData:', this.watchInitData);
-    if (groupInitData && groupInitData.isInGroup) {
-      // 小组房间内
-      this.state.isInGroup = true;
-      this.state.hasDocPermission = groupInitData.main_screen == defaultOptions.accountId;
-      this.state.groupRole = groupInitData.join_role;
-    } else {
-      // 主房间内
-      this.state.isInGroup = false;
-      // TODO interactToolStatus
-      // if (this.interactToolStatus) {
-      //   // 主直播间邀请
-      //   this.hasDocPermission = this.interactToolStatus.main_screen == this.joinId;
-      // }
-    }
+
     // 初始化参数
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
       accountId: watchInitData.join_info.third_party_user_id, // 第三方用户ID，必填
       client: VHDocSDK.Client.PC_WEB // 客户端类型
     };
-    if (this.state.isInGroup) {
-      // 分组讨论直播间中
+
+    // 如果当前用户进入了某个小组
+    if (groupInitData && groupInitData.isInGroup) {
+      // 小组房间内
+      this.state.hasDocPermission = groupInitData.main_screen == defaultOptions.accountId;
       defaultOptions.role = this.mapDocRole(this.state.hasDocPermission ? 1 : 2); // 角色
       defaultOptions.roomId = groupInitData.group_room_id;
       defaultOptions.channelId = groupInitData.channel_id;
       defaultOptions.token = groupInitData.access_token;
       console.log('取小组数据');
     } else {
+      // 如果当前用户不在小组内，而在主直播间内，
+      if (interactToolStatus) {
+        // 主直播间邀请 TODO ？？
+        // this.hasDocPermission = interactToolStatus.main_screen == this.joinId;
+      }
       defaultOptions.role = this.mapDocRole(watchInitData.join_info.role_name);
       defaultOptions.roomId = watchInitData.interact.room_id; // 必填。
       defaultOptions.channelId = watchInitData.interact.channel_id; // 频道id 必须

@@ -1,5 +1,5 @@
 import request from '@/utils/http.js';
-import env from '@/request/env';
+import env from '../../env';
 
 /**
  * 发送公告消息
