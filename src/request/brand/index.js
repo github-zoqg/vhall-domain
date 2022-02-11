@@ -1,6 +1,8 @@
 import request from '@/utils/http.js';
 import env from '../env';
 
+import customMenuRequest from './customMenu';
+
 /**
  * 获取暖场视频详情
  * */
