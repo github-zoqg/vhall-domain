@@ -215,7 +215,10 @@ class MsgServer extends BaseServer {
       this.msgInstance.emitRoomMsg(data);
     }
   }
-
+  //发送自定义消息
+  sendCustomMsg(data) {
+    this.msgInstance.emitCustomMsg(data);
+  }
   defineReactiveGroupMsg() {
     Object.defineProperty(this, 'groupMsgInstance', {
       get() {

@@ -205,7 +205,7 @@ class ChatServer extends BaseServer {
   }
 
   /**
-   * 禁言
+   * 禁言/取消禁言
    * */
   setBanned(params = {}) {
     return iMRequest.chat.setBanned(params).then(res => {
@@ -248,6 +248,10 @@ class ChatServer extends BaseServer {
    * */
   getKeyWordsList(params = {}) {
     return iMRequest.keyWords.getKeyWordsList(params);
+  }
+  //获取禁言用户列表
+  getBannedList(params = {}) {
+    return iMRequest.chat.getBannedList(params);
   }
 }
 

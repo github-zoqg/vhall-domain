@@ -167,7 +167,8 @@ class QaServer extends BaseServer {
   }
 
   getCurrentPlayQuestionNum(params = {}) {
-    return qa.list.getCurrentPlayQuestionNum(params);
+    const { watchInitData } = useRoomBaseServer().state;
+    return qa.list.getCurrentPlayQuestionNum({ room_id: watchInitData.interact.room_id });
   }
 
   replyUserQuestion(params = {}) {
