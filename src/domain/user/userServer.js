@@ -59,10 +59,6 @@ export default function useUserServer() {
       //   capInstance = instance;
       // }
     };
-    console.log(
-      '🚀 ~ file: code-login.vue ~ line 243 ~ callCaptcha ~ NECaptchaOpts',
-      NECaptchaOpts
-    );
     window.initNECaptcha(NECaptchaOpts);
   }
   /**
