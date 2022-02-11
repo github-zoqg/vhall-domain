@@ -12,7 +12,6 @@ import imNotice from './im/notice/index.js';
 import imChatAuth from './im/chatAuth/index.js';
 import activity from './room/activity/index.js';
 import player from './player.js';
-import login from './login/index.js';
 
 // 问答
 import qaList from './qa/list/index.js';
@@ -34,4 +33,4 @@ const qa = {
   list: qaList,
   privateChat: qaPrivateChat
 };
-export { meeting, user, insertFile, virtualClient, interactive, doc, player, im, room, qa, login };
+export { meeting, user, insertFile, virtualClient, interactive, doc, player, im, room, qa };

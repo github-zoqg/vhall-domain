@@ -6,7 +6,7 @@ import usePlayerServer from '@/domain/player/player.server.js';
 import useDocServer from '@/domain/doc/doc.server.js';
 
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
-import useUserServer from '@/domain/user/user.server.old.js';
+import useUserServer from '@/domain/user/userServer.js';
 import useVirtualAudienceServer from '@/domain/audience/virtualAudience.server.js';
 import useInsertFileServer from '@/domain/media/insertFile.server.js';
 
@@ -19,7 +19,6 @@ import useGroupServer from '@/domain/group/StandardGroupServer';
 
 // 问答
 import useQaServer from '@/domain/interactiveTools/qa.server.js';
-import useLoginServer from '@/domain/login/loginServer.js';
 
 import { setToken, setRequestHeaders } from '@/utils/http.js';
 import VhallPaasSDK from '../sdk';
@@ -86,6 +85,5 @@ export {
   useNoticeServer,
   useMemberServer,
   useGroupServer,
-  useQaServer,
-  useLoginServer
+  useQaServer
 };

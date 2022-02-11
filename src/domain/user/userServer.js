@@ -1,8 +1,8 @@
 /**
  * @description 用户登录-注册-三方登录
  */
-import { login as loginApi } from '@/request/index.js';
-export default function useLoginServer() {
+import { user as userApi } from '@/request/index.js';
+export default function useUserServer() {
   let capInstance, // 云盾实例
     captchaId, // 云盾key
     countDownTimer = null; // 倒计时的计时器
@@ -102,7 +102,7 @@ export default function useLoginServer() {
       validate: state.captchaVal, // 图形验证码数据
       scene_id: sceneId // scene_id场景ID：1账户信息-修改密码  2账户信息-修改密保手机 3账户信息-修改关联邮箱 4忘记密码-邮箱方式找回 5忘记密码-短信方式找回 6提现绑定时手机号验证 7快捷方式登录（短信验证码登录） 8注册-验证码
     };
-    return loginApi
+    return userApi
       .sendCode(params)
       .then(res => {
         if (res.code === 200) {
@@ -132,7 +132,7 @@ export default function useLoginServer() {
       // 刷新易盾
       refreshNECaptha();
     };
-    return loginApi
+    return userApi
       .userLogin(params)
       .then(res => {
         if (res.code === 200) {
@@ -153,7 +153,7 @@ export default function useLoginServer() {
    * 登录状态检查
    * */
   function loginCheck(account) {
-    return loginApi.loginCheck({
+    return userApi.loginCheck({
       account,
       channel: 'C' // B端用户还是C端用户
     });
@@ -179,7 +179,7 @@ export default function useLoginServer() {
    * 明文密码加密
    * */
   async function handlePassword(password) {
-    const getKeyRelt = await loginApi.getKeyLogin();
+    const getKeyRelt = await userApi.getKeyLogin();
     if (getKeyRelt.code !== 200) {
       getKeyRelt.pass = false; // 是否通过此步骤标识
       getKeyRelt.type = 'getKeyLogin';
@@ -213,7 +213,7 @@ export default function useLoginServer() {
     const failure = () => {
       refreshNECaptha();
     };
-    return loginApi
+    return userApi
       .register({
         text: state.captchaVal,
         captcha: state.captchaVal,
@@ -229,6 +229,26 @@ export default function useLoginServer() {
         failure(err);
         return err;
       });
+  }
+
+  // 验证码登录&&账号登录
+  function loginInfo(data) {
+    return requestApi.user.loginInfo(data);
+  }
+
+  // 第三方授权
+  function callbackUserInfo(data) {
+    return requestApi.user.callbackUserInfo(data);
+  }
+
+  // 手机||邮箱验证码
+  function codeCheck(data) {
+    return requestApi.user.codeCheck(data);
+  }
+
+  // 密码重置
+  function resetPassword(data) {
+    return requestApi.user.resetPassword(data);
   }
 
   /**
@@ -283,6 +303,10 @@ export default function useLoginServer() {
     register,
     authLoginByWx,
     roleLogin,
-    handlePassword
+    handlePassword,
+    loginInfo,
+    callbackUserInfo,
+    codeCheck,
+    resetPassword
   };
 }
