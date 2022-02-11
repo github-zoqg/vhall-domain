@@ -1,3 +1,4 @@
+import customMenu from './brand/customMenu/index';
 import meeting from './meeting/index.js';
 import user from './user.js';
 import insertFile from './insertFile.js';
@@ -13,6 +14,7 @@ import imNotice from './im/notice/index.js';
 import imChatAuth from './im/chatAuth/index.js';
 import activity from './room/activity/index.js';
 import player from './player.js';
+import rebroadcast from './room/rebroadcast';
 
 // 问答
 import qaList from './qa/list/index.js';
@@ -34,4 +36,18 @@ const qa = {
   list: qaList,
   privateChat: qaPrivateChat
 };
-export { meeting, user, insertFile, virtualClient, interactive, doc, group, player, im, room, qa };
+export {
+  customMenu,
+  meeting,
+  user,
+  insertFile,
+  virtualClient,
+  interactive,
+  doc,
+  group,
+  player,
+  im,
+  room,
+  qa,
+  rebroadcast
+};

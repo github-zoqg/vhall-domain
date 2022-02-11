@@ -1,60 +1,81 @@
 import { im as iMRequest } from '@/request';
 
-export default function useNoticeServer() {
-  const state = {
-    //公告列表
-    noticeList: [],
+class NoticeServer {
+  constructor() {
+    if (typeof NoticeServer.instance === 'object') {
+      return NoticeServer.instance;
+    }
+    this.state = this.resetState();
+    NoticeServer.instance = this;
+    return this;
+  }
 
-    //请求的分页参数
-    pageInfo: {
-      pos: 0,
-      limit: 10,
-      pageNum: 1
-    },
-    //总页数
-    totalPages: 1,
-    //总条数
-    total: 0
-  };
+  reset() {
+    this.state = this.resetState();
+  }
 
+  resetState() {
+    return {
+      //公告列表
+      noticeList: [],
 
-  //获取消息记录
-  const getNoticeList = ({ flag = false, params = {} }) => {
-    if (!flag) {
-      state.noticeList = [];
-      state.pageInfo = {
+      //请求的分页参数
+      pageInfo: {
         pos: 0,
         limit: 10,
         pageNum: 1
-      };
-      state.totalPages = 1;
-      state.total = 0;
+      },
+      //总页数
+      totalPages: 1,
+      //总条数
+      total: 0
+    };
+  }
+
+  //获取消息记录
+  getNoticeList({ flag = false, params = {} }) {
+    if (!flag) {
+      try {
+        this.state.noticeList = [];
+        this.state.pageInfo = {
+          pos: 0,
+          limit: 10,
+          pageNum: 1
+        };
+        this.state.totalPages = 1;
+        this.state.total = 0;
+      } catch (err) {
+        console.log('errrrrrr', err);
+      }
     } else {
-      state.pageInfo.limit = params.limit;
-      state.pageInfo.pos = params.pos;
-      state.pageInfo.pageNum = params.pageNum;
+      this.state.pageInfo.limit = params.limit;
+      this.state.pageInfo.pos = params.pos;
+      this.state.pageInfo.pageNum = params.pageNum;
     }
 
     return iMRequest.notice.getNoticeList(params).then(res => {
       if (res.code == 200 && res.data) {
-        state.total = res.data.total;
+        this.state.total = res.data.total;
         if (flag) {
-          state.noticeList.push(...res.data.list);
+          this.state.noticeList.push(...res.data.list);
         } else {
-          state.noticeList = res.data.list;
+          this.state.noticeList = res.data.list;
         }
-        state.totalPages = Math.ceil(res.data.total / state.pageInfo.limit);
+        this.state.totalPages = Math.ceil(res.data.total / this.state.pageInfo.limit);
       }
-      return { backData: res, state };
+      return { backData: res, state: this.state };
     });
-  };
-
-  /**
-   * 发送公告消息
-   * */
-  function sendNotice(params = {}) {
-    return iMRequest.notice.sendNotice(params);
   }
 
-  return { state, sendNotice, getNoticeList };
+  sendNotice(params = {}) {
+    return iMRequest.notice.sendNotice(params);
+  }
+}
+
+export default function useNoticeServer() {
+  if (!useNoticeServer.instance) {
+    useNoticeServer.instance = new NoticeServer();
+  }
+
+  return useNoticeServer.instance;
 }

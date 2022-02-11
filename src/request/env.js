@@ -3,6 +3,7 @@
 export default {
   meeting: 'v3',
   user: 'v3',
+  customMenu: 'v3',
   insertFile: 'v3',
   virtualClient: 'v3',
   interactive: 'v3',
@@ -16,5 +17,6 @@ export default {
   activity: 'v3',
   player: 'v3',
   brand: 'v3',
-  qa: 'v3'
+  qa: 'v3',
+  rebroadcast: 'v3'
 };
