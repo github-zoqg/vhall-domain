@@ -17,6 +17,7 @@ import useMicServer from '@/domain/media/mic.server.js';
 import useNoticeServer from '@/domain/notice/notice.server.js';
 import useMemberServer from '@/domain/member/member.server.js';
 import useGroupServer from '@/domain/group/StandardGroupServer';
+import useLiveTimerServer from '@/domain/live-timer/liveTimer.server.js';
 
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
@@ -106,5 +107,6 @@ export {
   useMemberServer,
   useGroupServer,
   useQaServer,
-  useCustomMenuServer
+  useCustomMenuServer,
+  useLiveTimerServer
 };

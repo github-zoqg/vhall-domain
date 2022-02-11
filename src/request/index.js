@@ -15,6 +15,7 @@ import imChatAuth from './im/chatAuth/index.js';
 import activity from './room/activity/index.js';
 import player from './player.js';
 import rebroadcast from './room/rebroadcast';
+import liveTimerApi from './live-timer';
 
 // 问答
 import qaList from './qa/list/index.js';
@@ -49,5 +50,6 @@ export {
   im,
   room,
   qa,
-  rebroadcast
+  rebroadcast,
+  liveTimerApi
 };
