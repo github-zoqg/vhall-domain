@@ -35,6 +35,8 @@ class RoomBaseServer extends BaseServer {
       faultTipMsg: '', // 黄金链路-降级提示文案
       lowerGradeInterval: null, // 黄金链路计时器
       clientType: '',
+      skinInfo: {}, // 皮肤信息
+      officicalInfo: {}, //公众号信息
       interactToolStatus: {},
       roomVisibleModules: [],
       miniElement: 'stream-list' // 可能的值：doc  stream-list
@@ -204,6 +206,21 @@ class RoomBaseServer extends BaseServer {
     return meeting.getInavToolStatus(retParams).then(res => {
       if (res.code == 200) {
         this.state.interactToolStatus = res.data;
+      }
+      return res;
+    });
+  }
+
+  // 观看端获取公众号、广告推荐、邀请卡等信息
+  getCommonConfig(data = {}) {
+    const defaultParams = {
+      webinar_id: this.state.watchInitData.webinar.id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return meeting.getCommonConfig(retParams).then(res => {
+      if (res.code == 200) {
+        this.state.skinInfo = res.data['skin'].data;
+        this.state.officicalInfo = res.data['public-account'].data;
       }
       return res;
     });
