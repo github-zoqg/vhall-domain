@@ -52,8 +52,6 @@ class ChatServer extends BaseServer {
   //监听msgServer通知
   listenEvents() {
     msgServer.$onMsg('CHAT', rawMsg => {
-      rawMsg.data = JSON.parse(rawMsg.data);
-      rawMsg.context = JSON.parse(rawMsg.context);
       if (['text', 'image'].includes(rawMsg.data.type)) {
         //表情处理
         rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
@@ -207,7 +205,7 @@ class ChatServer extends BaseServer {
   }
 
   /**
-   * 禁言
+   * 禁言/取消禁言
    * */
   setBanned(params = {}) {
     return iMRequest.chat.setBanned(params).then(res => {
@@ -250,6 +248,10 @@ class ChatServer extends BaseServer {
    * */
   getKeyWordsList(params = {}) {
     return iMRequest.keyWords.getKeyWordsList(params);
+  }
+  //获取禁言用户列表
+  getBannedList(params = {}) {
+    return iMRequest.chat.getBannedList(params);
   }
 }
 
