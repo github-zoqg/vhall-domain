@@ -16,6 +16,7 @@ import activity from './room/activity/index.js';
 import player from './player.js';
 import rebroadcast from './room/rebroadcast';
 import liveTimerApi from './live-timer';
+import giftsApi from './gifts/index';
 
 // 问答
 import qaList from './qa/list/index.js';
@@ -51,5 +52,6 @@ export {
   room,
   qa,
   rebroadcast,
-  liveTimerApi
+  liveTimerApi,
+  giftsApi
 };
