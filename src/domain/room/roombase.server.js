@@ -31,7 +31,12 @@ class RoomBaseServer extends BaseServer {
       }, // 分组信息
       watchInitErrorData: undefined, // 默认undefined，如果为其他值将触发特殊逻辑
       configList: {},
+      handleLowerConfig: false, // 黄金链路-是否触发标记
+      faultTipMsg: '', // 黄金链路-降级提示文案
+      lowerGradeInterval: null, // 黄金链路计时器
       clientType: '',
+      skinInfo: {}, // 皮肤信息
+      officicalInfo: {}, //公众号信息
       interactToolStatus: {},
       roomVisibleModules: [],
       miniElement: 'stream-list' // 可能的值：doc  stream-list
@@ -122,6 +127,76 @@ class RoomBaseServer extends BaseServer {
     });
   }
 
+  /**
+   * 功能介绍：黄金链路
+   * 作用：系统崩溃 配置项降级处理方案
+   * @param {*} data 接口入参
+   * data.params 接口入参
+   * data.environment 黄金链路环境
+   * data.systemKey 渠道 2 - 直播；4 - 知客。
+   * data.time 计时器 - 计时步骤
+   */
+  getLowerConfigList(data = { params: {}, environment: 'test', systemKey: 2, time: 5 }) {
+    // 黄金链路 - 内置逻辑
+    async function getLowerGradeConfig(that, meeting, obj) {
+      const { params, environment, systemKey } = obj;
+      try {
+        const lowerGrade = await meeting.getLowerGradeConfigInfo(params, environment, systemKey);
+        const { activity, user, global } = lowerGrade;
+        const { watchInitData } = that.state;
+
+        // 优先顺序：互动 > 用户 > 全局
+        const activityConfig =
+          activity && activity.length > 0 && watchInitData
+            ? activity.find(option => option.audience_id == watchInitData.webinar.id)
+            : null;
+
+        const userConfig =
+          user && user.length > 0 && watchInitData
+            ? user.find(option => option.audience_id == watchInitData.webinar.userinfo.user_id)
+            : null;
+
+        if (activityConfig) {
+          that.state.configList = Object.assign(
+            {},
+            that.state.configList,
+            activityConfig.permissions
+          );
+          that.state.handleLowerConfig = true;
+          that.state.faultTipMsg = activityConfig.tip_message;
+        } else if (userConfig) {
+          that.state.configList = Object.assign({}, that.state.configList, userConfig.permissions);
+          that.state.handleLowerConfig = true;
+          that.state.faultTipMsg = userConfig.tip_message;
+        } else if (global && global.permissions) {
+          that.state.configList = Object.assign({}, that.state.configList, global.permissions);
+          that.state.handleLowerConfig = true;
+          that.state.faultTipMsg = global.tip_message;
+        }
+      } catch (e) {
+        // 调用异常情况下，计时器停止
+        if (that.state.lowerGradeInterval) {
+          clearInterval(that.state.lowerGradeInterval);
+        }
+      }
+    }
+
+    // 黄金链路 - 功能流程[前题config调用完毕]
+    if (!this.state.handleLowerConfig) {
+      // 没有击中黄金链路配置项情况下，调用-黄金链路心跳调用
+      if (this.state.lowerGradeInterval) {
+        console.log('计时器存在，先清空一次');
+        clearInterval(this.state.lowerGradeInterval);
+      }
+      this.state.lowerGradeInterval = setInterval(() => {
+        getLowerGradeConfig(this, meeting, data);
+      }, (Math.random() * data.time + data.time) * 1000);
+    } else {
+      // 击中情况下，友好提示
+      this.$emit(ROOM_BASE_LOWER_WARNING, this.state.faultTipMsg);
+    }
+  }
+
   //获取房间内各工具的状态
   getInavToolStatus(data = {}) {
     const defaultParams = {
@@ -131,6 +206,21 @@ class RoomBaseServer extends BaseServer {
     return meeting.getInavToolStatus(retParams).then(res => {
       if (res.code == 200) {
         this.state.interactToolStatus = res.data;
+      }
+      return res;
+    });
+  }
+
+  // 观看端获取公众号、广告推荐、邀请卡等信息
+  getCommonConfig(data = {}) {
+    const defaultParams = {
+      webinar_id: this.state.watchInitData.webinar.id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return meeting.getCommonConfig(retParams).then(res => {
+      if (res.code == 200) {
+        this.state.skinInfo = res.data['skin'].data;
+        this.state.officicalInfo = res.data['public-account'].data;
       }
       return res;
     });
