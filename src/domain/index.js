@@ -7,7 +7,7 @@ import usePlayerServer from '@/domain/player/player.server.js';
 import useDocServer from '@/domain/doc/doc.server.js';
 
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
-import useUserServer from '@/domain/user/user.server.old.js';
+import useUserServer from '@/domain/user/userServer.js';
 import useVirtualAudienceServer from '@/domain/audience/virtualAudience.server.js';
 import useInsertFileServer from '@/domain/media/insertFile.server.js';
 
@@ -17,6 +17,7 @@ import useMicServer from '@/domain/media/mic.server.js';
 import useNoticeServer from '@/domain/notice/notice.server.js';
 import useMemberServer from '@/domain/member/member.server.js';
 import useGroupServer from '@/domain/group/StandardGroupServer';
+import useLiveTimerServer from '@/domain/live-timer/liveTimer.server.js';
 
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
@@ -106,5 +107,6 @@ export {
   useMemberServer,
   useGroupServer,
   useQaServer,
-  useCustomMenuServer
+  useCustomMenuServer,
+  useLiveTimerServer
 };
