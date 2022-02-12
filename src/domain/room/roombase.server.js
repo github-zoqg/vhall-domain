@@ -81,8 +81,17 @@ class RoomBaseServer extends BaseServer {
 
   // 设置子房间初始化信息
   setGroupInitData(data) {
-    this.state.groupInitData = merge.recursive({}, data, this.state.groupInitData);
-    this.state.groupInitData.isInGroup = !!this.state.groupInitData.group_id;
+    console.log('[group] setGroupInitData:', data);
+    if (!data || !data.group_id) {
+      // 没有小组
+      this.state.groupInitData = {
+        isInGroup: false
+      };
+    } else {
+      // 进入小组设置
+      this.state.groupInitData = merge.recursive({}, this.state.groupInitData, data);
+      this.state.groupInitData.isInGroup = true;
+    }
   }
 
   // 获取分组初始化信息
