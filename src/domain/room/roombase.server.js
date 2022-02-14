@@ -230,6 +230,7 @@ class RoomBaseServer extends BaseServer {
       if (res.code == 200) {
         this.state.skinInfo = res.data['skin'].data;
         this.state.officicalInfo = res.data['public-account'].data;
+        this.state.roomToolInfo = res.data['room-tool'].data;
       }
       return res;
     });
