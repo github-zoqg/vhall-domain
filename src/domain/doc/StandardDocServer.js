@@ -1,6 +1,7 @@
 import AbstractDocServer from './AbstractDocServer';
 import { merge } from '../../utils';
 import useRoomBaseServer from '../room/roombase.server';
+import useGroupServer from '../group/StandardGroupServer';
 import { doc as docApi } from '../../request/index.js';
 
 /**
@@ -17,6 +18,7 @@ export default class StandardDocServer extends AbstractDocServer {
     super();
     this.watchInitData = null;
     this.state = {
+      isChannelChanged: false, // 频道是否变更，进入/退出小组是变化
       currentCid: '', //当前正在展示的容器id
       docCid: '', // 当前文档容器Id
       boardCid: '', // 当前白板容器Id
@@ -26,7 +28,7 @@ export default class StandardDocServer extends AbstractDocServer {
       pageNum: 1, // 当前页码
 
       allComplete: false,
-      docLoadComplete: false, // 文档是否加载完成
+      docLoadComplete: true, // 文档是否加载完成
 
       thumbnailList: [], // 缩略图列表
       switchStatus: false, // 观众是否可见
@@ -54,6 +56,7 @@ export default class StandardDocServer extends AbstractDocServer {
   init(customOptions = {}) {
     const defaultOptions = this._getDefaultOptions();
     const options = merge.recursive({}, defaultOptions, customOptions);
+    console.log('---[doc]------重置options:', options);
     // 初始化 passDocInstance
     return this.initialize(options)
       .then(() => {
@@ -73,7 +76,8 @@ export default class StandardDocServer extends AbstractDocServer {
 
   // 获取默认初始化参数
   _getDefaultOptions() {
-    const { watchInitData, groupInitData, interactToolStatus } = useRoomBaseServer().state;
+    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state;
     console.log('---useRoomBaseServer()----:', useRoomBaseServer());
     // console.log('---groupInitData---:', groupInitData);
     this.watchInitData = watchInitData;
@@ -257,6 +261,7 @@ export default class StandardDocServer extends AbstractDocServer {
       console.error('容器宽高错误', width, height);
       this.setDocLoadComplete();
     }
+    this.setDocLoadComplete(false);
     for (const item of this.state.containerList) {
       const fileType = item.is_board === 1 ? 'document' : 'board';
       await this.initDocumentOrBoardContainer({
@@ -555,5 +560,33 @@ export default class StandardDocServer extends AbstractDocServer {
       params.room_id = watchInitData.interact.room_id;
     }
     return docApi.delDocList(params);
+  }
+
+  // 重置
+  reset() {
+    this.init()
+      .then(() => {
+        console.log('[doc] ------------reset------------');
+        this.state.currentCid = ''; //当前正在展示的容器id
+        this.state.docCid = ''; // 当前文档容器Id
+        this.state.boardCid = ''; // 当前白板容器Id
+        this.state.containerList = []; // 动态容器列表
+
+        this.state.pageTotal = 1; //总页数
+        this.state.pageNum = 1; // 当前页码
+
+        this.state.allComplete = false;
+        this.state.docLoadComplete = true; // 文档是否加载完成
+
+        this.state.thumbnailList = []; // 缩略图列表
+        this.state.switchStatus = false; // 观众是否可见
+
+        this.state.hasDocPermission = false;
+        // 注意这里用true
+        this.state.isChannelChanged = true;
+      })
+      .catch(ex => {
+        console.error('[doc] reset error:', ex);
+      });
   }
 }

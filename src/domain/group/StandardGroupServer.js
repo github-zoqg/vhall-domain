@@ -11,8 +11,12 @@ class StandardGroupServer extends BaseServer {
     super();
 
     this.state = {
-      // 分组讨论界面是否显示
-      show: false,
+      // 当前用户所在小组数据
+      groupInitData: {
+        isInGroup: false //不在小组中
+      },
+      // 分组讨论操作面板是否显示
+      panelShow: false,
       // 待分配人员列表
       waitingUserList: [],
       // 已分组人员列表
@@ -32,41 +36,42 @@ class StandardGroupServer extends BaseServer {
   }
 
   /**
-   * 分组初始化
+   * 初始化当前用户所在小组信息
    * @returns
    */
-  async groupInit() {
+  async init() {
+    const result = await this.getGroupInfo();
+    console.log('[group] groupInit result:', result);
+    this.setGroupInitData(result.data);
+    // 当前用户进入了某个小组
+    // access_token: "access:fd8d3653:a68a5549b8ea8811"
+    // channel_id: "ch_GeUR54XP"
+    // doc_permission: "16423152"
+    // group_id: "5524386"
+    // group_room_id: "lss_949338a9"
+    // inav_id: "inav_345b8731"
+    // is_banned: "0"
+    // join_role: "1"
+    // main_screen: "16423152"
+    // name: "分组1"
+    // presentation_screen: "16423152"
+    // speaker_list: []
+    return result;
+  }
+
+  async getGroupInfo() {
     const roomBaseServer = useRoomBaseServer();
     const { watchInitData } = roomBaseServer.state;
     const params = {
       room_id: watchInitData.interact.room_id // 主直播房间ID
     };
-    const result = await groupApi.groupInit(params);
-    console.log('[group] groupInit result:', result);
-    if (result && result.code === 200) {
-      // 当前用户进入了某个小组
-      // access_token: "access:fd8d3653:a68a5549b8ea8811"
-      // channel_id: "ch_GeUR54XP"
-      // doc_permission: "16423152"
-      // group_id: "5524386"
-      // group_room_id: "lss_949338a9"
-      // inav_id: "inav_345b8731"
-      // is_banned: "0"
-      // join_role: "1"
-      // main_screen: "16423152"
-      // name: "分组1"
-      // presentation_screen: "16423152"
-      // speaker_list: []
-      roomBaseServer.setGroupInitData(result.data);
-    } else {
-      // 当前用户未进入任何小组
-    }
-    return result;
+    return await groupApi.groupInit(params);
   }
 
   /**
-   * 功能1：给在线观众分配小组
-   * 功能2：新增一个小组 （此时固定way=2）
+   * 功能1：初始化分配小组
+   * 功能2：新增n个小组 （此时固定way=2）
+   * 该操作执行成功，所有端会收到 'group_room_create' 消息，监听并处理逻辑
    * @param {String} number 分组数量，2~50 之间
    * @param {String} way 分组方式，1=随机分配|2=手动分配
    * @returns
@@ -81,14 +86,6 @@ class StandardGroupServer extends BaseServer {
       way: way + '' // 转字符串
     };
     const result = await groupApi.groupCreate(params);
-    if (result && result.code === 200) {
-      if (roomBaseServer.state.interactToolStatus.is_open_switch == 0) {
-        // 如果是未分组，置成已分组未讨论状态
-        roomBaseServer.setInavToolStatus('is_open_switch', 2);
-        this.getWaitingUserList();
-      }
-      this.getGroupedUserList();
-    }
     return result;
   }
 
@@ -119,7 +116,7 @@ class StandardGroupServer extends BaseServer {
       switch_id: watchInitData.switch.switch_id // 场次ID
     };
     const result = await groupApi.groupListing(params);
-    console.log('[group] getGroupedUserList result:', result);
+    // console.log('[group] getGroupedUserList result:', result);
     if (result && result.code === 200) {
       this.state.groupedUserList = result.data.list;
     }
@@ -150,6 +147,7 @@ class StandardGroupServer extends BaseServer {
 
   /**
    * 解散小组
+   * 该操作执行成功，所有端会收到 'group_disband' 消息，监听并处理逻辑
    * @param {Number} groupId 小组id
    * @returns
    */
@@ -161,10 +159,6 @@ class StandardGroupServer extends BaseServer {
     };
     const result = await groupApi.groupDisband(params);
     console.log('[group] result', result);
-    if (result && result.code === 200) {
-      this.getWaitingUserList();
-      this.getGroupedUserList();
-    }
     return result;
   }
 
@@ -222,6 +216,7 @@ class StandardGroupServer extends BaseServer {
     const result = await groupApi.groupEndDiscussion(params);
     if (result && result.code === 200) {
       // 结束讨论完成
+      this.state.panelShow = false;
       roomBaseServer.setInavToolStatus('is_open_switch', 0);
     }
     return result;
@@ -247,6 +242,9 @@ class StandardGroupServer extends BaseServer {
       // paas_access_token: "access:fd8d3653:aa3dada53cc72024"
       // paas_app_id: "fd8d3653"
       // room_id: "lss_5fafee07"
+      // 设置小组=信息
+      const res = await this.getGroupInfo();
+      this.setGroupInitData(res.data);
     }
     return result;
   }
@@ -254,19 +252,30 @@ class StandardGroupServer extends BaseServer {
   /**
    * 主持人、助理退出小组
    */
-  async groupQuit() {
-    const roomBaseServer = useRoomBaseServer();
-    const { watchInitData } = roomBaseServer.state;
+  async groupQuit(groupId) {
+    const { watchInitData } = useRoomBaseServer().state;
     const params = {
       room_id: watchInitData.interact.room_id, // 主直播房间ID
-      switch_id: watchInitData.switch.switch_id // 场次ID
+      group_id: groupId || this.state.groupInitData.group_id // 分组ID
     };
-    const result = await groupApi.groupEndDiscussion(params);
+    const result = await groupApi.groupQuit(params);
+    console.log('[group] groupQuit result', result);
     if (result && result.code === 200) {
-      // 结束讨论完成
-      // roomBaseServer.setInavToolStatus('is_open_switch', 0);
+      // 退出小组完成
+      console.log('[group] groupQuit setGroupInitData');
+      this.setGroupInitData(null);
+      this.state.panelShow = true;
     }
     return result;
+  }
+
+  setGroupInitData(data) {
+    this.state.groupInitData = data || {};
+    if (this.state.groupInitData?.group_id) {
+      this.state.groupInitData.isInGroup = true;
+    } else {
+      this.state.groupInitData.isInGroup = false;
+    }
   }
 }
 
