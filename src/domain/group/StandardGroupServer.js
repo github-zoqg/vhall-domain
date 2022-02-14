@@ -69,8 +69,9 @@ class StandardGroupServer extends BaseServer {
   }
 
   /**
-   * 功能1：给在线观众分配小组
-   * 功能2：新增一个小组 （此时固定way=2）
+   * 功能1：初始化分配小组
+   * 功能2：新增n个小组 （此时固定way=2）
+   * 该操作执行成功，所有端会收到 'group_room_create' 消息，监听并处理逻辑
    * @param {String} number 分组数量，2~50 之间
    * @param {String} way 分组方式，1=随机分配|2=手动分配
    * @returns
@@ -85,14 +86,6 @@ class StandardGroupServer extends BaseServer {
       way: way + '' // 转字符串
     };
     const result = await groupApi.groupCreate(params);
-    if (result && result.code === 200) {
-      if (roomBaseServer.state.interactToolStatus.is_open_switch == 0) {
-        // 如果是未分组，置成已分组未讨论状态
-        roomBaseServer.setInavToolStatus('is_open_switch', 2);
-        this.getWaitingUserList();
-      }
-      this.getGroupedUserList();
-    }
     return result;
   }
 
@@ -123,7 +116,7 @@ class StandardGroupServer extends BaseServer {
       switch_id: watchInitData.switch.switch_id // 场次ID
     };
     const result = await groupApi.groupListing(params);
-    console.log('[group] getGroupedUserList result:', result);
+    // console.log('[group] getGroupedUserList result:', result);
     if (result && result.code === 200) {
       this.state.groupedUserList = result.data.list;
     }
@@ -154,6 +147,7 @@ class StandardGroupServer extends BaseServer {
 
   /**
    * 解散小组
+   * 该操作执行成功，所有端会收到 'group_disband' 消息，监听并处理逻辑
    * @param {Number} groupId 小组id
    * @returns
    */
@@ -165,10 +159,6 @@ class StandardGroupServer extends BaseServer {
     };
     const result = await groupApi.groupDisband(params);
     console.log('[group] result', result);
-    if (result && result.code === 200) {
-      this.getWaitingUserList();
-      this.getGroupedUserList();
-    }
     return result;
   }
 
