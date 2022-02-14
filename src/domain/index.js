@@ -18,6 +18,8 @@ import useNoticeServer from '@/domain/notice/notice.server.js';
 import useMemberServer from '@/domain/member/member.server.js';
 import useGroupServer from '@/domain/group/StandardGroupServer';
 import useLiveTimerServer from '@/domain/live-timer/liveTimer.server.js';
+import useGiftsServer from '@/domain/gifts/gifts.server.js';
+import useWatchRewardServer from '@/domain/reward/reward.server.js';
 
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
@@ -28,7 +30,7 @@ import { setToken, setRequestHeaders } from '@/utils/http.js';
 import VhallPaasSDK from '../sdk';
 import { Dep } from '@/domain/common/base.server';
 import { INIT_DOMAIN } from '@/domain/common/dep.const';
-import useChatAuthServer from "./chat/chatAuth.server";
+import useChatAuthServer from './chat/chatAuth.server';
 /**
  * options:{
     token,
@@ -108,5 +110,7 @@ export {
   useGroupServer,
   useQaServer,
   useCustomMenuServer,
-  useLiveTimerServer
+  useLiveTimerServer,
+  useGiftsServer,
+  useWatchRewardServer
 };

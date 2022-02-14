@@ -44,6 +44,9 @@ export default class AbstractDocServer extends BaseServer {
    * @returns {Promise}
    */
   initialize(options = {}) {
+    if (this.docInstance) {
+      this.destroy();
+    }
     return new Promise((resolve, reject) => {
       this.docInstance = VhallPaasSDK.modules.VHDocSDK.createInstance(
         options,
@@ -162,6 +165,7 @@ export default class AbstractDocServer extends BaseServer {
   @checkDocInstance()
   getContainerInfo(channelId) {
     const opts = channelId ? { channelId } : null;
+    console.log('[doc] getContainerInfo opts:', opts);
     return this.docInstance.getContainerInfo(opts);
   }
 

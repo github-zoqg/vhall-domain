@@ -57,9 +57,41 @@ class ChatServer extends BaseServer {
         rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
         //格式化消息用于渲染并添加到消息列表
         this.state.chatList.push(Msg._handleGenerateMsg(rawMsg));
-        console.log(roomServer);
+      }
+      const { watchInitData } = roomServer.state;
+      // 禁言某个用户
+      if (rawMsg.data.type === 'disable') {
+        console.log(roomServer.state);
+        if (this.isMyMsg(rawMsg)) {
+          this.state.banned = 1;
+          console.log('handler', this.handlers);
+          this.$emit('banned', this.state.banned);
+        }
+      }
+      //取消禁言
+      if (rawMsg.data.type === 'permit') {
+        if (this.isMyMsg(rawMsg)) {
+          this.state.banned = 0;
+          this.$emit('banned', this.state.banned);
+        }
+      }
+      // 开启全体禁言
+      if (rawMsg.data.type === 'disable_all') {
+        this.state.allBanned = 1;
+        this.$emit('allBanned', this.state.allBanned);
+      }
+      // 关闭全体禁言
+      if (rawMsg.data.type === 'permit_all') {
+        this.state.allBanned = 0;
+        this.$emit('allBanned', this.state.allBanned);
       }
     });
+  }
+  //判断是不是发送给当前用户的消息
+  isMyMsg(msg) {
+    const { watchInitData } = roomServer.state;
+    console.log(msg.data.target_id, '-', watchInitData.join_info.third_party_user_id);
+    return msg.data.target_id == watchInitData.join_info.third_party_user_id;
   }
   //接收聊天消息
   async getHistoryMsg(params = {}) {
@@ -252,6 +284,10 @@ class ChatServer extends BaseServer {
   //获取禁言用户列表
   getBannedList(params = {}) {
     return iMRequest.chat.getBannedList(params);
+  }
+  //获取提出用户列表
+  getKickedList(params = {}) {
+    return iMRequest.chat.getKickedList(params);
   }
 }
 
