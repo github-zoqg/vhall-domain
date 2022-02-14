@@ -71,7 +71,7 @@ class StandardGroupServer extends BaseServer {
   /**
    * 功能1：初始化分配小组
    * 功能2：新增n个小组 （此时固定way=2）
-   * 该操作执行成功，所有端会收到 'group_room_create' 消息，监听并处理逻辑
+   * 该操作执行成功，所有端会收到 event_type === 'group_room_create'的消息
    * @param {String} number 分组数量，2~50 之间
    * @param {String} way 分组方式，1=随机分配|2=手动分配
    * @returns
@@ -147,7 +147,7 @@ class StandardGroupServer extends BaseServer {
 
   /**
    * 解散小组
-   * 该操作执行成功，所有端会收到 'group_disband' 消息，监听并处理逻辑
+   * 该操作执行成功，所有端会收到 event_type === 'group_disband'的消息
    * @param {Number} groupId 小组id
    * @returns
    */
@@ -184,7 +184,10 @@ class StandardGroupServer extends BaseServer {
   }
 
   /**
-   * 开始讨论
+   * 开启讨论（开始讨论）
+   * 该操作执行成功，所有端会触发两个消息：
+   * event_type === 'group_switch_start' 消息小组讨论使用
+   * type==='main_room_join_change' 消息成员列表使用
    * @returns
    */
   async startDiscussion() {
@@ -204,6 +207,8 @@ class StandardGroupServer extends BaseServer {
 
   /**
    * 结束讨论
+   * 该操作执行成功，所有端会收到 event_type === 'group_switch_end'的消息
+   * 和type==='main_room_join_change'的消息
    * @returns
    */
   async endDiscussion() {
@@ -214,16 +219,14 @@ class StandardGroupServer extends BaseServer {
       switch_id: watchInitData.switch.switch_id // 场次ID
     };
     const result = await groupApi.groupEndDiscussion(params);
-    if (result && result.code === 200) {
-      // 结束讨论完成
-      this.state.panelShow = false;
-      roomBaseServer.setInavToolStatus('is_open_switch', 0);
-    }
     return result;
   }
 
   /**
    * 主持人、助理进入小组
+   * 该操作执行成功，所有端会收到两个消息：
+   * type === 'group_join_change' 小组讨论使用消息
+   * type === 'group_manager_enter' 成员列表使用消息
    */
   async groupEnter(groupId) {
     const roomBaseServer = useRoomBaseServer();
@@ -269,6 +272,13 @@ class StandardGroupServer extends BaseServer {
     return result;
   }
 
+  /**
+   * 更新GroupInitData数据
+   */
+  async updateGroupInitData() {
+    await init();
+  }
+
   setGroupInitData(data) {
     this.state.groupInitData = data || {};
     if (this.state.groupInitData?.group_id) {
@@ -276,6 +286,15 @@ class StandardGroupServer extends BaseServer {
     } else {
       this.state.groupInitData.isInGroup = false;
     }
+  }
+
+  // 结束自己演示
+  async endSelfPresentation() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const params = {
+      room_id: watchInitData.interact.room_id // 主直播房间ID
+    };
+    return await groupApi.endSelfPresentation(params);
   }
 }
 
