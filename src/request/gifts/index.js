@@ -2,7 +2,6 @@ import request from '@/utils/http.js';
 
 // 发起端创建计时器
 const queryGiftsList = (params = {}) => {
-  console.log(params);
   const retParmams = {
     room_id: params.room_id
   };
