@@ -1,6 +1,9 @@
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import { group as groupApi } from '../../request/index.js';
+import useMsgServer from '../common/msg.server';
+//消息服务
+const msgServer = useMsgServer();
 /**
  * 标准分组直播场景下的分组相关服务
  *
@@ -9,7 +12,6 @@ import { group as groupApi } from '../../request/index.js';
 class StandardGroupServer extends BaseServer {
   constructor() {
     super();
-
     this.state = {
       // 当前用户所在小组数据
       groupInitData: {
@@ -23,7 +25,40 @@ class StandardGroupServer extends BaseServer {
       groupedUserList: []
     };
   }
-
+  //监听分组相关消息（属于房间消息）
+  listenMsg() {
+    msgServer.$onMsg('ROOM_MSG', msg => {
+      if (msg.data.event_type === 'group_room_create') {
+      }
+      switch (msg.data.event_type || msg.data.type) {
+        //创建分组
+        case 'group_room_create':
+        //进入/退出小组
+        case 'group_manager_enter':
+          if (msg.data.status == 'enter') {
+          } else if (msg.data.status == 'quit') {
+          }
+          break;
+        //开启讨论
+        case 'group_switch_start':
+          break;
+        //关闭讨论
+        case 'group_switch_end':
+          break;
+        //小组被解散
+        case 'group_disband':
+          break;
+        //请求协助
+        case 'group_help':
+          break;
+        //组长变更
+        case 'group_leader_change':
+          break;
+        case 'group_join_change':
+          break;
+      }
+    });
+  }
   /**
    * 获取单实例
    * @returns
