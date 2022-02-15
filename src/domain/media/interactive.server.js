@@ -365,7 +365,11 @@ class InteractiveServer extends BaseServer {
   }
   // 获取分辨率
   getVideoProfile() {
-    const onlineLength = this.getRoomStreams().filter(item => item.streamType == 2).length;
+    const remoteStream = this.getRoomStreams();
+    if (!remoteStream || !remoteStream.length) {
+      return false;
+    }
+    const onlineLength = remoteStream.filter(item => item.streamType == 2).length;
     let profile;
     const isHost = this.mainScreen == this.accountId || this.docPermissionId == this.accountId;
     if (onlineLength >= 0 && onlineLength <= 6) {
