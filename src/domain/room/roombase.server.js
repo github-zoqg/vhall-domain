@@ -29,6 +29,10 @@ class RoomBaseServer extends BaseServer {
         discussState: false, // 是否开始讨论
         isInGroup: false // 是否在小组中
       }, // 分组信息
+      embedObj: {
+        embed: false,
+        embedVideo: false
+      }, //是否是嵌入
       watchInitErrorData: undefined, // 默认undefined，如果为其他值将触发特殊逻辑
       configList: {},
       handleLowerConfig: false, // 黄金链路-是否触发标记
@@ -36,8 +40,20 @@ class RoomBaseServer extends BaseServer {
       lowerGradeInterval: null, // 黄金链路计时器
       clientType: '',
       skinInfo: {}, // 皮肤信息
+      webinarTag: {}, //活动标识
+      screenPosterInfo: {}, // 开屏海报信息
       officicalInfo: {}, //公众号信息
-      interactToolStatus: {},
+      customMenu: {}, // 自定义菜单
+      goodsDefault: {}, // 商品
+      advDefault: {}, //广告
+      inviteCard: {}, // 邀请卡
+      keywords: {}, //关键词
+      redPacket: {}, // 红包
+      priseLike: {}, // 点赞数
+      noticeInfo: {}, // 公告
+      signInfo: {}, //签到信息
+      timerInfo: {}, //计时器
+      interactToolStatus: {}, //互动工具状态信息
       roomVisibleModules: [],
       miniElement: 'stream-list' // 可能的值：doc  stream-list
     };
@@ -68,6 +84,14 @@ class RoomBaseServer extends BaseServer {
   // 设置分组讨论是否正在讨论中
   setGroupDiscussState(type) {
     this.state.groupInitData.discussState = type;
+  }
+
+  // 设置是否是嵌入
+  setEmbedObj(param) {
+    // 嵌入
+    this.embedObj.embed = param.isEmbed;
+    // 单视频嵌入
+    this.embedObj.embedVideo = param.isEmbedVideo;
   }
 
   // 设置miniELement
@@ -228,9 +252,25 @@ class RoomBaseServer extends BaseServer {
     const retParams = merge.recursive({}, defaultParams, data);
     return meeting.getCommonConfig(retParams).then(res => {
       if (res.code == 200) {
-        this.state.skinInfo = res.data['skin'].data;
-        this.state.officicalInfo = res.data['public-account'].data;
-        this.state.roomToolInfo = res.data['room-tool'].data;
+        this.state.skinInfo = res.data['skin'] ? res.data['skin'].data : {}; // 皮肤信息
+        this.state.webinarTag = res.data['webinar-tag'] ? res.data['webinar-tag'].data : {}; //活动标识
+        this.state.screenPosterInfo = res.data['screen-poster']
+          ? res.data['screen-poster'].data
+          : {}; // 开屏海报信息
+        this.state.officicalInfo = res.data['public-account']
+          ? res.data['public-account'].data
+          : {}; //公众号信息
+        this.state.interactToolStatus = res.data['room-tool'] ? res.data['room-tool'].data : {}; //互动工具状态信息
+        this.state.customMenu = res.data['menu'] ? res.data['menu'].data : {}; // 自定义菜单
+        this.state.goodsDefault = res.data['goods-default'] ? res.data['goods-default'].data : {}; // 商品
+        this.state.advDefault = res.data['adv-default'] ? res.data['adv-default'].data : {}; // 广告
+        this.state.inviteCard = res.data['invite-card'] ? res.data['invite-card'].data : {}; // 邀请卡
+        this.state.keywords = res.data['keywords'] ? res.data['keywords'].data : {}; //关键词
+        this.state.redPacket = res.data['red-packet'] ? res.data['red-packet'].data : {}; //红包
+        this.state.priseLike = res.data['like'] ? res.data['like'].data : {}; //点赞数
+        this.state.noticeInfo = res.data['announcement'] ? res.data['announcement'].data : {}; //公告
+        this.state.signInfo = res.data['sign'] ? res.data['sign'].data : {}; //签到信息
+        this.state.timerInfo = res.data['timer'] ? res.data['timer'].data : {}; //计时器
       }
       return res;
     });
@@ -311,6 +351,28 @@ class RoomBaseServer extends BaseServer {
     };
     const retParams = merge.recursive({}, defaultParams, data);
     return meeting.getStreamPushAddress(retParams).then(res => {
+      return res;
+    });
+  }
+
+  // 观看端底部反馈
+  feedbackInfo(data = {}) {
+    const defaultParams = {
+      webinar_id: this.state.watchInitData.webinar.id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return meeting.feedbackInfo(retParams).then(res => {
+      return res;
+    });
+  }
+
+  // 观看端底部举报
+  tipOffInfo(data = {}) {
+    const defaultParams = {
+      webinar_id: this.state.watchInitData.webinar.id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return meeting.tipOffInfo(retParams).then(res => {
       return res;
     });
   }
