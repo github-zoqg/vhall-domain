@@ -2,6 +2,7 @@ import useRoomBaseServer from '@/domain/room/roombase.server.js';
 import { isPc, merge, randomNumGenerator } from '@/utils/index.js';
 import BaseServer from './base.server';
 import VhallPaasSDK from '@/sdk/index.js';
+import useGroupServer from '../group/StandardGroupServer';
 class MsgServer extends BaseServer {
   constructor() {
     if (typeof MsgServer.instance === 'object') {
@@ -289,7 +290,8 @@ class MsgServer extends BaseServer {
   getGroupDefaultOptions() {
     const { state: roomBaseServerState } = useRoomBaseServer();
     const isPcClient = isPc();
-    const { watchInitData, groupInitData } = roomBaseServerState;
+    const { watchInitData } = roomBaseServerState;
+    const { groupInitData } = useGroupServer().state;
     const defaultContext = {
       nickname: watchInitData.join_info.nickname,
       avatar: watchInitData.join_info.avatar,
@@ -337,33 +339,33 @@ class MsgServer extends BaseServer {
     });
   }
 
-  // 初始化子房间聊天sdk
-  initGroupMsg(customOptions = {}) {
-    if (!contextServer.get('roomInitGroupServer')) return Promise.reject('No Room Exist');
+  // // 初始化子房间聊天sdk
+  // initGroupMsg(customOptions = {}) {
+  //   if (!contextServer.get('roomInitGroupServer')) return Promise.reject('No Room Exist');
 
-    // 每次初始化子房间聊天都需要清空原有房间聊天消息然后重新拉取
-    const chatServer = contextServer.get('chatServer');
-    chatServer && chatServer.clearHistoryMsg();
+  //   // 每次初始化子房间聊天都需要清空原有房间聊天消息然后重新拉取
+  //   const chatServer = contextServer.get('chatServer');
+  //   chatServer && chatServer.clearHistoryMsg();
 
-    const { state: roomInitGroupServerState } = contextServer.get('roomInitGroupServer');
+  //   const { state: roomInitGroupServerState } = contextServer.get('roomInitGroupServer');
 
-    const defaultOptions = getGroupDefaultOptions();
+  //   const defaultOptions = getGroupDefaultOptions();
 
-    const options = merge.recursive({}, defaultOptions, customOptions);
+  //   const options = merge.recursive({}, defaultOptions, customOptions);
 
-    this.state.groupMsgSdkInitOptions = options;
-    console.log('创建子房间聊天实例', options);
-    return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(res => {
-      console.log('domain----创建子房间聊天实例成功', res);
-      this.groupMsgInstance = res;
-      // 子房间上线，在小组内广播当前人的小组信息，延时500ms解决开始讨论收不到消息的问题
-      setTimeout(() => {
-        sendGroupInfoAfterJoin(res);
-      }, 500);
-      _addListeners(res);
-      return res;
-    });
-  }
+  //   this.state.groupMsgSdkInitOptions = options;
+  //   console.log('创建子房间聊天实例', options);
+  //   return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(res => {
+  //     console.log('domain----创建子房间聊天实例成功', res);
+  //     this.groupMsgInstance = res;
+  //     // 子房间上线，在小组内广播当前人的小组信息，延时500ms解决开始讨论收不到消息的问题
+  //     setTimeout(() => {
+  //       sendGroupInfoAfterJoin(res);
+  //     }, 500);
+  //     _addListeners(res);
+  //     return res;
+  //   });
+  // }
 
   // 销毁子房间聊天实例
   destroyGroupMsg() {
