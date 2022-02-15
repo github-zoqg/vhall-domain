@@ -23,6 +23,8 @@ import useWatchRewardServer from '@/domain/interactiveTools/reward.server.js';
 
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
+import useRebroadcastServer from '@/domain/interactiveTools/rebroadcast.server';
+
 // 问答
 import useQaServer from '@/domain/interactiveTools/qa.server.js';
 
@@ -110,7 +112,9 @@ export {
   useGroupServer,
   useQaServer,
   useCustomMenuServer,
+  useRebroadcastServer,
   useTimerServer,
   useGiftsServer,
   useWatchRewardServer
+
 };
