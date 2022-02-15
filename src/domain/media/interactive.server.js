@@ -294,7 +294,8 @@ class InteractiveServer extends BaseServer {
         watchInitData.webinar.mode != 1
           ? options.videoDevice || sessionStorage.getItem('selectedVideoDeviceId')
           : null, // 选填，指定的视频设备id，默认为系统缺省
-      profile: VhallRTC[this.getVideoProfile()],
+      profile:
+        VhallRTC[this.getVideoProfile()] ||
         VhallRTC[options.profile] ||
         VhallRTC[interactToolStatus.definition] ||
         VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
