@@ -74,7 +74,7 @@ class MsgServer extends BaseServer {
   }
 
   _handlePaasInstanceOn(instance, eventType, fn) {
-    function cb(msg) {
+    const cb = msg => {
       // 房间消息统一parse
       try {
         if (typeof msg === 'string') {
@@ -95,7 +95,7 @@ class MsgServer extends BaseServer {
       if (this.curMsgInstance.channelId == msg.channel) {
         fn(msg);
       }
-    }
+    };
     // 'room';
     // 'custom'
     switch (eventType) {
