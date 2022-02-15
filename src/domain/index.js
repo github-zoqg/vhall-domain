@@ -111,7 +111,7 @@ export {
   useGroupServer,
   useQaServer,
   useCustomMenuServer,
-  useLiveTimerServer,
+  useTimerServer,
   useGiftsServer,
   useWatchRewardServer,
   useAttentionServer
