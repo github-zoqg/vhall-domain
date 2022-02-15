@@ -1,6 +1,7 @@
 import AbstractDocServer from './AbstractDocServer';
 import { merge } from '../../utils';
 import useRoomBaseServer from '../room/roombase.server';
+import useGroupServer from '../group/StandardGroupServer';
 import { doc as docApi } from '../../request/index.js';
 
 /**
@@ -17,6 +18,7 @@ export default class StandardDocServer extends AbstractDocServer {
     super();
     this.watchInitData = null;
     this.state = {
+      isChannelChanged: false, // 频道是否变更，进入/退出小组是变化
       currentCid: '', //当前正在展示的容器id
       docCid: '', // 当前文档容器Id
       boardCid: '', // 当前白板容器Id
@@ -26,14 +28,12 @@ export default class StandardDocServer extends AbstractDocServer {
       pageNum: 1, // 当前页码
 
       allComplete: false,
-      docLoadComplete: false, // 文档是否加载完成
+      docLoadComplete: true, // 文档是否加载完成
 
       thumbnailList: [], // 缩略图列表
       switchStatus: false, // 观众是否可见
 
-      isInGroup: false,
-      hasDocPermission: false,
-      groupRole: '' // 小组内角色
+      hasDocPermission: false
     };
   }
 
@@ -56,6 +56,7 @@ export default class StandardDocServer extends AbstractDocServer {
   init(customOptions = {}) {
     const defaultOptions = this._getDefaultOptions();
     const options = merge.recursive({}, defaultOptions, customOptions);
+    console.log('---[doc]------重置options:', options);
     // 初始化 passDocInstance
     return this.initialize(options)
       .then(() => {
@@ -75,40 +76,35 @@ export default class StandardDocServer extends AbstractDocServer {
 
   // 获取默认初始化参数
   _getDefaultOptions() {
-    const { watchInitData, groupInitData } = useRoomBaseServer().state;
+    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state;
     console.log('---useRoomBaseServer()----:', useRoomBaseServer());
     // console.log('---groupInitData---:', groupInitData);
     this.watchInitData = watchInitData;
-
     console.log('获取默认初始化参数 watchInitData:', this.watchInitData);
-    if (groupInitData && groupInitData.isInGroup) {
-      // 小组房间内
-      this.state.isInGroup = true;
-      this.state.hasDocPermission = groupInitData.main_screen == defaultOptions.accountId;
-      this.state.groupRole = groupInitData.join_role;
-    } else {
-      // 主房间内
-      this.state.isInGroup = false;
-      // TODO interactToolStatus
-      // if (this.interactToolStatus) {
-      //   // 主直播间邀请
-      //   this.hasDocPermission = this.interactToolStatus.main_screen == this.joinId;
-      // }
-    }
+
     // 初始化参数
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
       accountId: watchInitData.join_info.third_party_user_id, // 第三方用户ID，必填
       client: VHDocSDK.Client.PC_WEB // 客户端类型
     };
-    if (this.state.isInGroup) {
-      // 分组讨论直播间中
+
+    // 如果当前用户进入了某个小组
+    if (groupInitData && groupInitData.isInGroup) {
+      // 小组房间内
+      this.state.hasDocPermission = groupInitData.main_screen == defaultOptions.accountId;
       defaultOptions.role = this.mapDocRole(this.state.hasDocPermission ? 1 : 2); // 角色
       defaultOptions.roomId = groupInitData.group_room_id;
       defaultOptions.channelId = groupInitData.channel_id;
       defaultOptions.token = groupInitData.access_token;
       console.log('取小组数据');
     } else {
+      // 如果当前用户不在小组内，而在主直播间内，
+      if (interactToolStatus) {
+        // 主直播间邀请 TODO ？？
+        // this.hasDocPermission = interactToolStatus.main_screen == this.joinId;
+      }
       defaultOptions.role = this.mapDocRole(watchInitData.join_info.role_name);
       defaultOptions.roomId = watchInitData.interact.room_id; // 必填。
       defaultOptions.channelId = watchInitData.interact.channel_id; // 频道id 必须
@@ -265,6 +261,7 @@ export default class StandardDocServer extends AbstractDocServer {
       console.error('容器宽高错误', width, height);
       this.setDocLoadComplete();
     }
+    this.setDocLoadComplete(false);
     for (const item of this.state.containerList) {
       const fileType = item.is_board === 1 ? 'document' : 'board';
       await this.initDocumentOrBoardContainer({
@@ -563,5 +560,33 @@ export default class StandardDocServer extends AbstractDocServer {
       params.room_id = watchInitData.interact.room_id;
     }
     return docApi.delDocList(params);
+  }
+
+  // 重置
+  reset() {
+    this.init()
+      .then(() => {
+        console.log('[doc] ------------reset------------');
+        this.state.currentCid = ''; //当前正在展示的容器id
+        this.state.docCid = ''; // 当前文档容器Id
+        this.state.boardCid = ''; // 当前白板容器Id
+        this.state.containerList = []; // 动态容器列表
+
+        this.state.pageTotal = 1; //总页数
+        this.state.pageNum = 1; // 当前页码
+
+        this.state.allComplete = false;
+        this.state.docLoadComplete = true; // 文档是否加载完成
+
+        this.state.thumbnailList = []; // 缩略图列表
+        this.state.switchStatus = false; // 观众是否可见
+
+        this.state.hasDocPermission = false;
+        // 注意这里用true
+        this.state.isChannelChanged = true;
+      })
+      .catch(ex => {
+        console.error('[doc] reset error:', ex);
+      });
   }
 }

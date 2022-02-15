@@ -1,6 +1,16 @@
 import request from '@/utils/http.js';
 import env from './env';
 
+// 小组初始化接口
+const groupInit = (params = {}) => {
+  const url = env.doc === 'v3' ? '/v3/interacts/group/init' : ''; // TODO 补充v4接口
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+};
+
 // 给在线观众分配小组
 const groupCreate = (params = {}) => {
   const url = env.doc === 'v3' ? '/v3/interacts/group/create' : ''; // TODO 补充v4接口
@@ -100,7 +110,38 @@ const groupExchange = (params = {}) => {
   });
 };
 
+// 结束别的用户演示
+const endOtherPresentation = (params = {}) => {
+  const url = env.doc === 'v3' ? '/v3/interacts/inav/nopresentation' : ''; // TODO 补充v4接口
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+};
+
+// 结束自己演示
+const endSelfPresentation = (params = {}) => {
+  const url = env.doc === 'v3' ? '/v3/interacts/inav-user/nopresentation' : ''; // TODO 补充v4接口
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+};
+
+// 切换主讲人
+const presentation = (params = {}) => {
+  const url = env.doc === 'v3' ? '/v3/interacts/inav-user/presentation' : ''; // TODO 补充v4接口
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+};
+
 export default {
+  groupInit,
   groupCreate,
   groupSetLeader,
   groupDisband,
@@ -110,5 +151,8 @@ export default {
   groupListing,
   groupEnter,
   groupQuit,
-  groupExchange
+  groupExchange,
+  endOtherPresentation,
+  endSelfPresentation,
+  presentation
 };
