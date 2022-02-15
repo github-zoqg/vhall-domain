@@ -304,6 +304,11 @@ export default function useUserServer() {
     });
   }
 
+  // 退出登录
+  function loginOut(data) {
+    return userApi.loginOut(data);
+  }
+
   // 替换头像
   function changeAvatarSend(data) {
     return userApi.changeAvatarSend(data);
@@ -340,6 +345,7 @@ export default function useUserServer() {
     roleLogin,
     handlePassword,
     loginInfo,
+    loginOut,
     callbackUserInfo,
     codeCheck,
     getUserInfo,

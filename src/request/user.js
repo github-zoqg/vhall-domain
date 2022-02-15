@@ -96,6 +96,15 @@ const loginInfo = (params = {}) => {
   });
 };
 
+// 退出登录
+const loginOut = (params = {}) => {
+  return request({
+    url: '/v3/users/user/logout',
+    method: 'POST',
+    data: params
+  });
+};
+
 // 第三方授权
 const callbackUserInfo = (params = {}) => {
   return request({
@@ -176,6 +185,7 @@ export default {
   register,
   getKeyLogin,
   loginInfo,
+  loginOut,
   callbackUserInfo,
   codeCheck,
   resetPassword,
