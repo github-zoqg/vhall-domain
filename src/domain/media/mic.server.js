@@ -15,7 +15,7 @@ class MicServer extends BaseServer {
       isSpeakOn: false // 是否在麦上
     };
     MicServer.instance = this;
-    this._init();
+    // this._init();
     return this;
   }
   _init() {
