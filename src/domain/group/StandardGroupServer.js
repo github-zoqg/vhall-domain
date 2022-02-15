@@ -86,7 +86,6 @@ class StandardGroupServer extends BaseServer {
     };
     this.listenMsg();
   }
-
   /**
    * 获取单实例
    * @returns
