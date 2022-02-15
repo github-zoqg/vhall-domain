@@ -31,6 +31,10 @@ import VhallPaasSDK from '../sdk';
 import { Dep } from '@/domain/common/base.server';
 import { INIT_DOMAIN } from '@/domain/common/dep.const';
 import useChatAuthServer from './chat/chatAuth.server';
+
+// 商品
+import useGoodServer from '@/domain/interactiveTools/good.server.js';
+
 /**
  * options:{
     token,
@@ -112,5 +116,6 @@ export {
   useCustomMenuServer,
   useLiveTimerServer,
   useGiftsServer,
-  useWatchRewardServer
+  useWatchRewardServer,
+  useGoodServer
 };
