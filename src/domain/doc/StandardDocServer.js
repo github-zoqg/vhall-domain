@@ -31,9 +31,7 @@ export default class StandardDocServer extends AbstractDocServer {
       docLoadComplete: true, // 文档是否加载完成
 
       thumbnailList: [], // 缩略图列表
-      switchStatus: false, // 观众是否可见
-
-      hasDocPermission: false
+      switchStatus: false // 观众是否可见
     };
   }
 
@@ -563,7 +561,7 @@ export default class StandardDocServer extends AbstractDocServer {
   }
 
   // 重置
-  reset() {
+  groupReInitDocProcess() {
     this.init()
       .then(() => {
         console.log('[doc] ------------reset------------');
@@ -581,7 +579,6 @@ export default class StandardDocServer extends AbstractDocServer {
         this.state.thumbnailList = []; // 缩略图列表
         this.state.switchStatus = false; // 观众是否可见
 
-        this.state.hasDocPermission = false;
         // 注意这里用true
         this.state.isChannelChanged = true;
       })

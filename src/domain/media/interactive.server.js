@@ -288,10 +288,14 @@ class InteractiveServer extends BaseServer {
     let defaultOptions = {
       videoNode: options.videoNode, // 必填，传入本地视频显示容器ID
       audio: true, // 选填，是否采集音频设备，默认为true
-      video: true, // 选填，是否采集视频设备，默认为true
+      video: watchInitData.webinar.mode != 1, // 选填，是否采集视频设备，默认为true
       audioDevice: options.audioDevice || sessionStorage.getItem('selectedAudioDeviceId'), // 选填，指定的音频设备id，默认为系统缺省
-      videoDevice: options.videoDevice || sessionStorage.getItem('selectedVideoDeviceId'), // 选填，指定的视频设备id，默认为系统缺省
+      videoDevice:
+        watchInitData.webinar.mode != 1
+          ? options.videoDevice || sessionStorage.getItem('selectedVideoDeviceId')
+          : null, // 选填，指定的视频设备id，默认为系统缺省
       profile:
+        VhallRTC[this.getVideoProfile()] ||
         VhallRTC[options.profile] ||
         VhallRTC[interactToolStatus.definition] ||
         VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
@@ -302,9 +306,92 @@ class InteractiveServer extends BaseServer {
         nickname: watchInitData.join_info.nickname
       }) //选填，自定义信息，支持字符串类型
     };
+
+    // 当前用户是否在上麦列表中
+    const isOnMicObj = interactToolStatus.speaker_list.find(
+      item => item.account_id == watchInitData.join_info.third_party_user_id
+    );
+    // 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
+    if (isOnMicObj) {
+      defaultOptions.mute = {
+        audio: !isOnMicObj.audio,
+        video: !isOnMicObj.video
+      };
+    }
+    // 音频直播静音video
+    if (watchInitData.webinar.mode == 1) {
+      defaultOptions.mute.video = true;
+    }
+
     const params = merge.recursive({}, defaultOptions, options);
 
     return this.createLocalStream(params);
+  }
+  /**
+   *  获取旁路布局
+   *  @param { string } param [字符串 120，240，360，480]
+   *  @returns { String } [互动sdk推流Profile常量]
+   */
+  formatDefinition(param = '360') {
+    let definition = 'RTC_VIDEO_PROFILE_360P_16x9_M';
+    switch (param) {
+      case '720':
+      case '超清':
+        definition = 'RTC_VIDEO_PROFILE_720P_16x9_M';
+        break;
+      case '240':
+      case '流畅':
+        definition = 'RTC_VIDEO_PROFILE_240P_16x9_M';
+        break;
+      case '540':
+        definition = 'RTC_VIDEO_PROFILE_540P_16x9_M';
+        break;
+      case '480':
+      case '高清':
+        definition = 'RTC_VIDEO_PROFILE_480P_16x9_M';
+        break;
+      case '180':
+        definition = 'RTC_VIDEO_PROFILE_180P_16x9_M';
+        break;
+      case '360':
+      case '标清':
+        definition = 'RTC_VIDEO_PROFILE_360P_16x9_M';
+        break;
+      case '120':
+        definition = 'RTC_VIDEO_PROFILE_120P_16x9_M';
+        break;
+    }
+    return definition;
+  }
+  // 获取分辨率
+  getVideoProfile() {
+    const remoteStream = this.getRoomStreams();
+    if (!remoteStream || !remoteStream.length) {
+      return false;
+    }
+    const onlineLength = remoteStream.filter(item => item.streamType == 2).length;
+    let profile;
+    const isHost = this.mainScreen == this.accountId || this.docPermissionId == this.accountId;
+    if (onlineLength >= 0 && onlineLength <= 6) {
+      if (isHost) {
+        profile = this.formatDefinition('720');
+      } else {
+        profile = this.formatDefinition('360');
+      }
+    } else if (onlineLength > 6 && onlineLength <= 11) {
+      if (isHost) {
+        profile = this.formatDefinition('720');
+      } else {
+        profile = this.formatDefinition('240');
+      }
+    } else {
+      if (isHost) {
+        profile = this.formatDefinition('540');
+      } else {
+        profile = this.formatDefinition('180');
+      }
+    }
+    return profile;
   }
   // 创建桌面共享流
   createLocaldesktopStream(options = {}, addConfig = {}) {
