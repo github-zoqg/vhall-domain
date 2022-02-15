@@ -110,6 +110,36 @@ const groupExchange = (params = {}) => {
   });
 };
 
+// 结束别的用户演示
+const endOtherPresentation = (params = {}) => {
+  const url = env.doc === 'v3' ? '/v3/interacts/inav/nopresentation' : ''; // TODO 补充v4接口
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+};
+
+// 结束自己演示
+const endSelfPresentation = (params = {}) => {
+  const url = env.doc === 'v3' ? '/v3/interacts/inav-user/nopresentation' : ''; // TODO 补充v4接口
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+};
+
+// 切换主讲人
+const presentation = (params = {}) => {
+  const url = env.doc === 'v3' ? '/v3/interacts/inav-user/presentation' : ''; // TODO 补充v4接口
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+};
+
 export default {
   groupInit,
   groupCreate,
@@ -121,5 +151,8 @@ export default {
   groupListing,
   groupEnter,
   groupQuit,
-  groupExchange
+  groupExchange,
+  endOtherPresentation,
+  endSelfPresentation,
+  presentation
 };
