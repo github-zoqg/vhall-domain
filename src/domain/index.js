@@ -21,6 +21,8 @@ import useLiveTimerServer from '@/domain/live-timer/liveTimer.server.js';
 
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
+import useRebroadcastServer from '@/domain/interactiveTools/rebroadcast.server';
+
 // 问答
 import useQaServer from '@/domain/interactiveTools/qa.server.js';
 
@@ -28,7 +30,7 @@ import { setToken, setRequestHeaders } from '@/utils/http.js';
 import VhallPaasSDK from '../sdk';
 import { Dep } from '@/domain/common/base.server';
 import { INIT_DOMAIN } from '@/domain/common/dep.const';
-import useChatAuthServer from "./chat/chatAuth.server";
+import useChatAuthServer from './chat/chatAuth.server';
 /**
  * options:{
     token,
@@ -108,5 +110,6 @@ export {
   useGroupServer,
   useQaServer,
   useCustomMenuServer,
-  useLiveTimerServer
+  useLiveTimerServer,
+  useRebroadcastServer
 };
