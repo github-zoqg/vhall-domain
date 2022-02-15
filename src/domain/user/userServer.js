@@ -10,7 +10,9 @@ export default function useUserServer() {
   const state = {
     captchaVal: null, // 云盾图形码
     second: -1, // 倒计时的秒数
-    errorMsg: '' // 错误提示
+    errorMsg: '', // 错误提示
+    userInfo: {}, // 用户信息
+    thirdInfo: {}, // 第三方授权绑定的信息 从userInfo拆分的
   };
 
   /**
@@ -239,12 +241,12 @@ export default function useUserServer() {
 
   // 手机||邮箱验证码
   function codeCheck(data) {
-    return requestApi.user.codeCheck(data);
+    return userApi.codeCheck(data);
   }
 
   // 密码重置
   function resetPassword(data) {
-    return requestApi.user.resetPassword(data);
+    return userApi.resetPassword(data);
   }
 
   /**
@@ -274,16 +276,48 @@ export default function useUserServer() {
   function checkCode() {}
 
   /**
-   * 重置密码
-   * /v3/users/user/reset-password
-   * */
-  function resetPassword() {}
-
-  /**
    * 角度口令登录
    * /v3/webinars/live/role-login
    * */
   function roleLogin() {}
+
+  // 获取用户信息
+  function getUserInfo(data) {
+    return userApi.getUserInfo(data).then(res => {
+      if (res.code === 200) {
+        // QQ & weixin 的绑定情况
+        const Weixin = res.data.user_thirds.filter(item => item.type === 3);
+        const QQ = res.data.user_thirds.filter(item => item.type === 2);
+        state.thirdInfo.WeixinBind = Weixin.length > 0;
+        state.thirdInfo.WeixinNickName = Weixin[0] ? Weixin[0].nick_name : '';
+        state.thirdInfo.QQBind = QQ.length > 0;
+        state.thirdInfo.QQNickName = QQ[0] ? QQ[0].nick_name : '';
+        // 用户基本信息
+        state.userInfo = res.data;
+      }
+      return res;
+    });
+  }
+
+  // 替换头像
+  function changeAvatarSend (data) {
+    return userApi.changeAvatarSend(data)
+  }
+
+  // 替换昵称 
+  function editUserNickName (data) {
+    return userApi.editUserNickName(data)
+  }
+
+  // 第三方解除绑定
+  function thirdUnbind(data) {
+    return userApi.thirdUnbind(data)
+  }
+  
+  // 绑定手机号
+  function bindInfo (data) {
+    return userApi.bindInfo(data)
+  }
 
   return {
     state,
@@ -303,6 +337,10 @@ export default function useUserServer() {
     loginInfo,
     callbackUserInfo,
     codeCheck,
-    resetPassword
+    getUserInfo,
+    changeAvatarSend,
+    editUserNickName,
+    thirdUnbind,
+    bindInfo
   };
 }
