@@ -96,6 +96,15 @@ const loginInfo = (params = {}) => {
   });
 };
 
+// 退出登录
+const loginOut = (params = {}) => {
+  return request({
+    url: '/v3/users/user/logout',
+    method: 'POST',
+    data: params
+  });
+};
+
 // 第三方授权
 const callbackUserInfo = (params = {}) => {
   return request({
@@ -110,7 +119,7 @@ const codeCheck = (params = {}) => {
   return request({
     url: '/v3/users/code-consumer/check',
     method: 'POST',
-    data: {biz_id, ...params}
+    data: { biz_id, ...params }
   });
 };
 
@@ -128,45 +137,45 @@ const getUserInfo = (data = {}) => {
   return request({
     url: '/v3/users/user-consumer/get-info',
     method: 'POST',
-    data: {biz_id, ...data}
+    data: { biz_id, ...data }
   });
-}
+};
 
 // 更换用户头像 /v3/users/user-consumer/edit
 const changeAvatarSend = (data = {}) => {
   return request({
     url: '/v3/users/user-consumer/edit',
     method: 'POST',
-    data: {biz_id, ...data}
+    data: { biz_id, ...data }
   });
-}
+};
 
 // 替换昵称
 const editUserNickName = (data = {}) => {
   return request({
     url: '/v3/users/user-consumer/edit',
     method: 'POST',
-    data: {biz_id, ...data}
+    data: { biz_id, ...data }
   });
-}
+};
 
 // 第三方解除绑定
 const thirdUnbind = (data = {}) => {
   return request({
     url: '/v3/users/oauth/unbind',
     method: 'POST',
-    data: {biz_id, ...data}
+    data: { biz_id, ...data }
   });
-}
+};
 
 // 绑定手机号
 const bindInfo = (data = {}) => {
   return request({
     url: 'v3/users/user-consumer/bind-info',
     method: 'POST',
-    data: {biz_id, ...data}
-  })
-}
+    data: { biz_id, ...data }
+  });
+};
 
 export default {
   getCapthaKey,
@@ -176,6 +185,7 @@ export default {
   register,
   getKeyLogin,
   loginInfo,
+  loginOut,
   callbackUserInfo,
   codeCheck,
   resetPassword,
