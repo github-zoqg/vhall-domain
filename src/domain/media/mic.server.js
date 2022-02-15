@@ -1,5 +1,5 @@
 import { merge } from '../../utils/index';
-import { im } from '../../request';
+import { im, room } from '../../request';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
@@ -12,13 +12,14 @@ class MicServer extends BaseServer {
     }
     this.state = {
       isAllowhandup: false, // 是否开始允许举手
-      isSpeakOn: false // 是否上麦
+      isSpeakOn: false // 是否在麦上
     };
     MicServer.instance = this;
     this._init();
     return this;
   }
   _init() {
+    this.initMicState();
     this._initEventListeners();
   }
   _initEventListeners() {
@@ -96,6 +97,18 @@ class MicServer extends BaseServer {
           break;
       }
     });
+  }
+  // 初始化用户上麦状态
+  initMicState() {
+    const roomBaseServer = useRoomBaseServer();
+    const { speaker_list } = roomBaseServer.state.interactToolStatus;
+    const { join_info } = roomBaseServer.state.watchInitData;
+    speaker = speaker_list.find(item => item.account_id == join_info.third_party_user_id);
+    if (speaker) {
+      this.state.isSpeakOn = true;
+
+      return this.state.isSpeakOn;
+    }
   }
   // 用户上麦
   userSpeakOn(data = {}) {
