@@ -62,6 +62,8 @@ class ChatAuthServer extends BaseServer {
     };
     // 聊天sdk实例
     this.chatInstance = null;
+    //接收自定义消息的sdk实例
+    this.customChatInstance = null;
     ChatAuthServer.instance = this;
     return this;
   }
@@ -88,8 +90,8 @@ class ChatAuthServer extends BaseServer {
       console.log(msg, 'chat的msg');
       let temp = Object.assign({}, msg);
       if (typeof temp.data !== 'object') {
-        temp.data = JSON.parse(temp.data);
-        temp.context = JSON.parse(temp.context);
+        temp.data = ![null, void (0), ''].includes(temp.context) ? JSON.parse(temp.data) : '';
+        temp.context = ![null, void (0), ''].includes(temp.context) ? JSON.parse(temp.context) : '';
       }
       const type = temp.data.type;
       switch (type) {
@@ -119,13 +121,20 @@ class ChatAuthServer extends BaseServer {
           break;
       }
     });
-    this.chatInstance.onCustomMsg(msg => {
+  }
+
+  /**
+   * 注册监听自定义消息的回调
+   * */
+  listenCustomMsg() {
+    this.customChatInstance.onCustomMsg(msg => {
       let temp = Object.assign({}, msg);
       if (typeof temp.data !== 'object') {
-        temp.data = JSON.parse(temp.data);
-        temp.context = JSON.parse(temp.context);
+        temp.data = ![null, void (0), ''].includes(temp.context) ? JSON.parse(temp.data) : '';
+        temp.context = ![null, void (0), ''].includes(temp.context) ? JSON.parse(temp.context) : '';
       }
       const operate = temp.data.operation_status;
+      console.log(temp.data, '收到自定义消息');
       switch (operate) {
         case 1:
           Object.assign(temp.data, {
@@ -209,12 +218,27 @@ class ChatAuthServer extends BaseServer {
       hide: true
     };
 
-    console.log(options, 'options--------------------------');
     // 创建domain实例
     await new Domain({
       plugins: ['chat'],
       isNotInitRoom: true
     });
+
+    const customChatInstance = new Promise((resolve, reject) => {
+      VhallPaasSDK.modules.VhallChat.createInstance(
+        Object.assign({}, options, {channelId: ['ck_', options.channelId].join('')}),
+        event => {
+          // 互动实例
+          this.customChatInstance = event.message;
+          this.listenCustomMsg();
+          resolve(event);
+        },
+        error => {
+          reject(error);
+        }
+      );
+    });
+    await customChatInstance;
 
     return new Promise((resolve, reject) => {
       VhallPaasSDK.modules.VhallChat.createInstance(
@@ -242,7 +266,7 @@ class ChatAuthServer extends BaseServer {
   /**
    * 获取未审核的列表
    * */
-  getChatMessageList() {
+  fetchChatMessageList() {
     const {baseChanelInfo = {}} = this.state || {};
     const params = Object.assign({}, baseChanelInfo);
     this.state.auditList = [];
@@ -250,7 +274,7 @@ class ChatAuthServer extends BaseServer {
     let object = {};
     let context, data;
     return this.getAuditMessageList(params).then(res => {
-      for (let i in res.data) {
+      for (let i in (res.data || {})) {
         object = JSON.parse(res.data[i]);
         context =
           typeof JSON.parse(object.context) === 'object'
@@ -287,6 +311,47 @@ class ChatAuthServer extends BaseServer {
   }
 
   /**
+   * 获取已通过审核的列表
+   * */
+  fetchPassedMessageList(params = {}) {
+    const {baseChanelInfo = {}, createTime = ''} = this.state;
+    const defaultParams = {
+      ...baseChanelInfo,
+      msg_type: 'image,text,link,video,voice',
+      start_time: createTime
+    };
+    Object.assign(defaultParams, params);
+    return this.getPassedMessageList(defaultParams).then(res => {
+      this.state.passedList = res.data.list || [];
+      this.state.passedNum = res.data.total || 0;
+    });
+  }
+
+  /**
+   * 获取已禁言的用户列表
+   * */
+  fetchMutedUserList(params = {}) {
+    const {roomInfo = {}} = this.state;
+    const requestParams = Object.assign({}, {...roomInfo}, params);
+    return this.getBannedList(requestParams).then(res => {
+      this.state.mutedList = res.data.list || [];
+      this.state.mutedNum = res.data.total || 0;
+    });
+  }
+
+  /**
+   * 获取已踢出的用户列表
+   * */
+  fetchKickedUserList(params = {}) {
+    const {roomInfo = {}} = this.state;
+    const requestParams = Object.assign({}, {...roomInfo}, params);
+    return this.getKickedList(requestParams).then(res => {
+      this.state.kickedList = res.data.list || [];
+      this.state.kickedNum = res.data.total || 0;
+    });
+  }
+
+  /**
    * 操作用户
    * */
   operateUser(id, type) {
@@ -296,6 +361,26 @@ class ChatAuthServer extends BaseServer {
     } else if (type === 'disable') {
       this.state.mutedNum++;
     }
+    const params = {
+      ...this.state.baseChanelInfo,
+      msg_id: '',
+      status: 2
+    };
+    this.state.auditList.forEach(item => {
+      if (item.third_party_user_id === id) {
+        params.msg_id += item.msg_id + ',';
+      }
+    });
+    this.fetchOperate(params);
+  }
+
+  //操作消息
+  fetchOperate(params, cb) {
+    if (!params.msg_id) return;
+    this.operateMessage(params)
+      .finally(() => {
+        this.getAuditMessageList();
+      });
   }
 
   /**
@@ -354,7 +439,8 @@ class ChatAuthServer extends BaseServer {
    * 过滤设置开关 （过滤设置：未审核超过200条时自动发送 / 阻止）
    * /sdk/v2/message/set-channel-switch-options
    * */
-  setMessageFilterOptions() {
+  setMessageFilterOptions(params = {}) {
+    return iMRequest.chatAuth.setMessageFilterOptions(params);
   }
 
   /**
@@ -365,7 +451,7 @@ class ChatAuthServer extends BaseServer {
   }
 
   /**
-   * 取消禁言
+   * 取消禁言/禁言
    * /v3/interacts/chat-user/set-banned
    * */
   toggleBannedStatus(params = {}) {
@@ -373,7 +459,7 @@ class ChatAuthServer extends BaseServer {
   }
 
   /**
-   * 取消踢出
+   * 取消踢出/踢出
    * /v3/interacts/chat-user/set-kicked
    * */
   toggleKickedStatus(params = {}) {
