@@ -247,6 +247,11 @@ export default function useUserServer() {
     return requestApi.user.resetPassword(data);
   }
 
+  //退出登录
+  function loginOut(data) {
+    return requestApi.user.loginOut(data);
+  }
+
   /**
    * 跳转到qq授权登录链接、跳转到微信授权登录链接
    * /v3/users/oauth/callback
@@ -303,6 +308,7 @@ export default function useUserServer() {
     loginInfo,
     callbackUserInfo,
     codeCheck,
-    resetPassword
+    resetPassword,
+    loginOut
   };
 }

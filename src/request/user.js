@@ -123,6 +123,15 @@ const resetPassword = (params = {}) => {
   });
 };
 
+//退出登录
+const loginOut = (params = {}) => {
+  return request({
+    url: '/v3/users/user/logout',
+    method: 'POST',
+    data: params
+  });
+};
+
 export default {
   getCapthaKey,
   sendCode,
@@ -133,5 +142,6 @@ export default {
   loginInfo,
   callbackUserInfo,
   codeCheck,
-  resetPassword
+  resetPassword,
+  loginOut
 };
