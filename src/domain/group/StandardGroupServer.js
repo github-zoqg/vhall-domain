@@ -33,6 +33,8 @@ class StandardGroupServer extends BaseServer {
       switch (msg.data.event_type || msg.data.type) {
         //创建分组
         case 'group_room_create':
+          this.$emit('group_room_create', msg);
+          break;
         //进入/退出小组
         case 'group_manager_enter':
           if (msg.data.status == 'enter') {
@@ -41,6 +43,7 @@ class StandardGroupServer extends BaseServer {
           break;
         //开启讨论
         case 'group_switch_start':
+          this.$emit('group_switch_start', msg);
           break;
         //关闭讨论
         case 'group_switch_end':
