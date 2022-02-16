@@ -61,6 +61,10 @@ class giftsServer extends BaseServer {
   queryGiftsList(params) {
     return giftsApi.queryGiftsList(params);
   }
+
+  sendGift(params) {
+    return giftsApi.sendGift(params);
+  }
 }
 
 export default function useGiftsServer() {
