@@ -13,7 +13,9 @@ export default class StandardNoticeServer extends BaseServer {
       //公告列表
       noticeList: [],
       latestNotice: {
-        noticeContent: roomBaseServer.state.noticeInfo.list[0].content.content,
+        noticeContent:
+          roomBaseServer.state.noticeInfo.total &&
+          roomBaseServer.state.noticeInfo.list[0].content['content'],
         total: roomBaseServer.state.noticeInfo.total
       },
       //请求的分页参数

@@ -21,9 +21,18 @@ class VirtualClientStartServer extends BaseServer {
         baseOnlineNum: ''
       },
       uvOnline: 1, // 真实人数
-      virtualOnline: Number(roomBaseServer.state.watchInitData.online.num) || 0,
-      uvHot: Number(roomBaseServer.state.watchInitData.pv.num2) || 0, // 真实热度
-      virtualHot: Number(roomBaseServer.state.watchInitData.pv.num) || 0,
+      virtualOnline:
+        (roomBaseServer.state.watchInitData.online &&
+          Number(roomBaseServer.state.watchInitData.online.num)) ||
+        0,
+      uvHot:
+        (roomBaseServer.state.watchInitData.pv &&
+          Number(roomBaseServer.state.watchInitData.pv.num2)) ||
+        0, // 真实热度
+      virtualHot:
+        (roomBaseServer.state.watchInitData.pv &&
+          Number(roomBaseServer.state.watchInitData.pv.num)) ||
+        0,
       addCount: ''
     };
     return this;
@@ -65,7 +74,6 @@ class VirtualClientStartServer extends BaseServer {
     msgServer.$onMsg('ROOM_MSG', msg => {
       let msgs = JSON.parse(msg.data);
       if (msgs.type == 'base_num_update') {
-        console.log(msg, msgs, '14zhangxiao==========');
         this.$nextTick(() => {
           this.state.virtualHot = this.state.virtualHot + Number(msgs.update_pv);
           this.state.virtualOnline = this.state.virtualOnline + Number(msgs.update_online_num);
@@ -74,6 +82,6 @@ class VirtualClientStartServer extends BaseServer {
     });
   }
 }
-export default function useVirtualClientStartServe() {
+export default function useVirtualAudienceServer() {
   return new VirtualClientStartServer();
 }
