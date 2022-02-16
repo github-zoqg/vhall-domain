@@ -190,6 +190,7 @@ class StandardGroupServer extends BaseServer {
   msgdoForGroupManagerEnter(msg) {
     if (msg.data.role == 1) {
       if (msg.data.status == 'enter') {
+        alert(JSON.stringify(JSON.stringify(msg)));
         // this.groupAssistance = true;
       } else if (msg.data.status == 'quit') {
         // this.groupAssistance = false;

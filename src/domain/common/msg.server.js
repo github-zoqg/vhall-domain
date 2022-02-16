@@ -31,9 +31,16 @@ class MsgServer extends BaseServer {
     JOIN: [], // 加入房间
     LEFT: [] // 离开房间
   };
-
+  async init() {
+    await this.initMaintMsg();
+    const { groupInitData } = useGroupServer().state;
+    if (groupInitData.isInGroup) {
+      await this.initGroupMsg();
+      alert();
+    }
+  }
   // 初始化主房间聊天sdk
-  async init(customOptions = {}) {
+  async initMaintMsg(customOptions = {}) {
     const defaultOptions = this.getDefaultOptions();
     const options = merge.recursive({}, defaultOptions, customOptions);
     console.log('聊天初始化参数', options);
@@ -56,6 +63,7 @@ class MsgServer extends BaseServer {
     //创建pass消息房间实例
     const vhallchat = await VhallPaasSDK.modules.VhallChat.createInstance(options);
     this.groupMsgInstance = vhallchat.message;
+    this.curMsgInstance = this.groupMsgInstance;
     this._addListeners(this.groupMsgInstance);
   }
 
@@ -80,6 +88,9 @@ class MsgServer extends BaseServer {
 
   _handlePaasInstanceOn(instance, eventType, fn) {
     const cb = msg => {
+      if (!msg) {
+        return;
+      }
       // 房间消息统一parse
       try {
         if (msg && typeof msg === 'string') {
@@ -212,26 +223,16 @@ class MsgServer extends BaseServer {
 
   // 发送聊天消息
   sendChatMsg(data, context) {
-    console.log('context', context);
-    if (this.groupMsgInstance) {
-      this.groupMsgInstance.emit(data, context);
-    } else {
-      console.log(data);
-      this.msgInstance.emit(data, context);
-    }
+    this.curMsgInstance.emit(data, context);
   }
 
   // 发送房间消息
   sendRoomMsg(data) {
-    if (this.groupMsgInstance) {
-      this.groupMsgInstance.emitRoomMsg(data);
-    } else {
-      this.msgInstance.emitRoomMsg(data);
-    }
+    this.curMsgInstance.emitRoomMsg(data);
   }
   //发送自定义消息
   sendCustomMsg(data) {
-    this.msgInstance.emitCustomMsg(data);
+    this.curMsgInstance.emitCustomMsg(data);
   }
   // 获取主房间聊天sdk初始化默认参数
   // TODO:根据中台实际需要，更改context
