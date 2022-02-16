@@ -21,6 +21,7 @@ import useTimerServer from '@/domain/interactiveTools/timer.server.js';
 import useGiftsServer from '@/domain/interactiveTools/gift.server.js';
 import useWatchRewardServer from '@/domain/interactiveTools/reward.server.js';
 import useAttentionServer from '@/domain/interactiveTools/attention.server.js';
+import usePraiseServer from '@/domain/interactiveTools/praise.server.js';
 
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
@@ -125,5 +126,6 @@ export {
   useCashServer,
   useAttentionServer,
   useGoodServer,
+  usePraiseServer,
   useLotteryServer
 };
