@@ -52,8 +52,8 @@ class InteractiveServer extends BaseServer {
    * @param {Object} customOptions
    * @returns {Promise}
    */
-  init(customOptions = {}) {
-    const defaultOptions = this._getDefaultOptions();
+  async init(customOptions = {}) {
+    const defaultOptions = await this._getDefaultOptions();
     const options = merge.recursive({}, defaultOptions, customOptions);
 
     return new Promise((resolve, reject) => {
@@ -75,7 +75,7 @@ class InteractiveServer extends BaseServer {
   }
 
   // 获取默认初始化参数
-  _getDefaultOptions() {
+  async _getDefaultOptions() {
     const { watchInitData } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
 
@@ -89,7 +89,8 @@ class InteractiveServer extends BaseServer {
       : watchInitData.interact.paas_access_token;
 
     // 获取互动实例角色
-    const role = this._getInteractiveRole();
+    const role = await this._getInteractiveRole();
+    console.log(role);
 
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
@@ -142,7 +143,7 @@ class InteractiveServer extends BaseServer {
 
     // 如果是无延迟直播并且在麦上，设为 HOST
     if (
-      (interactToolStatus.speaker_list || !interactToolStatus.speaker_list.length) &&
+      (interactToolStatus.speaker_list && interactToolStatus.speaker_list.length) &&
       interactToolStatus.speaker_list.some(
         item => item.account_id == watchInitData.join_info.third_party_user_id
       )
@@ -151,7 +152,7 @@ class InteractiveServer extends BaseServer {
     }
 
     // 如果是无延迟直播、不在麦、开启自动上麦
-    if (roomBaseServer.interactToolStatus.auto_speak == 1) {
+    if (interactToolStatus.auto_speak == 1) {
       // 调上麦接口判断当前人是否可以上麦
       const res = await useMicServer().userSpeakOn();
       if (res.code == 200) return VhallPaasSDK.module.VhallRTC.ROLE_HOST;
@@ -459,9 +460,11 @@ class InteractiveServer extends BaseServer {
   createLocalAudioStream(options = {}, addConfig = {}) {
     return this.interactiveInstance.createLocalAudioStream(options, addConfig);
   }
+
   // 创建图片推流
   createLocalPhotoStream(options = {}, addConfig = {}) {
-    return this.interactiveInstance.createLocalPhotoStream(options, addConfig);
+    const params = merge.recursive({}, options, addConfig);
+    return this.createLocalStream(params);
   }
 
   // 销毁本地流

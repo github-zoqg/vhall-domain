@@ -169,13 +169,7 @@ class ChatServer extends BaseServer {
   sendMsg = debounce(this.sendChatMsg.bind(this), 300, true);
   //发送聊天消息
   sendChatMsg({ data, context }) {
-    if (msgServer.groupMsgInstance) {
-      //调用passsdk方法
-      msgServer.groupMsgInstance.emit(data, context);
-    } else {
-      //调用passsdk方法
-      msgServer.msgInstance.emit(data, context);
-    }
+    msgServer.sendChatMsg(data, context);
   }
 
   //发起请求，或者聊天记录数据

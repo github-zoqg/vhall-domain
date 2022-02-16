@@ -1,6 +1,6 @@
 import request from '@/utils/http.js';
 
-// 发起端创建计时器
+// 打赏
 const createReward = (params = {}) => {
   const retParmams = {
     room_id: params.room_id
