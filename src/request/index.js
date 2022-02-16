@@ -62,5 +62,6 @@ export {
   giftsApi,
   rewardApi,
   attentionApi,
-  goodSaasApi
+  goodSaasApi,
+  rewardApi
 };
