@@ -52,8 +52,8 @@ class InteractiveServer extends BaseServer {
    * @param {Object} customOptions
    * @returns {Promise}
    */
-  init(customOptions = {}) {
-    const defaultOptions = this._getDefaultOptions();
+  async init(customOptions = {}) {
+    const defaultOptions = await this._getDefaultOptions();
     const options = merge.recursive({}, defaultOptions, customOptions);
 
     return new Promise((resolve, reject) => {
@@ -75,7 +75,7 @@ class InteractiveServer extends BaseServer {
   }
 
   // 获取默认初始化参数
-  _getDefaultOptions() {
+  async _getDefaultOptions() {
     const { watchInitData } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
 
@@ -89,7 +89,8 @@ class InteractiveServer extends BaseServer {
       : watchInitData.interact.paas_access_token;
 
     // 获取互动实例角色
-    const role = this._getInteractiveRole();
+    const role = await this._getInteractiveRole();
+    console.log(role);
 
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
