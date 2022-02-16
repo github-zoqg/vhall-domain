@@ -6,7 +6,7 @@ import env from '@/request/env';
  * @function attention 获取在线商品列表
  * @param {*} data
  */
- const queryGoodsList = (params) => {
+const queryGoodsList = params => {
   const url = env.qa === 'v3' ? '/v3/interacts/goods/get-on-sale-goods-list' : '';
   return request({
     url: url,
