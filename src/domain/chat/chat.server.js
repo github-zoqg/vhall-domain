@@ -47,7 +47,7 @@ class ChatServer extends BaseServer {
 
   //setSate
   setState(key, value) {
-    this.state[key] = value;
+    ChatServer.instance.state[key] = value;
   }
   //监听msgServer通知
   listenEvents() {
@@ -96,7 +96,7 @@ class ChatServer extends BaseServer {
   //接收聊天消息
   async getHistoryMsg(params = {}) {
     //请求获取聊天消息
-    let historyList = await this.fetchHistoryData(params);
+    let historyList = await ChatServer.instance.fetchHistoryData(params);
     console.log('historyList', historyList);
     let list = (historyList.data.list || [])
       .map(item => {
@@ -140,21 +140,21 @@ class ChatServer extends BaseServer {
     //     }
     //   });
     // }
-    this.state.chatList.unshift(...list);
-    console.log('chatList', this.state.chatList);
+    ChatServer.instance.state.chatList.unshift(...list);
+    console.log('chatList', ChatServer.instance.state.chatList);
 
     //返回原始数据等以方便使用
     return {
       historyList,
       list,
-      chatList: this.state.chatList,
-      imgUrls: this.state.imgUrls || []
+      chatList: ChatServer.instance.state.chatList,
+      imgUrls: ChatServer.instance.state.imgUrls || []
     };
   }
 
   // 清空聊天消息
   clearHistoryMsg() {
-    this.state.chatList.splice(0, this.state.chatList.length);
+    ChatServer.instance.state.chatList.splice(0, ChatServer.instance.state.chatList.length);
   }
   //创建当前编辑消息
   createCurMsg() {
