@@ -354,6 +354,28 @@ class RoomBaseServer extends BaseServer {
       return res;
     });
   }
+
+  // 观看端底部反馈
+  feedbackInfo(data = {}) {
+    const defaultParams = {
+      webinar_id: this.state.watchInitData.webinar.id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return meeting.feedbackInfo(retParams).then(res => {
+      return res;
+    });
+  }
+
+  // 观看端底部举报
+  tipOffInfo(data = {}) {
+    const defaultParams = {
+      webinar_id: this.state.watchInitData.webinar.id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return meeting.tipOffInfo(retParams).then(res => {
+      return res;
+    });
+  }
 }
 
 export default function useRoomBaseServer() {

@@ -18,10 +18,15 @@ import rebroadcast from './room/rebroadcast';
 import liveTimerApi from './live-timer';
 import giftsApi from './gifts/index';
 import rewardApi from './reward/index';
+import attentionApi from './attention';
 
 // 问答
 import qaList from './qa/list/index.js';
 import qaPrivateChat from './qa/privateChat/index.js';
+
+// 商品
+import goodSaasApi from './good/index.js';
+
 const im = {
   chat: imChat,
   keyWords: imKeyWords,
@@ -55,5 +60,8 @@ export {
   rebroadcast,
   liveTimerApi,
   giftsApi,
+  rewardApi,
+  attentionApi,
+  goodSaasApi,
   rewardApi
 };
