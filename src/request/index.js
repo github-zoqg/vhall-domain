@@ -19,6 +19,7 @@ import liveTimerApi from './live-timer';
 import giftsApi from './gifts/index';
 import rewardApi from './reward/index';
 import attentionApi from './attention';
+import praiseApi from './praise/index';
 
 // 问答
 import qaList from './qa/list/index.js';
@@ -62,5 +63,6 @@ export {
   giftsApi,
   rewardApi,
   attentionApi,
-  goodSaasApi
+  goodSaasApi,
+  praiseApi
 };
