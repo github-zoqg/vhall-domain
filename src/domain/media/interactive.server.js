@@ -460,9 +460,11 @@ class InteractiveServer extends BaseServer {
   createLocalAudioStream(options = {}, addConfig = {}) {
     return this.interactiveInstance.createLocalAudioStream(options, addConfig);
   }
+
   // 创建图片推流
   createLocalPhotoStream(options = {}, addConfig = {}) {
-    return this.interactiveInstance.createLocalPhotoStream(options, addConfig);
+    const params = merge.recursive({}, options, addConfig);
+    return this.createLocalStream(params);
   }
 
   // 销毁本地流
