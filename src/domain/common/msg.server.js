@@ -36,7 +36,6 @@ class MsgServer extends BaseServer {
     const { groupInitData } = useGroupServer().state;
     if (groupInitData.isInGroup) {
       await this.initGroupMsg();
-      alert();
     }
   }
   // 初始化主房间聊天sdk
