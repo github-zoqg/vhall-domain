@@ -33,6 +33,8 @@ import VhallPaasSDK from '../sdk';
 import { Dep } from '@/domain/common/base.server';
 import { INIT_DOMAIN } from '@/domain/common/dep.const';
 import useChatAuthServer from './chat/chatAuth.server';
+
+import useCashServer from '@/domain/cash/cash.server.js';
 /**
  * options:{
     token,
@@ -115,6 +117,7 @@ export {
   useRebroadcastServer,
   useTimerServer,
   useGiftsServer,
-  useWatchRewardServer
+  useWatchRewardServer,
+  useCashServer
 
 };
