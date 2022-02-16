@@ -6,7 +6,6 @@ import BaseServer from '@/domain/common/base.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
 import { rewardApi } from '@/request/index.js';
 
-const msgServer = useMsgServer();
 class giftsServer extends BaseServer {
   constructor() {
     super();
@@ -19,7 +18,7 @@ class giftsServer extends BaseServer {
 
   listenMsg() {
     // 房间消息
-    msgServer.$onMsg('ROOM_MSG', rawMsg => {
+    useMsgServer().$onMsg('ROOM_MSG', rawMsg => {
       let temp = Object.assign({}, rawMsg);
 
       if (typeof temp.data !== 'object') {
@@ -38,7 +37,7 @@ class giftsServer extends BaseServer {
       }
     });
     // 自定义消息
-    msgServer.$onMsg('CUSTOM_MSG', rawMsg => {
+    useMsgServer().$onMsg('CUSTOM_MSG', rawMsg => {
       let temp = Object.assign({}, rawMsg);
 
       if (typeof temp.data !== 'object') {
