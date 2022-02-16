@@ -84,13 +84,13 @@ class MsgServer extends BaseServer {
     const cb = msg => {
       // 房间消息统一parse
       try {
-        if (typeof msg === 'string') {
+        if (msg && typeof msg === 'string') {
           msg = JSON.parse(msg);
         }
-        if (typeof msg.context === 'string') {
+        if (msg && msg.context && typeof msg.context === 'string') {
           msg.context = JSON.parse(msg.context);
         }
-        if (typeof msg.data === 'string') {
+        if (msg && msg.data && typeof msg.data === 'string') {
           msg.data = JSON.parse(msg.data);
         }
       } catch (ex) {
