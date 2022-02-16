@@ -10,7 +10,7 @@ class MsgServer extends BaseServer {
     }
     super();
     this.msgInstance = null; //主房间消息实例
-    this._groupMsgInstance = null; //子房间消息实例
+    this.groupMsgInstance = null; //子房间消息实例
     this.curMsgInstance = null; //当前所在的房间实例
     this.state = {
       msgSdkInitOptions: {},
@@ -49,10 +49,16 @@ class MsgServer extends BaseServer {
     }
   }
   async initGroupMsg(customOptions = {}) {
+    //如果已存在子房间先销毁
+    if (this.groupMsgInstance) {
+      this.destroyGroupMsg();
+    }
     const defautlGroupOptions = this.getGroupDefaultOptions();
     const options = merge.recursive({}, defautlGroupOptions, customOptions);
+    //创建pass消息房间实例
     const vhallchat = await VhallPaasSDK.modules.VhallChat.createInstance(options);
-    this._groupMsgInstance = vhallchat.message;
+    this.groupMsgInstance = vhallchat.message;
+    this._addListeners(this.groupMsgInstance);
   }
 
   // 注册事件
@@ -229,31 +235,6 @@ class MsgServer extends BaseServer {
   sendCustomMsg(data) {
     this.msgInstance.emitCustomMsg(data);
   }
-  //创建子房间移除主房间回调，注销子房间重新绑定主房间回调
-  defineReactiveGroupMsg() {
-    Object.defineProperty(this, 'groupMsgInstance', {
-      get() {
-        return this._groupMsgInstance;
-      },
-      set(newVal) {
-        // 如果新值旧值都为假，或者新值旧值相同，直接 return
-        if ((!newVal && !this._groupMsgInstance) || newVal === this._groupMsgInstance) return;
-
-        if (!newVal) {
-          // 如果是销毁子房间实例
-          // 重新注册主房间消息
-          this.msgInstance && _addListeners(this.msgInstance);
-          this.curMsgInstance = this.msgInstance;
-        } else {
-          // 如果是新创建子房间实例
-          this.curMsgInstance = newVal;
-        }
-
-        this._groupMsgInstance = newVal;
-      }
-    });
-  }
-
   // 获取主房间聊天sdk初始化默认参数
   // TODO:根据中台实际需要，更改context
   getDefaultOptions() {
@@ -319,9 +300,9 @@ class MsgServer extends BaseServer {
   // 设置主频道静默状态
   setMainChannelMute(mute) {
     if (mute) {
-      _removeListeners(this.msgInstance);
+      // _removeListeners(this.msgInstance);
     } else {
-      _addListeners(this.msgInstance);
+      // _addListeners(this.msgInstance);
     }
   }
 
@@ -372,6 +353,7 @@ class MsgServer extends BaseServer {
     if (!this.groupMsgInstance) return;
     this.groupMsgInstance.destroy();
     this.groupMsgInstance = null;
+    this.curMsgInstance = this.msgInstance;
   }
 
   // 销毁主房间聊天实例
@@ -379,6 +361,7 @@ class MsgServer extends BaseServer {
     if (!this.msgInstance) return;
     this.msgInstance.destroy();
     this.msgInstance = null;
+    this.curMsgInstance = this.groupMsgInstance;
   }
 
   // 获取当前主房间初始化参数
