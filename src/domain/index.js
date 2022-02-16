@@ -21,6 +21,7 @@ import useTimerServer from '@/domain/interactiveTools/timer.server.js';
 import useGiftsServer from '@/domain/interactiveTools/gift.server.js';
 import useWatchRewardServer from '@/domain/interactiveTools/reward.server.js';
 import useAttentionServer from '@/domain/interactiveTools/attention.server.js';
+import usePraiseServer from '@/domain/interactiveTools/praise.server.js';
 
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
@@ -35,9 +36,10 @@ import { Dep } from '@/domain/common/base.server';
 import { INIT_DOMAIN } from '@/domain/common/dep.const';
 import useChatAuthServer from './chat/chatAuth.server';
 
+import useCashServer from '@/domain/cash/cash.server.js';
 // 商品
 import useGoodServer from '@/domain/interactiveTools/good.server.js';
-
+import useLotteryServer from '@/domain/interactiveTools/lotteryServer.js';
 /**
  * options:{
     token,
@@ -121,6 +123,9 @@ export {
   useTimerServer,
   useGiftsServer,
   useWatchRewardServer,
+  useCashServer,
   useAttentionServer,
-  useGoodServer
+  useGoodServer,
+  usePraiseServer,
+  useLotteryServer
 };
