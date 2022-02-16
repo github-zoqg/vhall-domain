@@ -143,7 +143,7 @@ class InteractiveServer extends BaseServer {
 
     // 如果是无延迟直播并且在麦上，设为 HOST
     if (
-      (interactToolStatus.speaker_list || !interactToolStatus.speaker_list.length) &&
+      (interactToolStatus.speaker_list && interactToolStatus.speaker_list.length) &&
       interactToolStatus.speaker_list.some(
         item => item.account_id == watchInitData.join_info.third_party_user_id
       )
@@ -152,7 +152,7 @@ class InteractiveServer extends BaseServer {
     }
 
     // 如果是无延迟直播、不在麦、开启自动上麦
-    if (roomBaseServer.interactToolStatus.auto_speak == 1) {
+    if (interactToolStatus.auto_speak == 1) {
       // 调上麦接口判断当前人是否可以上麦
       const res = await useMicServer().userSpeakOn();
       if (res.code == 200) return VhallPaasSDK.module.VhallRTC.ROLE_HOST;
