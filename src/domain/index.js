@@ -17,9 +17,9 @@ import useMicServer from '@/domain/media/mic.server.js';
 import useNoticeServer from '@/domain/notice/notice.server.js';
 import useMemberServer from '@/domain/member/member.server.js';
 import useGroupServer from '@/domain/group/StandardGroupServer';
-// import useTimerServer from '@/domain/live-timer/liveTimer.server.js';
-// import useGiftsServer from '@/domain/gifts/gifts.server.js';
-// import useWatchRewardServer from '@/domain/reward/reward.server.js';
+import useTimerServer from '@/domain/interactiveTools/timer.server.js';
+import useGiftsServer from '@/domain/interactiveTools/gift.server.js';
+import useWatchRewardServer from '@/domain/interactiveTools/reward.server.js';
 import useAttentionServer from '@/domain/attention/attention.server';
 
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
@@ -118,10 +118,9 @@ export {
   useQaServer,
   useCustomMenuServer,
   useRebroadcastServer,
-  // useTimerServer,
-  // useGiftsServer,
-  // useWatchRewardServer,
+  useTimerServer,
+  useGiftsServer,
+  useWatchRewardServer,
   useAttentionServer,
-  // useLiveTimerServer,
   useGoodServer
 };

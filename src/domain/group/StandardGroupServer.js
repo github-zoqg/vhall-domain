@@ -190,6 +190,7 @@ class StandardGroupServer extends BaseServer {
   msgdoForGroupManagerEnter(msg) {
     if (msg.data.role == 1) {
       if (msg.data.status == 'enter') {
+        alert(JSON.stringify(JSON.stringify(msg)));
         // this.groupAssistance = true;
       } else if (msg.data.status == 'quit') {
         // this.groupAssistance = false;
@@ -289,14 +290,18 @@ class StandardGroupServer extends BaseServer {
 
   //【结束讨论】
   async msgdoForGroupSwitchEnd(msg) {
+    console.log('[group] domain group_switch_end', msg);
     // 设置开始为开始讨论状态
     useRoomBaseServer().setInavToolStatus('is_open_switch', 0);
     if (useRoomBaseServer().state.clientType !== 'send') {
       // 观看端
+
+      // 结束讨论但不在分组中，不需要发消息，直接 return
+      if (!this.state.groupInitData.isInGroup) return;
+
       // 更新个人所在小组信息
       await this.updateGroupInitData();
-      // 开始讨论但不在分组中，不需要发消息，直接 return
-      if (!this.state.groupInitData.isInGroup) return;
+
       // 聚合接口，各种互动工具的状态拉取
       // await this.handleGetCommonConfigInfo();
       await useRoomBaseServer().getInavToolStatus();
@@ -313,7 +318,7 @@ class StandardGroupServer extends BaseServer {
       useMsgServer().destroyGroupMsg();
 
       // 处理分组下互动sdk切换channel
-      roomBaseServer().groupReInitInteractProcess();
+      // roomBaseServer().groupReInitInteractProcess();
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
 
