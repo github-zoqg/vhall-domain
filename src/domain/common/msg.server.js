@@ -17,8 +17,6 @@ class MsgServer extends BaseServer {
       groupMsgSdkInitOptions: {}
     };
 
-    this.defineReactiveGroupMsg();
-
     MsgServer.instance = this;
     return this;
   }
