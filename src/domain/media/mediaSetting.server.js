@@ -2,6 +2,7 @@ import VhallPaasSDK from '@/sdk/index';
 import { merge } from '../../utils';
 import useInteractiveServer from './interactive.server';
 import roomBaseRequest from '@/request/roomBase';
+import useRoomBaseServer from '../room/roombase.server';
 
 class MediaSettingServer {
   constructor() {
@@ -15,6 +16,13 @@ class MediaSettingServer {
 
   reset() {
     this.state = this.resetState();
+  }
+
+  init() {
+    const videoType = localStorage.getItem(
+      `${useRoomBaseServer().state.watchInitData.webinar.id}_stramType`
+    );
+    this.state.videoType = videoType || 'camera';
   }
 
   resetState() {
