@@ -118,6 +118,7 @@ export {
   useCustomMenuServer,
   useRebroadcastServer,
   useTimerServer,
+  useGiftsServer,
   useWatchRewardServer,
   useAttentionServer,
   useGoodServer,
