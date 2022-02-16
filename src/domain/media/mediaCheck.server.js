@@ -1,6 +1,8 @@
 import VhallPaasSDK from '@/sdk/index';
 import { merge } from '../../utils';
 import useInteractiveServer from './interactive.server';
+import useRoomBaseServer from '../room/roombase.server';
+import { meeting } from '@/request/index.js';
 
 class MediaCheckServer {
   constructor() {
@@ -14,7 +16,8 @@ class MediaCheckServer {
         videoInputDevices: [], //视频采集设备，如摄像头
         audioInputDevices: [], //音频采集设备，如麦克风
         audioOutputDevices: [] //音频输出设备，如扬声器
-      }
+      },
+      isBrowserNotSuppport: false // 浏览器是否支持互动sdk
     };
     MediaCheckServer.instance = this;
     return this;
@@ -32,7 +35,42 @@ class MediaCheckServer {
   checkSystemRequirements() {
     return VhallPaasSDK.modules.VhallRTC.checkSystemRequirements().then(checkResult => {
       this.state.checkSystemResult = checkResult;
+      if (!checkResult.result) {
+        this.state.isBrowserNotSuppport = true;
+      }
       return checkResult;
+    });
+  }
+
+  // 获取用户媒体输入许可
+  getMediaInputPermission() {
+    if (navigator.mediaDevices) {
+      return navigator.mediaDevices
+        .getUserMedia({ audio: true, video: true })
+        .then(async stream => {
+          this.setDevice({ status: 1 });
+          stream.getTracks().forEach(trackInput => {
+            trackInput.stop();
+          });
+        })
+        .catch(async error => {
+          this.setDevice({ status: 2 });
+        });
+    }
+    return Promise.resolve(false);
+  }
+
+  // 设置设备检测状态
+  setDevice(data = {}) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const defaultParams = {
+      room_id: watchInitData.interact.room_id,
+      status: 1,
+      type: this.isMobileDevice() ? 1 : 2
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return meeting.setDevice(retParams).then(res => {
+      return res;
     });
   }
 
