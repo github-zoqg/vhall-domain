@@ -18,6 +18,7 @@ import rebroadcast from './room/rebroadcast';
 import liveTimerApi from './live-timer';
 import giftsApi from './gifts/index';
 import rewardApi from './reward/index';
+import cash from './cash';
 import attentionApi from './attention';
 import praiseApi from './praise/index';
 
@@ -62,6 +63,7 @@ export {
   liveTimerApi,
   giftsApi,
   rewardApi,
+  cash,
   attentionApi,
   goodSaasApi,
   praiseApi

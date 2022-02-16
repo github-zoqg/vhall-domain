@@ -21,6 +21,9 @@ export default function useUserServer() {
   // TODO: 后续接v4接口
   async function getCaptchaId() {
     captchaId = 'b7982ef659d64141b7120a6af27e19a0'; // 识别
+    return new Promise((resolve, reject) => {
+      resolve(captchaId);
+    });
   }
 
   /**
@@ -299,6 +302,20 @@ export default function useUserServer() {
     });
   }
 
+  // 获取验证码
+  function sendPhoneCode(data) {
+    // 开始倒计时
+    // data.type 1手机  2邮箱,
+    // data.scene_id场景ID：1账户信息-修改密码  2账户信息-修改密保手机 3账户信息-修改关联邮箱 4忘记密码-邮箱方式找回 
+    // 5忘记密码-短信方式找回 6提现绑定时手机号验证 7快捷方式登录（短信验证码登录） 8注册-验证码
+    return userApi.sendCode(data).then(res => {
+      return res;
+    })
+    .catch(err => {
+      return err;
+    });
+  }
+
   // 退出登录
   function loginOut(data) {
     return userApi.loginOut(data);
@@ -326,6 +343,7 @@ export default function useUserServer() {
 
   return {
     state,
+    getCaptchaId,
     initNECaptcha,
     refreshNECaptha,
     getGraphCode,
@@ -344,6 +362,7 @@ export default function useUserServer() {
     callbackUserInfo,
     codeCheck,
     getUserInfo,
+    sendPhoneCode,
     changeAvatarSend,
     editUserNickName,
     thirdUnbind,
