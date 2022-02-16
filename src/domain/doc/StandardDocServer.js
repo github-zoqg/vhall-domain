@@ -16,7 +16,7 @@ import { doc as docApi } from '../../request/index.js';
 export default class StandardDocServer extends AbstractDocServer {
   constructor() {
     super();
-    this.watchInitData = null;
+
     this.state = {
       isChannelChanged: false, // 频道是否变更，进入/退出小组是变化
       currentCid: '', //当前正在展示的容器id
@@ -31,7 +31,8 @@ export default class StandardDocServer extends AbstractDocServer {
       docLoadComplete: true, // 文档是否加载完成
 
       thumbnailList: [], // 缩略图列表
-      switchStatus: false // 观众是否可见
+      switchStatus: false, // 观众是否可见
+      hasDocPermission: false //是否文档的演示(操作)权限
     };
   }
 
@@ -62,9 +63,17 @@ export default class StandardDocServer extends AbstractDocServer {
         // 初始化事件
         this._initEvent();
 
+        const { watchInitData } = useRoomBaseServer().state;
         // 无延迟
-        if (this.watchInitData.webinar.no_delay_webinar) {
+        if (watchInitData.webinar.no_delay_webinar) {
           this.setPlayMode(VHDocSDK.PlayMode.INTERACT);
+        }
+        if (watchInitData?.rebroadcast?.channel_id) {
+          // 直播中旁路频道
+          // this.docServer.setAccountId({ accountId: this.accountId + '7890' });
+          // this.$VhallEventBus.$emit('docInfo', this.docInfo);
+          // this.docServer.setRole(roleTypeMap[2]);
+          // this.docServer.setPlayMode(VHDocSDK.PlayMode.FLV);
         }
       })
       .catch(ex => {
@@ -76,13 +85,9 @@ export default class StandardDocServer extends AbstractDocServer {
   _getDefaultOptions() {
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
-    console.log('---useRoomBaseServer()----:', useRoomBaseServer());
-    // console.log('---groupInitData---:', groupInitData);
-    this.watchInitData = watchInitData;
-    console.log('获取默认初始化参数 watchInitData:', this.watchInitData);
-
     // 初始化参数
     const defaultOptions = {
+      isVod: [4, 5].includes(watchInitData.webinar?.type) && watchInitData.record?.paas_record_id, // 是否是点播和回放
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
       accountId: watchInitData.join_info.third_party_user_id, // 第三方用户ID，必填
       client: VHDocSDK.Client.PC_WEB // 客户端类型
@@ -90,25 +95,29 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 如果当前用户进入了某个小组
     if (groupInitData && groupInitData.isInGroup) {
-      // 小组房间内
-      this.state.hasDocPermission = groupInitData.main_screen == defaultOptions.accountId;
+      // 当前用户在小组房间内
+      this.state.hasDocPermission =
+        groupInitData.main_screen == watchInitData.join_info.third_party_user_id;
       defaultOptions.role = this.mapDocRole(this.state.hasDocPermission ? 1 : 2); // 角色
       defaultOptions.roomId = groupInitData.group_room_id;
       defaultOptions.channelId = groupInitData.channel_id;
       defaultOptions.token = groupInitData.access_token;
-      console.log('取小组数据');
     } else {
-      // 如果当前用户不在小组内，而在主直播间内，
-      if (interactToolStatus) {
-        // 主直播间邀请 TODO ？？
-        // this.hasDocPermission = interactToolStatus.main_screen == this.joinId;
+      //当前用户在主直播间内
+      if (interactToolStatus && interactToolStatus.main_screen) {
+        // 分组直播和非分组直播的文档权限字段不同
+        if (watchInitData.webinar.mode === 6) {
+          this.state.hasDocPermission =
+            interactToolStatus.main_screen == watchInitData.join_info.third_party_user_id; // 演示权限-> 主屏权限
+        } else {
+          this.state.hasDocPermission =
+            interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
+        }
       }
       defaultOptions.role = this.mapDocRole(watchInitData.join_info.role_name);
       defaultOptions.roomId = watchInitData.interact.room_id; // 必填。
       defaultOptions.channelId = watchInitData.interact.channel_id; // 频道id 必须
       defaultOptions.token = watchInitData.interact.paas_access_token; // access_token，必填
-      defaultOptions.isVod = false; // 是否是回放 必须
-      console.log('取主房间数据');
     }
     //  如果是无延迟直播，文档播放模式改为互动模式
     if (watchInitData.webinar.no_delay_webinar) {
@@ -433,7 +442,8 @@ export default class StandardDocServer extends AbstractDocServer {
    */
   uploadFile(param, uploadUrl) {
     try {
-      const { watchInitData, groupInitData } = useRoomBaseServer().state;
+      const { watchInitData } = useRoomBaseServer().state;
+      const { groupInitData } = useGroupServer().state;
       // 创建form对象,必须使用这个,会自动把 content-type 设置成 multipart/form-data
       const formData = new FormData();
       formData.append('resfile', param.file);
@@ -579,6 +589,7 @@ export default class StandardDocServer extends AbstractDocServer {
         this.state.thumbnailList = []; // 缩略图列表
         this.state.switchStatus = false; // 观众是否可见
 
+        // this.state.hasDocPermission = false; // 演示权限收回
         // 注意这里用true
         this.state.isChannelChanged = true;
       })

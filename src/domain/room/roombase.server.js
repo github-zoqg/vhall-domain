@@ -24,11 +24,6 @@ class RoomBaseServer extends BaseServer {
     super();
     this.state = {
       watchInitData: {}, // 活动信息
-      groupInitData: {
-        isBanned: false, // 小组禁言
-        discussState: false, // 是否开始讨论
-        isInGroup: false // 是否在小组中
-      }, // 分组信息
       embedObj: {
         embed: false,
         embedVideo: false
@@ -81,10 +76,6 @@ class RoomBaseServer extends BaseServer {
       }
     });
   }
-  // 设置分组讨论是否正在讨论中
-  setGroupDiscussState(type) {
-    this.state.groupInitData.discussState = type;
-  }
 
   // 设置是否是嵌入
   setEmbedObj(param) {
@@ -106,34 +97,6 @@ class RoomBaseServer extends BaseServer {
   // 更新roomVisibleModule
   updateRoomVisibleModules(cb) {
     this.state.roomVisibleModules = cb(this.state.roomVisibleModules);
-  }
-
-  // 设置子房间初始化信息
-  setGroupInitData(data) {
-    console.log('[group] setGroupInitData:', data);
-    if (!data || !data.group_id) {
-      // 没有小组
-      this.state.groupInitData = {
-        isInGroup: false
-      };
-    } else {
-      // 进入小组设置
-      this.state.groupInitData = merge.recursive({}, this.state.groupInitData, data);
-      this.state.groupInitData.isInGroup = true;
-    }
-  }
-
-  // 获取分组初始化信息
-  getGroupInitData(data) {
-    return meeting.getGroupInitData(data).then(res => {
-      this.state.groupInitData = {
-        ...this.state.groupInitData,
-        ...res.data,
-        isBanned: res.data.is_banned == '1',
-        isInGroup: res.code !== 513325
-      };
-      return res;
-    });
   }
 
   // 获取活动信息
