@@ -23,6 +23,10 @@ import attentionApi from './attention';
 // 问答
 import qaList from './qa/list/index.js';
 import qaPrivateChat from './qa/privateChat/index.js';
+
+// 商品
+import goodSaasApi from './good/index.js';
+
 const im = {
   chat: imChat,
   keyWords: imKeyWords,
@@ -57,5 +61,6 @@ export {
   liveTimerApi,
   giftsApi,
   rewardApi,
-  attentionApi
+  attentionApi,
+  goodSaasApi
 };

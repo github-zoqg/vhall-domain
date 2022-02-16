@@ -2,8 +2,10 @@ import { room } from '../../request';
 import { merge, sleep } from '../../utils';
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
+import useGroupServer from '../group/StandardGroupServer';
 import useMsgServer from '../common/msg.server';
 import VhallPaasSDK from '@/sdk/index';
+import useMicServer from './mic.server';
 class InteractiveServer extends BaseServer {
   constructor() {
     super();
@@ -33,8 +35,8 @@ class InteractiveServer extends BaseServer {
         streamType: 2
         videoMuted: false
        */
-      remoteStreams: [], // 远端流数组
-      mainScreen: '16422770'
+      remoteStreams: [] // 远端流数组
+      // mainScreen: '16422770'
     };
     InteractiveServer.instance = this;
     return this;
@@ -75,14 +77,31 @@ class InteractiveServer extends BaseServer {
   // 获取默认初始化参数
   _getDefaultOptions() {
     const { watchInitData } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state;
+
+    // 如果是在小组中，取小组中的互动id和房间id初始化互动实例
+    const roomId = groupInitData.isInGroup
+      ? groupInitData.group_room_id
+      : watchInitData.interact.room_id;
+    const inavId = groupInitData.isInGroup ? groupInitData.inav_id : watchInitData.interact.inav_id;
+    const token = groupInitData.isInGroup
+      ? groupInitData.access_token
+      : watchInitData.interact.paas_access_token;
+
+    // 获取互动实例角色
+    const role = this._getInteractiveRole();
+
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
-      inavId: watchInitData.interact.inav_id, // 互动房间ID，必填
-      roomId: watchInitData.interact.room_id, // 如需开启旁路，必填。
+      inavId, // 互动房间ID，必填
+      roomId, // 如需开启旁路，必填。
       accountId: watchInitData.join_info.third_party_user_id, // 第三方用户ID，必填
-      token: watchInitData.interact.paas_access_token, // access_token，必填
-      mode: VhallPaasSDK.modules.VhallRTC.MODE_RTC, //应用场景模式，选填，可选值参考下文【应用场景类型】。支持版本：2.3.1及以上。
-      role: VhallPaasSDK.modules.VhallRTC.ROLE_HOST, //用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
+      token, // access_token，必填
+      mode:
+        watchInitData.webinar.no_delay_webinar == 1
+          ? VhallPaasSDK.modules.VhallRTC.MODE_LIVE
+          : VhallPaasSDK.modules.VhallRTC.MODE_RTC, //应用场景模式，选填，可选值参考下文【应用场景类型】。支持版本：2.3.1及以上。
+      role, //用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
       attributes: '', // String 类型
       autoStartBroadcast: watchInitData.join_info.role_name == 1, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
       broadcastConfig:
@@ -100,7 +119,46 @@ class InteractiveServer extends BaseServer {
             }
           : {} // 自动旁路   开启旁路直播方法所需参数
     };
+
     return defaultOptions;
+  }
+
+  /**
+   * 获取初始化互动sdk实例的角色
+   * @returns {String}}
+   */
+  async _getInteractiveRole() {
+    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+
+    // 如果是主持人、嘉宾、助理，设为 HOST
+    if (watchInitData.join_info.role_name != 2) {
+      return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
+    }
+
+    // 如果不是无延迟直播，不需要设置role，默认设为 AUDIENCE
+    if (watchInitData.webinar.no_delay_webinar == 1) {
+      return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
+    }
+
+    // 如果是无延迟直播并且在麦上，设为 HOST
+    if (
+      (interactToolStatus.speaker_list || !interactToolStatus.speaker_list.length) &&
+      interactToolStatus.speaker_list.some(
+        item => item.account_id == watchInitData.join_info.third_party_user_id
+      )
+    ) {
+      return VhallPaasSDK.module.VhallRTC.ROLE_HOST;
+    }
+
+    // 如果是无延迟直播、不在麦、开启自动上麦
+    if (roomBaseServer.interactToolStatus.auto_speak == 1) {
+      // 调上麦接口判断当前人是否可以上麦
+      const res = await useMicServer().userSpeakOn();
+      if (res.code == 200) return VhallPaasSDK.module.VhallRTC.ROLE_HOST;
+    }
+
+    // 如果是无延迟直播、不在麦、未开启自动上麦，设为 AUDIENCE
+    return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
   }
 
   /**
