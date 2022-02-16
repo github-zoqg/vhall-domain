@@ -247,19 +247,6 @@ class RoomBaseServer extends BaseServer {
     this.state.interactToolStatus = its;
   }
 
-  // 设置设备检测状态
-  setDevice(data = {}) {
-    const defaultParams = {
-      room_id: this.state.watchInitData.interact.room_id,
-      status: 1,
-      type: 2
-    };
-    const retParams = merge.recursive({}, defaultParams, data);
-    return meeting.setDevice(retParams).then(res => {
-      return res;
-    });
-  }
-
   // 开播startLive
   startLive(data = {}) {
     return meeting.startLive(data).then(res => {
