@@ -39,9 +39,18 @@ service.interceptors.request.use(
         live_token: LIVETOKEN,
         ...config.data
       };
-      config.data = JSON.stringify(config.data);
+      // config.data = JSON.stringify(config.data);
     }
-
+    if (config.dataType === 'FormData') {
+      if (config.data && typeof config.data === 'object') {
+        const params = config.data;
+        const formData = new FormData();
+        Object.keys(params).forEach(key => {
+          formData.append(key, params[key]);
+        });
+        config.data = formData;
+      }
+    }
     config.headers = {
       ...HEADERS,
       ...config.headers

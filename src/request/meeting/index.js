@@ -165,6 +165,26 @@ function getLowerGradeConfigInfo(params, environment = 'test', systemKey = 2) {
   return axios.get(url);
 }
 
+// 观看端反馈
+function feedbackInfo(params) {
+  const url = env.meeting === 'v3' ? '/v3/interacts/feedback/user-create-feedback' : '';
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
+
+// 观看端举报
+function tipOffInfo(params) {
+  const url = env.meeting === 'v3' ? '/v3/interacts/report/user-create-report' : '';
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
+
 const meeting = {
   initSendLive,
   initStandardReceiveLive,
@@ -181,7 +201,9 @@ const meeting = {
   getConfigList,
   getInavToolStatus,
   getCommonConfig,
-  getLowerGradeConfigInfo
+  getLowerGradeConfigInfo,
+  feedbackInfo,
+  tipOffInfo
 };
 
 export default meeting;

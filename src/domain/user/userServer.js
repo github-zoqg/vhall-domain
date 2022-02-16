@@ -12,7 +12,7 @@ export default function useUserServer() {
     second: -1, // 倒计时的秒数
     errorMsg: '', // 错误提示
     userInfo: {}, // 用户信息
-    thirdInfo: {}, // 第三方授权绑定的信息 从userInfo拆分的
+    thirdInfo: {} // 第三方授权绑定的信息 从userInfo拆分的
   };
 
   /**
@@ -252,6 +252,11 @@ export default function useUserServer() {
     return userApi.resetPassword(data);
   }
 
+  //退出登录
+  function loginOut(data) {
+    return requestApi.user.loginOut(data);
+  }
+
   /**
    * 跳转到qq授权登录链接、跳转到微信授权登录链接
    * /v3/users/oauth/callback
@@ -316,24 +321,29 @@ export default function useUserServer() {
     });
   }
 
-  // 替换头像
-  function changeAvatarSend (data) {
-    return userApi.changeAvatarSend(data)
+  // 退出登录
+  function loginOut(data) {
+    return userApi.loginOut(data);
   }
 
-  // 替换昵称 
-  function editUserNickName (data) {
-    return userApi.editUserNickName(data)
+  // 替换头像
+  function changeAvatarSend(data) {
+    return userApi.changeAvatarSend(data);
+  }
+
+  // 替换昵称
+  function editUserNickName(data) {
+    return userApi.editUserNickName(data);
   }
 
   // 第三方解除绑定
   function thirdUnbind(data) {
-    return userApi.thirdUnbind(data)
+    return userApi.thirdUnbind(data);
   }
-  
+
   // 绑定手机号
-  function bindInfo (data) {
-    return userApi.bindInfo(data)
+  function bindInfo(data) {
+    return userApi.bindInfo(data);
   }
 
   return {
@@ -353,6 +363,7 @@ export default function useUserServer() {
     roleLogin,
     handlePassword,
     loginInfo,
+    loginOut,
     callbackUserInfo,
     codeCheck,
     getUserInfo,
