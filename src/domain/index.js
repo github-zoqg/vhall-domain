@@ -122,8 +122,6 @@ export {
   // useGiftsServer,
   // useWatchRewardServer,
   useAttentionServer,
-  useLiveTimerServer,
-  useGiftsServer,
-  useWatchRewardServer,
+  // useLiveTimerServer,
   useGoodServer
 };
