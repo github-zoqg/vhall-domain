@@ -10,6 +10,21 @@ const roomServerState = useRoomBaseServer().state;
 export default class useLotteryServer {
   constructor(opt) {
     this._roomId = roomServerState.watchInitData.interact.room_id;
+    this.listenMsg();
+  }
+  // 监听消息
+  listenMsg() {
+    useMsgServer().$onMsg('ROOM_MSG', msg => {
+      console.log(
+        '[group] --domain ROOM_MSG--房间消息：',
+        `${msg.data.type ? 'type:' : 'event_type'}:${msg.data.type || msg.data.event_type}`
+      );
+      switch (msg.data.event_type || msg.data.type) {
+        //【分组创建/新增完成】
+        case 'lottery_push':
+          break;
+      }
+    });
   }
 
   // 获取列表
