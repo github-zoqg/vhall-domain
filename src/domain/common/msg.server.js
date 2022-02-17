@@ -57,9 +57,6 @@ class MsgServer extends BaseServer {
   }
   async initGroupMsg(customOptions = {}) {
     //如果已存在子房间先销毁
-    if (this.groupMsgInstance) {
-      this.destroyGroupMsg();
-    }
     const defautlGroupOptions = this.getGroupDefaultOptions();
     const options = merge.recursive({}, defautlGroupOptions, customOptions);
     //创建pass消息房间实例
@@ -78,17 +75,8 @@ class MsgServer extends BaseServer {
     if (this._eventhandlers[eventType]) {
       this._eventhandlers[eventType].push(fn);
     } else {
-      const registerMsgInstance = this.groupMsgInstance || this.msgInstance;
       this._eventhandlers[eventType] = [];
       this._eventhandlers[eventType].push(fn);
-      console.log('聊天实例', registerMsgInstance);
-      if (registerMsgInstance) {
-        this._handlePaasInstanceOn(registerMsgInstance, eventType, msg => {
-          this._eventhandlers[eventType].forEach(handler => {
-            handler(msg);
-          });
-        });
-      }
     }
   }
 
@@ -249,7 +237,7 @@ class MsgServer extends BaseServer {
   getDefaultOptions() {
     const { state: roomBaseServerState } = useRoomBaseServer();
     const isPcClient = isPc();
-    const { watchInitData, groupInitData } = roomBaseServerState;
+    const { watchInitData } = roomBaseServerState;
     const defaultContext = {
       nickname: watchInitData.join_info.nickname,
       avatar: watchInitData.join_info.avatar,
@@ -260,8 +248,7 @@ class MsgServer extends BaseServer {
       device_status: '0', // 设备状态  0未检测 1可以上麦 2不可以上麦
       audience: roomBaseServerState.clientType !== 'send',
       kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
-      privacies: watchInitData.join_info.privacies || '',
-      groupInitData: groupInitData
+      privacies: watchInitData.join_info.privacies || ''
     };
 
     const defaultOptions = {
