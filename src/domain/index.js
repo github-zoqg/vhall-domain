@@ -5,6 +5,7 @@ import useMediaCheckServer from '@/domain/media/mediaCheck.server.js';
 import useMediaSettingServer from '@/domain/media/mediaSetting.server.js';
 import usePlayerServer from '@/domain/player/player.server.js';
 import useDocServer from '@/domain/doc/doc.server.js';
+import useCanvasStreamServer from '@/domain/media/canvasStream.server.js';
 
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
 import useUserServer from '@/domain/user/userServer.js';
@@ -106,6 +107,7 @@ export {
   useVirtualAudienceServer,
   // useRoomInitGroupServer,
   useInteractiveServer,
+  useCanvasStreamServer,
   useMediaCheckServer,
   useMediaSettingServer,
   useInsertFileServer,
