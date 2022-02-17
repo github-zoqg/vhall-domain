@@ -1,7 +1,10 @@
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
+import useMsgServer from '@/domain/common/msg.server.js';
 import { im as iMRequest } from '@/request';
 
+const msgServer = useMsgServer();
+const roomBaseServer = useRoomBaseServer();
 export default class StandardNoticeServer extends BaseServer {
   constructor() {
     super();
@@ -9,7 +12,12 @@ export default class StandardNoticeServer extends BaseServer {
     this.state = {
       //公告列表
       noticeList: [],
-
+      latestNotice: {
+        noticeContent:
+          roomBaseServer.state.noticeInfo.total &&
+          roomBaseServer.state.noticeInfo.list[0].content['content'],
+        total: roomBaseServer.state.noticeInfo.total
+      },
       //请求的分页参数
       pageInfo: {
         pos: 0,
@@ -22,7 +30,6 @@ export default class StandardNoticeServer extends BaseServer {
       total: 0
     };
   }
-
   /**
    * 获取单实例
    * @returns
@@ -32,6 +39,15 @@ export default class StandardNoticeServer extends BaseServer {
       StandardNoticeServer.instance = new StandardNoticeServer();
     }
     return StandardNoticeServer.instance;
+  }
+
+  // 消息内容
+  listenMsg() {
+    msgServer.$onMsg('ROOM_MSG', msg => {
+      if (msg.data.type === 'room_announcement') {
+        this.$emit('room_announcement', msg.data);
+      }
+    });
   }
 
   //获取消息记录
@@ -65,6 +81,11 @@ export default class StandardNoticeServer extends BaseServer {
     });
   }
 
+  // 设置最新公告（区分小组内和主直播间）
+  setLatestNoticeInfo(info) {
+    this.state.latestNotice.noticeContent = info;
+  }
+
   /**
    * 发送公告
    * @param {String} content 消息内容
@@ -72,7 +93,7 @@ export default class StandardNoticeServer extends BaseServer {
    * @returns
    */
   async sendNotice({ content, messageType, roomId, switchId }) {
-    const { watchInitData } = useRoomBaseServer().state;
+    const { watchInitData } = roomBaseServer.state;
     const params = {
       room_id: roomId || watchInitData.interact.room_id, // 主直播房间ID
       switch_id: switchId || watchInitData.switch.switch_id, // 场次ID

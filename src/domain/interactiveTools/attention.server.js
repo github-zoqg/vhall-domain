@@ -1,29 +1,37 @@
+/**
+ * 观看端关注服务
+ * @returns
+ */
 import { attentionApi } from '../../request/index';
+import BaseServer from '@/domain/common/base.server.js';
+class AttentionServer extends BaseServer {
+  constructor() {
+    super();
+    this.state = {};
+  }
 
-export default function useAttentionServer() {
-  // this.state = {
-  //   isAttention: false
-  // };
   // 关注状态
-  function getAttentionStatus(params = {}) {
+  getAttentionStatus(params = {}) {
     return attentionApi.getAttentionStatus(params).then(res => {
       return res;
     });
   }
 
   // 关注
-  function attention(params = {}) {
+  attention(params = {}) {
     return attentionApi.attention(params).then(res => {
       return res;
     });
   }
 
   // 取消关注
-  function cancelAttention(params = {}) {
+  cancelAttention(params = {}) {
     return attentionApi.cancelAttention(params).then(res => {
       return res;
     });
   }
+}
 
-  return { getAttentionStatus, attention, cancelAttention };
+export default function useAttentionServer() {
+  return new AttentionServer();
 }

@@ -16,7 +16,9 @@ class MsgServer extends BaseServer {
       msgSdkInitOptions: {},
       groupMsgSdkInitOptions: {}
     };
-
+    this.EVENT_TYPE = {
+      CHANNEL_CHANGE: 'CHANNEL_CHANGE'
+    };
     MsgServer.instance = this;
     return this;
   }
@@ -46,9 +48,10 @@ class MsgServer extends BaseServer {
     this.state.msgSdkInitOptions = options;
     const vhallchat = await VhallPaasSDK.modules.VhallChat.createInstance(options);
     this.msgInstance = vhallchat.message;
-    console.log('聊天实例', this.msgInstance);
-    if (!this.groupMsgInstance) {
-      this.changeChannel(this.msgInstance); //当前所在的房间实例
+    console.log('主房间消息实例', this.msgInstance);
+    const { groupInitData } = useGroupServer().state;
+    if (!groupInitData.isInGroup) {
+      this.changeChannel(this.msgInstance);
       this._addListeners(this.msgInstance);
     }
   }
@@ -67,7 +70,8 @@ class MsgServer extends BaseServer {
   }
   changeChannel(istance) {
     this.curMsgInstance = istance;
-    this.$emit('changeChannel');
+    //对外通知切换房间
+    this.$emit(this.EVENT_TYPE.CHANNEL_CHANGE);
   }
   // 注册事件
   $onMsg(eventType, fn) {
@@ -183,25 +187,25 @@ class MsgServer extends BaseServer {
 
     if (!fn) {
       this._eventhandlers[eventType] = [];
-      this._handlePaasInstanceOff(eventType);
+      // this._handlePaasInstanceOff(eventType);
       return;
     }
 
     const index = this._eventhandlers[eventType].indexOf(fn);
     if (index > -1) {
       this._eventhandlers[eventType].splice(index, 1);
-      this._handlePaasInstanceOff(eventType, fn);
+      // this._handlePaasInstanceOff(eventType, fn);
     }
   }
 
   // paas实例注销事件
-  _handlePaasInstanceOff(eventType, fn) {
-    if (this.groupMsgInstance) {
-      this.groupMsgInstance.off(eventType, fn);
-    } else {
-      this.msgInstance.off(eventType, fn);
-    }
-  }
+  // _handlePaasInstanceOff(eventType, fn) {
+  //   if (this.groupMsgInstance) {
+  //     this.groupMsgInstance.off(eventType, fn);
+  //   } else {
+  //     this.msgInstance.off(eventType, fn);
+  //   }
+  // }
 
   // 为聊天实例注册事件
   _addListeners(instance) {
@@ -228,9 +232,13 @@ class MsgServer extends BaseServer {
     this.curMsgInstance.emit(data, context);
   }
 
-  // 发送房间消息
+  // 发送当前房间消息
   sendRoomMsg(data) {
     this.curMsgInstance.emitRoomMsg(data);
+  }
+  //发送主房间消息
+  sendMainRoomMsg(data) {
+    this.msgInstance.emitRoomMsg(data);
   }
   //发送自定义消息
   sendCustomMsg(data) {

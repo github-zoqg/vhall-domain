@@ -2,13 +2,31 @@ import VhallPaasSDK from '@/sdk/index';
 import { merge } from '../../utils';
 import useInteractiveServer from './interactive.server';
 import roomBaseRequest from '@/request/roomBase';
+import useRoomBaseServer from '../room/roombase.server';
 
 class MediaSettingServer {
   constructor() {
     if (typeof MediaSettingServer.instance === 'object') {
       return MediaSettingServer.instance;
     }
-    this.state = this.resetState();
+    this.state = {
+      selectedVideoDeviceId: '', // 当前选取的设备id
+      videoPreivewStreamId: '', // 当前[流ID]
+      canvasImgUrl: '', // 当前图片流url
+      rate: '', // 当前画质
+      screenRate: '', //当前桌面共享画质
+      videoType: 'camera', // 当前视频类型 camera||pictrue
+      layout: 'CANVAS_ADAPTIVE_LAYOUT_FLOAT_MODE', // 当前选择的布局(默认主次浮窗)
+      video: '', // 当前选择的摄像头或图片等[设备ID]
+      audioInput: '', // 当前选择的麦克风[设备ID]
+      audioOutput: '', // 当前选择的扬声器[设备ID]
+      devices: {
+        videoInputDevices: [], //视频采集设备，如摄像头
+        audioInputDevices: [], //音频采集设备，如麦克风
+        audioOutputDevices: [] //音频输出设备，如扬声器
+      },
+      isBrowserNotSuppport: false // 当前浏览器是否支持互动sdk
+    };
     MediaSettingServer.instance = this;
     return this;
   }
@@ -17,8 +35,15 @@ class MediaSettingServer {
     this.state = this.resetState();
   }
 
+  init() {
+    const videoType = localStorage.getItem(
+      `${useRoomBaseServer().state.watchInitData.webinar.id}_stramType`
+    );
+    this.state.videoType = videoType || 'camera';
+  }
+
   resetState() {
-    return {
+    this.state = {
       selectedVideoDeviceId: '', // 当前选取的设备id
       videoPreivewStreamId: '', // 当前[流ID]
       canvasImgUrl: '', // 当前图片流url
@@ -53,6 +78,9 @@ class MediaSettingServer {
   checkSystemRequirements() {
     return VhallPaasSDK.modules.VhallRTC.checkSystemRequirements().then(checkResult => {
       this.state.checkSystemResult = checkResult;
+      if (!checkResult.result) {
+        this.state.isBrowserNotSuppport = true;
+      }
       return checkResult;
     });
   }

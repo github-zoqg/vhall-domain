@@ -20,23 +20,7 @@ class InteractiveServer extends BaseServer {
         audioMuted: false,
         attributes: {}
       },
-      /**
-       * 房间流列表
-       * accountId: "16422770"
-        attributes: {
-          accountId: "16422770"
-          nickname: "春有百花秋有月 夏有凉风冬有雪，若无闲事挂心头便是人间好时节"
-          roleName: 1
-        }
-        audioMuted: false
-        streamId: "910274322990012300"
-        streamSource: "remote"
-        streamStatus: 0
-        streamType: 2
-        videoMuted: false
-       */
       remoteStreams: [] // 远端流数组
-      // mainScreen: '16422770'
     };
     InteractiveServer.instance = this;
     return this;
@@ -53,8 +37,11 @@ class InteractiveServer extends BaseServer {
    * @returns {Promise}
    */
   async init(customOptions = {}) {
+    if (!this._isNeedInteractive()) return;
     const defaultOptions = await this._getDefaultOptions();
     const options = merge.recursive({}, defaultOptions, customOptions);
+
+    console.log('%cVHALL-DOMAIN-互动初始化参数', 'color:blue', options);
 
     return new Promise((resolve, reject) => {
       VhallPaasSDK.modules.VhallRTC.createInstance(
@@ -72,6 +59,30 @@ class InteractiveServer extends BaseServer {
         }
       );
     });
+  }
+
+  // 判断是否需要初始化互动实例
+  _isNeedInteractive() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const { isSpeakOn } = useMicServer().state;
+
+    // 如果不是观众需要初始化互动
+    if (watchInitData.join_info.role_name != 2) {
+      return true;
+    }
+
+    // 如果是观众、并且是无延迟直播，需要初始化互动
+    if (watchInitData.webinar.no_delay_webinar == 1) {
+      return true;
+    }
+
+    // 如果是观众、不是无延迟直播、在麦上，需要初始化互动
+    if (isSpeakOn) {
+      return true;
+    }
+
+    // 如果是观众、不是无延迟直播、不在麦上，不需要初始化互动
+    return false;
   }
 
   // 获取默认初始化参数
@@ -108,17 +119,20 @@ class InteractiveServer extends BaseServer {
       broadcastConfig:
         watchInitData.join_info.role_name == 1
           ? {
-              layout: VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
+              layout:
+                VhallPaasSDK.modules.VhallRTC[sessionStorage.getItem('layout')] ||
+                VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
               profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
               paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
               precastPic: false, // 选填，当旁路布局模板未填满时，剩余的窗格默认会填充系统默认小人图标。可配置是否显示此图标。
               border: {
                 // 旁路边框属性
                 width: 2,
-                color: '0x666666'
+                color: '0x1a1a1a'
               }
             }
-          : {} // 自动旁路   开启旁路直播方法所需参数
+          : {}, // 自动旁路   开启旁路直播方法所需参数
+      otherOption: watchInitData.report_data
     };
 
     return defaultOptions;
@@ -143,7 +157,8 @@ class InteractiveServer extends BaseServer {
 
     // 如果是无延迟直播并且在麦上，设为 HOST
     if (
-      (interactToolStatus.speaker_list || !interactToolStatus.speaker_list.length) &&
+      interactToolStatus.speaker_list &&
+      interactToolStatus.speaker_list.length &&
       interactToolStatus.speaker_list.some(
         item => item.account_id == watchInitData.join_info.third_party_user_id
       )
@@ -152,9 +167,10 @@ class InteractiveServer extends BaseServer {
     }
 
     // 如果是无延迟直播、不在麦、开启自动上麦
-    if (roomBaseServer.interactToolStatus.auto_speak == 1) {
+    if (interactToolStatus.auto_speak == 1) {
       // 调上麦接口判断当前人是否可以上麦
       const res = await useMicServer().userSpeakOn();
+      // 如果上麦成功，设为 HOST
       if (res.code == 200) return VhallPaasSDK.module.VhallRTC.ROLE_HOST;
     }
 
@@ -386,6 +402,7 @@ class InteractiveServer extends BaseServer {
 
     return this.createLocalStream(params);
   }
+
   /**
    *  获取旁路布局
    *  @param { string } param [字符串 120，240，360，480]
@@ -422,15 +439,18 @@ class InteractiveServer extends BaseServer {
     }
     return definition;
   }
+
   // 获取分辨率
   getVideoProfile() {
+    const { interactToolStatus } = useInteractiveServer().state;
     const remoteStream = this.getRoomStreams();
     if (!remoteStream || !remoteStream.length) {
       return false;
     }
     const onlineLength = remoteStream.filter(item => item.streamType == 2).length;
     let profile;
-    const isHost = this.mainScreen == this.accountId || this.docPermissionId == this.accountId;
+    const isHost =
+      interactToolStatus.main_screen == this.accountId || this.docPermissionId == this.accountId;
     if (onlineLength >= 0 && onlineLength <= 6) {
       if (isHost) {
         profile = this.formatDefinition('720');
@@ -452,6 +472,7 @@ class InteractiveServer extends BaseServer {
     }
     return profile;
   }
+
   // 创建桌面共享流
   createLocaldesktopStream(options = {}, addConfig = {}) {
     return this.interactiveInstance.createLocaldesktopStream(options, addConfig);
@@ -460,9 +481,11 @@ class InteractiveServer extends BaseServer {
   createLocalAudioStream(options = {}, addConfig = {}) {
     return this.interactiveInstance.createLocalAudioStream(options, addConfig);
   }
+
   // 创建图片推流
   createLocalPhotoStream(options = {}, addConfig = {}) {
-    return this.interactiveInstance.createLocalPhotoStream(options, addConfig);
+    const params = merge.recursive({}, options, addConfig);
+    return this.createLocalStream(params);
   }
 
   // 销毁本地流
@@ -475,8 +498,7 @@ class InteractiveServer extends BaseServer {
     const { state: roomBaseServerState } = useRoomBaseServer();
     return this.interactiveInstance
       .publish({
-        streamId: this.state.localStream.streamId,
-        accountId: roomBaseServerState.watchInitData.join_info.third_party_user_id
+        streamId: this.state.localStream.streamId
       })
       .then(data => {
         return data;
