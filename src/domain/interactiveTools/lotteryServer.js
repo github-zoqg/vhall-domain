@@ -3,25 +3,39 @@
  */
 import useRoomBaseServer from '../room/roombase.server';
 import lotteryApi from '../../request/lottery';
-// import BaseServer from '../common/base.server';
+import BaseServer from '../common/base.server';
+import useMsgServer from '@/domain/common/msg.server.js';
 
 const roomServerState = useRoomBaseServer().state;
 
-export default class useLotteryServer {
-  constructor(opt) {
+const LOTTERY_PUSH = 'lottery_push'; //发起抽奖
+const LOTTERY_RESULT_NOTICE = 'lottery_result_notice'; //抽奖结束(带结果)
+class LotteryServer extends BaseServer {
+  constructor(opt = {}) {
+    super();
+    console.log('useLotteryServeruseLotteryServeruseLotteryServer');
     this._roomId = roomServerState.watchInitData.interact.room_id;
-    this.listenMsg();
+    if (opt.mode === 'watch') {
+      this.listenMsg();
+    }
   }
   // 监听消息
   listenMsg() {
+    console.log('listenMsglistenMsglistenMsglistenMsg2');
+    console.log(useMsgServer().curMsgInstance);
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       console.log(
-        '[group] --domain ROOM_MSG--房间消息：',
-        `${msg.data.type ? 'type:' : 'event_type'}:${msg.data.type || msg.data.event_type}`
+        '抽奖抽奖抽奖抽奖抽奖抽奖抽奖抽奖抽奖抽奖抽奖抽奖抽奖抽奖抽奖的消息:',
+        `${msg.data.type ? 'type:' : 'event_type'}:${msg.data.type || msg.data.event_type}`,
+        msg
       );
       switch (msg.data.event_type || msg.data.type) {
         //【分组创建/新增完成】
-        case 'lottery_push':
+        case LOTTERY_PUSH:
+          this.$emit(LOTTERY_PUSH, msg);
+          break;
+        case LOTTERY_RESULT_NOTICE:
+          this.$emit(LOTTERY_RESULT_NOTICE, msg);
           break;
       }
     });
@@ -77,4 +91,9 @@ export default class useLotteryServer {
       room_id: this._roomId
     });
   }
+}
+
+export default function useLotteryServer(opt) {
+  // 暂不考虑单例
+  return new LotteryServer(opt);
 }

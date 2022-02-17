@@ -114,6 +114,8 @@ class StandardGroupServer extends BaseServer {
 
   //监听分组相关消息（属于房间消息）
   listenMsg() {
+    console.log('listenMsglistenMsglistenMsglistenMsg1');
+    console.log(useMsgServer().curMsgInstance);
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       console.log(
         '[group] --domain ROOM_MSG--房间消息：',
