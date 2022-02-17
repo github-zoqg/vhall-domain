@@ -16,6 +16,7 @@ import activity from './room/activity/index.js';
 import player from './player.js';
 import rebroadcast from './room/rebroadcast';
 import liveTimerApi from './live-timer';
+import watchSignApi from './watch-sign/index';
 import giftsApi from './gifts/index';
 import rewardApi from './reward/index';
 import cash from './cash';
@@ -66,5 +67,6 @@ export {
   cash,
   attentionApi,
   goodSaasApi,
-  praiseApi
+  praiseApi,
+  watchSignApi
 };
