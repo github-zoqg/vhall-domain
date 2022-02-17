@@ -3,6 +3,7 @@
  */
 import useRoomBaseServer from '../room/roombase.server';
 import lotteryApi from '../../request/lottery';
+import useMsgServer from '../common/msg.server';
 // import BaseServer from '../common/base.server';
 
 const roomServerState = useRoomBaseServer().state;

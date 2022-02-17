@@ -45,7 +45,7 @@ export default class AbstractDocServer extends BaseServer {
    */
   initialize(options = {}) {
     if (this.docInstance) {
-      this.destroy();
+      this.destroy(false);
     }
     return new Promise((resolve, reject) => {
       this.docInstance = VhallPaasSDK.modules.VHDocSDK.createInstance(
