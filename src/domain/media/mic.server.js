@@ -4,6 +4,7 @@ import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useInteractiveServer from './interactive.server';
+import userMemberServer from '../member/member.server';
 class MicServer extends BaseServer {
   constructor() {
     super();
@@ -205,7 +206,9 @@ class MicServer extends BaseServer {
     return im.signaling.hostRejectApply(retParams);
   }
   // 邀请上麦
-  inviteMic(data = {}) {}
+  inviteMic(data = {}) {
+    return userMemberServer().inviteUserToInteract(data)
+  }
   // 取消申请
   userCancelApply(data = {}) {
     const { watchInitData } = useRoomBaseServer().state;
