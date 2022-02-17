@@ -77,7 +77,7 @@ export default class AbstractDocServer extends BaseServer {
    * @returns
    */
   @checkDocInstance()
-  destroy(isAutoDestroyMsg = true) {
+  destroy(isAutoDestroyMsg = false) {
     this.docInstance.destroy(isAutoDestroyMsg);
   }
 
