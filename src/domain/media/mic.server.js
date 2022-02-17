@@ -15,10 +15,9 @@ class MicServer extends BaseServer {
       isSpeakOn: false // 是否在麦上
     };
     MicServer.instance = this;
-    // this._init();
     return this;
   }
-  _init() {
+  init() {
     this.initMicState();
     this._initEventListeners();
   }
@@ -98,18 +97,20 @@ class MicServer extends BaseServer {
       }
     });
   }
+
   // 初始化用户上麦状态
   initMicState() {
     const roomBaseServer = useRoomBaseServer();
     const { speaker_list } = roomBaseServer.state.interactToolStatus;
     const { join_info } = roomBaseServer.state.watchInitData;
-    speaker = speaker_list.find(item => item.account_id == join_info.third_party_user_id);
-    if (speaker) {
-      this.state.isSpeakOn = true;
-
+    if (speaker_list && speaker_list.length) {
+      this.state.isSpeakOn = speaker_list.some(
+        item => item.account_id == join_info.third_party_user_id
+      );
       return this.state.isSpeakOn;
     }
   }
+
   // 用户上麦
   userSpeakOn(data = {}) {
     const { watchInitData } = useRoomBaseServer().state;
