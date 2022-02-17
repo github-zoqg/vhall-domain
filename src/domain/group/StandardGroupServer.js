@@ -195,9 +195,7 @@ class StandardGroupServer extends BaseServer {
       msg.sender_id === useRoomBaseServer().state.watchInitData?.join_info?.third_party_user_id
     ) {
       if (msg.data.status == 'enter') {
-        useMsgServer().initGroupMsg();
       } else if (msg.data.status == 'quit') {
-        useMsgServer().destroyGroupMsg();
       }
     }
   }
