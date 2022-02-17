@@ -455,7 +455,7 @@ class InteractiveServer extends BaseServer {
    * 获取分辨率
    */
   getVideoProfile() {
-    const { interactToolStatus } = useInteractiveServer().state;
+    const { interactToolStatus } = useRoomBaseServer().state;
     const remoteStream = this.getRoomStreams();
     if (!remoteStream || !remoteStream.length) {
       return false;
