@@ -86,6 +86,7 @@ class ChatServer extends BaseServer {
         this.$emit('allBanned', this.state.allBanned);
       }
     });
+    msgServer.$on('changeChannel', () => {});
   }
   //判断是不是发送给当前用户的消息
   isMyMsg(msg) {

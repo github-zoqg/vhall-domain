@@ -36,7 +36,6 @@ class MsgServer extends BaseServer {
     const { groupInitData } = useGroupServer().state;
     if (groupInitData.isInGroup) {
       await this.initGroupMsg();
-      alert();
     }
   }
   // 初始化主房间聊天sdk
@@ -49,7 +48,7 @@ class MsgServer extends BaseServer {
     this.msgInstance = vhallchat.message;
     console.log('聊天实例', this.msgInstance);
     if (!this.groupMsgInstance) {
-      this.curMsgInstance = this.msgInstance; //当前所在的房间实例
+      this.changeChannel(this.msgInstance); //当前所在的房间实例
       this._addListeners(this.msgInstance);
     }
   }
@@ -63,10 +62,13 @@ class MsgServer extends BaseServer {
     //创建pass消息房间实例
     const vhallchat = await VhallPaasSDK.modules.VhallChat.createInstance(options);
     this.groupMsgInstance = vhallchat.message;
-    this.curMsgInstance = this.groupMsgInstance;
+    this.changeChannel(this.groupMsgInstance);
     this._addListeners(this.groupMsgInstance);
   }
-
+  changeChannel(istance) {
+    this.curMsgInstance = istance;
+    this.$emit('changeChannel');
+  }
   // 注册事件
   $onMsg(eventType, fn) {
     if (this._eventhandlers[eventType]) {
@@ -319,40 +321,12 @@ class MsgServer extends BaseServer {
     });
   }
 
-  // // 初始化子房间聊天sdk
-  // initGroupMsg(customOptions = {}) {
-  //   if (!contextServer.get('roomInitGroupServer')) return Promise.reject('No Room Exist');
-
-  //   // 每次初始化子房间聊天都需要清空原有房间聊天消息然后重新拉取
-  //   const chatServer = contextServer.get('chatServer');
-  //   chatServer && chatServer.clearHistoryMsg();
-
-  //   const { state: roomInitGroupServerState } = contextServer.get('roomInitGroupServer');
-
-  //   const defaultOptions = getGroupDefaultOptions();
-
-  //   const options = merge.recursive({}, defaultOptions, customOptions);
-
-  //   this.state.groupMsgSdkInitOptions = options;
-  //   console.log('创建子房间聊天实例', options);
-  //   return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(res => {
-  //     console.log('domain----创建子房间聊天实例成功', res);
-  //     this.groupMsgInstance = res;
-  //     // 子房间上线，在小组内广播当前人的小组信息，延时500ms解决开始讨论收不到消息的问题
-  //     setTimeout(() => {
-  //       sendGroupInfoAfterJoin(res);
-  //     }, 500);
-  //     _addListeners(res);
-  //     return res;
-  //   });
-  // }
-
   // 销毁子房间聊天实例
   destroyGroupMsg() {
     if (!this.groupMsgInstance) return;
     this.groupMsgInstance.destroy();
     this.groupMsgInstance = null;
-    this.curMsgInstance = this.msgInstance;
+    this.changeChannel(this.msgInstance);
   }
 
   // 销毁主房间聊天实例
@@ -360,7 +334,7 @@ class MsgServer extends BaseServer {
     if (!this.msgInstance) return;
     this.msgInstance.destroy();
     this.msgInstance = null;
-    this.curMsgInstance = this.groupMsgInstance;
+    this.changeChannel(this.groupMsgInstance);
   }
 
   // 获取当前主房间初始化参数
