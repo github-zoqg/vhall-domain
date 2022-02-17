@@ -124,7 +124,7 @@ class StandardGroupServer extends BaseServer {
         case 'group_room_create':
           this.msgdoForGroupRoomCreate(msg);
           break;
-        //进入/退出小组
+        //主持人/助理/进入/退出小组（观众没有）
         case 'group_manager_enter':
           this.msgdoForGroupManagerEnter(msg);
           break;
@@ -190,12 +190,14 @@ class StandardGroupServer extends BaseServer {
 
   //【进入/退出小组】消息处理
   msgdoForGroupManagerEnter(msg) {
-    if (msg.data.role == 1) {
+    if (
+      msg.data.role == 1 &&
+      msg.sender_id === useRoomBaseServer().state.watchInitData?.join_info?.third_party_user_id
+    ) {
       if (msg.data.status == 'enter') {
-        // alert(JSON.stringify(JSON.stringify(msg)));
-        // this.groupAssistance = true;
+        useMsgServer().initGroupMsg();
       } else if (msg.data.status == 'quit') {
-        // this.groupAssistance = false;
+        useMsgServer().destroyGroupMsg();
       }
     }
   }
@@ -262,11 +264,11 @@ class StandardGroupServer extends BaseServer {
         useRoomBaseServer().state.interactToolStatus.is_open_switch === 1 &&
         this.state.groupInitData.isInGroup
       ) {
-        // 派发切换 channel 事件,清空聊天等操作
-        this.$emit(this.EVENT_TYPE.ROOM_CHANNEL_CHANGE);
         // 初始化分组消息
         await useMsgServer().initGroupMsg();
         console.log('开始讨论，子房间聊天初始化成功');
+        // 派发切换 channel 事件,清空聊天等操作
+        this.$emit(this.EVENT_TYPE.ROOM_CHANNEL_CHANGE);
         // 给主房间发消息通知当前人离开主房间进入子房间
         this.sendMainRoomJoinChangeMsg({
           isJoinMainRoom: false,
@@ -790,7 +792,7 @@ class StandardGroupServer extends BaseServer {
       device_type: isPcClient ? '2' : '1',
       isBanned: options.isBanned
     };
-    useMsgServer().sendRoomMsg(JSON.stringify(body));
+    useMsgServer().sendMainRoomMsg(JSON.stringify(body));
   }
 }
 
