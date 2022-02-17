@@ -45,6 +45,7 @@ export default class AbstractDocServer extends BaseServer {
    */
   initialize(options = {}) {
     if (this.docInstance) {
+      // 销毁文档实例，但是不退聊天频道
       this.destroy(false);
     }
     return new Promise((resolve, reject) => {
@@ -77,7 +78,7 @@ export default class AbstractDocServer extends BaseServer {
    * @returns
    */
   @checkDocInstance()
-  destroy(isAutoDestroyMsg = true) {
+  destroy(isAutoDestroyMsg = false) {
     this.docInstance.destroy(isAutoDestroyMsg);
   }
 

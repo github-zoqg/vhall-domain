@@ -57,9 +57,6 @@ class MsgServer extends BaseServer {
   }
   async initGroupMsg(customOptions = {}) {
     //如果已存在子房间先销毁
-    if (this.groupMsgInstance) {
-      this.destroyGroupMsg();
-    }
     const defautlGroupOptions = this.getGroupDefaultOptions();
     const options = merge.recursive({}, defautlGroupOptions, customOptions);
     //创建pass消息房间实例
@@ -78,17 +75,8 @@ class MsgServer extends BaseServer {
     if (this._eventhandlers[eventType]) {
       this._eventhandlers[eventType].push(fn);
     } else {
-      const registerMsgInstance = this.groupMsgInstance || this.msgInstance;
       this._eventhandlers[eventType] = [];
       this._eventhandlers[eventType].push(fn);
-      console.log('聊天实例', registerMsgInstance);
-      if (registerMsgInstance) {
-        this._handlePaasInstanceOn(registerMsgInstance, eventType, msg => {
-          this._eventhandlers[eventType].forEach(handler => {
-            handler(msg);
-          });
-        });
-      }
     }
   }
 
@@ -229,7 +217,6 @@ class MsgServer extends BaseServer {
 
   // 发送聊天消息
   sendChatMsg(data, context) {
-    console.log('发送聊天消息:', data, '===|', context);
     this.curMsgInstance.emit(data, context);
   }
 

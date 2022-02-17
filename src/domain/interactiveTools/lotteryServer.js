@@ -6,11 +6,9 @@ import lotteryApi from '../../request/lottery';
 import useMsgServer from '../common/msg.server';
 // import BaseServer from '../common/base.server';
 
-const roomServerState = useRoomBaseServer().state;
-
 export default class useLotteryServer {
   constructor(opt) {
-    this._roomId = roomServerState.watchInitData.interact.room_id;
+    this._roomId = useRoomBaseServer().state.watchInitData.interact.room_id;
     this.listenMsg();
   }
   // 监听消息
@@ -57,7 +55,7 @@ export default class useLotteryServer {
 
   // 重新初始化可参与抽奖用户
   updateLotteryUser() {
-    const switch_id = roomServerState.watchInitData.switch.switch_id;
+    const switch_id = useRoomBaseServer().state.watchInitData.switch.switch_id;
     return lotteryApi.updateUserStatus({
       switch_id
     });
