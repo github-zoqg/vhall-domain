@@ -11,10 +11,11 @@ class MicServer extends BaseServer {
       return MicServer.instance;
     }
     this.state = {
-      isAllowhandup: false, // 是否开始允许举手
+      // isAllowhandup: false, // 是否开始允许举手
       isSpeakOn: false // 是否在麦上
     };
     MicServer.instance = this;
+    this.init();
     return this;
   }
   init() {
@@ -34,13 +35,14 @@ class MicServer extends BaseServer {
       switch (msg.data.type) {
         // 开启允许举手
         case 'vrtc_connect_open':
-          this.state.isAllowhandup = true;
-          console.log('允许举手状态改变', this.state.isAllowhandup);
+          // this.state.isAllowhandup = true;
+          useRoomBaseServer().setInavToolStatus('is_handsup', true);
           this.$emit('vrtc_connect_open', msg);
           break;
         // 关闭允许举手
         case 'vrtc_connect_close':
-          this.state.isAllowhandup = false;
+          // this.state.isAllowhandup = false;
+          useRoomBaseServer().setInavToolStatus('is_handsup', false);
           this.$emit('vrtc_connect_close', msg);
           break;
         // 用户申请上麦
@@ -94,6 +96,12 @@ class MicServer extends BaseServer {
         // 用户拒绝上麦
         case 'vrtc_connect_invite_refused':
           break;
+        // 主持人开启允许举手
+        case 'vrtc_connect_open':
+          // this.state.isAllowhandup = true;
+          useRoomBaseServer().setInavToolStatus('is_handsup',true)
+          this.$emit('vrtc_connect_open', msg);
+          break;
       }
     });
   }
@@ -102,6 +110,7 @@ class MicServer extends BaseServer {
   initMicState() {
     const roomBaseServer = useRoomBaseServer();
     const { speaker_list } = roomBaseServer.state.interactToolStatus;
+    if (!speaker_list) return;
     const { join_info } = roomBaseServer.state.watchInitData;
     if (speaker_list && speaker_list.length) {
       this.state.isSpeakOn = speaker_list.some(
@@ -135,7 +144,9 @@ class MicServer extends BaseServer {
     });
   }
   // 允许举手
-  setHandsUp(data = {}) {}
+  setHandsUp(data = {}) {
+    return im.signaling.setHandsUp(data);
+  }
   // 用户举手申请上麦
   userApply(data = {}) {
     const { watchInitData } = useRoomBaseServer().state;
