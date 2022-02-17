@@ -52,6 +52,7 @@ class InteractiveServer extends BaseServer {
           this._addListeners();
           // 房间当前远端流列表
           this.state.remoteStreams = event.currentStreams;
+
           resolve(event);
         },
         error => {

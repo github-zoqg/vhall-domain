@@ -65,12 +65,11 @@ class MicServer extends BaseServer {
         //   break;
         // 主持人同意用户上麦申请
         case 'vrtc_connect_agree':
-          if (
-            (join_info.role_name == 1 && msg.sender_id != join_info.third_party_user_id) || // 当前用户是主持人并且消息不是自己发的
-            (join_info.role_name == 3 && msg.sender_id != join_info.third_party_user_id) || // 当前用户是助理并且消息不是自己发的
-            (join_info.role_name == 2 && msg.data.room_join_id == join_info.third_party_user_id) // 当前用户是观众
-          ) {
+          // 只有嘉宾和观众此条件为true,所以此处不加角色判断
+          if (msg.data.room_join_id == join_info.third_party_user_id) {
             this.$emit('vrtc_connect_agree', msg);
+
+            this.userSpeakOn();
           }
           break;
         // 用户成功上麦
@@ -99,7 +98,7 @@ class MicServer extends BaseServer {
         // 主持人开启允许举手
         case 'vrtc_connect_open':
           // this.state.isAllowhandup = true;
-          useRoomBaseServer().setInavToolStatus('is_handsup',true)
+          useRoomBaseServer().setInavToolStatus('is_handsup', true);
           this.$emit('vrtc_connect_open', msg);
           break;
       }
@@ -145,7 +144,14 @@ class MicServer extends BaseServer {
   }
   // 允许举手
   setHandsUp(data = {}) {
-    return im.signaling.setHandsUp(data);
+    const { watchInitData } = useRoomBaseServer().state;
+
+    const defaultParams = {
+      room_id: watchInitData.interact.room_id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+
+    return im.signaling.setHandsUp(retParams);
   }
   // 用户举手申请上麦
   userApply(data = {}) {
