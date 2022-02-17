@@ -57,27 +57,21 @@ class VirtualClientStartServer extends BaseServer {
   listenEvent() {
     // 加入房间
     msgServer.$onMsg('JOIN', msg => {
-      this.$nextTick(() => {
-        this.state.uvOnline = msg.uv;
-        if (msg.context.pv > this.state.uvHot) {
-          this.state.uvHot = msg.context.pv;
-        }
-      });
+      this.state.uvOnline = msg.uv;
+      if (msg.context.pv > this.state.uvHot) {
+        this.state.uvHot = msg.context.pv;
+      }
     });
     // 离开房间 ROOM_NUM_UPDATE
     msgServer.$onMsg('LEFT', msg => {
-      this.$nextTick(() => {
-        this.state.uvOnline = msg.uv;
-      });
+      this.state.uvOnline = msg.uv;
     });
     // 添加虚拟人数和热度
     msgServer.$onMsg('ROOM_MSG', msg => {
       let msgs = JSON.parse(msg.data);
       if (msgs.type == 'base_num_update') {
-        this.$nextTick(() => {
-          this.state.virtualHot = this.state.virtualHot + Number(msgs.update_pv);
-          this.state.virtualOnline = this.state.virtualOnline + Number(msgs.update_online_num);
-        });
+        this.state.virtualHot = this.state.virtualHot + Number(msgs.update_pv);
+        this.state.virtualOnline = this.state.virtualOnline + Number(msgs.update_online_num);
       }
     });
   }
