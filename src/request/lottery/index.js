@@ -59,6 +59,24 @@ const endLottery = params => {
   });
 };
 
+// 获取中奖人列表
+const getWinnerList = params => {
+  return request('/v3/vss/lottery/users-get', {
+    method: 'POST',
+    data: params,
+    dataType: 'FormData'
+  });
+};
+
+// 检测是否已提交领奖信息
+const checkLotteryResult = params => {
+  return request('/v3/vss/lottery/award/check', {
+    method: 'GET',
+    data: params,
+    dataType: 'FormData'
+  });
+};
+
 // /v3/vss/lottery/award/check 「聊天内点击」
 function resultCheck() {}
 
@@ -71,14 +89,13 @@ function getDrawPrizeInfo() {}
 // /v3/vss/lottery/award
 function getAwardInfo() {}
 
-// /v4/lottery/count 「获取在线人数」
-function getLotteryCount() {}
-
 export default {
   getPrizeList,
   pushLottery,
   queryQualifiedPerson,
   updateUserStatus,
   checkLottery,
-  endLottery
+  endLottery,
+  getWinnerList,
+  checkLotteryResult
 };
