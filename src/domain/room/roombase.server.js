@@ -331,6 +331,11 @@ class RoomBaseServer extends BaseServer {
       return res;
     });
   }
+
+  // 关闭开屏海报事件
+  screenPostClose(data = {}) {
+    this.$emit('screenPostClose', data);
+  }
 }
 
 export default function useRoomBaseServer() {

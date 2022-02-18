@@ -166,7 +166,6 @@ export default class AbstractDocServer extends BaseServer {
   @checkDocInstance()
   getContainerInfo(channelId) {
     const opts = channelId ? { channelId } : null;
-    console.log('[doc] getContainerInfo opts:', opts);
     return this.docInstance.getContainerInfo(opts);
   }
 

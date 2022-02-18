@@ -14,7 +14,7 @@ class ChatServer extends BaseServer {
       return ChatServer.instance;
     }
     super();
-
+    const { interactToolStatus } = useRoomBaseServer().state;
     //消息sdk
     this.state = {
       //聊天记录
@@ -24,10 +24,9 @@ class ChatServer extends BaseServer {
       //预览图片地址
       imgUrls: [],
       //当前用户禁言状态
-      banned: 0, //1禁言 0取消禁言
+      banned: interactToolStatus.is_banned == 1 ? true : false, //1禁言 0取消禁言
       //当前频道全部禁言状态
-      allBanned: 0, //1禁言 0取消禁言
-      page: 0,
+      allBanned: interactToolStatus.all_banned == 1 ? true : false, //1禁言 0取消禁言
       limit: 10,
       curMsg: null //当前正在编辑的消息
     };
@@ -53,9 +52,8 @@ class ChatServer extends BaseServer {
       }
       // 禁言某个用户
       if (rawMsg.data.type === 'disable') {
-        console.log(roomServer.state);
         if (this.isMyMsg(rawMsg)) {
-          this.state.banned = 1;
+          this.state.banned = true;
           console.log('handler', this.handlers);
           this.$emit('banned', this.state.banned);
         }
@@ -63,24 +61,24 @@ class ChatServer extends BaseServer {
       //取消禁言
       if (rawMsg.data.type === 'permit') {
         if (this.isMyMsg(rawMsg)) {
-          this.state.banned = 0;
+          this.state.banned = false;
           this.$emit('banned', this.state.banned);
         }
       }
       // 开启全体禁言
       if (rawMsg.data.type === 'disable_all') {
-        this.state.allBanned = 1;
+        this.state.allBanned = true;
         this.$emit('allBanned', this.state.allBanned);
       }
       // 关闭全体禁言
       if (rawMsg.data.type === 'permit_all') {
-        this.state.allBanned = 0;
+        this.state.allBanned = false;
         this.$emit('allBanned', this.state.allBanned);
       }
     });
     //接收频道变更通知
     msgServer.$on(msgServer.EVENT_TYPE.CHANNEL_CHANGE, () => {
-      this.handleChannelChange();
+      this.$emit('changeChannel');
     });
   }
   //判断是不是发送给当前用户的消息
@@ -89,22 +87,10 @@ class ChatServer extends BaseServer {
     console.log(msg.data.target_id, '-', watchInitData.join_info.third_party_user_id);
     return msg.data.target_id == watchInitData.join_info.third_party_user_id;
   }
-  //处理分组讨论频道变更
-  handleChannelChange() {
-    this.state.page = 0;
-    this.clearHistoryMsg();
-    this.getHistoryMsg();
-  }
   //接收聊天消息
-  async getHistoryMsg() {
-    const params = {
-      room_id: useRoomBaseServer().state.watchInitData.interact.room_id,
-      pos: Number(this.state.page) * 50,
-      limit: 50
-    };
+  async getHistoryMsg(params) {
     //请求获取聊天消息
     let historyList = await this.fetchHistoryData(params);
-    this.state.page++;
     console.log('historyList', historyList);
     let list = (historyList.data.list || [])
       .map(item => {
@@ -244,7 +230,7 @@ class ChatServer extends BaseServer {
   setBanned(params = {}) {
     return iMRequest.chat.setBanned(params).then(res => {
       if (res.code == 200) {
-        this.state.banned = params.status;
+        this.state.banned = params.status == 1 ? true : false;
       }
     });
   }
@@ -256,7 +242,7 @@ class ChatServer extends BaseServer {
   setAllBanned(params = {}) {
     return iMRequest.chat.setAllBanned(params).then(res => {
       if (res.code == 200) {
-        this.state.allBanned = params.status;
+        this.state.allBanned = params.status == 1 ? true : false;
       }
     });
   }

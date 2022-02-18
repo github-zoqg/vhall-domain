@@ -167,7 +167,8 @@ class PlayerServer extends BaseServer {
   }
   // 销毁实例
   destroy() {
-    return this.playerInstance.destroy();
+    this.$emit('destroy');
+    return this.playerInstance && this.playerInstance.destroy();
   }
 
   onPlayer(type, cb) {
