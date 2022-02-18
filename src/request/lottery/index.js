@@ -71,7 +71,25 @@ const getWinnerList = params => {
 // 检测是否已提交领奖信息
 const checkLotteryResult = params => {
   return request('/v3/vss/lottery/award/check', {
-    method: 'GET',
+    method: 'POST',
+    data: params,
+    dataType: 'FormData'
+  });
+};
+
+// 获取中奖页信息
+const getDrawPrizeInfo = params => {
+  return request('/v3/vss/lottery/watch/get-draw-prize-info', {
+    method: 'POST',
+    data: params,
+    dataType: 'FormData'
+  });
+};
+
+// 提交中奖人信息
+const acceptPrize = params => {
+  return request('/v3/vss/lottery/award', {
+    method: 'POST',
     data: params,
     dataType: 'FormData'
   });
@@ -82,9 +100,6 @@ function resultCheck() {}
 
 // /v3/vss/lottery/users-get 「设置是否公布中奖结果」
 function setPublishResult() {}
-
-// /v3/vss/lottery/watch/get-draw-prize-info 「填写信息采集表单，中奖用户」
-function getDrawPrizeInfo() {}
 
 // /v3/vss/lottery/award
 function getAwardInfo() {}
@@ -97,5 +112,7 @@ export default {
   checkLottery,
   endLottery,
   getWinnerList,
-  checkLotteryResult
+  checkLotteryResult,
+  getDrawPrizeInfo,
+  acceptPrize
 };

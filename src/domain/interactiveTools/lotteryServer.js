@@ -11,7 +11,9 @@ const LOTTERY_RESULT_NOTICE = 'lottery_result_notice';
 class LotteryServer extends BaseServer {
   constructor(opt) {
     super();
-    this._roomId = useRoomBaseServer().state.watchInitData.interact.room_id;
+    const watchInitData = useRoomBaseServer().state.watchInitData;
+    this._roomId = watchInitData.interact.room_id;
+    this._webinarId = watchInitData.webinar.id;
     if (opt.mode === 'watch') {
       this.listenMsg();
     }
@@ -89,14 +91,31 @@ class LotteryServer extends BaseServer {
   }
 
   // 检测是否已提交领奖信息
-  getWinnerList(params) {
-    return lotteryApi.endLottery(params);
+  getWinnerList(lotteryId) {
+    return lotteryApi.getWinnerList({
+      room_id: this._roomId,
+      lottery_id: lotteryId
+    });
   }
 
   // 检测是否已提交领奖信息
   checkLotteryResult(lotteryId) {
     return lotteryApi.checkLotteryResult({
       lottery_id: lotteryId
+    });
+  }
+  // 获取表单信息
+  getDrawPrizeInfo() {
+    return lotteryApi.getDrawPrizeInfo({
+      webinar_id: this._webinarId
+    });
+  }
+
+  // 获取表单信息
+  acceptPrize(params) {
+    return lotteryApi.acceptPrize({
+      room_id: this._roomId,
+      ...params
     });
   }
 }
