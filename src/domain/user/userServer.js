@@ -2,41 +2,50 @@
  * @description 用户登录-注册-三方登录
  */
 import { user as userApi } from '@/request/index.js';
-export default function useUserServer() {
-  let capInstance, // 云盾实例
-    captchaId, // 云盾key
-    countDownTimer = null; // 倒计时的计时器
 
-  const state = {
-    captchaVal: null, // 云盾图形码
-    second: -1, // 倒计时的秒数
-    errorMsg: '', // 错误提示
-    userInfo: {}, // 用户信息
-    thirdInfo: {} // 第三方授权绑定的信息 从userInfo拆分的
-  };
+class UserServer {
+  static getInstance() {
+    if (!UserServer.instance) {
+      UserServer.instance = new UserServer();
+    }
+    return UserServer.instance;
+  }
+  constructor() {
+    this.capInstance = null; // 云盾实例
+    this.captchaId = null; // 云盾key
+    this.countDownTimer = null; // 倒计时的计时器
+    this.state = {
+      captchaVal: null, // 云盾图形码
+      second: -1, // 倒计时的秒数
+      errorMsg: '', // 错误提示
+      userInfo: {}, // 用户信息
+      thirdInfo: {} // 第三方授权绑定的信息 从userInfo拆分的
+    };
+  }
 
   /**
    * @description 获取易盾的key
    * */
   // TODO: 后续接v4接口
-  async function getCaptchaId() {
-    captchaId = 'b7982ef659d64141b7120a6af27e19a0'; // 识别
+  async getCaptchaId() {
+    this.captchaId = 'b7982ef659d64141b7120a6af27e19a0'; // 识别
     return new Promise((resolve, reject) => {
-      resolve(captchaId);
+      resolve(this.captchaId);
     });
   }
 
   /**
    * @description 初始化易盾
    * */
-  async function initNECaptcha(element = '#codeLoginCaptcha') {
-    await getCaptchaId();
-    if (!captchaId) {
-      console.warn('当前未获取到图形验证captchaId的值，需要后端人员协助');
+  async initNECaptcha(element = '#codeLoginCaptcha') {
+    await this.getCaptchaId();
+    if (!this.captchaId) {
+      console.warn('当前未获取到图形验证this.captchaId的值，需要后端人员协助');
       return false;
     }
+    const that = this;
     const NECaptchaOpts = {
-      captchaId,
+      captchaId: this.captchaId,
       element,
       mode: 'float',
       // FIXME: 网易易顿多语言字段 lang 需要翻译(暂时写死)
@@ -44,15 +53,15 @@ export default function useUserServer() {
       // lang: window.$globalConfig.currentLang || 'zh-CN',
       onReady(instance) {
         console.log('🚀 ~ initNECaptcha onReady ', instance);
-        capInstance = instance;
-        refreshNECaptha(false); // 方式多个模块之间计时器互相影响
+        that.capInstance = instance;
+        that.refreshNECaptha(false); // 方式多个模块之间计时器互相影响
       },
       onVerify(err, data) {
         // 易盾验证(成功or失败)
         if (data) {
-          state.captchaVal = data.validate;
+          that.state.captchaVal = data.validate;
         } else {
-          state.captchaVal = null;
+          that.state.captchaVal = null;
         }
         if (err) {
           console.error('🚀 ~ initNECaptcha err ', err);
@@ -60,7 +69,7 @@ export default function useUserServer() {
       }
       // onload(instance) {
       //   console.log('🚀 ~ initNECaptcha onload ', instance);
-      //   capInstance = instance;
+      //   this.capInstance = instance;
       // }
     };
     window.initNECaptcha(NECaptchaOpts);
@@ -68,38 +77,38 @@ export default function useUserServer() {
   /**
    * @description 刷新易盾
    * */
-  function refreshNECaptha(refreshInstance = true) {
-    clearInterval(countDownTimer);
-    countDownTimer = null;
-    state.second = -1;
-    state.captchaVal = null;
-    refreshInstance && capInstance?.refresh();
+  refreshNECaptha(refreshInstance = true) {
+    clearInterval(this.countDownTimer);
+    this.countDownTimer = null;
+    this.state.second = -1;
+    this.state.captchaVal = null;
+    refreshInstance && this.capInstance?.refresh();
   }
 
   /**
    * 发送手机短信验证码、邮件验证码
    * @param phoneNum
    * */
-  function sendCode(phoneNum, sceneId = 7) {
+  sendCode(phoneNum, sceneId = 7) {
     // 开始倒计时
     const startCountDown = () => {
-      state.second = 60;
-      if (countDownTimer) setInterval(countDownTimer); // 再清除一次防止冲突
-      countDownTimer = setInterval(() => {
-        state.second--;
-        if (state.second <= 0) {
-          refreshNECaptha();
+      this.state.second = 60;
+      if (this.countDownTimer) setInterval(this.countDownTimer); // 再清除一次防止冲突
+      this.countDownTimer = setInterval(() => {
+        this.state.second--;
+        if (this.state.second <= 0) {
+          this.refreshNECaptha();
         }
       }, 1000);
     };
     const failure = res => {
-      state.errorMsg = res.msg;
-      refreshNECaptha();
+      this.state.errorMsg = res.msg;
+      this.refreshNECaptha();
     };
     const params = {
       data: phoneNum,
       type: 1, // 1手机  2邮箱,
-      validate: state.captchaVal, // 图形验证码数据
+      validate: this.state.captchaVal, // 图形验证码数据
       scene_id: sceneId // scene_id场景ID：1账户信息-修改密码  2账户信息-修改密保手机 3账户信息-修改关联邮箱 4忘记密码-邮箱方式找回 5忘记密码-短信方式找回 6提现绑定时手机号验证 7快捷方式登录（短信验证码登录） 8注册-验证码
     };
     return userApi
@@ -123,14 +132,14 @@ export default function useUserServer() {
    * 组织参数(校验)
    * /v3/users/user-consumer/login
    * */
-  function userLogin(params) {
+  userLogin(params) {
     // 登录失败,清空缓存信息
     const failure = res => {
       console.warn('获取C端登录后用户信息失败', res);
       localStorage.removeItem('token');
       localStorage.removeItem('userInfo');
       // 刷新易盾
-      refreshNECaptha();
+      this.refreshNECaptha();
     };
     return userApi
       .userLogin(params)
@@ -152,7 +161,7 @@ export default function useUserServer() {
   /**
    * 登录状态检查
    * */
-  function loginCheck(account) {
+  loginCheck(account) {
     return userApi.loginCheck({
       account,
       channel: 'C' // B端用户还是C端用户
@@ -162,7 +171,7 @@ export default function useUserServer() {
   /**
    * 明文密码加密
    * */
-  function handleEncryptPassword(password, publicKey) {
+  handleEncryptPassword(password, publicKey) {
     let retPassword = '';
     const encryptor = new window.JSEncrypt(); // 新建JSEncrypt对象(依赖在中台导入)
     // 设置公钥
@@ -178,7 +187,7 @@ export default function useUserServer() {
   /**
    * 明文密码加密
    * */
-  async function handlePassword(password) {
+  async handlePassword(password) {
     const getKeyRelt = await userApi.getKeyLogin();
     if (getKeyRelt.code !== 200) {
       getKeyRelt.pass = false; // 是否通过此步骤标识
@@ -191,9 +200,9 @@ export default function useUserServer() {
     let retPassword;
     try {
       const publicKey = getKeyRelt.data.public_key;
-      retPassword = handleEncryptPassword(password, publicKey);
+      retPassword = this.handleEncryptPassword(password, publicKey);
     } catch (error) {
-      refreshNECaptha();
+      this.refreshNECaptha();
       return {
         pass: false,
         type: 'Encrypt'
@@ -209,14 +218,14 @@ export default function useUserServer() {
   /**
    * 注册
    * */
-  function register(params) {
+  register(params) {
     const failure = () => {
-      refreshNECaptha();
+      this.refreshNECaptha();
     };
     return userApi
       .register({
-        text: state.captchaVal,
-        captcha: state.captchaVal,
+        text: this.state.captchaVal,
+        captcha: this.state.captchaVal,
         ...params
       })
       .then(res => {
@@ -232,22 +241,22 @@ export default function useUserServer() {
   }
 
   // 验证码登录&&账号登录
-  function loginInfo(data) {
+  loginInfo(data) {
     return requestApi.user.loginInfo(data);
   }
 
   // 第三方授权
-  function callbackUserInfo(data) {
+  callbackUserInfo(data) {
     return requestApi.user.callbackUserInfo(data);
   }
 
   // 手机||邮箱验证码
-  function codeCheck(data) {
+  codeCheck(data) {
     return userApi.codeCheck(data);
   }
 
   // 密码重置
-  function resetPassword(data) {
+  resetPassword(data) {
     return userApi.resetPassword(data);
   }
 
@@ -255,13 +264,13 @@ export default function useUserServer() {
    * 跳转到qq授权登录链接、跳转到微信授权登录链接
    * /v3/users/oauth/callback
    * */
-  function authLogin(params) {}
+  authLogin(params) {}
 
   /**
    * 微信浏览器微信授权登录
    * /v3/commons/auth/weixin
    * */
-  function authLoginByWx() {}
+  authLoginByWx() {}
 
   /**-----------------------  以下是否B端接口?  -----------------------**/
 
@@ -269,102 +278,80 @@ export default function useUserServer() {
    * 校验验证码,获取验证码（图形验证码）
    * /v3/users/code-consumer/send
    * */
-  function getGraphCode() {}
+  getGraphCode() {}
 
   /**
    * 校验手机验证码、邮件验证码
    * /v3/users/code/check
    * */
-  function checkCode() {}
+  checkCode() {}
 
   /**
    * 角度口令登录
    * /v3/webinars/live/role-login
    * */
-  function roleLogin() {}
+  roleLogin() {}
 
   // 获取用户信息
-  function getUserInfo(data) {
+  getUserInfo(data) {
     return userApi.getUserInfo(data).then(res => {
       if (res.code === 200) {
         // QQ & weixin 的绑定情况
         const Weixin = res.data.user_thirds.filter(item => item.type === 3);
         const QQ = res.data.user_thirds.filter(item => item.type === 2);
-        state.thirdInfo.WeixinBind = Weixin.length > 0;
-        state.thirdInfo.WeixinNickName = Weixin[0] ? Weixin[0].nick_name : '';
-        state.thirdInfo.QQBind = QQ.length > 0;
-        state.thirdInfo.QQNickName = QQ[0] ? QQ[0].nick_name : '';
+        this.state.thirdInfo.WeixinBind = Weixin.length > 0;
+        this.state.thirdInfo.WeixinNickName = Weixin[0] ? Weixin[0].nick_name : '';
+        this.state.thirdInfo.QQBind = QQ.length > 0;
+        this.state.thirdInfo.QQNickName = QQ[0] ? QQ[0].nick_name : '';
         // 用户基本信息
-        state.userInfo = res.data;
+        this.state.userInfo = res.data;
       }
       return res;
     });
   }
 
   // 获取验证码
-  function sendPhoneCode(data) {
+  sendPhoneCode(data) {
     // 开始倒计时
     // data.type 1手机  2邮箱,
-    // data.scene_id场景ID：1账户信息-修改密码  2账户信息-修改密保手机 3账户信息-修改关联邮箱 4忘记密码-邮箱方式找回 
+    // data.scene_id场景ID：1账户信息-修改密码  2账户信息-修改密保手机 3账户信息-修改关联邮箱 4忘记密码-邮箱方式找回
     // 5忘记密码-短信方式找回 6提现绑定时手机号验证 7快捷方式登录（短信验证码登录） 8注册-验证码
-    return userApi.sendCode(data).then(res => {
-      return res;
-    })
-    .catch(err => {
-      return err;
-    });
+    return userApi
+      .sendCode(data)
+      .then(res => {
+        return res;
+      })
+      .catch(err => {
+        return err;
+      });
   }
 
   // 退出登录
-  function loginOut(data) {
+  loginOut(data) {
     return userApi.loginOut(data);
   }
 
   // 替换头像
-  function changeAvatarSend(data) {
+  changeAvatarSend(data) {
     return userApi.changeAvatarSend(data);
   }
 
   // 替换昵称
-  function editUserNickName(data) {
+  editUserNickName(data) {
     return userApi.editUserNickName(data);
   }
 
   // 第三方解除绑定
-  function thirdUnbind(data) {
+  thirdUnbind(data) {
     return userApi.thirdUnbind(data);
   }
 
   // 绑定手机号
-  function bindInfo(data) {
+  bindInfo(data) {
     return userApi.bindInfo(data);
   }
+}
 
-  return {
-    state,
-    getCaptchaId,
-    initNECaptcha,
-    refreshNECaptha,
-    getGraphCode,
-    userLogin,
-    authLogin,
-    loginCheck,
-    sendCode,
-    checkCode,
-    resetPassword,
-    register,
-    authLoginByWx,
-    roleLogin,
-    handlePassword,
-    loginInfo,
-    loginOut,
-    callbackUserInfo,
-    codeCheck,
-    getUserInfo,
-    sendPhoneCode,
-    changeAvatarSend,
-    editUserNickName,
-    thirdUnbind,
-    bindInfo
-  };
+export default function useuserServer() {
+  return UserServer.getInstance();
 }

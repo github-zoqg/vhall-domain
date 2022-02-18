@@ -3,7 +3,7 @@
  */
 import useRoomBaseServer from '../room/roombase.server';
 import lotteryApi from '../../request/lottery';
-import useMsgServer from '@/domain/common/msg.server.js';
+import useMsgServer from '../common/msg.server';
 // import BaseServer from '../common/base.server';
 
 export default class useLotteryServer {

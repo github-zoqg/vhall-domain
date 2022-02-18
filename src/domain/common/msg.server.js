@@ -217,7 +217,6 @@ class MsgServer extends BaseServer {
 
   // 发送聊天消息
   sendChatMsg(data, context) {
-    console.log('发送消息', this.curMsgInstance);
     this.curMsgInstance.emit(data, context);
   }
 
@@ -238,7 +237,7 @@ class MsgServer extends BaseServer {
   getDefaultOptions() {
     const { state: roomBaseServerState } = useRoomBaseServer();
     const isPcClient = isPc();
-    const { watchInitData, groupInitData } = roomBaseServerState;
+    const { watchInitData } = roomBaseServerState;
     const defaultContext = {
       nickname: watchInitData.join_info.nickname,
       avatar: watchInitData.join_info.avatar,
@@ -249,8 +248,7 @@ class MsgServer extends BaseServer {
       device_status: '0', // 设备状态  0未检测 1可以上麦 2不可以上麦
       audience: roomBaseServerState.clientType !== 'send',
       kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
-      privacies: watchInitData.join_info.privacies || '',
-      groupInitData: groupInitData
+      privacies: watchInitData.join_info.privacies || ''
     };
 
     const defaultOptions = {

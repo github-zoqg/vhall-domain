@@ -45,7 +45,8 @@ export default class AbstractDocServer extends BaseServer {
    */
   initialize(options = {}) {
     if (this.docInstance) {
-      this.destroy();
+      // 销毁文档实例，但是不退聊天频道
+      this.destroy(false);
     }
     return new Promise((resolve, reject) => {
       this.docInstance = VhallPaasSDK.modules.VHDocSDK.createInstance(

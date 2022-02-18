@@ -16,7 +16,6 @@ class MicServer extends BaseServer {
       isSpeakOn: false // 是否在麦上
     };
     MicServer.instance = this;
-    this.init();
     return this;
   }
   init() {
@@ -36,13 +35,11 @@ class MicServer extends BaseServer {
       switch (msg.data.type) {
         // 开启允许举手
         case 'vrtc_connect_open':
-          // this.state.isAllowhandup = true;
           useRoomBaseServer().setInavToolStatus('is_handsup', true);
           this.$emit('vrtc_connect_open', msg);
           break;
         // 关闭允许举手
         case 'vrtc_connect_close':
-          // this.state.isAllowhandup = false;
           useRoomBaseServer().setInavToolStatus('is_handsup', false);
           this.$emit('vrtc_connect_close', msg);
           break;
@@ -69,8 +66,6 @@ class MicServer extends BaseServer {
           // 只有嘉宾和观众此条件为true,所以此处不加角色判断
           if (msg.data.room_join_id == join_info.third_party_user_id) {
             this.$emit('vrtc_connect_agree', msg);
-
-            this.userSpeakOn();
           }
           break;
         // 用户成功上麦
@@ -82,23 +77,25 @@ class MicServer extends BaseServer {
           break;
         // 用户成功下麦
         case 'vrtc_disconnect_success':
-          if (join_info.third_party_user_id == msg.data.room_join_id) {
+          if (join_info.third_party_user_id == msg.data.target_id) {
             this.state.isSpeakOn = false;
+            this.$emit('vrtc_disconnect_success', msg);
           }
-          this.$emit('vrtc_disconnect_success', msg);
           break;
         // 主持人邀请观众上麦
         case 'vrtc_connect_invite':
+          this.$emit('vrtc_connect_invite', msg);
           break;
         // 用户同意上麦
         case 'vrtc_connect_invite_agree':
+          this.$emit('vrtc_connect_invite_agree', msg);
           break;
         // 用户拒绝上麦
         case 'vrtc_connect_invite_refused':
+          this.$emit('vrtc_connect_invite_refused', msg);
           break;
         // 主持人开启允许举手
         case 'vrtc_connect_open':
-          // this.state.isAllowhandup = true;
           useRoomBaseServer().setInavToolStatus('is_handsup', true);
           this.$emit('vrtc_connect_open', msg);
           break;
@@ -130,7 +127,7 @@ class MicServer extends BaseServer {
     return im.signaling.userSpeakOn(retParams);
   }
   // 用户下麦
-  userSpeakOff(data = {}) {
+  speakOff(data = {}) {
     // 停止推流 ——> 调下麦接口
     const interactiveServer = useInteractiveServer();
     const { watchInitData } = useRoomBaseServer().state;
@@ -140,7 +137,8 @@ class MicServer extends BaseServer {
     const retParams = merge.recursive({}, defaultParams, data);
 
     return interactiveServer.unpublishStream().then(() => {
-      return im.signaling.userSpeakOff(retParams);
+      const methodName = data.receive_account_id ? 'speakOffUser' : 'speakOffSelf';
+      return im.signaling[methodName](retParams);
     });
   }
   // 允许举手
@@ -211,9 +209,9 @@ class MicServer extends BaseServer {
 
     return im.signaling.hostRejectApply(retParams);
   }
-  // 邀请上麦
+  // 主持人邀请上麦
   inviteMic(data = {}) {
-    return userMemberServer().inviteUserToInteract(data)
+    return userMemberServer().inviteUserToInteract(data);
   }
   // 取消申请
   userCancelApply(data = {}) {
@@ -224,8 +222,18 @@ class MicServer extends BaseServer {
     const retParams = merge.recursive({}, defaultParams, data);
     return im.signaling.userCancelApply(retParams);
   }
+  // 观看端-用户同意邀请上麦
+  userAgreeInvite(data = {}) {
+    console.log('观看端-用户同意上麦', data);
+    return im.signaling.userAgreeInvite(data);
+  }
+  // 观看端-用户拒绝邀请上麦
+  userRejectInvite(data = {}) {
+    console.log('观看端-用户拒绝上麦', data);
+    return im.signaling.userRejectInvite(data)
+  }
   // 拒绝邀请
-  refuseInvite(data = {}) {}
+  // refuseInvite(data = {}) {}
 }
 
 export default function useMicServer() {

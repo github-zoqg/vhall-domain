@@ -23,6 +23,7 @@ import useGiftsServer from '@/domain/interactiveTools/gift.server.js';
 import useWatchRewardServer from '@/domain/interactiveTools/reward.server.js';
 import useAttentionServer from '@/domain/interactiveTools/attention.server.js';
 import usePraiseServer from '@/domain/interactiveTools/praise.server.js';
+import useSignServer from '@/domain/interactiveTools/sign.server.js';
 
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
@@ -41,6 +42,8 @@ import useCashServer from '@/domain/cash/cash.server.js';
 // 商品
 import useGoodServer from '@/domain/interactiveTools/good.server.js';
 import useLotteryServer from '@/domain/interactiveTools/lotteryServer.js';
+
+import useMenuServer from '@/domain/brand/menu.server';
 /**
  * options:{
     token,
@@ -129,5 +132,7 @@ export {
   useAttentionServer,
   useGoodServer,
   usePraiseServer,
-  useLotteryServer
+  useLotteryServer,
+  useSignServer,
+  useMenuServer
 };
