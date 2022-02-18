@@ -162,7 +162,7 @@ class InteractiveServer extends BaseServer {
         item => item.account_id == watchInitData.join_info.third_party_user_id
       )
     ) {
-      return VhallPaasSDK.module.VhallRTC.ROLE_HOST;
+      return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
     // 如果不是无延迟直播，不需要设置role，默认设为 AUDIENCE
@@ -175,7 +175,7 @@ class InteractiveServer extends BaseServer {
       // 调上麦接口判断当前人是否可以上麦
       const res = await useMicServer().userSpeakOn();
       // 如果上麦成功，设为 HOST
-      if (res.code == 200) return VhallPaasSDK.module.VhallRTC.ROLE_HOST;
+      if (res.code == 200) return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
     // 如果是无延迟直播、不在麦、未开启自动上麦，设为 AUDIENCE
