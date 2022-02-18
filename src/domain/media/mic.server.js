@@ -79,7 +79,7 @@ class MicServer extends BaseServer {
           break;
         // 用户成功下麦
         case 'vrtc_disconnect_success':
-          if (join_info.third_party_user_id == msg.data.room_join_id) {
+          if (join_info.third_party_user_id == msg.data.target_id) {
             this.state.isSpeakOn = false;
             this.$emit('vrtc_disconnect_success', msg);
           }
@@ -127,7 +127,7 @@ class MicServer extends BaseServer {
     return im.signaling.userSpeakOn(retParams);
   }
   // 用户下麦
-  userSpeakOff(data = {}) {
+  speakOff(data = {}) {
     // 停止推流 ——> 调下麦接口
     const interactiveServer = useInteractiveServer();
     const { watchInitData } = useRoomBaseServer().state;
@@ -137,7 +137,8 @@ class MicServer extends BaseServer {
     const retParams = merge.recursive({}, defaultParams, data);
 
     return interactiveServer.unpublishStream().then(() => {
-      return im.signaling.userSpeakOff(retParams);
+      const methodName = data.receive_account_id ? 'speakOffUser' : 'speakOffSelf';
+      return im.signaling[methodName](retParams);
     });
   }
   // 允许举手

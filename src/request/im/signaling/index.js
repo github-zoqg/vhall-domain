@@ -78,11 +78,21 @@ function userSpeak(params = {}) {
 }
 
 /**
- * 发起端/观看端-用户下麦
+ * 发起端/观看端-用户自己下麦
  * */
-function userSpeakOff(params = {}) {
+function speakOffSelf(params = {}) {
   return request({
     url: '/v3/interacts/inav-user/nospeak',
+    method: 'POST',
+    data: params
+  });
+}
+/**
+ * 发起端/观看端-将其他用户下麦
+ * */
+function speakOffUser(params = {}) {
+  return request({
+    url: '/v3/interacts/inav/nospeak',
     method: 'POST',
     data: params
   });
@@ -93,7 +103,7 @@ function userSpeakOff(params = {}) {
  * */
 function hostInviteUser(params = {}) {
   return request({
-    url: env.imChat === 'v3'?'/v3/interacts/inav/invite':'/v4/interacts/inav/invite',
+    url: env.imChat === 'v3' ? '/v3/interacts/inav/invite' : '/v4/interacts/inav/invite',
     method: 'POST',
     data: params
   });
@@ -194,7 +204,8 @@ export default {
   hostAgreeApply,
   // hostRejectApply,
   // userSpeak,
-  userSpeakOff,
+  speakOffSelf,
+  speakOffUser,
   hostInviteUser,
   // userAgreeInvite,
   // userRejectInvite,
