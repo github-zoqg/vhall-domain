@@ -3,7 +3,6 @@ import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useMsgServer from '@/domain/common/msg.server.js';
 
-const msgServer = useMsgServer();
 const roomBaseServer = useRoomBaseServer();
 class VirtualClientStartServer extends BaseServer {
   constructor() {
@@ -35,6 +34,7 @@ class VirtualClientStartServer extends BaseServer {
         0,
       addCount: ''
     };
+    this.listenEvent();
     return this;
   }
   virtualClientStart(data = {}) {
@@ -55,11 +55,13 @@ class VirtualClientStartServer extends BaseServer {
     });
   }
   listenEvent() {
+    const msgServer = useMsgServer();
+    console.log('11111zhangixao', msgServer);
     // 加入房间
     msgServer.$onMsg('JOIN', msg => {
       this.state.uvOnline = msg.uv;
-      if (msg.context.pv > this.state.uvHot) {
-        this.state.uvHot = msg.context.pv;
+      if (msg.pv > this.state.uvHot) {
+        this.state.uvHot = msg.pv;
       }
     });
     // 离开房间 ROOM_NUM_UPDATE
