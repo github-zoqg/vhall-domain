@@ -129,17 +129,15 @@ class MicServer extends BaseServer {
   // 用户下麦
   speakOff(data = {}) {
     // 停止推流 ——> 调下麦接口
-    const interactiveServer = useInteractiveServer();
+    // const interactiveServer = useInteractiveServer();
     const { watchInitData } = useRoomBaseServer().state;
     const defaultParams = {
       room_id: watchInitData.interact.room_id
     };
     const retParams = merge.recursive({}, defaultParams, data);
 
-    return interactiveServer.unpublishStream().then(() => {
-      const methodName = data.receive_account_id ? 'speakOffUser' : 'speakOffSelf';
-      return im.signaling[methodName](retParams);
-    });
+    const methodName = data.receive_account_id ? 'speakOffUser' : 'speakOffSelf';
+    return im.signaling[methodName](retParams);
   }
   // 允许举手
   setHandsUp(data = {}) {
@@ -230,7 +228,7 @@ class MicServer extends BaseServer {
   // 观看端-用户拒绝邀请上麦
   userRejectInvite(data = {}) {
     console.log('观看端-用户拒绝上麦', data);
-    return im.signaling.userRejectInvite(data)
+    return im.signaling.userRejectInvite(data);
   }
   // 拒绝邀请
   // refuseInvite(data = {}) {}
