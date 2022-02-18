@@ -1,5 +1,6 @@
 import VhallPaasSDK from '@/sdk/index.js';
 import BaseServer from '@/domain/common/base.server';
+import { player } from '../../request/index';
 class PlayerServer extends BaseServer {
   constructor(options) {
     // // 创建单例之外的额外的实例
@@ -40,6 +41,7 @@ class PlayerServer extends BaseServer {
           //创建播放器成功回调
           event => {
             this.playerInstance = event.vhallplayer;
+            this.state.markPoints = event.markPoints;
             this._addPlayerListeners();
             resolve(event);
           },
@@ -76,7 +78,7 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.getCurrentQuality();
   }
 
-  setQuality() {
+  setQuality(item) {
     return this.playerInstance.setQuality(item);
   }
 
@@ -174,6 +176,12 @@ class PlayerServer extends BaseServer {
 
   emitPlayer(type, params) {
     this.playerInstance.$emit(type, params);
+  }
+
+  getPlayerConfig(params = {}) {
+    return player.getPlayerConfig(params).then(res => {
+      return res;
+    });
   }
   // 播放器注册事件监听
   _addPlayerListeners() {
