@@ -15,7 +15,7 @@ class MediaSettingServer {
       canvasImgUrl: '//cnstatic01.e.vhall.com/common-static/middle/images/canvasDefault.png', // 当前图片流url
       rate: '', // 当前画质
       screenRate: '', //当前桌面共享画质
-      videoType: 'camera', // 当前视频类型 camera||pictrue
+      videoType: 'camera', // 当前视频类型 camera||picture
       layout: 'CANVAS_ADAPTIVE_LAYOUT_FLOAT_MODE', // 当前选择的布局(默认主次浮窗)
       video: '', // 当前选择的摄像头或图片等[设备ID]
       audioInput: '', // 当前选择的麦克风[设备ID]
@@ -54,7 +54,7 @@ class MediaSettingServer {
       canvasImgUrl: '', // 当前图片流url
       rate: '', // 当前画质
       screenRate: '', //当前桌面共享画质
-      videoType: 'camera', // 当前视频类型 camera||pictrue
+      videoType: 'camera', // 当前视频类型 camera||picture
       layout: 'CANVAS_ADAPTIVE_LAYOUT_FLOAT_MODE', // 当前选择的布局(默认主次浮窗)
       video: '', // 当前选择的摄像头或图片等[设备ID]
       audioInput: '', // 当前选择的麦克风[设备ID]

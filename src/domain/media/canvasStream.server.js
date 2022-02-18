@@ -20,7 +20,7 @@ class CanvasStreamServer {
   }
 
   async checkImgStream() {
-    let isPushType = this.mediaSettingData.state.videoType === 'pictrue';
+    let isPushType = this.mediaSettingData.state.videoType === 'picture';
     if (isPushType) {
       if (this.mediaSettingData.state.canvasImgUrl) {
         // 非默认图片
