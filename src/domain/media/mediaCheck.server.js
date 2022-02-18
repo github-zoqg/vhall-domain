@@ -17,7 +17,7 @@ class MediaCheckServer {
         audioInputDevices: [], //音频采集设备，如麦克风
         audioOutputDevices: [] //音频输出设备，如扬声器
       },
-      isBrowserNotSuppport: false // 浏览器是否支持互动sdk
+      isBrowserNotSupport: false // 浏览器是否支持互动sdk
     };
     MediaCheckServer.instance = this;
     return this;
@@ -36,7 +36,7 @@ class MediaCheckServer {
     return VhallPaasSDK.modules.VhallRTC.checkSystemRequirements().then(checkResult => {
       this.state.checkSystemResult = checkResult;
       if (!checkResult.result) {
-        this.state.isBrowserNotSuppport = true;
+        this.state.isBrowserNotSupport = true;
       }
       return checkResult;
     });
