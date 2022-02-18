@@ -42,6 +42,8 @@ import useCashServer from '@/domain/cash/cash.server.js';
 // 商品
 import useGoodServer from '@/domain/interactiveTools/good.server.js';
 import useLotteryServer from '@/domain/interactiveTools/lotteryServer.js';
+
+import useMenuServer from '@/domain/brand/menu.server';
 /**
  * options:{
     token,
@@ -131,5 +133,6 @@ export {
   useGoodServer,
   usePraiseServer,
   useLotteryServer,
-  useSignServer
+  useSignServer,
+  useMenuServer
 };
