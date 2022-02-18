@@ -1,12 +1,15 @@
 let count = 0;
 import useRoomBaseServer from '../room/roombase.server';
+import useGroupServer from '../group/StandardGroupServer';
+
 const defaultAvatar = 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png';
 export default class Msg {
   constructor(params) {
     const roomserver = useRoomBaseServer();
+    const groupServer = useGroupServer();
     const { avatar, nickname, role_name, user_id } = roomserver.state.watchInitData.join_info;
     //分组相关逻辑判断
-    const { groupInitData = {} } = roomserver.state;
+    const { groupInitData = {} } = useGroupServer().state;
     this.data = {
       type: 'text',
       image_urls: []

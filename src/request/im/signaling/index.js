@@ -5,7 +5,7 @@ import env from '../../env';
  * */
 function setHandsUp(params = {}) {
   return request({
-    url: '/v4/interacts/inav/set-handsup',
+    url: '/v3/interacts/inav/set-handsup',
     method: 'POST',
     data: params
   });
@@ -78,11 +78,21 @@ function userSpeak(params = {}) {
 }
 
 /**
- * 发起端/观看端-用户下麦
+ * 发起端/观看端-用户自己下麦
  * */
-function userSpeakOff(params = {}) {
+function speakOffSelf(params = {}) {
   return request({
     url: '/v3/interacts/inav-user/nospeak',
+    method: 'POST',
+    data: params
+  });
+}
+/**
+ * 发起端/观看端-将其他用户下麦
+ * */
+function speakOffUser(params = {}) {
+  return request({
+    url: '/v3/interacts/inav/nospeak',
     method: 'POST',
     data: params
   });
@@ -93,7 +103,7 @@ function userSpeakOff(params = {}) {
  * */
 function hostInviteUser(params = {}) {
   return request({
-    url: env.imChat === 'v3'?'/v3/interacts/inav/invite':'/v4/interacts/inav/invite',
+    url: env.imChat === 'v3' ? '/v3/interacts/inav/invite' : '/v4/interacts/inav/invite',
     method: 'POST',
     data: params
   });
@@ -104,7 +114,7 @@ function hostInviteUser(params = {}) {
  * */
 function userAgreeInvite(params = {}) {
   return request({
-    url: '/v4/interacts/inav/user-agree-invite',
+    url: '/v3/interacts/inav-user/agree-invite',
     method: 'POST',
     data: params
   });
@@ -115,7 +125,7 @@ function userAgreeInvite(params = {}) {
  * */
 function userRejectInvite(params = {}) {
   return request({
-    url: '/v4/interacts/inav/user-reject-invite',
+    url: '/v3/interacts/inav-user/reject-invite',
     method: 'POST',
     data: params
   });
@@ -188,16 +198,17 @@ function userUnableSpeak(params = {}) {
 }
 
 export default {
-  // setHandsUp,
+  setHandsUp,
   userApply,
   userCancelApply,
   hostAgreeApply,
   // hostRejectApply,
   // userSpeak,
-  userSpeakOff,
+  speakOffSelf,
+  speakOffUser,
   hostInviteUser,
-  // userAgreeInvite,
-  // userRejectInvite,
+  userAgreeInvite,
+  userRejectInvite,
   // getSpeakList,
   // userPresentation,
   // endUserPresentation,

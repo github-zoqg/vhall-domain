@@ -13,6 +13,7 @@ class InteractiveServer extends BaseServer {
       return InteractiveServer.instance;
     }
     this.interactiveInstance = null; // 互动实例
+    this.interactiveInstanceOptions = null; // 当前互动实例的参数
     this.state = {
       localStream: {
         streamId: null, // 本地流id
@@ -38,8 +39,15 @@ class InteractiveServer extends BaseServer {
    */
   async init(customOptions = {}) {
     if (!this._isNeedInteractive()) return;
+
     const defaultOptions = await this._getDefaultOptions();
     const options = merge.recursive({}, defaultOptions, customOptions);
+
+    const result = await this._isNeedReInit(options);
+    if (!result) return;
+
+    // 更新互动实例参数
+    this.interactiveInstanceOptions = options;
 
     console.log('%cVHALL-DOMAIN-互动初始化参数', 'color:blue', options);
 
@@ -52,6 +60,7 @@ class InteractiveServer extends BaseServer {
           this._addListeners();
           // 房间当前远端流列表
           this.state.remoteStreams = event.currentStreams;
+
           resolve(event);
         },
         error => {
@@ -68,23 +77,15 @@ class InteractiveServer extends BaseServer {
     const { watchInitData } = useRoomBaseServer().state;
     const { isSpeakOn } = useMicServer().state;
 
-    // 如果不是观众需要初始化互动
-    if (watchInitData.join_info.role_name != 2) {
-      return true;
-    }
-
-    // 如果是观众、并且是无延迟直播，需要初始化互动
-    if (watchInitData.webinar.no_delay_webinar == 1) {
-      return true;
-    }
-
-    // 如果是观众、不是无延迟直播、在麦上，需要初始化互动
-    if (isSpeakOn) {
-      return true;
-    }
-
-    // 如果是观众、不是无延迟直播、不在麦上，不需要初始化互动
-    return false;
+    // 1. 如果不是观众需要初始化互动
+    // 2. 如果是观众、并且是无延迟直播，需要初始化互动
+    // 3. 如果是观众、不是无延迟直播、在麦上，需要初始化互动
+    // 4. 如果是观众、不是无延迟直播、不在麦上，不需要初始化互动
+    return (
+      watchInitData.join_info.role_name != 2 ||
+      watchInitData.webinar.no_delay_webinar == 1 ||
+      isSpeakOn
+    );
   }
 
   /**
@@ -105,7 +106,6 @@ class InteractiveServer extends BaseServer {
 
     // 获取互动实例角色
     const role = await this._getInteractiveRole();
-    console.log(role);
 
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
@@ -154,12 +154,7 @@ class InteractiveServer extends BaseServer {
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
-    // 如果不是无延迟直播，不需要设置role，默认设为 AUDIENCE
-    if (watchInitData.webinar.no_delay_webinar == 1) {
-      return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
-    }
-
-    // 如果是无延迟直播并且在麦上，设为 HOST
+    // 如果在麦上，设为 HOST
     if (
       interactToolStatus.speaker_list &&
       interactToolStatus.speaker_list.length &&
@@ -168,6 +163,11 @@ class InteractiveServer extends BaseServer {
       )
     ) {
       return VhallPaasSDK.module.VhallRTC.ROLE_HOST;
+    }
+
+    // 如果不是无延迟直播，不需要设置role，默认设为 AUDIENCE
+    if (watchInitData.webinar.no_delay_webinar == 0) {
+      return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
 
     // 如果是无延迟直播、不在麦、开启自动上麦
@@ -182,12 +182,39 @@ class InteractiveServer extends BaseServer {
     return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
   }
 
+  // 是否需要重新初始化互动实例
+  async _isNeedReInit(options) {
+    // 1. 如果当前不存在互动实例，需要重新初始化互动sdk
+    // 2. 如果是房间id发生了变化，需要重新初始化互动sdk
+    // 3. 如果是角色发生了变化，需要重新初始化互动sdk
+    // 4. 如果销毁互动sdk失败，return false
+    if (!this.interactiveInstance) {
+      return true;
+    }
+    if (
+      options.roomId !== this.interactiveInstanceOptions.roomId ||
+      options.role !== this.interactiveInstanceOptions.role
+    ) {
+      const err = await this.destroy();
+      return !err;
+    }
+  }
+
   /**
    * 销毁实例
    * @returns {Promise}}
    */
   destroy() {
-    return this.interactiveInstance.destroyInstance();
+    return this.interactiveInstance
+      .destroyInstance()
+      .then(() => {
+        this.interactiveInstance = null;
+        this.state.remoteStreams = [];
+      })
+      .catch(err => {
+        console.log('互动sdk销毁失败', err);
+        return err;
+      });
   }
 
   /**
@@ -340,8 +367,8 @@ class InteractiveServer extends BaseServer {
         console.log('----创建本地流成功----', data);
         this.state.localStream = {
           streamId: data.streamId,
-          audioMuted: !options.audio,
-          videoMuted: !options.video
+          audioMuted: options.mute?.audio || false,
+          videoMuted: options.mute?.video || false
         };
         return data;
       })
@@ -454,7 +481,8 @@ class InteractiveServer extends BaseServer {
    * 获取分辨率
    */
   getVideoProfile() {
-    const { interactToolStatus } = useInteractiveServer().state;
+    const { interactToolStatus } = useRoomBaseServer().state;
+
     const remoteStream = this.getRoomStreams();
     if (!remoteStream || !remoteStream.length) {
       return false;
@@ -497,7 +525,12 @@ class InteractiveServer extends BaseServer {
 
   // 创建图片推流
   createLocalPhotoStream(options = {}, addConfig = {}) {
-    const params = merge.recursive({}, options, addConfig);
+    let defaultOptions = {
+      video: false,
+      audio: true,
+      videoContentHint: 'detail'
+    };
+    const params = merge.recursive({}, defaultOptions, options, addConfig);
     return this.createLocalStream(params);
   }
 
