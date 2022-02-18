@@ -68,8 +68,6 @@ class MicServer extends BaseServer {
           // 只有嘉宾和观众此条件为true,所以此处不加角色判断
           if (msg.data.room_join_id == join_info.third_party_user_id) {
             this.$emit('vrtc_connect_agree', msg);
-
-            this.userSpeakOn();
           }
           break;
         // 用户成功上麦
@@ -83,8 +81,8 @@ class MicServer extends BaseServer {
         case 'vrtc_disconnect_success':
           if (join_info.third_party_user_id == msg.data.room_join_id) {
             this.state.isSpeakOn = false;
+            this.$emit('vrtc_disconnect_success', msg);
           }
-          this.$emit('vrtc_disconnect_success', msg);
           break;
         // 主持人邀请观众上麦
         case 'vrtc_connect_invite':
@@ -212,7 +210,7 @@ class MicServer extends BaseServer {
   }
   // 邀请上麦
   inviteMic(data = {}) {
-    return userMemberServer().inviteUserToInteract(data)
+    return userMemberServer().inviteUserToInteract(data);
   }
   // 取消申请
   userCancelApply(data = {}) {
