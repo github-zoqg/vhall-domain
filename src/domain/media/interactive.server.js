@@ -209,6 +209,7 @@ class InteractiveServer extends BaseServer {
       .destroyInstance()
       .then(() => {
         this.interactiveInstance = null;
+        this.state.remoteStreams = [];
       })
       .catch(err => {
         console.log('互动sdk销毁失败', err);
@@ -481,6 +482,7 @@ class InteractiveServer extends BaseServer {
    */
   getVideoProfile() {
     const { interactToolStatus } = useRoomBaseServer().state;
+
     const remoteStream = this.getRoomStreams();
     if (!remoteStream || !remoteStream.length) {
       return false;
