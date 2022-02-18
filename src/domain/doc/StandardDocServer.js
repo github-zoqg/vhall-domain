@@ -55,7 +55,7 @@ export default class StandardDocServer extends AbstractDocServer {
   init(customOptions = {}) {
     const defaultOptions = this._getDefaultOptions();
     const options = merge.recursive({}, defaultOptions, customOptions);
-    console.log('---[doc]------重置options:', options);
+    // console.log('---[doc]------init options:', options);
     // 初始化 passDocInstance
     return this.initialize(options)
       .then(() => {
@@ -162,16 +162,18 @@ export default class StandardDocServer extends AbstractDocServer {
     });
     // 当前文档加载完成
     this.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE, data => {
-      console.log('[doc] ====当前文档加载完成=====', data);
+      console.log('[doc] domain 当前文档加载完成: ', data);
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
       this.state.docLoadComplete = true;
 
-      // 获取缩略图
-      setTimeout(() => {
-        // 延迟100ms获取，否则sdk中要用到的某个数据可能还是空
-        this.getCurrentThumbnailList();
-      }, 100);
+      if (useRoomBaseServer().state.clientType === 'send') {
+        // 主持端才需要获取缩略图
+        setTimeout(() => {
+          // 延迟100ms获取，否则sdk中要用到的某个数据可能还是空
+          this.getCurrentThumbnailList();
+        }, 100);
+      }
     });
     // 文档翻页事件
     this.on(VHDocSDK.Event.PAGE_CHANGE, data => {
@@ -233,18 +235,14 @@ export default class StandardDocServer extends AbstractDocServer {
     if (rebroadcastChannelId) {
       channelId = rebroadcastChannelId;
     }
-    console.log('[doc] getContainerInfo channelId:', channelId);
     // 获取该channelId下的所有容器列表信息
     const { list, switch_status } = await this.getContainerInfo(channelId);
     // 观众端是否可见
-    console.log('switch_status:', switch_status);
     this.state.switchStatus = Boolean(switch_status);
-    console.log('this.state.switchStatus :', this.state.switchStatus);
     // 小组内是否去显示文档判断根据是否有文档内容
     if (this.state.isInGroup) {
       this.state.switchStatus = !!list.length;
     }
-    console.log('[doc] list:', list);
     this.state.containerList = list;
   }
 
@@ -263,7 +261,7 @@ export default class StandardDocServer extends AbstractDocServer {
    * @returns
    */
   async recover({ width, height, bindCidFun }) {
-    console.log('[doc] recover start：');
+    // console.log('[doc] recover start：');
     if (!width || !height) {
       console.error('容器宽高错误', width, height);
       this.setDocLoadComplete();
@@ -279,17 +277,16 @@ export default class StandardDocServer extends AbstractDocServer {
         docId: item.docId,
         bindCidFun
       });
-      console.log('[doc] initDocumentOrBoardContainer:', item.cid);
+      // console.log('[doc] initDocumentOrBoardContainer:', item.cid);
       if (fileType == 'document') {
         this.state.docCid = item.cid;
       } else if (fileType == 'board') {
         this.state.boardCid = item.cid;
       }
-      console.log('[doc] setRemoteData:', item.cid);
+      // console.log('[doc] domain setRemoteData:', item.cid);
       this.setRemoteData(item);
     }
     const activeItem = this.state.containerList.find(item => item.active === 1);
-    console.log('[doc] activeItem:', activeItem);
     if (activeItem) {
       if (activeItem.is_board === 1) {
         this.state.pageNum = activeItem.show_page + 1;
@@ -359,19 +356,19 @@ export default class StandardDocServer extends AbstractDocServer {
     if (fileType === 'document' && !docId) {
       throw new Error('required docment param docId');
     }
-    console.log('[doc] initDocumentOrBoardContainer:', {
-      width,
-      height,
-      fileType,
-      cid,
-      docId,
-      bindCidFun
-    });
+    // console.log('[doc] initDocumentOrBoardContainer:', {
+    //   width,
+    //   height,
+    //   fileType,
+    //   cid,
+    //   docId,
+    //   bindCidFun
+    // });
     if (!cid) {
       cid = this.createUUID(fileType);
-      console.log('[doc] 新建的cid:', cid);
+      // console.log('[doc] domain 新建的cid:', cid);
     } else {
-      console.log('[doc] 指定的cid:', cid);
+      // console.log('[doc] domain 指定的cid:', cid);
     }
 
     let opt = {
@@ -390,7 +387,7 @@ export default class StandardDocServer extends AbstractDocServer {
     };
     if (this.state.containerList.findIndex(item => item.cid === cid) === -1) {
       // 说明容器不在列表中，主动添加
-      console.log('[doc] --------向列表中添加容器------');
+      // console.log('[doc] --------向列表中添加容器------');
       this.state.containerList.push({ cid, docId });
       if (typeof bindCidFun === 'function') {
         await bindCidFun(cid);
@@ -430,7 +427,7 @@ export default class StandardDocServer extends AbstractDocServer {
    */
   getCurrentThumbnailList() {
     const res = this.docInstance.getThumbnailList();
-    console.log('[doc] getCurrentThumbnailList res:', res);
+    console.log('[doc] domain getCurrentThumbnailList res:', res);
     this.state.thumbnailList = res && res[0] ? res[0].list : [];
     // let doc = Array.isArray(res) ? res.find(item => item.id === this.state.currentCid) : null;
     // this.state.thumbnailList = doc ? doc.list : [];
@@ -574,7 +571,7 @@ export default class StandardDocServer extends AbstractDocServer {
   groupReInitDocProcess() {
     this.init()
       .then(() => {
-        console.log('[doc] ------------reset------------');
+        console.log('[doc] domain groupReInitDocProcess');
         this.state.currentCid = ''; //当前正在展示的容器id
         this.state.docCid = ''; // 当前文档容器Id
         this.state.boardCid = ''; // 当前白板容器Id
@@ -594,7 +591,7 @@ export default class StandardDocServer extends AbstractDocServer {
         this.state.isChannelChanged = true;
       })
       .catch(ex => {
-        console.error('[doc] reset error:', ex);
+        console.error('[doc] groupReInitDocProcess error:', ex);
       });
   }
 }
