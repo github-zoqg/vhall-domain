@@ -16,7 +16,9 @@ class MsgServer extends BaseServer {
       msgSdkInitOptions: {},
       groupMsgSdkInitOptions: {}
     };
-
+    this.EVENT_TYPE = {
+      CHANNEL_CHANGE: 'CHANNEL_CHANGE'
+    };
     MsgServer.instance = this;
     return this;
   }
@@ -46,42 +48,35 @@ class MsgServer extends BaseServer {
     this.state.msgSdkInitOptions = options;
     const vhallchat = await VhallPaasSDK.modules.VhallChat.createInstance(options);
     this.msgInstance = vhallchat.message;
-    console.log('聊天实例', this.msgInstance);
-    if (!this.groupMsgInstance) {
-      this.curMsgInstance = this.msgInstance; //当前所在的房间实例
+    console.log('主房间消息实例', this.msgInstance);
+    const { groupInitData } = useGroupServer().state;
+    if (!groupInitData.isInGroup) {
+      this.changeChannel(this.msgInstance);
       this._addListeners(this.msgInstance);
     }
   }
   async initGroupMsg(customOptions = {}) {
     //如果已存在子房间先销毁
-    if (this.groupMsgInstance) {
-      this.destroyGroupMsg();
-    }
     const defautlGroupOptions = this.getGroupDefaultOptions();
     const options = merge.recursive({}, defautlGroupOptions, customOptions);
     //创建pass消息房间实例
     const vhallchat = await VhallPaasSDK.modules.VhallChat.createInstance(options);
     this.groupMsgInstance = vhallchat.message;
-    this.curMsgInstance = this.groupMsgInstance;
+    this.changeChannel(this.groupMsgInstance);
     this._addListeners(this.groupMsgInstance);
   }
-
+  changeChannel(istance) {
+    this.curMsgInstance = istance;
+    //对外通知切换房间
+    this.$emit(this.EVENT_TYPE.CHANNEL_CHANGE);
+  }
   // 注册事件
   $onMsg(eventType, fn) {
     if (this._eventhandlers[eventType]) {
       this._eventhandlers[eventType].push(fn);
     } else {
-      const registerMsgInstance = this.groupMsgInstance || this.msgInstance;
       this._eventhandlers[eventType] = [];
       this._eventhandlers[eventType].push(fn);
-      console.log('聊天实例', registerMsgInstance);
-      if (registerMsgInstance) {
-        this._handlePaasInstanceOn(registerMsgInstance, eventType, msg => {
-          this._eventhandlers[eventType].forEach(handler => {
-            handler(msg);
-          });
-        });
-      }
     }
   }
 
@@ -180,25 +175,25 @@ class MsgServer extends BaseServer {
 
     if (!fn) {
       this._eventhandlers[eventType] = [];
-      this._handlePaasInstanceOff(eventType);
+      // this._handlePaasInstanceOff(eventType);
       return;
     }
 
     const index = this._eventhandlers[eventType].indexOf(fn);
     if (index > -1) {
       this._eventhandlers[eventType].splice(index, 1);
-      this._handlePaasInstanceOff(eventType, fn);
+      // this._handlePaasInstanceOff(eventType, fn);
     }
   }
 
   // paas实例注销事件
-  _handlePaasInstanceOff(eventType, fn) {
-    if (this.groupMsgInstance) {
-      this.groupMsgInstance.off(eventType, fn);
-    } else {
-      this.msgInstance.off(eventType, fn);
-    }
-  }
+  // _handlePaasInstanceOff(eventType, fn) {
+  //   if (this.groupMsgInstance) {
+  //     this.groupMsgInstance.off(eventType, fn);
+  //   } else {
+  //     this.msgInstance.off(eventType, fn);
+  //   }
+  // }
 
   // 为聊天实例注册事件
   _addListeners(instance) {
@@ -225,9 +220,13 @@ class MsgServer extends BaseServer {
     this.curMsgInstance.emit(data, context);
   }
 
-  // 发送房间消息
+  // 发送当前房间消息
   sendRoomMsg(data) {
     this.curMsgInstance.emitRoomMsg(data);
+  }
+  //发送主房间消息
+  sendMainRoomMsg(data) {
+    this.msgInstance.emitRoomMsg(data);
   }
   //发送自定义消息
   sendCustomMsg(data) {
@@ -238,7 +237,7 @@ class MsgServer extends BaseServer {
   getDefaultOptions() {
     const { state: roomBaseServerState } = useRoomBaseServer();
     const isPcClient = isPc();
-    const { watchInitData, groupInitData } = roomBaseServerState;
+    const { watchInitData } = roomBaseServerState;
     const defaultContext = {
       nickname: watchInitData.join_info.nickname,
       avatar: watchInitData.join_info.avatar,
@@ -249,8 +248,7 @@ class MsgServer extends BaseServer {
       device_status: '0', // 设备状态  0未检测 1可以上麦 2不可以上麦
       audience: roomBaseServerState.clientType !== 'send',
       kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
-      privacies: watchInitData.join_info.privacies || '',
-      groupInitData: groupInitData
+      privacies: watchInitData.join_info.privacies || ''
     };
 
     const defaultOptions = {
@@ -318,40 +316,12 @@ class MsgServer extends BaseServer {
     });
   }
 
-  // // 初始化子房间聊天sdk
-  // initGroupMsg(customOptions = {}) {
-  //   if (!contextServer.get('roomInitGroupServer')) return Promise.reject('No Room Exist');
-
-  //   // 每次初始化子房间聊天都需要清空原有房间聊天消息然后重新拉取
-  //   const chatServer = contextServer.get('chatServer');
-  //   chatServer && chatServer.clearHistoryMsg();
-
-  //   const { state: roomInitGroupServerState } = contextServer.get('roomInitGroupServer');
-
-  //   const defaultOptions = getGroupDefaultOptions();
-
-  //   const options = merge.recursive({}, defaultOptions, customOptions);
-
-  //   this.state.groupMsgSdkInitOptions = options;
-  //   console.log('创建子房间聊天实例', options);
-  //   return roomInitGroupServerState.vhallSaasInstance.createChat(options).then(res => {
-  //     console.log('domain----创建子房间聊天实例成功', res);
-  //     this.groupMsgInstance = res;
-  //     // 子房间上线，在小组内广播当前人的小组信息，延时500ms解决开始讨论收不到消息的问题
-  //     setTimeout(() => {
-  //       sendGroupInfoAfterJoin(res);
-  //     }, 500);
-  //     _addListeners(res);
-  //     return res;
-  //   });
-  // }
-
   // 销毁子房间聊天实例
   destroyGroupMsg() {
     if (!this.groupMsgInstance) return;
     this.groupMsgInstance.destroy();
     this.groupMsgInstance = null;
-    this.curMsgInstance = this.msgInstance;
+    this.changeChannel(this.msgInstance);
   }
 
   // 销毁主房间聊天实例
@@ -359,7 +329,7 @@ class MsgServer extends BaseServer {
     if (!this.msgInstance) return;
     this.msgInstance.destroy();
     this.msgInstance = null;
-    this.curMsgInstance = this.groupMsgInstance;
+    this.changeChannel(this.groupMsgInstance);
   }
 
   // 获取当前主房间初始化参数

@@ -60,6 +60,7 @@ class InteractiveServer extends BaseServer {
           this._addListeners();
           // 房间当前远端流列表
           this.state.remoteStreams = event.currentStreams;
+
           resolve(event);
         },
         error => {
@@ -365,8 +366,8 @@ class InteractiveServer extends BaseServer {
         console.log('----创建本地流成功----', data);
         this.state.localStream = {
           streamId: data.streamId,
-          audioMuted: !options.audio,
-          videoMuted: !options.video
+          audioMuted: options.mute?.audio || false,
+          videoMuted: options.mute?.video || false
         };
         return data;
       })
@@ -479,7 +480,7 @@ class InteractiveServer extends BaseServer {
    * 获取分辨率
    */
   getVideoProfile() {
-    const { interactToolStatus } = useInteractiveServer().state;
+    const { interactToolStatus } = useRoomBaseServer().state;
     const remoteStream = this.getRoomStreams();
     if (!remoteStream || !remoteStream.length) {
       return false;
@@ -522,7 +523,12 @@ class InteractiveServer extends BaseServer {
 
   // 创建图片推流
   createLocalPhotoStream(options = {}, addConfig = {}) {
-    const params = merge.recursive({}, options, addConfig);
+    let defaultOptions = {
+      video: false,
+      audio: true,
+      videoContentHint: 'detail'
+    };
+    const params = merge.recursive({}, defaultOptions, options, addConfig);
     return this.createLocalStream(params);
   }
 

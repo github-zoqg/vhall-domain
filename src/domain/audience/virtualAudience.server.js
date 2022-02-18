@@ -68,7 +68,7 @@ class VirtualClientStartServer extends BaseServer {
     });
     // 添加虚拟人数和热度
     msgServer.$onMsg('ROOM_MSG', msg => {
-      let msgs = JSON.parse(msg.data);
+      let msgs = msg.data;
       if (msgs.type == 'base_num_update') {
         this.state.virtualHot = this.state.virtualHot + Number(msgs.update_pv);
         this.state.virtualOnline = this.state.virtualOnline + Number(msgs.update_online_num);

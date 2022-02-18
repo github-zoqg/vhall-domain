@@ -5,7 +5,7 @@ import env from '../../env';
  * */
 function setHandsUp(params = {}) {
   return request({
-    url: '/v4/interacts/inav/set-handsup',
+    url: '/v3/interacts/inav/set-handsup',
     method: 'POST',
     data: params
   });
@@ -188,7 +188,7 @@ function userUnableSpeak(params = {}) {
 }
 
 export default {
-  // setHandsUp,
+  setHandsUp,
   userApply,
   userCancelApply,
   hostAgreeApply,
