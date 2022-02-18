@@ -209,6 +209,7 @@ class InteractiveServer extends BaseServer {
       .destroyInstance()
       .then(() => {
         this.interactiveInstance = null;
+        this.state.remoteStreams = [];
       })
       .catch(err => {
         console.log('互动sdk销毁失败', err);
@@ -481,6 +482,7 @@ class InteractiveServer extends BaseServer {
    */
   getVideoProfile() {
     const { interactToolStatus } = useRoomBaseServer().state;
+
     const remoteStream = this.getRoomStreams();
     if (!remoteStream || !remoteStream.length) {
       return false;
@@ -530,6 +532,32 @@ class InteractiveServer extends BaseServer {
     };
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return this.createLocalStream(params);
+  }
+
+  // Wap 创建摄像头视频流
+  async createWapLocalStream(options = {}, addConfig = {}) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const { interactToolStatus } = useRoomBaseServer().state;
+
+    let defaultOptions = {
+      video: true,
+      audio: true,
+      facingMode: options.facingMode || 'user',
+      profile:
+        VhallRTC[this.getVideoProfile()] ||
+        VhallRTC[options.profile] ||
+        VhallRTC[interactToolStatus.definition] ||
+        VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
+      streamType: 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。,
+      attributes: JSON.stringify({
+        roleName: watchInitData.join_info.role_name,
+        accountId: watchInitData.join_info.third_party_user_id,
+        nickname: watchInitData.join_info.nickname
+      })
+    };
+
+    const params = merge.recursive({}, defaultOptions, options, addConfig);
+    return await this.createLocalStream(params);
   }
 
   // 销毁本地流

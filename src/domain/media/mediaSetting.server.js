@@ -12,7 +12,7 @@ class MediaSettingServer {
     this.state = {
       selectedVideoDeviceId: '', // 当前选取的设备id
       videoPreivewStreamId: '', // 当前[流ID]
-      canvasImgUrl: '', // 当前图片流url
+      canvasImgUrl: '//cnstatic01.e.vhall.com/common-static/middle/images/canvasDefault.png', // 当前图片流url
       rate: '', // 当前画质
       screenRate: '', //当前桌面共享画质
       videoType: 'camera', // 当前视频类型 camera||pictrue
@@ -36,10 +36,15 @@ class MediaSettingServer {
   }
 
   init() {
-    const videoType = localStorage.getItem(
-      `${useRoomBaseServer().state.watchInitData.webinar.id}_stramType`
+    const canvasObjStr = localStorage.getItem(
+      `saveCanvasObj_${useRoomBaseServer().state.watchInitData.webinar.id}`
     );
-    this.state.videoType = videoType || 'camera';
+    const canvasObj = canvasObjStr && JSON.parse(canvasObjStr);
+
+    if (canvasObj) {
+      this.state.videoType = canvasObj.flag ? 'picture' : 'camera';
+      this.state.canvasImgUrl = canvasObj.streamUrl || this.state.canvasImgUrl;
+    }
   }
 
   resetState() {
