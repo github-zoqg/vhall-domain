@@ -3,13 +3,27 @@
  */
 import useRoomBaseServer from '../room/roombase.server';
 import lotteryApi from '../../request/lottery';
+import useMsgServer from '../common/msg.server';
 // import BaseServer from '../common/base.server';
-
-const roomServerState = useRoomBaseServer().state;
 
 export default class useLotteryServer {
   constructor(opt) {
-    this._roomId = roomServerState.watchInitData.interact.room_id;
+    this._roomId = useRoomBaseServer().state.watchInitData.interact.room_id;
+    this.listenMsg();
+  }
+  // 监听消息
+  listenMsg() {
+    useMsgServer().$onMsg('ROOM_MSG', msg => {
+      console.log(
+        '[group] --domain ROOM_MSG--房间消息：',
+        `${msg.data.type ? 'type:' : 'event_type'}:${msg.data.type || msg.data.event_type}`
+      );
+      switch (msg.data.event_type || msg.data.type) {
+        //【分组创建/新增完成】
+        case 'lottery_push':
+          break;
+      }
+    });
   }
 
   // 获取列表
@@ -41,7 +55,7 @@ export default class useLotteryServer {
 
   // 重新初始化可参与抽奖用户
   updateLotteryUser() {
-    const switch_id = roomServerState.watchInitData.switch.switch_id;
+    const switch_id = useRoomBaseServer().state.watchInitData.switch.switch_id;
     return lotteryApi.updateUserStatus({
       switch_id
     });

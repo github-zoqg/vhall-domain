@@ -5,7 +5,7 @@ import env from '../../env';
  * */
 function setHandsUp(params = {}) {
   return request({
-    url: '/v4/interacts/inav/set-handsup',
+    url: '/v3/interacts/inav/set-handsup',
     method: 'POST',
     data: params
   });
@@ -104,7 +104,7 @@ function hostInviteUser(params = {}) {
  * */
 function userAgreeInvite(params = {}) {
   return request({
-    url: '/v4/interacts/inav/user-agree-invite',
+    url: '/v3/interacts/inav/user-agree-invite',
     method: 'POST',
     data: params
   });
@@ -115,7 +115,7 @@ function userAgreeInvite(params = {}) {
  * */
 function userRejectInvite(params = {}) {
   return request({
-    url: '/v4/interacts/inav/user-reject-invite',
+    url: '/v3/interacts/inav/user-reject-invite',
     method: 'POST',
     data: params
   });
@@ -188,7 +188,7 @@ function userUnableSpeak(params = {}) {
 }
 
 export default {
-  // setHandsUp,
+  setHandsUp,
   userApply,
   userCancelApply,
   hostAgreeApply,
@@ -196,8 +196,8 @@ export default {
   // userSpeak,
   userSpeakOff,
   hostInviteUser,
-  // userAgreeInvite,
-  // userRejectInvite,
+  userAgreeInvite,
+  userRejectInvite,
   // getSpeakList,
   // userPresentation,
   // endUserPresentation,
