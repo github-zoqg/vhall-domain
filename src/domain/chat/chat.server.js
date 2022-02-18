@@ -27,13 +27,11 @@ class ChatServer extends BaseServer {
       banned: interactToolStatus.is_banned == 1 ? true : false, //1禁言 0取消禁言
       //当前频道全部禁言状态
       allBanned: interactToolStatus.all_banned == 1 ? true : false, //1禁言 0取消禁言
-      page: 0,
       limit: 10,
       curMsg: null //当前正在编辑的消息
     };
     this.listenEvents();
     this.controller = null;
-    this.getHistoryMsg();
     ChatServer.instance = this;
     return this;
   }
@@ -80,7 +78,7 @@ class ChatServer extends BaseServer {
     });
     //接收频道变更通知
     msgServer.$on(msgServer.EVENT_TYPE.CHANNEL_CHANGE, () => {
-      this.handleChannelChange();
+      this.$emit('changeChannel');
     });
   }
   //判断是不是发送给当前用户的消息
@@ -89,22 +87,10 @@ class ChatServer extends BaseServer {
     console.log(msg.data.target_id, '-', watchInitData.join_info.third_party_user_id);
     return msg.data.target_id == watchInitData.join_info.third_party_user_id;
   }
-  //处理分组讨论频道变更
-  handleChannelChange() {
-    this.state.page = 0;
-    this.clearHistoryMsg();
-    this.getHistoryMsg();
-  }
   //接收聊天消息
-  async getHistoryMsg() {
-    const params = {
-      room_id: useRoomBaseServer().state.watchInitData.interact.room_id,
-      pos: Number(this.state.page) * 50,
-      limit: 50
-    };
+  async getHistoryMsg(params) {
     //请求获取聊天消息
     let historyList = await this.fetchHistoryData(params);
-    this.state.page++;
     console.log('historyList', historyList);
     let list = (historyList.data.list || [])
       .map(item => {
