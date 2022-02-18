@@ -4,23 +4,36 @@
 import useRoomBaseServer from '../room/roombase.server';
 import lotteryApi from '../../request/lottery';
 import useMsgServer from '../common/msg.server';
-// import BaseServer from '../common/base.server';
+import BaseServer from '../common/base.server';
 
-export default class useLotteryServer {
+const LOTTERY_PUSH = 'lottery_push';
+const LOTTERY_RESULT_NOTICE = 'lottery_result_notice';
+class LotteryServer extends BaseServer {
   constructor(opt) {
-    this._roomId = useRoomBaseServer().state.watchInitData.interact.room_id;
-    this.listenMsg();
+    super();
+    const watchInitData = useRoomBaseServer().state.watchInitData;
+    this._roomId = watchInitData.interact.room_id;
+    this._webinarId = watchInitData.webinar.id;
+    if (opt.mode === 'watch') {
+      this.listenMsg();
+    }
   }
   // 监听消息
   listenMsg() {
+    console.log(useMsgServer().curMsgInstance);
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       console.log(
-        '[group] --domain ROOM_MSG--房间消息：',
-        `${msg.data.type ? 'type:' : 'event_type'}:${msg.data.type || msg.data.event_type}`
+        '抽奖的消息:',
+        `${msg.data.type ? 'type:' : 'event_type'}:${msg.data.type || msg.data.event_type}`,
+        msg
       );
       switch (msg.data.event_type || msg.data.type) {
         //【分组创建/新增完成】
-        case 'lottery_push':
+        case LOTTERY_PUSH:
+          this.$emit(LOTTERY_PUSH, msg.data);
+          break;
+        case LOTTERY_RESULT_NOTICE:
+          this.$emit(LOTTERY_RESULT_NOTICE, msg.data);
           break;
       }
     });
@@ -76,4 +89,40 @@ export default class useLotteryServer {
       room_id: this._roomId
     });
   }
+
+  // 检测是否已提交领奖信息
+  getWinnerList(lotteryId) {
+    return lotteryApi.getWinnerList({
+      room_id: this._roomId,
+      lottery_id: lotteryId
+    });
+  }
+
+  // 检测是否已提交领奖信息
+  checkLotteryResult(lotteryId) {
+    return lotteryApi.checkLotteryResult({
+      lottery_id: lotteryId
+    });
+  }
+  // 获取表单信息
+  getDrawPrizeInfo() {
+    return lotteryApi.getDrawPrizeInfo({
+      webinar_id: this._webinarId
+    });
+  }
+
+  // 获取表单信息
+  acceptPrize(params) {
+    return lotteryApi.acceptPrize({
+      room_id: this._roomId,
+      ...params
+    });
+  }
+}
+
+export default function useLotteryServer(opt) {
+  if (!LotteryServer.instance) {
+    LotteryServer.instance = new LotteryServer(opt);
+  }
+  return LotteryServer.instance;
 }

@@ -65,6 +65,10 @@ class RoomBaseServer extends BaseServer {
     if (!['send', 'standard', 'embed', 'sdk'].includes(options.clientType)) {
       throw new Error('不合法的客户端类型');
     }
+    console.log('初始化初始化', options.clientType);
+    if (['standard', 'embed'].includes(options.clientType) && !options.visitor_id) {
+      options.visitor_id = sessionStorage.getItem('visitorId');
+    }
     this.setClientType(options.clientType);
     return meeting[liveType.get(options.clientType)](options).then(res => {
       if (res.code === 200) {
@@ -72,6 +76,7 @@ class RoomBaseServer extends BaseServer {
         setRequestHeaders({
           'interact-token': res.data.interact.interact_token
         });
+        sessionStorage.setItem('visitorId', res.data.join_info.third_party_user_id);
         return res;
       }
     });
@@ -325,6 +330,11 @@ class RoomBaseServer extends BaseServer {
     return meeting.tipOffInfo(retParams).then(res => {
       return res;
     });
+  }
+
+  // 关闭开屏海报事件
+  screenPostClose(data = {}) {
+    this.$emit('screenPostClose', data);
   }
 }
 
