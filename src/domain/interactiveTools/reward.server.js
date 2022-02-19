@@ -6,10 +6,17 @@ import BaseServer from '@/domain/common/base.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
 import { rewardApi } from '@/request/index.js';
 
-class giftsServer extends BaseServer {
+class rewardServer extends BaseServer {
   constructor() {
+    if (typeof rewardServer.instance === 'object') {
+      return rewardServer.instance;
+    }
     super();
+
     this.state = {};
+
+    rewardServer.instance = this;
+    return this;
   }
 
   setState(key, value) {
@@ -32,6 +39,7 @@ class giftsServer extends BaseServer {
         case 'timer_start':
           this.$emit('timer_start', temp);
           break;
+
         default:
           break;
       }
@@ -62,6 +70,6 @@ class giftsServer extends BaseServer {
   }
 }
 
-export default function useGiftsServer() {
-  return new giftsServer();
+export default function userewardServer() {
+  return new rewardServer();
 }

@@ -159,6 +159,7 @@ export default class StandardDocServer extends AbstractDocServer {
       // console.log('this.isFullscreen :', this.isFullscreen);
       this.state.allComplete = true;
       this.state.docLoadComplete = true;
+      this.$emit('dispatch_doc_all_complete');
     });
     // 当前文档加载完成
     this.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE, data => {
@@ -174,19 +175,21 @@ export default class StandardDocServer extends AbstractDocServer {
           this.getCurrentThumbnailList();
         }, 100);
       }
+      this.$emit('dispatch_doc_load_complete', data);
     });
     // 文档翻页事件
     this.on(VHDocSDK.Event.PAGE_CHANGE, data => {
       console.log('==============文档翻页================');
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
+      this.$emit('dispatch_doc_page_change', data);
     });
 
     // 观众可见按钮切换
     this.on(VHDocSDK.Event.SWITCH_CHANGE, status => {
       console.log('==========控制文档开关=============', status);
       this.state.switchStatus = status === 'on';
-      this.$emit('doc-switch-change', this.state.switchStatus);
+      this.$emit('dispatch_doc_switch_change', this.state.switchStatus);
     });
 
     // 创建容器
@@ -195,7 +198,7 @@ export default class StandardDocServer extends AbstractDocServer {
       // if ((this.roleName != 1 && this.liveStatus != 1) || this.cids.includes(data.id)) {
       //   return;
       // }
-      this.$emit('doc-create-container', data);
+      this.$emit('dispatch_doc_create_container', data);
     });
 
     // 删除文档
@@ -204,10 +207,12 @@ export default class StandardDocServer extends AbstractDocServer {
       if (data && data.id) {
         this.destroyContainer({ id: data.id });
       }
+      this.$emit('dispatch_doc_delete_container', data);
     });
 
     this.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT, ({ cid, docId }) => {
       console.log('=============文档不存在或已删除========', cid, docId);
+      this.$emit('dispatch_doc_not_exit', { cid, docId });
       // if (cid == this.currentCid) {
       //   this.$message({
       //     type: 'error',
