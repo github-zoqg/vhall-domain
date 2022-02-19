@@ -99,6 +99,11 @@ class RoomBaseServer extends BaseServer {
     }
   }
 
+  // 设置miniELement的值
+  setChangeElement(val) {
+    this.state.miniElement = val;
+  }
+
   // 更新roomVisibleModule
   updateRoomVisibleModules(cb) {
     this.state.roomVisibleModules = cb(this.state.roomVisibleModules);
