@@ -176,8 +176,8 @@ export default class AbstractDocServer extends BaseServer {
    */
   @checkDocInstance()
   destroyContainer(id) {
-    const opts = id ? { id } : null;
-    return this.docInstance.destroyContainer(opts);
+    if (!id) return;
+    return this.docInstance.destroyContainer({ id });
   }
 
   /**

@@ -21,7 +21,8 @@ class InteractiveServer extends BaseServer {
         audioMuted: false,
         attributes: {}
       },
-      remoteStreams: [] // 远端流数组
+      remoteStreams: [], // 远端流数组
+      streamListHeightInWatch: 0 // PC观看端流列表高度
     };
     InteractiveServer.instance = this;
     return this;
@@ -351,6 +352,9 @@ class InteractiveServer extends BaseServer {
           isMute: false
         });
         // this.$emit('vrtc_mute_cancel', msg);
+      } else if (msg.data.type === 'live_over') {
+        // 直播结束
+        this.setStreamListHeightInWatch(0);
       }
     });
   }
@@ -878,6 +882,14 @@ class InteractiveServer extends BaseServer {
     };
     const retParams = merge.recursive({}, defaultParams, params);
     return room.activity.setDeviceStatus(retParams);
+  }
+
+  /**
+   * 设置PC观看端流列表高度
+   * @param {Number} val 0, 80
+   */
+  setStreamListHeightInWatch(val) {
+    this.state.streamListHeightInWatch = val;
   }
 }
 

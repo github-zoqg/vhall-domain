@@ -1,7 +1,6 @@
 import BaseServer from '@/domain/common/base.server.js';
-import { Domain } from '@/domain';
 import { goodSaasApi } from '@/request/index.js';
-import useRoomBaseServer from '../room/roombase.server';
+
 /**
  * 问答服务
  * @returns
@@ -14,9 +13,7 @@ class GoodServer extends BaseServer {
     }
     super();
 
-    this.state = {
-      
-    };
+    this.state = {};
 
     GoodServer.instance = this;
     return this;

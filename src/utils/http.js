@@ -1,4 +1,5 @@
 import axios from 'axios/dist/axios';
+import qs from 'qs';
 
 let TOKEN = '';
 let BASE_URL = '';
@@ -41,15 +42,8 @@ service.interceptors.request.use(
       };
       // config.data = JSON.stringify(config.data);
     }
-    if (config.dataType === 'FormData') {
-      if (config.data && typeof config.data === 'object') {
-        const params = config.data;
-        const formData = new FormData();
-        Object.keys(params).forEach(key => {
-          formData.append(key, params[key]);
-        });
-        config.data = formData;
-      }
+    if (config.data && typeof config.data === 'object') {
+      config.data = qs.stringify(config.data);
     }
     config.headers = {
       ...HEADERS,
