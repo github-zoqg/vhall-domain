@@ -1,28 +1,39 @@
-import mediaSetting from './mediaSetting.server';
+import useMediaSettingServer from './mediaSetting.server';
 class CanvasStreamServer {
-  constructor(options) {
+  constructor() {
     if (typeof CanvasStreamServer.instance === 'object') {
       return CanvasStreamServer.instance;
     }
 
-    this.canvasData = {
-      width: 1280,
-      height: 720
-    };
+    // dom
+    this.canvasDom = null;
+    this.canvasImgDom = null;
 
+    this.state = {
+      canvasSize: {
+        width: 1280,
+        height: 720
+      },
+      getRealImgErr: false, // 真实图片设置是否错误
+      canvasStreamInterval: null
+    };
+  }
+
+  init(options) {
     // dom
     this.canvasDom = options.canvasDom;
     this.canvasImgDom = options.canvasImgDom;
-    this.canvasStreamInterval = null;
+  }
 
-    this.mediaSettingData = new mediaSetting();
-    this.getRealImgErr = false; // 真实图片设置是否错误
+  setCanvasSize(options) {
+    options.width && (this.state.canvasSize.width = options.width);
+    options.height && (this.state.canvasSize.height = options.height);
   }
 
   async checkImgStream() {
-    let isPushType = this.mediaSettingData.state.videoType === 'picture';
-    if (isPushType) {
-      if (this.mediaSettingData.state.canvasImgUrl) {
+    const { videoType, canvasImgUrl } = useMediaSettingServer().state;
+    if (videoType === 'picture') {
+      if (canvasImgUrl) {
         // 非默认图片
         await this.getRealImg();
       }
@@ -38,12 +49,12 @@ class CanvasStreamServer {
         _img.src = this.mediaSettingData.state.canvasImgUrl;
         this.canvasImgDom.src = _img.src;
         _img.onload = () => {
-          this.canvasData.width = this.canvasDom.width = _img.width;
-          this.canvasData.height = this.canvasDom.height = _img.height;
+          this.state.canvasSize.width = this.canvasDom.width = _img.width;
+          this.state.canvasSize.height = this.canvasDom.height = _img.height;
           resolve();
         };
       } catch (error) {
-        this.getRealImgErr = true;
+        this.state.getRealImgErr = true;
         reject(error);
       }
     });
@@ -57,22 +68,28 @@ class CanvasStreamServer {
     }
 
     this.canvasStreamInterval = setInterval(() => {
-      c2d.drawImage(this.canvasImgDom, 0, 0, this.canvasData.width, this.canvasData.height);
+      c2d.drawImage(
+        this.canvasImgDom,
+        0,
+        0,
+        this.state.canvasData.width,
+        this.state.canvasData.height
+      );
     }, 1000);
   }
 
   // 获取图片track
   getCanvasStream() {
-    if (this.getRealImgErr) {
+    if (this.state.getRealImgErr) {
       return null;
     }
     return this.canvasDom.captureStream().getVideoTracks()[0] || null;
   }
 }
 
-export default function useCanvasStreamServer(options) {
+export default function useCanvasStreamServer() {
   if (!CanvasStreamServer.instance) {
-    CanvasStreamServer.instance = new CanvasStreamServer(options);
+    CanvasStreamServer.instance = new CanvasStreamServer();
   }
 
   return CanvasStreamServer.instance;
