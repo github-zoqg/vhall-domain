@@ -73,6 +73,7 @@ class RoomBaseServer extends BaseServer {
     return meeting[liveType.get(options.clientType)](options).then(res => {
       if (res.code === 200) {
         this.state.watchInitData = res.data;
+        console.log('watchInitData', res.data);
         setRequestHeaders({
           'interact-token': res.data.interact.interact_token
         });
