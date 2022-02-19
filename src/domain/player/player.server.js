@@ -1,5 +1,6 @@
 import VhallPaasSDK from '@/sdk/index.js';
 import BaseServer from '@/domain/common/base.server';
+import useMsgServer from '@/domain/common/msg.server.js';
 import { player } from '../../request/index';
 class PlayerServer extends BaseServer {
   constructor(options) {
@@ -149,12 +150,12 @@ class PlayerServer extends BaseServer {
 
   //开启弹幕显示
   openBarrage() {
-    return this.playerInstance.toggleBarrage(true);
+    return this.playerInstance.openBarrage();
   }
 
   //关闭弹幕显示
   closeBarrage() {
-    return this.playerInstance.toggleBarrage(false);
+    return this.playerInstance.closeBarrage();
   }
 
   //清除弹幕显示
@@ -167,7 +168,7 @@ class PlayerServer extends BaseServer {
   }
   // 销毁实例
   destroy() {
-    return this.playerInstance.destroy();
+    return this.playerInstance && this.playerInstance.destroy();
   }
 
   onPlayer(type, cb) {
@@ -185,6 +186,25 @@ class PlayerServer extends BaseServer {
   }
   // 播放器注册事件监听
   _addPlayerListeners() {
+    const msgServer = useMsgServer();
+    // 弹幕
+    msgServer.$onMsg('CHAT', msg => {
+      if (!msg.data.barrageTxt.includes('<img')) {
+        this.$emit('push_barrage', msg.data.barrageTxt);
+      }
+    });
+    // 结束直播
+    msgServer.$onMsg('ROOM_MSG', msg => {
+      // live_over 结束直播
+      if (msg.data.type == 'live_over') {
+        this.$emit('live_over', msg.data);
+      }
+      // live_start:开始直播
+      if (msg.data.type == 'live_start') {
+        this.$emit('live_start', msg.data);
+      }
+    });
+
     // 视频加载完成
     this.playerInstance.on(VhallPlayer.LOADED, e => {
       this.$emit(VhallPlayer.LOADED, e);

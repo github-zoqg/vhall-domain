@@ -166,7 +166,6 @@ export default class AbstractDocServer extends BaseServer {
   @checkDocInstance()
   getContainerInfo(channelId) {
     const opts = channelId ? { channelId } : null;
-    console.log('[doc] getContainerInfo opts:', opts);
     return this.docInstance.getContainerInfo(opts);
   }
 
@@ -177,8 +176,8 @@ export default class AbstractDocServer extends BaseServer {
    */
   @checkDocInstance()
   destroyContainer(id) {
-    const opts = id ? { id } : null;
-    return this.docInstance.destroyContainer(opts);
+    if (!id) return;
+    return this.docInstance.destroyContainer({ id });
   }
 
   /**

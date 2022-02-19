@@ -21,7 +21,8 @@ class InteractiveServer extends BaseServer {
         audioMuted: false,
         attributes: {}
       },
-      remoteStreams: [] // 远端流数组
+      remoteStreams: [], // 远端流数组
+      streamListHeightInWatch: 0 // PC观看端流列表高度
     };
     InteractiveServer.instance = this;
     return this;
@@ -162,7 +163,7 @@ class InteractiveServer extends BaseServer {
         item => item.account_id == watchInitData.join_info.third_party_user_id
       )
     ) {
-      return VhallPaasSDK.module.VhallRTC.ROLE_HOST;
+      return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
     // 如果不是无延迟直播，不需要设置role，默认设为 AUDIENCE
@@ -175,7 +176,7 @@ class InteractiveServer extends BaseServer {
       // 调上麦接口判断当前人是否可以上麦
       const res = await useMicServer().userSpeakOn();
       // 如果上麦成功，设为 HOST
-      if (res.code == 200) return VhallPaasSDK.module.VhallRTC.ROLE_HOST;
+      if (res.code == 200) return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
     // 如果是无延迟直播、不在麦、未开启自动上麦，设为 AUDIENCE
@@ -351,6 +352,9 @@ class InteractiveServer extends BaseServer {
           isMute: false
         });
         // this.$emit('vrtc_mute_cancel', msg);
+      } else if (msg.data.type === 'live_over') {
+        // 直播结束
+        this.setStreamListHeightInWatch(0);
       }
     });
   }
@@ -878,6 +882,14 @@ class InteractiveServer extends BaseServer {
     };
     const retParams = merge.recursive({}, defaultParams, params);
     return room.activity.setDeviceStatus(retParams);
+  }
+
+  /**
+   * 设置PC观看端流列表高度
+   * @param {Number} val 0, 80
+   */
+  setStreamListHeightInWatch(val) {
+    this.state.streamListHeightInWatch = val;
   }
 }
 

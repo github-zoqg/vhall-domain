@@ -77,7 +77,7 @@ class RoomBaseServer extends BaseServer {
         setRequestHeaders({
           'interact-token': res.data.interact.interact_token
         });
-        sessionStorage.setItem('visitorId', res.data.join_info.third_party_user_id);
+        sessionStorage.setItem('visitorId', res.data.visitor_id);
         return res;
       }
     });
@@ -331,6 +331,11 @@ class RoomBaseServer extends BaseServer {
     return meeting.tipOffInfo(retParams).then(res => {
       return res;
     });
+  }
+
+  // 关闭开屏海报事件
+  screenPostClose(data = {}) {
+    this.$emit('screenPostClose', data);
   }
 }
 
