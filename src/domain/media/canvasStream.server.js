@@ -43,10 +43,11 @@ class CanvasStreamServer {
 
   // 获取真实的图片宽高
   getRealImg() {
+    const { canvasImgUrl } = useMediaSettingServer().state;
     return new Promise((resolve, reject) => {
       try {
         let _img = new Image();
-        _img.src = this.mediaSettingData.state.canvasImgUrl;
+        _img.src = canvasImgUrl;
         this.canvasImgDom.src = _img.src;
         _img.onload = () => {
           this.state.canvasSize.width = this.canvasDom.width = _img.width;
@@ -66,14 +67,13 @@ class CanvasStreamServer {
     if (this.canvasStreamInterval) {
       clearInterval(this.canvasStreamInterval);
     }
-
     this.canvasStreamInterval = setInterval(() => {
       c2d.drawImage(
         this.canvasImgDom,
         0,
         0,
-        this.state.canvasData.width,
-        this.state.canvasData.height
+        this.state.canvasSize.width,
+        this.state.canvasSize.height
       );
     }, 1000);
   }

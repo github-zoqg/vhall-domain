@@ -51,7 +51,7 @@ class MediaSettingServer {
     this.state = {
       selectedVideoDeviceId: '', // 当前选取的设备id
       videoPreivewStreamId: '', // 当前[流ID]
-      canvasImgUrl: '', // 当前图片流url
+      canvasImgUrl: '//cnstatic01.e.vhall.com/common-static/middle/images/canvasDefault.png', // 当前图片流url
       rate: '', // 当前画质
       screenRate: '', //当前桌面共享画质
       videoType: 'camera', // 当前视频类型 camera||picture
@@ -219,6 +219,9 @@ class MediaSettingServer {
    * @returns {Promise}
    */
   stopVideoPreview(streamId = this.state.videoPreivewStreamId) {
+    if (!streamId) {
+      return Promise.resolve('预览视频流不存在');
+    }
     return new Promise((resolve, reject) => {
       VhallPaasSDK.modules.VhallRTC.stopPreview({ streamId }, resolve, reject);
     }).then(() => {
