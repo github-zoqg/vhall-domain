@@ -76,7 +76,7 @@ class RoomBaseServer extends BaseServer {
         setRequestHeaders({
           'interact-token': res.data.interact.interact_token
         });
-        sessionStorage.setItem('visitorId', res.data.join_info.third_party_user_id);
+        sessionStorage.setItem('visitorId', res.data.visitor_id);
         return res;
       }
     });
