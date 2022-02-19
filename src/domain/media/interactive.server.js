@@ -124,7 +124,7 @@ class InteractiveServer extends BaseServer {
       broadcastConfig:
         watchInitData.join_info.role_name == 1
           ? {
-              layout:
+              adaptiveLayoutMode:
                 VhallPaasSDK.modules.VhallRTC[sessionStorage.getItem('layout')] ||
                 VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
               profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
