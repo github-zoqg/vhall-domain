@@ -77,7 +77,7 @@ export default class StandardDocServer extends AbstractDocServer {
         }
       })
       .catch(ex => {
-        console.error('实例化PaaS文档失败', err);
+        console.error('实例化PaaS文档失败', ex);
       });
   }
 
@@ -182,6 +182,30 @@ export default class StandardDocServer extends AbstractDocServer {
       this.state.pageNum = Number(data.info.slideIndex) + 1;
     });
 
+    // 观众可见按钮切换
+    this.on(VHDocSDK.Event.SWITCH_CHANGE, status => {
+      console.log('==========控制文档开关=============', status);
+      this.state.switchStatus = status === 'on';
+      this.$emit('doc-switch-change', this.state.switchStatus);
+    });
+
+    // 创建容器
+    this.on(VHDocSDK.Event.CREATE_CONTAINER, data => {
+      console.log('===========创建容器===========', data);
+      // if ((this.roleName != 1 && this.liveStatus != 1) || this.cids.includes(data.id)) {
+      //   return;
+      // }
+      this.$emit('doc-create-container', data);
+    });
+
+    // 删除文档
+    this.on(VHDocSDK.Event.DELETE_CONTAINER, data => {
+      console.log('=========删除容器=============', data);
+      if (data && data.id) {
+        this.destroyContainer({ id: data.id });
+      }
+    });
+
     this.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT, ({ cid, docId }) => {
       console.log('=============文档不存在或已删除========', cid, docId);
       // if (cid == this.currentCid) {
@@ -240,7 +264,7 @@ export default class StandardDocServer extends AbstractDocServer {
     // 观众端是否可见
     this.state.switchStatus = Boolean(switch_status);
     // 小组内是否去显示文档判断根据是否有文档内容
-    if (this.state.isInGroup) {
+    if (useGroupServer().state.isInGroup) {
       this.state.switchStatus = !!list.length;
     }
     this.state.containerList = list;
@@ -261,11 +285,12 @@ export default class StandardDocServer extends AbstractDocServer {
    * @returns
    */
   async recover({ width, height, bindCidFun }) {
-    // console.log('[doc] recover start：');
+    console.log('[doc] recover start：');
     if (!width || !height) {
       console.error('容器宽高错误', width, height);
       this.setDocLoadComplete();
     }
+    console.log('[doc] recover setDocLoadComplete false');
     this.setDocLoadComplete(false);
     for (const item of this.state.containerList) {
       const fileType = item.is_board === 1 ? 'document' : 'board';
@@ -277,15 +302,16 @@ export default class StandardDocServer extends AbstractDocServer {
         docId: item.docId,
         bindCidFun
       });
-      // console.log('[doc] initDocumentOrBoardContainer:', item.cid);
+      console.log('[doc] initDocumentOrBoardContainer:', item);
       if (fileType == 'document') {
         this.state.docCid = item.cid;
       } else if (fileType == 'board') {
         this.state.boardCid = item.cid;
       }
-      // console.log('[doc] domain setRemoteData:', item.cid);
+      console.log('[doc] domain setRemoteData:', item);
       this.setRemoteData(item);
     }
+    console.log('[doc] recover activeItem');
     const activeItem = this.state.containerList.find(item => item.active === 1);
     if (activeItem) {
       if (activeItem.is_board === 1) {
@@ -366,12 +392,13 @@ export default class StandardDocServer extends AbstractDocServer {
     // });
     if (!cid) {
       cid = this.createUUID(fileType);
-      // console.log('[doc] domain 新建的cid:', cid);
+      console.log('[doc] domain 新建的cid:', cid);
     } else {
-      // console.log('[doc] domain 指定的cid:', cid);
+      console.log('[doc] domain 指定的cid:', cid);
     }
 
     let opt = {
+      id: cid,
       elId: cid, // 创建时，该参数就是cid
       docId: docId,
       width,
@@ -387,7 +414,7 @@ export default class StandardDocServer extends AbstractDocServer {
     };
     if (this.state.containerList.findIndex(item => item.cid === cid) === -1) {
       // 说明容器不在列表中，主动添加
-      // console.log('[doc] --------向列表中添加容器------');
+      console.log('[doc] --------向列表中添加容器------');
       this.state.containerList.push({ cid, docId });
       if (typeof bindCidFun === 'function') {
         await bindCidFun(cid);
