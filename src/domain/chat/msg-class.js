@@ -1,13 +1,14 @@
 let count = 0;
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
-
+import { isPc } from '@/utils/index.js';
 const defaultAvatar = 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png';
 export default class Msg {
   constructor(params) {
     const roomserver = useRoomBaseServer();
     const groupServer = useGroupServer();
     const { avatar, nickname, role_name, user_id } = roomserver.state.watchInitData.join_info;
+    console.log(JSON.stringify(roomserver.state.watchInitData.join_info));
     //分组相关逻辑判断
     const { groupInitData = {} } = useGroupServer().state;
     this.data = {
@@ -48,7 +49,8 @@ export default class Msg {
   }
 
   //私有方法，组装消息用于渲染（暂时按照的h5版本的,大致数据一致，具体业务逻辑操作有差异，后续返回一个promise，并返回未处理的原始数据，由视图自己决定如何处理）
-  static _handleGenerateMsg(item = {}) {
+  static _handleGenerateMsg(item = {}, isHistoryMsg) {
+    console.log(item);
     let resultMsg = {
       type: item.data.type,
       avatar: item.context.avatar || defaultAvatar,
@@ -62,8 +64,9 @@ export default class Msg {
       atList: item.context.atList || [],
       msgId: item.msg_id,
       channel: item.channel_id,
-      isHistoryMsg: true,
-      count: count++
+      isHistoryMsg: isHistoryMsg,
+      count: count++,
+      client: item.client
     };
     if (item.data.event_type) {
       resultMsg = {
