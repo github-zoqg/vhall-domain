@@ -8,6 +8,8 @@ function sendNotice(params = {}) {
   const url =
     env.imNotice === 'v3' ? '/v3/interacts/chat/send-notice-message' : '/v4/im-chat/notice/send';
 
+  console.log('params:', params);
+
   return request({
     url,
     method: 'POST',
