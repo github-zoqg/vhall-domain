@@ -19,6 +19,7 @@ class MsgServer extends BaseServer {
     this.EVENT_TYPE = {
       CHANNEL_CHANGE: 'CHANNEL_CHANGE'
     };
+    this.listenEvents();
     MsgServer.instance = this;
     return this;
   }
@@ -33,6 +34,15 @@ class MsgServer extends BaseServer {
     JOIN: [], // 加入房间
     LEFT: [] // 离开房间
   };
+  listenEvents() {
+    this.$onMsg('ROOM_MSG', msg => {
+      switch (msg.data.type) {
+        case 'live_over':
+          this.destroy();
+          this.destroyGroupMsg();
+      }
+    });
+  }
   async init() {
     await this.initMaintMsg();
     const { groupInitData } = useGroupServer().state;

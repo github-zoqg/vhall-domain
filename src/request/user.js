@@ -182,7 +182,7 @@ const uploadImage = (data = {}) => {
     url: '/v3/commons/upload/index',
     method: 'POST',
     data,
-    dataType: 'FormData'
+    headers: { 'Content-Type': 'multipart/form-data' }
   });
 };
 
