@@ -14,7 +14,7 @@ export default {
   imSignaling: 'v3',
   imNotice: 'v3',
   imChatAuth: 'v3',
-  activity: 'v3',
+  activity: 'v3', //活动开关
   player: 'v3',
   brand: 'v3',
   qa: 'v3',

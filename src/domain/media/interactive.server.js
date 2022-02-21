@@ -437,7 +437,8 @@ class InteractiveServer extends BaseServer {
 
     // 音频直播静音video
     if (watchInitData.webinar.mode == 1) {
-      defaultOptions.mute = merge.recursive({}, defaultOptions.mute, { video: true });
+      defaultOptions.mute && (defaultOptions.mute.video = true);
+      !defaultOptions.mute && (defaultOptions.mute = { video: true });
     }
 
     const params = merge.recursive({}, defaultOptions, options);
@@ -568,6 +569,28 @@ class InteractiveServer extends BaseServer {
   // 销毁本地流
   destroyStream(streamId) {
     return this.interactiveInstance.destroyStream(streamId || this.state.streamId);
+  }
+
+  // 无缝切换本地流
+  switchStream(opt) {
+    return new Promise((resolve, reject) => {
+      let { streamId, type, deviceId } = opt;
+      if (!streamId || (type != 'video' && type != 'audio') || !deviceId) {
+        reject({ code: '', msg: '参数异常' });
+      }
+      this.interactiveInstance
+        .switchDevice({
+          streamId: streamId, // 必填，本地流ID
+          type: type, // 必填，支持'video'和'audio'，分别表示视频设备和音频设备
+          deviceId: deviceId // 必填，设备ID，可通过getDevices()方法获取。
+        })
+        .then(res => {
+          resolve(res);
+        })
+        .catch(err => {
+          reject(err);
+        });
+    });
   }
 
   // 推送本地流到远端

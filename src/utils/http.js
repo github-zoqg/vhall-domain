@@ -42,9 +42,21 @@ service.interceptors.request.use(
       };
       // config.data = JSON.stringify(config.data);
     }
-    if (config.data && typeof config.data === 'object') {
-      config.data = qs.stringify(config.data);
+    if (config.headers['Content-Type'] === 'multipart/form-data') {
+      if (config.data && typeof config.data === 'object') {
+        const params = config.data;
+        const formData = new FormData();
+        Object.keys(params).forEach(key => {
+          formData.append(key, params[key]);
+        });
+        config.data = formData;
+      }
+    } else {
+      if (config.data && typeof config.data === 'object') {
+        config.data = qs.stringify(config.data);
+      }
     }
+
     config.headers = {
       ...HEADERS,
       ...config.headers

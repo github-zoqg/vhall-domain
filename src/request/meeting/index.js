@@ -42,9 +42,20 @@ function initSdkReceiveLive(params) {
   });
 }
 
+// 通过活动id获取活动拥有者用户id
+function webinarInitBefore(params) {
+  const url =
+    env.meeting === 'v3' ? '/v3/webinars/webinar/init-before' : '/v4/room/webinar/init-before';
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
+
 // 开始直播
 function startLive(params) {
-  const url = env.meeting === 'v3' ? '/v3/webinars/live/start' : '';
+  const url = env.meeting === 'v3' ? '/v3/webinars/live/start' : '/v4/room/webinar/start';
   return request({
     url,
     method: 'POST',
@@ -54,7 +65,7 @@ function startLive(params) {
 
 // 结束直播
 function endLive(params) {
-  const url = env.meeting === 'v3' ? '/v3/webinars/live/end' : '';
+  const url = env.meeting === 'v3' ? '/v3/webinars/live/end' : '/v4/room/webinar/end';
   return request({
     url,
     method: 'POST',
@@ -190,6 +201,7 @@ const meeting = {
   initStandardReceiveLive,
   initEmbeddedReceiveLive,
   initSdkReceiveLive,
+  webinarInitBefore,
   startLive,
   endLive,
   checkLive,
