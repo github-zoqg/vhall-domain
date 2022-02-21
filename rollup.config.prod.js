@@ -3,6 +3,8 @@ import commonjs from 'rollup-plugin-commonjs';
 import { uglify } from 'rollup-plugin-uglify';
 import alias from '@rollup/plugin-alias';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import replace from '@rollup/plugin-replace';
+const pkg = require('./package.json');
 
 import path from 'path';
 
@@ -11,10 +13,10 @@ const inputMapList = [
     input: 'src/index.js',
     output: [
       {
-        file: './dist/lib/middle-domain.js',
+        file: `./dist/${pkg.version}/middle-domain.js`,
         format: 'umd',
         name: 'middleDomain',
-        sourcemap: true
+        sourcemap: false
       }
     ]
   }
@@ -30,6 +32,10 @@ const pluginsConfig = [
   }),
   alias({
     entries: [{ find: '@', replacement: path.resolve('./src') }]
+  }),
+  replace({
+    preventAssignment: true,
+    __VERSION__: pkg.version
   })
 ];
 

@@ -19,7 +19,6 @@ export default class StandardDocServer extends AbstractDocServer {
     super();
 
     this.state = {
-      show: false,
       isChannelChanged: false, // 频道是否变更，进入/退出小组是变化
       currentCid: '', //当前正在展示的容器id
       docCid: '', // 当前文档容器Id
@@ -66,17 +65,6 @@ export default class StandardDocServer extends AbstractDocServer {
         this._initEvent();
 
         const { watchInitData } = useRoomBaseServer().state;
-
-        if (useRoomBaseServer().state.clientType === 'send') {
-          // 发起端文档会一直显示
-          this.state.show = true;
-        } else {
-          // 观看端有条件
-          this.state.show =
-            this.state.switchStatus ||
-            useGroupServer().state.isInGroup ||
-            this.state.hasDocPermission;
-        }
 
         // 无延迟
         if (watchInitData.webinar.no_delay_webinar) {
@@ -201,8 +189,12 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 观众可见按钮切换
     this.on(VHDocSDK.Event.SWITCH_CHANGE, status => {
-      console.log('==========控制文档开关=============', status);
+      console.log('==[doc] [player]========控制文档开关=============', status);
       this.state.switchStatus = status === 'on';
+      if (useRoomBaseServer().state.clientType != 'send') {
+        // 观看端
+        useRoomBaseServer().setChangeElement('doc');
+      }
       this.$emit('dispatch_doc_switch_change', this.state.switchStatus);
     });
 
@@ -280,12 +272,23 @@ export default class StandardDocServer extends AbstractDocServer {
     }
     // 获取该channelId下的所有容器列表信息
     const { list, switch_status } = await this.getContainerInfo(channelId);
-    // 观众端是否可见
-    this.state.switchStatus = Boolean(switch_status);
-    // 观看端文档如果不可见,直接设置 播放器 为大屏
-    if (!this.state.switchStatus && useRoomBaseServer().state.clientType != 'send') {
-      // 设置观看端文档为小屏，播放器自动为大屏
-      useRoomBaseServer().setChangeElement('doc');
+
+    // 直播中
+    if (useRoomBaseServer().state.watchInitData.webinar.type === 1) {
+      // 观众端是否可见
+      this.state.switchStatus = Boolean(switch_status);
+    } else {
+      this.state.switchStatus = false;
+    }
+    // 观看端(
+    console.log('this.state.switchStatus:', this.state.switchStatus);
+    if (useRoomBaseServer().state.clientType != 'send') {
+      if (this.state.switchStatus) {
+        // 文档如果可见,直接设置 播放器 为小屏
+        useRoomBaseServer().setChangeElement('player');
+      } else {
+        useRoomBaseServer().setChangeElement('doc');
+      }
     }
 
     // 小组内是否去显示文档判断根据是否有文档内容
@@ -319,6 +322,19 @@ export default class StandardDocServer extends AbstractDocServer {
     this.setDocLoadComplete(false);
     for (const item of this.state.containerList) {
       const fileType = item.is_board === 1 ? 'document' : 'board';
+      if (
+        fileType == 'document' &&
+        this.state.docCid == item.cid &&
+        document.getElementById(item.cid)
+      ) {
+        continue;
+      } else if (
+        fileType == 'board' &&
+        this.state.boardCid == item.cid &&
+        document.getElementById(item.cid)
+      ) {
+        continue;
+      }
       await this.initDocumentOrBoardContainer({
         width,
         height,
@@ -337,6 +353,7 @@ export default class StandardDocServer extends AbstractDocServer {
       this.setRemoteData(item);
     }
     console.log('[doc] recover activeItem');
+    this.setDocLoadComplete(true);
     const activeItem = this.state.containerList.find(item => item.active === 1);
     if (activeItem) {
       if (activeItem.is_board === 1) {
