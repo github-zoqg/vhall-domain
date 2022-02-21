@@ -5,7 +5,10 @@ import env from '../../env';
  * */
 function setHandsUp(params = {}) {
   return request({
-    url: '/v3/interacts/inav/set-handsup',
+    url:
+      env.imChat === 'v3'
+        ? '/v3/interacts/inav/set-handsup'
+        : '/v4/im-signalling/interact/set-handsup',
     method: 'POST',
     data: params
   });
@@ -16,7 +19,10 @@ function setHandsUp(params = {}) {
  * */
 function userApply(params = {}) {
   return request({
-    url: '/v3/interacts/inav-user/apply',
+    url:
+      env.imChat === 'v3'
+        ? '/v3/interacts/inav-user/apply'
+        : '/v4/im-signalling/interact/user-apply',
     method: 'POST',
     data: params
   });
@@ -27,7 +33,10 @@ function userApply(params = {}) {
  * */
 const userSpeakOn = (params = {}) => {
   return request({
-    url: '/v3/interacts/inav-user/speak',
+    url:
+      env.imChat === 'v3'
+        ? '/v3/interacts/inav-user/speak'
+        : '/v4/im-signalling/interact/user-speak',
     method: 'POST',
     data: params
   });
@@ -38,7 +47,10 @@ const userSpeakOn = (params = {}) => {
  * */
 function userCancelApply(params = {}) {
   return request({
-    url: '/v3/interacts/inav-user/cancel-apply',
+    url:
+      env.imChat === 'v3'
+        ? '/v3/interacts/inav-user/cancel-apply'
+        : '/v4/im-signalling/interact/user-cancel-apply',
     method: 'POST',
     data: params
   });
@@ -49,7 +61,10 @@ function userCancelApply(params = {}) {
  * */
 function hostAgreeApply(params = {}) {
   return request({
-    url: '/v3/interacts/inav/agree-apply',
+    url:
+      env.imChat === 'v3'
+        ? '/v3/interacts/inav/agree-apply'
+        : '/v4/im-signalling/interact/agree-apply',
     method: 'POST',
     data: params
   });
@@ -82,7 +97,10 @@ function userSpeak(params = {}) {
  * */
 function speakOffSelf(params = {}) {
   return request({
-    url: '/v3/interacts/inav-user/nospeak',
+    url:
+      env.imChat === 'v3'
+        ? '/v3/interacts/inav-user/nospeak'
+        : '/v4/im-signalling/interact/nospeak',
     method: 'POST',
     data: params
   });
@@ -103,7 +121,7 @@ function speakOffUser(params = {}) {
  * */
 function hostInviteUser(params = {}) {
   return request({
-    url: env.imChat === 'v3' ? '/v3/interacts/inav/invite' : '/v4/interacts/inav/invite',
+    url: env.imChat === 'v3' ? '/v3/interacts/inav/invite' : '/v4/im-signalling/interact/invite',
     method: 'POST',
     data: params
   });
@@ -114,7 +132,10 @@ function hostInviteUser(params = {}) {
  * */
 function userAgreeInvite(params = {}) {
   return request({
-    url: '/v3/interacts/inav-user/agree-invite',
+    url:
+      env.imChat === 'v3'
+        ? '/v3/interacts/inav-user/agree-invite'
+        : '/v4/im-signalling/interact/user-agree-invite',
     method: 'POST',
     data: params
   });
@@ -125,7 +146,10 @@ function userAgreeInvite(params = {}) {
  * */
 function userRejectInvite(params = {}) {
   return request({
-    url: '/v3/interacts/inav-user/reject-invite',
+    url:
+      env.imChat === 'v3'
+        ? '/v3/interacts/inav-user/reject-invite'
+        : '/v4/im-signalling/interact/user-reject-invite',
     method: 'POST',
     data: params
   });

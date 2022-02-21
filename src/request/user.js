@@ -171,9 +171,18 @@ const thirdUnbind = (data = {}) => {
 // 绑定手机号
 const bindInfo = (data = {}) => {
   return request({
-    url: 'v3/users/user-consumer/bind-info',
+    url: '/v3/users/user-consumer/bind-info',
     method: 'POST',
     data: { biz_id, ...data }
+  });
+};
+
+const uploadImage = (data = {}) => {
+  return request({
+    url: '/v3/commons/upload/index',
+    method: 'POST',
+    data,
+    dataType: 'FormData'
   });
 };
 
@@ -193,5 +202,6 @@ export default {
   changeAvatarSend,
   editUserNickName,
   thirdUnbind,
-  bindInfo
+  bindInfo,
+  uploadImage
 };

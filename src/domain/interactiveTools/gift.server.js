@@ -3,6 +3,7 @@
  * @returns
  */
 import BaseServer from '@/domain/common/base.server.js';
+import roomBaseServer from '@/domain/room/roombase.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
 import { giftsApi } from '@/request/index.js';
 class giftsServer extends BaseServer {
@@ -15,7 +16,6 @@ class giftsServer extends BaseServer {
     this.state = {};
 
     this.listenMsg();
-
     giftsServer.instance = this;
     return this;
   }
@@ -74,8 +74,30 @@ class giftsServer extends BaseServer {
     return giftsApi.queryGiftsList(params);
   }
 
-  sendGift(params) {
-    return giftsApi.sendGift(params);
+  sendGift(params, msgContext) {
+    const { watchInitData } = roomBaseServer().state;
+    const msgData = {
+      type: 'permit',
+      event_type: 'free_gift_send',
+      avatar: watchInitData.join_info.avatar,
+      barrageTxt: '',
+      text_content: '',
+      nickname: watchInitData.join_info.nickname,
+      role_name: 2,
+      gift_name: msgContext.name,
+      gift_url: msgContext.image_url,
+      source_status: msgContext.source_status
+    };
+    const context = {
+      avatar: watchInitData.join_info.avatar,
+      nickname: watchInitData.join_info.nickname
+    };
+    return giftsApi.sendGift(params).then(res => {
+      if (res.code == 200) {
+        useMsgServer().sendChatMsg(msgData, context);
+        return res;
+      }
+    });
   }
 }
 

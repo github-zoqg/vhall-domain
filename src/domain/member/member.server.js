@@ -53,7 +53,7 @@ class MemberServer extends BaseServer {
         _this.state.applyUsers.forEach(element => {
           _this.state.onlineUsers.forEach(item => {
             if (element.accountId === item.accountId) {
-              item.isApply = true;
+              item.is_apply = true;
             }
           });
         });

@@ -1,5 +1,6 @@
 import request from '@/utils/http.js';
 import contextServer from '@/domain/common/context.server.js';
+import env from '@/request/env';
 
 // 设置主屏
 const setMainScreen = (params = {}) => {
@@ -17,7 +18,7 @@ const setMainScreen = (params = {}) => {
   });
 };
 
-// 设置主讲人
+// 设置主讲人/文档控制权限
 const setSpeaker = (params = {}) => {
   const { state } = contextServer.get('roomBaseServer');
 
@@ -26,17 +27,10 @@ const setSpeaker = (params = {}) => {
   };
   retParams = Object.assign(retParams, params);
 
-  return request({
-    url: '/v3/interacts/room/set-doc-permission',
-    method: 'POST',
-    data: retParams
-  });
-};
+  const url = env.activity === 'v3' ? '/v3/interacts/room/set-doc-permission' : '/v4/room/set-doc-permission';
 
-// 设置音视频设备开关
-const setDeviceStatus = (params = {}) => {
   return request({
-    url: '/v3/interacts/room/set-device-status',
+    url: url,
     method: 'POST',
     data: retParams
   });
@@ -44,6 +38,5 @@ const setDeviceStatus = (params = {}) => {
 
 export default {
   setMainScreen, // 设置主屏
-  setSpeaker, // 设置主讲人
-  setDeviceStatus // 设置音视频设备开关
+  setSpeaker // 设置主讲人
 };

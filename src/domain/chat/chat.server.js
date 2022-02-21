@@ -58,7 +58,9 @@ class ChatServer extends BaseServer {
           this.$emit('replyMe');
         }
         //普通消息
-        this.$emit('receiveMsg');
+        if (!this.isSelfMsg(rawMsg)) {
+          this.$emit('receiveMsg');
+        }
       }
       // 禁言当前用户
       if (rawMsg.data.type === 'disable' && this.isMyMsg(rawMsg)) {
@@ -85,6 +87,11 @@ class ChatServer extends BaseServer {
     msgServer.$on(msgServer.EVENT_TYPE.CHANNEL_CHANGE, () => {
       this.$emit('changeChannel');
     });
+  }
+  // 判断是不是自己发的消息
+  isSelfMsg(msg) {
+    const { watchInitData } = useRoomBaseServer().state;
+    return msg.sender_id == watchInitData.join_info.third_party_user_id;
   }
   //判断是不是发送给当前用户的消息
   isMyMsg(msg) {
@@ -276,6 +283,10 @@ class ChatServer extends BaseServer {
    * /v3/interacts/chat/delete-message
    * */
   deleteMessage(params) {
+    const _index = this.state.chatList.findIndex(chatMsg => {
+      return chatMsg.msg_id === params.msg_id;
+    });
+    this.state.chatList.splice(_index, 1);
     return iMRequest.chat.deleteMessage(params);
   }
 

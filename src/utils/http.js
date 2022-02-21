@@ -42,8 +42,10 @@ service.interceptors.request.use(
       };
       // config.data = JSON.stringify(config.data);
     }
-    if (config.data && typeof config.data === 'object') {
-      config.data = qs.stringify(config.data);
+    if (config.headers['Content-Type'] !== 'multipart/form-data') {
+      if (config.data && typeof config.data === 'object') {
+        config.data = qs.stringify(config.data);
+      }
     }
     config.headers = {
       ...HEADERS,
