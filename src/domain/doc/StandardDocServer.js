@@ -3,6 +3,7 @@ import { merge } from '../../utils';
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
 import { doc as docApi } from '../../request/index.js';
+import request from '@/utils/http.js';
 
 /**
  * 标准（通用）直播场景下的文档白板服务
@@ -18,6 +19,7 @@ export default class StandardDocServer extends AbstractDocServer {
     super();
 
     this.state = {
+      show: false,
       isChannelChanged: false, // 频道是否变更，进入/退出小组是变化
       currentCid: '', //当前正在展示的容器id
       docCid: '', // 当前文档容器Id
@@ -64,6 +66,18 @@ export default class StandardDocServer extends AbstractDocServer {
         this._initEvent();
 
         const { watchInitData } = useRoomBaseServer().state;
+
+        if (useRoomBaseServer().state.clientType === 'send') {
+          // 发起端文档会一直显示
+          this.state.show = true;
+        } else {
+          // 观看端有条件
+          this.state.show =
+            this.state.switchStatus ||
+            useGroupServer().state.isInGroup ||
+            this.state.hasDocPermission;
+        }
+
         // 无延迟
         if (watchInitData.webinar.no_delay_webinar) {
           this.setPlayMode(VHDocSDK.PlayMode.INTERACT);
@@ -268,6 +282,12 @@ export default class StandardDocServer extends AbstractDocServer {
     const { list, switch_status } = await this.getContainerInfo(channelId);
     // 观众端是否可见
     this.state.switchStatus = Boolean(switch_status);
+    // 观看端文档如果不可见,直接设置 播放器 为大屏
+    if (!this.state.switchStatus && useRoomBaseServer().state.clientType != 'send') {
+      // 设置观看端文档为小屏，播放器自动为大屏
+      useRoomBaseServer().setChangeElement('doc');
+    }
+
     // 小组内是否去显示文档判断根据是否有文档内容
     if (useGroupServer().state.isInGroup) {
       this.state.switchStatus = !!list.length;
@@ -470,56 +490,46 @@ export default class StandardDocServer extends AbstractDocServer {
    * @param {Object}} param
    */
   uploadFile(param, uploadUrl) {
-    try {
-      const { watchInitData } = useRoomBaseServer().state;
-      const { groupInitData } = useGroupServer().state;
-      // 创建form对象,必须使用这个,会自动把 content-type 设置成 multipart/form-data
-      const formData = new FormData();
-      formData.append('resfile', param.file);
-      formData.append('type', groupInitData.isInGroup ? 3 : 2);
-      formData.append('webinar_id', watchInitData.webinar.id);
-      // 当分组直播时必传 group_id 必传
-      // formData.append('group_id', ？);
-
-      //创建xhr
-      const xhr = new XMLHttpRequest();
-      // 设置 post 上传地址
-      xhr.open('POST', uploadUrl);
-
-      // 设置 headers
-      xhr.setRequestHeader('token', window.localStorage.getItem('token') || '');
-      xhr.setRequestHeader('platform', 7);
-      xhr.setRequestHeader('gray-id', watchInitData.join_info.user_id);
-      xhr.setRequestHeader('interact-token', watchInitData.interact.interact_token || '');
-
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-          const json = JSON.parse(xhr.response);
-          // 根据后端给的信息判断是否上传成功
-          if (json.code === 200) {
-            json.data.webinar_id = watchInitData.webinar.id; // 补充字段
-            param.onSuccess(json, param.file, param.fileList);
-          } else {
-            param.onError(json, param.file, param.fileList);
+    const { watchInitData } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state;
+    // 创建form对象,必须使用这个,会自动把 content-type 设置成 multipart/form-data
+    const formData = new FormData();
+    formData.append('resfile', param.file);
+    formData.append('type', groupInitData.isInGroup ? 3 : 2);
+    formData.append('webinar_id', watchInitData.webinar.id);
+    // 当分组直播时必传 group_id 必传
+    formData.append('group_id', groupInitData.group_id);
+    request
+      .post(uploadUrl, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          token: window.localStorage.getItem('token') || '',
+          platform: 7,
+          'gray-id': watchInitData.join_info.user_id,
+          'interact-token': watchInitData.interact.interact_token || ''
+        },
+        onUploadProgress: progressEvent => {
+          if (progressEvent.lengthComputable) {
+            const percent = (progressEvent.loaded / progressEvent.total) * 100;
+            // 上传进度回传
+            if (typeof param.onProgress === 'function') {
+              param.onProgress(percent, param.file, param.fileList);
+            }
           }
         }
-      };
-      //获取上传的进度
-      xhr.upload.onprogress = function (event) {
-        if (event.lengthComputable) {
-          var percent = (event.loaded / event.total) * 100;
-          // 上传进度回传
-          if (typeof param.onProgress === 'function') {
-            param.onProgress(percent, param.file, param.fileList);
-          }
+      })
+      .then(res => {
+        // 根据后端给的信息判断是否上传成功
+        if (res.code === 200) {
+          res.data.webinar_id = watchInitData.webinar.id; // 补充字段
+          param.onSuccess(res, param.file, param.fileList);
+        } else {
+          param.onError(res, param.file, param.fileList);
         }
-      };
-
-      //将formdata上传
-      xhr.send(formData);
-    } catch (e) {
-      param.onError(e, param.file, param.fileList);
-    }
+      })
+      .catch(ex => {
+        param.onError(ex, param.file, param.fileList);
+      });
   }
 
   // 获取资料库文档列表
@@ -618,7 +628,6 @@ export default class StandardDocServer extends AbstractDocServer {
         this.state.thumbnailList = []; // 缩略图列表
         this.state.switchStatus = false; // 观众是否可见
 
-        // this.state.hasDocPermission = false; // 演示权限收回
         // 注意这里用true
         this.state.isChannelChanged = true;
       })
