@@ -101,6 +101,8 @@ class Domain {
     window.vhallLog = ITextbookLog(logOptions);
   }
 }
+const version = '__VERSION__';
+
 export {
   Domain,
   useMsgServer,
@@ -134,5 +136,6 @@ export {
   usePraiseServer,
   useLotteryServer,
   useSignServer,
-  useMenuServer
+  useMenuServer,
+  version
 };
