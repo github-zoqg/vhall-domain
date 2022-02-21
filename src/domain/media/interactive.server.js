@@ -6,6 +6,7 @@ import useGroupServer from '../group/StandardGroupServer';
 import useMsgServer from '../common/msg.server';
 import VhallPaasSDK from '@/sdk/index';
 import useMicServer from './mic.server';
+import interactive from '@/request/interactive';
 class InteractiveServer extends BaseServer {
   constructor() {
     super();
@@ -436,7 +437,7 @@ class InteractiveServer extends BaseServer {
 
     // 音频直播静音video
     if (watchInitData.webinar.mode == 1) {
-      defaultOptions.mute.video = true;
+      defaultOptions.mute = merge.recursive({}, defaultOptions.mute, { video: true });
     }
 
     const params = merge.recursive({}, defaultOptions, options);
