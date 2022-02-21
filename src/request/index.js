@@ -25,7 +25,6 @@ import praiseApi from './praise/index';
 
 // 问答
 import qaList from './qa/list/index.js';
-import qaPrivateChat from './qa/privateChat/index.js';
 
 // 商品
 import goodSaasApi from './good/index.js';
@@ -44,8 +43,7 @@ const room = {
 
 // 问答
 const qa = {
-  list: qaList,
-  privateChat: qaPrivateChat
+  list: qaList
 };
 export {
   customMenu,

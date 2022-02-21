@@ -33,17 +33,7 @@ const setSpeaker = (params = {}) => {
   });
 };
 
-// 设置音视频设备开关
-const setDeviceStatus = (params = {}) => {
-  return request({
-    url: '/v3/interacts/room/set-device-status',
-    method: 'POST',
-    data: retParams
-  });
-};
-
 export default {
   setMainScreen, // 设置主屏
-  setSpeaker, // 设置主讲人
-  setDeviceStatus // 设置音视频设备开关
+  setSpeaker // 设置主讲人
 };
