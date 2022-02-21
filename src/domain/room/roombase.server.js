@@ -50,7 +50,7 @@ class RoomBaseServer extends BaseServer {
       timerInfo: {}, //计时器
       interactToolStatus: {}, //互动工具状态信息
       roomVisibleModules: [],
-      miniElement: 'stream-list' // 可能的值：doc  stream-list
+      miniElement: 'player' // 可能的值：doc  player
     };
     RoomBaseServer.instance = this;
     return this;

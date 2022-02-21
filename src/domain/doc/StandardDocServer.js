@@ -19,7 +19,6 @@ export default class StandardDocServer extends AbstractDocServer {
     super();
 
     this.state = {
-      show: false,
       isChannelChanged: false, // 频道是否变更，进入/退出小组是变化
       currentCid: '', //当前正在展示的容器id
       docCid: '', // 当前文档容器Id
@@ -66,17 +65,6 @@ export default class StandardDocServer extends AbstractDocServer {
         this._initEvent();
 
         const { watchInitData } = useRoomBaseServer().state;
-
-        if (useRoomBaseServer().state.clientType === 'send') {
-          // 发起端文档会一直显示
-          this.state.show = true;
-        } else {
-          // 观看端有条件
-          this.state.show =
-            this.state.switchStatus ||
-            useGroupServer().state.isInGroup ||
-            this.state.hasDocPermission;
-        }
 
         // 无延迟
         if (watchInitData.webinar.no_delay_webinar) {
@@ -285,7 +273,7 @@ export default class StandardDocServer extends AbstractDocServer {
     // 观看端文档如果不可见,直接设置 播放器 为大屏
     if (!this.state.switchStatus && useRoomBaseServer().state.clientType != 'send') {
       // 设置观看端文档为小屏，播放器自动为大屏
-      useRoomBaseServer().setChangeElement('doc');
+      useRoomBaseServer().setChangeElement('player');
     }
 
     // 小组内是否去显示文档判断根据是否有文档内容
