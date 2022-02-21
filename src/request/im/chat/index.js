@@ -17,7 +17,7 @@ function getChatList(params = {}) {
  * 删除聊天消息
  * */
 function deleteMessage(params = {}) {
-  const url = env.imChat === 'v3' ? '/v3/interacts/chat/delete' : '/v4/im-chat/chat/delete';
+  const url = env.imChat === 'v3' ? '/v3/interacts/chat/delete-message' : '/v4/im-chat/chat/delete';
   return request({
     url,
     method: 'POST',
