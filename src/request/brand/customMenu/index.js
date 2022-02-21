@@ -36,7 +36,7 @@ function getActiveList(data = {}) {
 }
 
 /**
- * 获取专题列表
+ * 获取专题列表, 批量查询专题详情
  * @param {*} data
  * @returns
  */
