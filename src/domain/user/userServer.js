@@ -350,6 +350,11 @@ class UserServer {
   bindInfo(data) {
     return userApi.bindInfo(data);
   }
+
+  // 图片上传cdn
+  uploadImage(data) {
+    return userApi.uploadImage(data);
+  }
 }
 
 export default function useuserServer() {
