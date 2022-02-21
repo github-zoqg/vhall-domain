@@ -6,6 +6,7 @@ import useGroupServer from '../group/StandardGroupServer';
 import useMsgServer from '../common/msg.server';
 import VhallPaasSDK from '@/sdk/index';
 import useMicServer from './mic.server';
+import interactive from '@/request/interactive';
 class InteractiveServer extends BaseServer {
   constructor() {
     super();
