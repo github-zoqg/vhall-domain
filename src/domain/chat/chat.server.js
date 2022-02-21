@@ -83,6 +83,20 @@ class ChatServer extends BaseServer {
         this.$emit('allBanned', this.state.allBanned);
       }
     });
+    msgServer.$onMsg('ROOM_MSG', rawMsg => {
+      if (!this.isSelfMsg(rawMsg)) {
+        //删除某条聊天消息
+        if (rawMsg.data.type === 'chat_delete') {
+          const _index = this.state.chatList.findIndex(chatMsg => {
+            return chatMsg.msgId === rawMsg.msg_id;
+          });
+          this.state.chatList.splice(_index, 1);
+        }
+      }
+      if (rawMsg.data.type === 'room_kickout' && this.isMyMsg(rawMsg)) {
+        this.$emit('roomKickout');
+      }
+    });
     //接收频道变更通知
     msgServer.$on(msgServer.EVENT_TYPE.CHANNEL_CHANGE, () => {
       this.$emit('changeChannel');
