@@ -189,8 +189,12 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 观众可见按钮切换
     this.on(VHDocSDK.Event.SWITCH_CHANGE, status => {
-      console.log('==========控制文档开关=============', status);
+      console.log('==[doc] [player]========控制文档开关=============', status);
       this.state.switchStatus = status === 'on';
+      if (useRoomBaseServer().state.clientType != 'send') {
+        // 观看端
+        useRoomBaseServer().setChangeElement('doc');
+      }
       this.$emit('dispatch_doc_switch_change', this.state.switchStatus);
     });
 
@@ -270,10 +274,14 @@ export default class StandardDocServer extends AbstractDocServer {
     const { list, switch_status } = await this.getContainerInfo(channelId);
     // 观众端是否可见
     this.state.switchStatus = Boolean(switch_status);
-    // 观看端文档如果不可见,直接设置 播放器 为大屏
-    if (!this.state.switchStatus && useRoomBaseServer().state.clientType != 'send') {
-      // 设置观看端文档为小屏，播放器自动为大屏
-      useRoomBaseServer().setChangeElement('player');
+    // 观看端
+    if (useRoomBaseServer().state.clientType != 'send') {
+      if (this.state.switchStatus) {
+        // 文档如果可见,直接设置 播放器 为小屏
+        useRoomBaseServer().setChangeElement('player');
+      } else {
+        useRoomBaseServer().setChangeElement('doc');
+      }
     }
 
     // 小组内是否去显示文档判断根据是否有文档内容
