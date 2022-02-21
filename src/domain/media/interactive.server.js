@@ -436,7 +436,8 @@ class InteractiveServer extends BaseServer {
 
     // 音频直播静音video
     if (watchInitData.webinar.mode == 1) {
-      defaultOptions.mute.video = true;
+      defaultOptions.mute && (defaultOptions.mute.video = true);
+      !defaultOptions.mute && (defaultOptions.mute = { video: true });
     }
 
     const params = merge.recursive({}, defaultOptions, options);

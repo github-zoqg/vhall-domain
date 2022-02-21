@@ -34,23 +34,6 @@ const getConfigList = (params = {}) => {
   });
 };
 
-// 设置设备检测状态
-const setDevice = (params = {}) => {
-  const { state } = contextServer.get('roomBaseServer');
-
-  const retParmams = {
-    room_id: params.room_id || state.watchInitData.interact.room_id,
-    status: params.status || 1,
-    type: params.type || 0
-  };
-
-  return $http({
-    url: '/v3/interacts/room/set-device',
-    type: 'POST',
-    data: retParmams
-  });
-};
-
 // 开始暂停结束录制api
 const recordApi = (params = {}) => {
   const { state } = contextServer.get('roomBaseServer');
@@ -111,7 +94,6 @@ const setStream = (params = {}) => {
 const roomBase = {
   getWebinarInfo,
   getConfigList,
-  setDevice,
   recordApi,
   initRecordApi,
   getRoomToolStatus,
