@@ -3,33 +3,47 @@
  * @returns
  */
 import BaseServer from '@/domain/common/base.server.js';
+import roomBaseServer from '@/domain/room/roombase.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
 import { giftsApi } from '@/request/index.js';
 class giftsServer extends BaseServer {
   constructor() {
+    if (typeof giftsServer.instance === 'object') {
+      return giftsServer.instance;
+    }
     super();
+
     this.state = {};
+
+    this.listenMsg();
+    giftsServer.instance = this;
+    return this;
   }
 
   setState(key, value) {
     this.state[key] = value;
   }
 
+  /**
+   * 监听消息服务
+   */
   listenMsg() {
     // 房间消息
     useMsgServer().$onMsg('ROOM_MSG', rawMsg => {
       let temp = Object.assign({}, rawMsg);
-
       if (typeof temp.data !== 'object') {
         temp.data = JSON.parse(temp.data);
         temp.context = JSON.parse(temp.context);
       }
-      console.log(temp, '原始消息');
+      console.log('domain giftsServer---------->', temp);
+
       const { type = '' } = temp.data || {};
       switch (type) {
-        // 计时器开始
-        case 'timer_start':
+        case 'timer_start': // 计时器开始
           this.$emit('timer_start', temp);
+          break;
+        case 'gift_send_success': //接收送礼物消息
+          this.$emit('gift_send_success', temp);
           break;
         default:
           break;
@@ -60,8 +74,30 @@ class giftsServer extends BaseServer {
     return giftsApi.queryGiftsList(params);
   }
 
-  sendGift(params) {
-    return giftsApi.sendGift(params);
+  sendGift(params, msgContext) {
+    const { watchInitData } = roomBaseServer().state;
+    const msgData = {
+      type: 'permit',
+      event_type: 'free_gift_send',
+      avatar: watchInitData.join_info.avatar,
+      barrageTxt: '',
+      text_content: '',
+      nickname: watchInitData.join_info.nickname,
+      role_name: 2,
+      gift_name: msgContext.name,
+      gift_url: msgContext.image_url,
+      source_status: msgContext.source_status
+    };
+    const context = {
+      avatar: watchInitData.join_info.avatar,
+      nickname: watchInitData.join_info.nickname
+    };
+    return giftsApi.sendGift(params).then(res => {
+      if (res.code == 200) {
+        useMsgServer().sendChatMsg(msgData, context);
+        return res;
+      }
+    });
   }
 }
 

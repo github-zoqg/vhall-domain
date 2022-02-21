@@ -49,21 +49,28 @@ class ChatServer extends BaseServer {
         rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
         //格式化消息用于渲染并添加到消息列表
         this.state.chatList.push(Msg._handleGenerateMsg(rawMsg));
-      }
-      // 禁言某个用户
-      if (rawMsg.data.type === 'disable') {
-        if (this.isMyMsg(rawMsg)) {
-          this.state.banned = true;
-          console.log('handler', this.handlers);
-          this.$emit('banned', this.state.banned);
+        //@当前用户
+        if (this.isAtMe(rawMsg)) {
+          this.$emit('atMe');
+        }
+        //回复当前用户
+        if (this.isReplyMe(rawMsg)) {
+          this.$emit('replyMe');
+        }
+        //普通消息
+        if (!this.isSelfMsg(rawMsg)) {
+          this.$emit('receiveMsg');
         }
       }
-      //取消禁言
-      if (rawMsg.data.type === 'permit') {
-        if (this.isMyMsg(rawMsg)) {
-          this.state.banned = false;
-          this.$emit('banned', this.state.banned);
-        }
+      // 禁言当前用户
+      if (rawMsg.data.type === 'disable' && this.isMyMsg(rawMsg)) {
+        this.state.banned = true;
+        this.$emit('banned', this.state.banned);
+      }
+      //取消禁言当前用户
+      if (rawMsg.data.type === 'permit' && this.isMyMsg(rawMsg)) {
+        this.state.banned = false;
+        this.$emit('banned', this.state.banned);
       }
       // 开启全体禁言
       if (rawMsg.data.type === 'disable_all') {
@@ -81,11 +88,35 @@ class ChatServer extends BaseServer {
       this.$emit('changeChannel');
     });
   }
+  // 判断是不是自己发的消息
+  isSelfMsg(msg) {
+    const { watchInitData } = useRoomBaseServer().state;
+    return msg.sender_id == watchInitData.join_info.third_party_user_id;
+  }
   //判断是不是发送给当前用户的消息
   isMyMsg(msg) {
     const { watchInitData } = useRoomBaseServer().state;
     console.log(msg.data.target_id, '-', watchInitData.join_info.third_party_user_id);
     return msg.data.target_id == watchInitData.join_info.third_party_user_id;
+  }
+  //判断是不是@当前用户
+  isAtMe(msg) {
+    if (msg.context.atList && msg.context.atList.length && msg.data.text_content) {
+      return msg.context.atList.some(a => {
+        return a.accountId == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id;
+      });
+    }
+    return false;
+  }
+  //判断是不是回复当前用户
+  isReplyMe(msg) {
+    if (msg.context.replayMsg) {
+      return (
+        msg.context.replayMsg.sendId ==
+        useRoomBaseServer().state.watchInitData.join_info.third_party_user_id
+      );
+    }
+    return false;
   }
   //接收聊天消息
   async getHistoryMsg(params) {
@@ -112,7 +143,7 @@ class ChatServer extends BaseServer {
           item.context.atList = item.context.at_list;
         }
         //实例化消息
-        return Msg._handleGenerateMsg(item);
+        return Msg._handleGenerateMsg(item, true); //第二个参数区别是否为历史消息
       })
       .reduce((acc, curr) => {
         const showTime = curr.showTime;
@@ -252,6 +283,10 @@ class ChatServer extends BaseServer {
    * /v3/interacts/chat/delete-message
    * */
   deleteMessage(params) {
+    const _index = this.state.chatList.findIndex(chatMsg => {
+      return chatMsg.msg_id === params.msg_id;
+    });
+    this.state.chatList.splice(_index, 1);
     return iMRequest.chat.deleteMessage(params);
   }
 

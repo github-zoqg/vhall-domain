@@ -73,10 +73,11 @@ class RoomBaseServer extends BaseServer {
     return meeting[liveType.get(options.clientType)](options).then(res => {
       if (res.code === 200) {
         this.state.watchInitData = res.data;
+        console.log('watchInitData', res.data);
         setRequestHeaders({
           'interact-token': res.data.interact.interact_token
         });
-        sessionStorage.setItem('visitorId', res.data.join_info.third_party_user_id);
+        sessionStorage.setItem('visitorId', res.data.visitor_id);
         return res;
       }
     });
@@ -97,6 +98,11 @@ class RoomBaseServer extends BaseServer {
         this.state.miniElement = this.state.miniElement == 'doc' ? 'stream-list' : 'doc';
         break;
     }
+  }
+
+  // 设置miniELement的值
+  setChangeElement(val) {
+    this.state.miniElement = val;
   }
 
   // 更新roomVisibleModule

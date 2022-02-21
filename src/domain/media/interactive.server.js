@@ -21,7 +21,8 @@ class InteractiveServer extends BaseServer {
         audioMuted: false,
         attributes: {}
       },
-      remoteStreams: [] // 远端流数组
+      remoteStreams: [], // 远端流数组
+      streamListHeightInWatch: 0 // PC观看端流列表高度
     };
     InteractiveServer.instance = this;
     return this;
@@ -123,7 +124,7 @@ class InteractiveServer extends BaseServer {
       broadcastConfig:
         watchInitData.join_info.role_name == 1
           ? {
-              layout:
+              adaptiveLayoutMode:
                 VhallPaasSDK.modules.VhallRTC[sessionStorage.getItem('layout')] ||
                 VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
               profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
@@ -351,6 +352,9 @@ class InteractiveServer extends BaseServer {
           isMute: false
         });
         // this.$emit('vrtc_mute_cancel', msg);
+      } else if (msg.data.type === 'live_over') {
+        // 直播结束
+        this.setStreamListHeightInWatch(0);
       }
     });
   }
@@ -432,7 +436,8 @@ class InteractiveServer extends BaseServer {
 
     // 音频直播静音video
     if (watchInitData.webinar.mode == 1) {
-      defaultOptions.mute.video = true;
+      defaultOptions.mute && (defaultOptions.mute.video = true);
+      !defaultOptions.mute && (defaultOptions.mute = { video: true });
     }
 
     const params = merge.recursive({}, defaultOptions, options);
@@ -563,6 +568,28 @@ class InteractiveServer extends BaseServer {
   // 销毁本地流
   destroyStream(streamId) {
     return this.interactiveInstance.destroyStream(streamId || this.state.streamId);
+  }
+
+  // 无缝切换本地流
+  switchStream(opt) {
+    return new Promise((resolve, reject) => {
+      let { streamId, type, deviceId } = opt;
+      if (!streamId || (type != 'video' && type != 'audio') || !deviceId) {
+        reject({ code: '', msg: '参数异常' });
+      }
+      this.interactiveInstance
+        .switchDevice({
+          streamId: streamId, // 必填，本地流ID
+          type: type, // 必填，支持'video'和'audio'，分别表示视频设备和音频设备
+          deviceId: deviceId // 必填，设备ID，可通过getDevices()方法获取。
+        })
+        .then(res => {
+          resolve(res);
+        })
+        .catch(err => {
+          reject(err);
+        });
+    });
   }
 
   // 推送本地流到远端
@@ -878,6 +905,14 @@ class InteractiveServer extends BaseServer {
     };
     const retParams = merge.recursive({}, defaultParams, params);
     return room.activity.setDeviceStatus(retParams);
+  }
+
+  /**
+   * 设置PC观看端流列表高度
+   * @param {Number} val 0, 80
+   */
+  setStreamListHeightInWatch(val) {
+    this.state.streamListHeightInWatch = val;
   }
 }
 
