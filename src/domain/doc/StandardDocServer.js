@@ -274,7 +274,8 @@ export default class StandardDocServer extends AbstractDocServer {
     const { list, switch_status } = await this.getContainerInfo(channelId);
     // 观众端是否可见
     this.state.switchStatus = Boolean(switch_status);
-    // 观看端
+    // 观看端(
+    console.log('this.state.switchStatus:', this.state.switchStatus);
     if (useRoomBaseServer().state.clientType != 'send') {
       if (this.state.switchStatus) {
         // 文档如果可见,直接设置 播放器 为小屏

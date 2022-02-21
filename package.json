@@ -1,6 +1,6 @@
 {
   "name": "middle-domain",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "",
   "private": true,
   "main": "dist/lib/middle-domain.js",
@@ -20,6 +20,7 @@
     "@babel/preset-env": "^7.15.8",
     "@rollup/plugin-alias": "^3.1.5",
     "@rollup/plugin-node-resolve": "^13.0.5",
+    "@rollup/plugin-replace": "^3.1.0",
     "ali-oss-deploy": "^1.0.4",
     "babel-eslint": "^10.1.0",
     "co": "^4.6.0",

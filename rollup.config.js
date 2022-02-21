@@ -3,6 +3,8 @@ import commonjs from 'rollup-plugin-commonjs';
 import alias from '@rollup/plugin-alias';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import serve from 'rollup-plugin-serve'; //提供静态服务器能力
+import replace from '@rollup/plugin-replace';
+const pkg = require('./package.json');
 import path from 'path';
 
 const inputMapList = [
@@ -29,6 +31,10 @@ const pluginsConfig = [
   }),
   alias({
     entries: [{ find: '@', replacement: path.resolve('./src') }]
+  }),
+  replace({
+    preventAssignment: true,
+    __VERSION__: pkg.version
   }),
   serve({
     // Launch in browser (default: false)
