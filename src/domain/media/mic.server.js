@@ -99,6 +99,14 @@ class MicServer extends BaseServer {
           useRoomBaseServer().setInavToolStatus('is_handsup', true);
           this.$emit('vrtc_connect_open', msg);
           break;
+        // 设置主画面
+        case 'vrtc_big_screen_set':
+          const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
+          interactToolStatus.main_screen = msg.data.room_join_id;
+
+          // const str = watchInitData.webinar.mode == 6 ? '主画面' : '主讲人';
+          // this.$message.warning(`${msg.nick_name}设成为${str}`);
+          break;
       }
     });
   }

@@ -4,7 +4,6 @@ import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
 import { doc as docApi } from '../../request/index.js';
 import request from '@/utils/http.js';
-
 /**
  * 标准（通用）直播场景下的文档白板服务
  * 继承自AbstractDocServer
@@ -272,16 +271,30 @@ export default class StandardDocServer extends AbstractDocServer {
     }
     // 获取该channelId下的所有容器列表信息
     const { list, switch_status } = await this.getContainerInfo(channelId);
-    // 观众端是否可见
-    this.state.switchStatus = Boolean(switch_status);
+
+    // 直播中
+    if (useRoomBaseServer().state.watchInitData.webinar.type === 1) {
+      // 观众端是否可见
+      this.state.switchStatus = Boolean(switch_status);
+    } else {
+      this.state.switchStatus = false;
+    }
     // 观看端(
     console.log('this.state.switchStatus:', this.state.switchStatus);
-    if (useRoomBaseServer().state.clientType != 'send') {
+
+    this.roomBaseServer = useRoomBaseServer();
+    if (this.roomBaseServer.state.clientType != 'send') {
       if (this.state.switchStatus) {
-        // 文档如果可见,直接设置 播放器 为小屏
-        useRoomBaseServer().setChangeElement('player');
+        // 是否在麦上
+        if (this.roomBaseServer.getSpeakStatus()) {
+          this.roomBaseServer.setChangeElement('stream-list');
+        } else {
+          // 文档如果可见,直接设置 播放器 为小屏
+          this.roomBaseServer.setChangeElement('player');
+        }
       } else {
-        useRoomBaseServer().setChangeElement('doc');
+        this.roomBaseServer.setChangeElement('');
+        // useRoomBaseServer().setChangeElement('doc');
       }
     }
 
@@ -316,6 +329,19 @@ export default class StandardDocServer extends AbstractDocServer {
     this.setDocLoadComplete(false);
     for (const item of this.state.containerList) {
       const fileType = item.is_board === 1 ? 'document' : 'board';
+      if (
+        fileType == 'document' &&
+        this.state.docCid == item.cid &&
+        document.getElementById(item.cid)
+      ) {
+        continue;
+      } else if (
+        fileType == 'board' &&
+        this.state.boardCid == item.cid &&
+        document.getElementById(item.cid)
+      ) {
+        continue;
+      }
       await this.initDocumentOrBoardContainer({
         width,
         height,
@@ -334,6 +360,7 @@ export default class StandardDocServer extends AbstractDocServer {
       this.setRemoteData(item);
     }
     console.log('[doc] recover activeItem');
+    this.setDocLoadComplete(true);
     const activeItem = this.state.containerList.find(item => item.active === 1);
     if (activeItem) {
       if (activeItem.is_board === 1) {
