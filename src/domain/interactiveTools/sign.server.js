@@ -33,11 +33,11 @@ class SignServer extends BaseServer {
           break;
         // 签到结束
         case 'sign_end':
-          this.$emit('sign_in_push', temp);
+          this.$emit('sign_end', temp);
           break;
-        // 签到关闭
-        case 'sign_in_push':
-          this.$emit('live_over', temp);
+        // 直播结束
+        case 'live_over':
+          this.$emit('sign_end', temp);
           break;
         default:
           break;
@@ -68,9 +68,27 @@ class SignServer extends BaseServer {
     return watchSignApi.sign(params);
   }
 
-  // sendGift(params) {
-  //   return watchSignApi.sendGift(params);
-  // }
+  getSignInfo(params) {
+    return watchSignApi.signInfo(params).then(res => {
+      return res;
+    });
+  }
+
+  signStart(params) {
+    return watchSignApi.signStart(params).then(res => {
+      return res;
+    });
+  }
+
+  signClose(params) {
+    return watchSignApi.signClose(params).then(res => {
+      return res;
+    });
+  }
+
+  getSignRecordList(params) {
+    return watchSignApi.getSignRecordList(params);
+  }
 }
 
 export default function useSignServer() {
