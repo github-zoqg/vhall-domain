@@ -22,6 +22,7 @@ import rewardApi from './reward/index';
 import cash from './cash';
 import attentionApi from './attention';
 import praiseApi from './praise/index';
+import inviteApi from './invite';
 
 // 问答
 import qaList from './qa/list/index.js';
@@ -66,5 +67,6 @@ export {
   attentionApi,
   goodSaasApi,
   praiseApi,
-  watchSignApi
+  watchSignApi,
+  inviteApi
 };
