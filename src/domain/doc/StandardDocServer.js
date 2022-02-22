@@ -4,7 +4,6 @@ import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
 import { doc as docApi } from '../../request/index.js';
 import request from '@/utils/http.js';
-
 /**
  * 标准（通用）直播场景下的文档白板服务
  * 继承自AbstractDocServer
@@ -282,12 +281,20 @@ export default class StandardDocServer extends AbstractDocServer {
     }
     // 观看端(
     console.log('this.state.switchStatus:', this.state.switchStatus);
-    if (useRoomBaseServer().state.clientType != 'send') {
+
+    this.roomBaseServer = useRoomBaseServer();
+    if (this.roomBaseServer.state.clientType != 'send') {
       if (this.state.switchStatus) {
-        // 文档如果可见,直接设置 播放器 为小屏
-        useRoomBaseServer().setChangeElement('player');
+        // 是否在麦上
+        if (this.roomBaseServer.getSpeakStatus()) {
+          this.roomBaseServer.setChangeElement('stream-list');
+        } else {
+          // 文档如果可见,直接设置 播放器 为小屏
+          this.roomBaseServer.setChangeElement('player');
+        }
       } else {
-        useRoomBaseServer().setChangeElement('doc');
+        this.roomBaseServer.setChangeElement('');
+        // useRoomBaseServer().setChangeElement('doc');
       }
     }
 
