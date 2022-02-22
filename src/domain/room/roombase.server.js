@@ -279,6 +279,16 @@ class RoomBaseServer extends BaseServer {
     });
   }
 
+  // 直播结束生成回放
+  createRecord(data = {}) {
+    return meeting.createRecord(data);
+  }
+
+  // 设为默认回放
+  setDefaultRecord(data = {}) {
+    return meeting.setDefaultRecord(data);
+  }
+
   // 开始/恢复录制
   startRecord() {
     return meeting.recordApi({
