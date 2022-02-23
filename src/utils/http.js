@@ -2,13 +2,15 @@ import axios from 'axios/dist/axios';
 import qs from 'qs';
 
 let TOKEN = '';
-let BASE_URL = '';
+let V3_BASE_URL = '';
+let MIDDLE_BASE_URL = '';
 let LIVETOKEN = '';
 let HEADERS = {};
 
-function setBaseUrl(url) {
-  console.log('---BASE_URL----', url);
-  BASE_URL = url;
+function setBaseUrl(options) {
+  console.log('---V3_BASE_URL----', options);
+  V3_BASE_URL = options.v3Url;
+  MIDDLE_BASE_URL = options.middleUrl;
 }
 function setToken(token, livetoken) {
   TOKEN = token;
@@ -24,9 +26,9 @@ const service = axios.create({ headers: { 'Content-Type': 'application/x-www-for
 // request interceptor
 service.interceptors.request.use(
   config => {
-    // console.log('----axios----请求配置', config);
+    console.log('----axios----请求配置', JSON.stringify(config));
     // set baseURL
-    config.baseURL = BASE_URL;
+    config.baseURL = config.url.startsWith('/v3') ? V3_BASE_URL : MIDDLE_BASE_URL;
 
     // 如果有 live_token 就不需要传 token
     if (TOKEN && !LIVETOKEN) {
