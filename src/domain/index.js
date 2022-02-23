@@ -46,6 +46,7 @@ import useQuestionnaireServer from '@/domain/interactiveTools/questionnaireServe
 
 import useMenuServer from '@/domain/brand/menu.server';
 import useInviteServer from '@/domain/interactiveTools/invite.server.js';
+import useSubscribeServer from '@/domain/subscribe/subscribe.server';
 /**
  * options:{
     token,
@@ -141,5 +142,6 @@ export {
   useMenuServer,
   useQuestionnaireServer,
   useInviteServer,
+  useSubscribeServer,
   version
 };
