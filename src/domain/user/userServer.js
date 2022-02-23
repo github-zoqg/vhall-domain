@@ -239,15 +239,14 @@ class UserServer {
         return err;
       });
   }
+  // 第三方授权回调
+  callbackUserInfo(params) {
+    return userApi.callbackUserInfo(params);
+  }
 
   // 验证码登录&&账号登录
   loginInfo(data) {
     return requestApi.user.loginInfo(data);
-  }
-
-  // 第三方授权
-  callbackUserInfo(data) {
-    return requestApi.user.callbackUserInfo(data);
   }
 
   // 手机||邮箱验证码
