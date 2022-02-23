@@ -24,6 +24,8 @@ import attentionApi from './attention';
 import praiseApi from './praise/index';
 import inviteApi from './invite';
 import gray from './gray';
+import wechatApi from './brand/wechat';
+import subjectApi from './brand/subject';
 
 // 问答
 import qaList from './qa/list/index.js';
@@ -70,5 +72,7 @@ export {
   praiseApi,
   watchSignApi,
   inviteApi,
-  gray
+  gray,
+  wechatApi,
+  subjectApi
 };
