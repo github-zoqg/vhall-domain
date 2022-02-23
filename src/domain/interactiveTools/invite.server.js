@@ -1,4 +1,4 @@
-import { inviteApi } from '@/request';
+import { inviteApi, wechatApi } from '@/request';
 
 class InviteServer {
   constructor() {
@@ -18,7 +18,7 @@ class InviteServer {
   }
 
   wechatShare(data = {}) {
-    return inviteApi.wechatShare(data);
+    return wechatApi.wechatShare(data);
   }
 }
 
