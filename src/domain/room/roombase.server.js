@@ -70,16 +70,20 @@ class RoomBaseServer extends BaseServer {
       options.visitor_id = sessionStorage.getItem('visitorId');
     }
     this.setClientType(options.clientType);
-    return meeting[liveType.get(options.clientType)](options).then(res => {
-      if (res.code === 200) {
-        this.state.watchInitData = res.data;
-        console.log('watchInitData', res.data);
-        setRequestHeaders({
-          'interact-token': res.data.interact.interact_token
-        });
-        sessionStorage.setItem('visitorId', res.data.visitor_id);
-        return res;
-      }
+    return new Promise((resolve, reject) => {
+      meeting[liveType.get(options.clientType)](options).then(res => {
+        if (res.code === 200) {
+          this.state.watchInitData = res.data;
+          console.log('watchInitData', res.data);
+          setRequestHeaders({
+            'interact-token': res.data.interact.interact_token
+          });
+          sessionStorage.setItem('visitorId', res.data.visitor_id);
+          resolve(res);
+        } else {
+          reject(res);
+        }
+      });
     });
   }
 

@@ -1,4 +1,5 @@
 import request from '@/utils/http.js';
+import env from '../env';
 
 // 获取礼物列表
 const queryGiftsList = (params = {}) => {
@@ -6,8 +7,10 @@ const queryGiftsList = (params = {}) => {
     room_id: params.room_id
   };
 
+  let url = env.gifts == 'v3' ? '/v3/interacts/gift/get-webinar-using-gift-list' : '';
+
   return request({
-    url: '/v3/interacts/gift/get-webinar-using-gift-list',
+    url: url,
     method: 'POST',
     data: retParmams
   });
@@ -22,8 +25,10 @@ const sendGift = (params = {}) => {
     room_id: params.room_id
   };
 
+  let url = env.gifts == 'v3' ? '/v3/interacts/gift/send-gift' : '';
+
   return request({
-    url: '/v3/interacts/gift/send-gift',
+    url: url,
     method: 'POST',
     data: retParmams
   });
