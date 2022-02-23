@@ -42,9 +42,13 @@ import useCashServer from '@/domain/cash/cash.server.js';
 // 商品
 import useGoodServer from '@/domain/interactiveTools/good.server.js';
 import useLotteryServer from '@/domain/interactiveTools/lotteryServer.js';
+import useQuestionnaireServer from '@/domain/interactiveTools/questionnaireServer.js';
 
 import useMenuServer from '@/domain/brand/menu.server';
 import useInviteServer from '@/domain/interactiveTools/invite.server.js';
+import useSubscribeServer from '@/domain/subscribe/subscribe.server';
+import useSubjectServer from '@/domain/brand/subject.server';
+
 /**
  * options:{
     token,
@@ -138,6 +142,9 @@ export {
   useLotteryServer,
   useSignServer,
   useMenuServer,
+  useQuestionnaireServer,
   useInviteServer,
+  useSubscribeServer,
+  useSubjectServer,
   version
 };
