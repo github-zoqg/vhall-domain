@@ -3,7 +3,6 @@ import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useMsgServer from '@/domain/common/msg.server.js';
 
-const roomBaseServer = useRoomBaseServer();
 class VirtualClientStartServer extends BaseServer {
   constructor() {
     super();
@@ -20,18 +19,9 @@ class VirtualClientStartServer extends BaseServer {
         baseOnlineNum: ''
       },
       uvOnline: 1, // 真实人数
-      virtualOnline:
-        (roomBaseServer.state.watchInitData.online &&
-          Number(roomBaseServer.state.watchInitData.online.num)) ||
-        0,
-      uvHot:
-        (roomBaseServer.state.watchInitData.pv &&
-          Number(roomBaseServer.state.watchInitData.pv.num2)) ||
-        0, // 真实热度
-      virtualHot:
-        (roomBaseServer.state.watchInitData.pv &&
-          Number(roomBaseServer.state.watchInitData.pv.num)) ||
-        0,
+      virtualOnline: 0,
+      uvHot: 0, // 真实热度
+      virtualHot: 0,
       addCount: ''
     };
     this.listenEvent();
@@ -56,9 +46,17 @@ class VirtualClientStartServer extends BaseServer {
   }
   listenEvent() {
     const msgServer = useMsgServer();
-    console.log('11111zhangixao', msgServer);
     // 加入房间
     msgServer.$onMsg('JOIN', msg => {
+      this.state.virtualOnline =
+        useRoomBaseServer().state.watchInitData.online &&
+        useRoomBaseServer().state.watchInitData.online.num;
+      this.state.virtualHot =
+        useRoomBaseServer().state.watchInitData.pv &&
+        useRoomBaseServer().state.watchInitData.pv.num;
+      this.state.uvHot =
+        useRoomBaseServer().state.watchInitData.pv &&
+        useRoomBaseServer().state.watchInitData.pv.num2;
       this.state.uvOnline = msg.uv;
       if (msg.pv > this.state.uvHot) {
         this.state.uvHot = msg.pv;
