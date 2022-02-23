@@ -45,6 +45,7 @@ import useLotteryServer from '@/domain/interactiveTools/lotteryServer.js';
 import useQuestionnaireServer from '@/domain/interactiveTools/questionnaireServer.js';
 
 import useMenuServer from '@/domain/brand/menu.server';
+import useInviteServer from '@/domain/interactiveTools/invite.server.js';
 /**
  * options:{
     token,
@@ -102,6 +103,8 @@ class Domain {
     window.vhallLog = ITextbookLog(logOptions);
   }
 }
+const version = '__VERSION__';
+
 export {
   Domain,
   useMsgServer,
@@ -136,5 +139,7 @@ export {
   useLotteryServer,
   useSignServer,
   useMenuServer,
-  useQuestionnaireServer
+  useQuestionnaireServer,
+  useInviteServer,
+  version
 };

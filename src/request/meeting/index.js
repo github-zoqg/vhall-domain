@@ -196,6 +196,26 @@ function tipOffInfo(params) {
   });
 }
 
+// 直播结束生成回放
+function createRecord(data) {
+  const url = env.meeting === 'v3' ? '/v3/webinars/record/live-create-record' : '';
+  return request({
+    url,
+    method: 'POST',
+    data
+  });
+}
+
+// 设为默认回放
+function setDefaultRecord(data) {
+  const url = env.meeting === 'v3' ? '/v3/webinars/record/set-default' : '';
+  return request({
+    url,
+    method: 'POST',
+    data
+  });
+}
+
 const meeting = {
   initSendLive,
   initStandardReceiveLive,
@@ -215,7 +235,9 @@ const meeting = {
   getCommonConfig,
   getLowerGradeConfigInfo,
   feedbackInfo,
-  tipOffInfo
+  tipOffInfo,
+  createRecord,
+  setDefaultRecord
 };
 
 export default meeting;

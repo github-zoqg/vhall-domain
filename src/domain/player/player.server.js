@@ -184,6 +184,10 @@ class PlayerServer extends BaseServer {
       return res;
     });
   }
+  // 播放器触发章节事件
+  emitChapterTimeUpdate(time) {
+    this.$emit('chapter_time_update', time);
+  }
   // 播放器注册事件监听
   _addPlayerListeners() {
     const msgServer = useMsgServer();
@@ -198,6 +202,12 @@ class PlayerServer extends BaseServer {
       // live_over 结束直播
       if (msg.data.type == 'live_over') {
         this.$emit('live_over', msg.data);
+      }
+      // 分组直播 没有结束讨论 直接结束直播
+      if (msg.data.type == 'group_switch_end') {
+        if (msg.data.over_live) {
+          this.$emit('live_over', msg.data);
+        }
       }
       // live_start:开始直播
       if (msg.data.type == 'live_start') {

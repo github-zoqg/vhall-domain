@@ -50,7 +50,7 @@ class RoomBaseServer extends BaseServer {
       timerInfo: {}, //计时器
       interactToolStatus: {}, //互动工具状态信息
       roomVisibleModules: [],
-      miniElement: '' // 可能的值：doc   player
+      miniElement: 'stream-list' // 可能的值：doc  stream-list
     };
     RoomBaseServer.instance = this;
     return this;
@@ -73,11 +73,6 @@ class RoomBaseServer extends BaseServer {
     return meeting[liveType.get(options.clientType)](options).then(res => {
       if (res.code === 200) {
         this.state.watchInitData = res.data;
-
-        if (options.clientType === 'send') {
-          this.state.miniElement = 'stream-list';
-        }
-
         console.log('watchInitData', res.data);
         setRequestHeaders({
           'interact-token': res.data.interact.interact_token
@@ -284,6 +279,16 @@ class RoomBaseServer extends BaseServer {
     });
   }
 
+  // 直播结束生成回放
+  createRecord(data = {}) {
+    return meeting.createRecord(data);
+  }
+
+  // 设为默认回放
+  setDefaultRecord(data = {}) {
+    return meeting.setDefaultRecord(data);
+  }
+
   // 开始/恢复录制
   startRecord() {
     return meeting.recordApi({
@@ -346,6 +351,19 @@ class RoomBaseServer extends BaseServer {
   // 关闭开屏海报事件
   screenPostClose(data = {}) {
     this.$emit('screenPostClose', data);
+  }
+  // 获取上麦状态
+  getSpeakStatus() {
+    const {
+      interactToolStatus: { speaker_list },
+      watchInitData: { join_info }
+    } = this.state;
+    if (!speaker_list) return false;
+    if (speaker_list.length) {
+      return speaker_list.some(item => item.account_id == join_info.third_party_user_id);
+    } else {
+      return false;
+    }
   }
 }
 

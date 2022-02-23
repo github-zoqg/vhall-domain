@@ -6,6 +6,8 @@ import useGroupServer from '../group/StandardGroupServer';
 import useMsgServer from '../common/msg.server';
 import VhallPaasSDK from '@/sdk/index';
 import useMicServer from './mic.server';
+import interactive from '@/request/interactive';
+import useMediaSettingServer from './mediaSetting.server';
 class InteractiveServer extends BaseServer {
   constructor() {
     super();
@@ -573,22 +575,29 @@ class InteractiveServer extends BaseServer {
   // 无缝切换本地流
   switchStream(opt) {
     return new Promise((resolve, reject) => {
-      let { streamId, type, deviceId } = opt;
-      if (!streamId || (type != 'video' && type != 'audio') || !deviceId) {
+      let mediaSetting = useMediaSettingServer().state;
+
+      let { streamId, type } = opt;
+      if (!streamId || (type != 'video' && type != 'audio')) {
         reject({ code: '', msg: '参数异常' });
       }
-      this.interactiveInstance
-        .switchDevice({
-          streamId: streamId, // 必填，本地流ID
-          type: type, // 必填，支持'video'和'audio'，分别表示视频设备和音频设备
-          deviceId: deviceId // 必填，设备ID，可通过getDevices()方法获取。
-        })
-        .then(res => {
-          resolve(res);
-        })
-        .catch(err => {
-          reject(err);
-        });
+
+      let deviceId = null;
+      if (type == 'video') {
+        deviceId = mediaSetting.video;
+      } else if (type == 'audio') {
+        deviceId = mediaSetting.audioInput;
+      }
+      if (!deviceId) {
+        reject({ code: '', msg: 'deviceId未传值' });
+      }
+      const defaultPa = {
+        streamId: streamId, // 必填，本地流ID
+        type: type, // 必填，支持'video'和'audio'，分别表示视频设备和音频设备
+        deviceId: deviceId // 必填，设备ID，可通过getDevices()方法获取。
+      };
+      console.warn('%ccxs ---最终参数-------', 'color: blue', defaultPa);
+      return this.interactiveInstance.switchDevice(defaultPa);
     });
   }
 
@@ -913,6 +922,19 @@ class InteractiveServer extends BaseServer {
    */
   setStreamListHeightInWatch(val) {
     this.state.streamListHeightInWatch = val;
+  }
+
+  /*
+   * 播放
+   */
+  setPlay(opt) {
+    return this.interactiveInstance.play(opt);
+  }
+  /*
+   * 播放
+   */
+  setPause(opt) {
+    return this.interactiveInstance.pause(opt);
   }
 }
 
