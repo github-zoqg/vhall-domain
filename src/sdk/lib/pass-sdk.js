@@ -23,6 +23,10 @@ export default {
     name: 'VHDocSDK',
     url: '//static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.2.0.js'
   },
+  questionnaire: {
+    name: 'VhallQuestionnaire',
+    url: '//t-alistatic01.e.vhall.com/common-static/middle/questionnaire/1.0.0/questionnaire_service.js'
+  },
   // 数据上报sdk
   report: {
     name: 'VhallReport',
