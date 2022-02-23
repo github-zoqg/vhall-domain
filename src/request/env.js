@@ -19,5 +19,6 @@ export default {
   brand: 'v3',
   qa: 'v3',
   rebroadcast: 'v3',
+  gray: 'v3',
   gifts: 'v3'
 };
