@@ -18,5 +18,6 @@ export default {
   player: 'v3',
   brand: 'v3',
   qa: 'v3',
-  rebroadcast: 'v3'
+  rebroadcast: 'v3',
+  gifts: 'v3'
 };
