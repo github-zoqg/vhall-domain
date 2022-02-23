@@ -59,6 +59,15 @@ const publishQuestionnaire = params => {
   });
 };
 
+// 编辑问卷
+const editQuestionnaire = params => {
+  return request({
+    url: '/v3/vss/survey/update-webinar-survey',
+    method: 'POST',
+    data: params
+  });
+};
+
 export default {
   queryQuestionnaireList,
   copyQuestionnaire,
@@ -66,5 +75,6 @@ export default {
   createLiveQuestion,
   copyMainQuestion,
   copyQuestion,
-  publishQuestionnaire
+  publishQuestionnaire,
+  editQuestionnaire
 };

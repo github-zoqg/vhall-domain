@@ -44,29 +44,10 @@ class QuestionnaireServer extends BaseServer {
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.CREATE, data => {
       this.$emit(VHall_Questionnaire_Const.EVENT.CREATE, data);
     });
-    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.UPDATE, evt => {
-      this.$emit(VHall_Questionnaire_Const.EVENT.UPDATE, evt);
-      // const extension = JSON.parse(data.extension);
-      // this.$fetch('liveEditQuestion', {
-      //   survey_id: data.id,
-      //   webinar_id: this.ilId,
-      //   room_id: this.roomId,
-      //   title: data.title,
-      //   description: data.description,
-      //   user_id: this.accountId,
-      //   img_url: data.imgUrl,
-      //   playback_filling: extension.playback_filling
-      // })
-      //   .then(res => {
-      //     this.isCreate = false;
-      //     this.showPreview = false;
-      //     this.getQuestionList(false);
-      //     this.setReportData(data);
-      //     this.$message.success('编辑成功');
-      //   })
-      //   .catch(e => {
-      //     console.log('编辑问卷失败>>>', e);
-      //   });
+    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.UPDATE, async data => {
+      const extension = JSON.parse(data.extension);
+      const relt = await this.editQuestionnaire(data, extension.playback_filling);
+      this.$emit(VHall_Questionnaire_Const.EVENT.UPDATE, relt);
     });
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, evt => {
       this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, evt);
@@ -130,6 +111,23 @@ class QuestionnaireServer extends BaseServer {
       webinar_id: webinar.id,
       room_id: interact.room_id,
       survey_ids: surveyId
+    });
+  }
+  /**
+   * @description 编辑问卷
+   */
+  editQuestionnaire(params, playback_filling) {
+    const { watchInitData } = this.useRoomBaseServer.state;
+    const { webinar, interact, join_info } = watchInitData;
+    return questionnaireApi.editQuestionnaire({
+      survey_id: params.id,
+      title: params.title,
+      description: params.description,
+      img_url: params.imgUrl,
+      playback_filling: playback_filling,
+      user_id: join_info.user_id || join_info.third_party_user_id,
+      webinar_id: webinar.id,
+      room_id: interact.room_id
     });
   }
 
