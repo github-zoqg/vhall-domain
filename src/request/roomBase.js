@@ -1,9 +1,9 @@
 import $http from '@/utils/http.js';
-import contextServer from '@/domain/common/context.server.js';
+import roomBaseServer from '@/domain/room/roombase.server.js';
 
 // 查询活动基础信息
 const getWebinarInfo = (params = {}) => {
-  const { state } = contextServer.get('roomBaseServer');
+  const state = roomBaseServer().state;
 
   const retParmams = {
     webinar_id: params.webinarId || state.watchInitData.webinar.id,
@@ -19,7 +19,7 @@ const getWebinarInfo = (params = {}) => {
 
 // 查询活动配置信息
 const getConfigList = (params = {}) => {
-  const { state } = contextServer.get('roomBaseServer');
+  const state = roomBaseServer().state;
 
   const retParmams = {
     webinar_id: params.webinar_id || state.watchInitData.webinar.id,
@@ -33,10 +33,9 @@ const getConfigList = (params = {}) => {
     data: retParmams
   });
 };
-
 // 开始暂停结束录制api
 const recordApi = (params = {}) => {
-  const { state } = contextServer.get('roomBaseServer');
+  const state = roomBaseServer().state;
   const { state: roomInitGroupServerState } = contextServer.get('roomInitGroupServer');
 
   const retParmams = {
@@ -57,7 +56,7 @@ const recordApi = (params = {}) => {
 
 //初始化回放录制
 const initRecordApi = (params = {}) => {
-  const { state } = contextServer.get('roomBaseServer');
+  const state = roomBaseServer().state;
   const { state: roomInitGroupServerState } = contextServer.get('roomInitGroupServer');
   const retParams = {
     webinar_id: params['webinarId'] || state.watchInitData.webinar.id
@@ -71,7 +70,7 @@ const initRecordApi = (params = {}) => {
 
 //获取房间内各工具的状态
 const getRoomToolStatus = (params = {}) => {
-  const { state } = contextServer.get('roomBaseServer');
+  const state = roomBaseServer().state;
   const { state: roomInitGroupServerState } = contextServer.get('roomInitGroupServer');
   const retParams = {
     room_id: params.room_id || state.watchInitData.interact.room_id
