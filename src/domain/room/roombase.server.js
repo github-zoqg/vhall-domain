@@ -50,7 +50,12 @@ class RoomBaseServer extends BaseServer {
       timerInfo: {}, //计时器
       interactToolStatus: {}, //互动工具状态信息
       roomVisibleModules: [],
-      miniElement: 'stream-list' // 可能的值：doc  stream-list
+      miniElement: 'stream-list', // 可能的值：doc  stream-list
+      //多语言信息
+      languages: {
+        curLang: 'zh',
+        langList: []
+      }
     };
     RoomBaseServer.instance = this;
     return this;
@@ -133,7 +138,17 @@ class RoomBaseServer extends BaseServer {
       return res;
     });
   }
-
+  //获取多语言配置
+  getLangList() {
+    return meeting.getLangList({ webinar_id: this.state.watchInitData.webinar.id }).then(res => {
+      if (res.code == 200) {
+        this.state.languages.langList = res.data.list;
+        this.state.languages.curLang = res.data.list.find(item => {
+          return item.language_type == res.data.default_language;
+        });
+      }
+    });
+  }
   /**
    * 功能介绍：黄金链路
    * 作用：系统崩溃 配置项降级处理方案
