@@ -137,6 +137,21 @@ class CashServer {
         return err;
       });
   }
+
+  // wap提现校验
+  withdrawalWap(data) {
+    return cashApi
+      .withdrawalWap(data)
+      .then(res => {
+        if (res.code === 200) {
+          // this.state.drawInfo = res.data;
+        }
+        return res;
+      })
+      .catch(err => {
+        return err;
+      });
+  }
 }
 
 export default function useCashServer() {

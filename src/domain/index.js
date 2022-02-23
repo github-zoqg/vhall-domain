@@ -44,6 +44,7 @@ import useGoodServer from '@/domain/interactiveTools/good.server.js';
 import useLotteryServer from '@/domain/interactiveTools/lotteryServer.js';
 
 import useMenuServer from '@/domain/brand/menu.server';
+import useInviteServer from '@/domain/interactiveTools/invite.server.js';
 /**
  * options:{
     token,
@@ -137,5 +138,6 @@ export {
   useLotteryServer,
   useSignServer,
   useMenuServer,
+  useInviteServer,
   version
 };

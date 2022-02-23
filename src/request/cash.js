@@ -75,6 +75,15 @@ const sendCode = (data = {}) => {
   });
 };
 
+// wap提现校验
+const withdrawalWap = (data = {}) => {
+  return request({
+    url: '/v3/users/oauth/check-withdrawal-to-c',
+    method: 'POST',
+    data: { biz_id, ...data }
+  });
+};
+
 export default {
   getCashInfo,
   getCashList,
@@ -83,5 +92,6 @@ export default {
   withdrawIsBind,
   withdraw,
   withdrawSendCode,
-  sendCode
+  sendCode,
+  withdrawalWap
 };
