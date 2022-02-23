@@ -1,6 +1,5 @@
 import request from '@/utils/http.js';
 
-// 奖品列表(该接口必须为FormData)
 const getPrizeList = params => {
   return request({
     url: '/v3/vss/lottery/post/get-prize-list',
@@ -10,8 +9,7 @@ const getPrizeList = params => {
       limit: 20,
       source: 0,
       ...params
-    },
-    dataType: 'FormData'
+    }
   });
 };
 
@@ -27,8 +25,7 @@ const pushLottery = params => {
   return request({
     url: '/v3/vss/lottery/add',
     method: 'POST',
-    data: params,
-    dataType: 'FormData'
+    data: params
   });
 };
 
@@ -63,8 +60,7 @@ const endLottery = params => {
 const getWinnerList = params => {
   return request('/v3/vss/lottery/users-get', {
     method: 'POST',
-    data: params,
-    dataType: 'FormData'
+    data: params
   });
 };
 
@@ -72,8 +68,7 @@ const getWinnerList = params => {
 const checkLotteryResult = params => {
   return request('/v3/vss/lottery/award/check', {
     method: 'POST',
-    data: params,
-    dataType: 'FormData'
+    data: params
   });
 };
 
@@ -81,8 +76,7 @@ const checkLotteryResult = params => {
 const getDrawPrizeInfo = params => {
   return request('/v3/vss/lottery/watch/get-draw-prize-info', {
     method: 'POST',
-    data: params,
-    dataType: 'FormData'
+    data: params
   });
 };
 
@@ -90,8 +84,7 @@ const getDrawPrizeInfo = params => {
 const acceptPrize = params => {
   return request('/v3/vss/lottery/award', {
     method: 'POST',
-    data: params,
-    dataType: 'FormData'
+    data: params
   });
 };
 

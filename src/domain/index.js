@@ -42,6 +42,7 @@ import useCashServer from '@/domain/cash/cash.server.js';
 // 商品
 import useGoodServer from '@/domain/interactiveTools/good.server.js';
 import useLotteryServer from '@/domain/interactiveTools/lotteryServer.js';
+import useQuestionnaireServer from '@/domain/interactiveTools/questionnaireServer.js';
 
 import useMenuServer from '@/domain/brand/menu.server';
 import useInviteServer from '@/domain/interactiveTools/invite.server.js';
@@ -138,6 +139,7 @@ export {
   useLotteryServer,
   useSignServer,
   useMenuServer,
+  useQuestionnaireServer,
   useInviteServer,
   version
 };
