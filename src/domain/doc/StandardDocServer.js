@@ -154,7 +154,7 @@ export default class StandardDocServer extends AbstractDocServer {
     // 所有文档加载完成事件
     this.on(VHDocSDK.Event.ALL_COMPLETE, () => {
       // if (process.env.NODE_ENV !== 'production') console.debug('所有文档加载完成');
-      // const list = this.$doc.getLiveAllCids();
+      const webinarType = useRoomBaseServer().state.watchInitData.webinar.type;
       // if (list.includes(this.previewInfo.elId)) this.previewInfo.canOperate = true;
       // console.log('this.cid:', this.cid);
       // console.log('this.isFullscreen :', this.isFullscreen);
@@ -232,6 +232,12 @@ export default class StandardDocServer extends AbstractDocServer {
       //     this.docInfo.docShowType = '';
       //   }, 3000); // 其他地方调用回将值重新传入
       // }
+    });
+
+    // 回放文档加载完成事件
+    this.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, ({ chapters }) => {
+      // 获取点播或回放设置的章节
+      this.$emit('dispatch_doc_vod_cuepoint_load_complate', chapters);
     });
   }
 
