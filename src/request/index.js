@@ -23,6 +23,7 @@ import cash from './cash';
 import attentionApi from './attention';
 import praiseApi from './praise/index';
 import inviteApi from './invite';
+import entryformApi from './entryform/index';
 
 // 问答
 import qaList from './qa/list/index.js';
@@ -68,5 +69,6 @@ export {
   goodSaasApi,
   praiseApi,
   watchSignApi,
-  inviteApi
+  inviteApi,
+  entryformApi
 };
