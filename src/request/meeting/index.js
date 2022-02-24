@@ -203,6 +203,16 @@ function tipOffInfo(params) {
   });
 }
 
+// 开始暂停结束录制api
+function recordApi(data) {
+  console.log('录制接口', data);
+  return request({
+    url: '/v3/webinars/record/ticker',
+    method: 'POST',
+    data
+  });
+}
+
 // 直播结束生成回放
 function createRecord(data) {
   const url = env.meeting === 'v3' ? '/v3/webinars/record/live-create-record' : '';
@@ -245,7 +255,8 @@ const meeting = {
   feedbackInfo,
   tipOffInfo,
   createRecord,
-  setDefaultRecord
+  setDefaultRecord,
+  recordApi
 };
 
 export default meeting;
