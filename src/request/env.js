@@ -23,5 +23,6 @@ export default {
   gifts: 'v3',
   entryform: 'v3',
   gray: 'v3',
-  gifts: 'v3'
+  gifts: 'v3',
+  signUpForm:'v3'
 };
