@@ -49,6 +49,7 @@ class MicServer extends BaseServer {
           break;
         // 用户取消申请上麦
         case 'vrtc_connect_apply_cancel':
+          this.$emit('vrtc_connect_apply_cancel', msg);
           break;
         // 主持人拒绝用户上麦申请
         // case 'user_apply_host_reject':
