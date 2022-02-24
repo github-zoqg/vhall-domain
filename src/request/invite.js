@@ -1,6 +1,5 @@
 import request from '@/utils/http.js';
 
-// 获取播放器配置项
 const createInvite = (data = {}) => {
   const v3 = '/v3/interacts/invite-card/watch-get-info';
   const url = v3;
