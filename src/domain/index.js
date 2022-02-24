@@ -24,6 +24,7 @@ import useWatchRewardServer from '@/domain/interactiveTools/reward.server.js';
 import useAttentionServer from '@/domain/interactiveTools/attention.server.js';
 import usePraiseServer from '@/domain/interactiveTools/praise.server.js';
 import useSignServer from '@/domain/interactiveTools/sign.server.js';
+import userSignUpFormServer from "@/domain/interactiveTools/signUpForm.server.js";
 
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
@@ -46,6 +47,7 @@ import useQuestionnaireServer from '@/domain/interactiveTools/questionnaireServe
 
 import useMenuServer from '@/domain/brand/menu.server';
 import useInviteServer from '@/domain/interactiveTools/invite.server.js';
+import useEntryformServer from '@/domain/entryform/entry.server.js';
 import useSubscribeServer from '@/domain/subscribe/subscribe.server';
 import useSubjectServer from '@/domain/brand/subject.server';
 
@@ -147,7 +149,9 @@ export {
   useMenuServer,
   useQuestionnaireServer,
   useInviteServer,
+  version,
+  useEntryformServer,
+  userSignUpFormServer,
   useSubscribeServer,
-  useSubjectServer,
-  version
+  useSubjectServer
 };

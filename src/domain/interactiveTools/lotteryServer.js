@@ -9,7 +9,7 @@ import BaseServer from '../common/base.server';
 const LOTTERY_PUSH = 'lottery_push';
 const LOTTERY_RESULT_NOTICE = 'lottery_result_notice';
 class LotteryServer extends BaseServer {
-  constructor(opt) {
+  constructor(opt = {}) {
     super();
     const watchInitData = useRoomBaseServer().state.watchInitData;
     this._roomId = watchInitData.interact.room_id;
@@ -18,22 +18,21 @@ class LotteryServer extends BaseServer {
       this.listenMsg();
     }
   }
+  //对外暴露通知名称
+  Events = {
+    LOTTERY_PUSH: 'lottery_push',
+    LOTTERY_RESULT_NOTICE: 'lottery_result_notice'
+  };
   // 监听消息
   listenMsg() {
-    console.log(useMsgServer().curMsgInstance);
     useMsgServer().$onMsg('ROOM_MSG', msg => {
-      console.log(
-        '抽奖的消息:',
-        `${msg.data.type ? 'type:' : 'event_type'}:${msg.data.type || msg.data.event_type}`,
-        msg
-      );
       switch (msg.data.event_type || msg.data.type) {
         //【分组创建/新增完成】
         case LOTTERY_PUSH:
-          this.$emit(LOTTERY_PUSH, msg.data);
+          this.$emit(this.Events.LOTTERY_PUSH, msg);
           break;
         case LOTTERY_RESULT_NOTICE:
-          this.$emit(LOTTERY_RESULT_NOTICE, msg.data);
+          this.$emit(this.Events.LOTTERY_RESULT_NOTICE, msg);
           break;
       }
     });

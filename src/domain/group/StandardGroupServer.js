@@ -114,8 +114,6 @@ class StandardGroupServer extends BaseServer {
 
   //监听分组相关消息（属于房间消息）
   listenMsg() {
-    console.log('listenMsglistenMsglistenMsglistenMsg1');
-    console.log(useMsgServer().curMsgInstance);
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       console.log(
         '[group] --domain ROOM_MSG--房间消息：',
@@ -144,6 +142,7 @@ class StandardGroupServer extends BaseServer {
           break;
         //请求协助
         case 'group_help':
+          this.msgdoForGroupHelp(msg);
           break;
         //组长变更
         case 'group_leader_change':
@@ -250,6 +249,11 @@ class StandardGroupServer extends BaseServer {
 
       this.$emit('dispatch_group_disband');
     }
+  }
+
+  // 请求协助,主持端收到请求协助消息，会在对应的小组面板头部显示“请求协助中...”文字
+  msgdoForGroupHelp(msg) {
+    this.getGroupedUserList();
   }
 
   //【开启讨论/开始讨论】
@@ -800,6 +804,17 @@ class StandardGroupServer extends BaseServer {
       isBanned: options.isBanned
     };
     useMsgServer().sendMainRoomMsg(JSON.stringify(body));
+  }
+
+  // 请求协助
+  async needHelp() {
+    console.log('[group] groupInitData.group_id:', this.state.groupInitData.group_id);
+    const { watchInitData } = useRoomBaseServer().state;
+    const params = {
+      room_id: watchInitData.interact.room_id, // 主直播房间ID
+      group_id: this.state.groupInitData.group_id // 分组ID
+    };
+    return await groupApi.groupHelp(params);
   }
 }
 

@@ -2,6 +2,7 @@ import { meeting } from '@/request/index.js';
 import { setRequestHeaders } from '@/utils/http.js';
 import { merge } from '@/utils/index.js';
 import BaseServer from '../common/base.server';
+import useMsgServer from '../common/msg.server';
 /**
  * send:发起端
  * standard:标准直播
@@ -83,11 +84,20 @@ class RoomBaseServer extends BaseServer {
             'interact-token': res.data.interact.interact_token
           });
           sessionStorage.setItem('visitorId', res.data.visitor_id);
+          this.addListeners();
           resolve(res);
         } else {
           reject(res);
         }
       });
+    });
+  }
+
+  addListeners() {
+    useMsgServer().$onMsg('ROOM_MSG', msg => {
+      if (msg.data.type == 'live_start') {
+        this.state.watchInitData.webinar.type = 1;
+      }
     });
   }
 
@@ -312,24 +322,30 @@ class RoomBaseServer extends BaseServer {
   }
 
   // 开始/恢复录制
-  startRecord() {
-    return meeting.recordApi({
+  startRecord(params = {}) {
+    const retParmams = {
+      webinar_id: params.webinarId || this.state.watchInitData.webinar.id,
       status: 1
-    });
+    };
+    return meeting.recordApi(retParmams);
   }
 
   // 暂停录制
-  pauseRecord() {
-    return meeting.recordApi({
+  pauseRecord(params = {}) {
+    const retParmams = {
+      webinar_id: params.webinarId || this.state.watchInitData.webinar.id,
       status: 2
-    });
+    };
+    return meeting.recordApi(retParmams);
   }
 
   // 结束录制
-  endRecord() {
-    return meeting.recordApi({
+  endRecord(params = {}) {
+    const retParmams = {
+      webinar_id: params.webinarId || this.state.watchInitData.webinar.id,
       status: 3
-    });
+    };
+    return meeting.recordApi(retParmams);
   }
 
   //初始化回放录制
