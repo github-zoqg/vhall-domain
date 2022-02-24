@@ -20,6 +20,8 @@ export default {
   brand: 'v3',
   qa: 'v3',
   rebroadcast: 'v3',
+  gifts: 'v3',
+  entryform: 'v3',
   gray: 'v3',
   gifts: 'v3'
 };
