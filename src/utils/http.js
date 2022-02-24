@@ -26,7 +26,7 @@ const service = axios.create({ headers: { 'Content-Type': 'application/x-www-for
 // request interceptor
 service.interceptors.request.use(
   config => {
-    console.log('----axios----请求配置', JSON.stringify(config));
+    // console.log('----axios----请求配置', JSON.stringify(config));
     // set baseURL
     config.baseURL = config.url.startsWith('/v3') ? V3_BASE_URL : MIDDLE_BASE_URL;
 
@@ -45,7 +45,7 @@ service.interceptors.request.use(
       // config.data = JSON.stringify(config.data);
     }
     if (config.headers['Content-Type'] === 'multipart/form-data') {
-      if (config.data && typeof config.data === 'object') {
+      if (config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
         const params = config.data;
         const formData = new FormData();
         Object.keys(params).forEach(key => {

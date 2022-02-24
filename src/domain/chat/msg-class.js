@@ -47,6 +47,10 @@ export default class Msg {
     this.context.atList = atlist;
     console.log(atlist);
   }
+  //对外暴露消息key
+  static getcount() {
+    return ++count;
+  }
 
   //私有方法，组装消息用于渲染（暂时按照的h5版本的,大致数据一致，具体业务逻辑操作有差异，后续返回一个promise，并返回未处理的原始数据，由视图自己决定如何处理）
   static _handleGenerateMsg(item = {}, isHistoryMsg) {
@@ -65,7 +69,7 @@ export default class Msg {
       msgId: item.msg_id,
       channel: item.channel_id,
       isHistoryMsg: isHistoryMsg,
-      count: count++,
+      count: ++count,
       client: item.client
     };
     if (item.data.event_type) {

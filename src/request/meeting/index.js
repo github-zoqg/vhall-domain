@@ -92,7 +92,14 @@ const getConfigList = (params = {}) => {
     data: params
   });
 };
-
+//获取活动多语言配置信息
+const getLangList = (params = {}) => {
+  return request({
+    url: '/v3/webinars/webinar-language/get-list',
+    method: 'POST',
+    data: params
+  });
+};
 // 查询活动互动状态
 const getInavToolStatus = (params = {}) => {
   const url = env.meeting === 'v3' ? '/v3/interacts/room/get-inav-tool-status' : '';
@@ -196,6 +203,16 @@ function tipOffInfo(params) {
   });
 }
 
+// 开始暂停结束录制api
+function recordApi(data) {
+  console.log('录制接口', data);
+  return request({
+    url: '/v3/webinars/record/ticker',
+    method: 'POST',
+    data
+  });
+}
+
 // 直播结束生成回放
 function createRecord(data) {
   const url = env.meeting === 'v3' ? '/v3/webinars/record/live-create-record' : '';
@@ -231,13 +248,15 @@ const meeting = {
   getStreamPushAddress,
   setDevice,
   getConfigList,
+  getLangList,
   getInavToolStatus,
   getCommonConfig,
   getLowerGradeConfigInfo,
   feedbackInfo,
   tipOffInfo,
   createRecord,
-  setDefaultRecord
+  setDefaultRecord,
+  recordApi
 };
 
 export default meeting;

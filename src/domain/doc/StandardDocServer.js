@@ -1,5 +1,5 @@
 import AbstractDocServer from './AbstractDocServer';
-import { merge } from '../../utils';
+import { merge, sleep } from '../../utils';
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
 import { doc as docApi } from '../../request/index.js';
@@ -31,8 +31,9 @@ export default class StandardDocServer extends AbstractDocServer {
       docLoadComplete: true, // 文档是否加载完成
 
       thumbnailList: [], // 缩略图列表
-      switchStatus: false, // 观众是否可见
-      hasDocPermission: false //是否文档的演示(操作)权限
+      switchStatus: false, // 直播中观众是否可见
+      hasDocPermission: false, //是否文档的演示(操作)权限
+      watchDocShow: false //回放观看端文档是否可见
     };
   }
 
@@ -238,6 +239,21 @@ export default class StandardDocServer extends AbstractDocServer {
     this.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, ({ chapters }) => {
       // 获取点播或回放设置的章节
       this.$emit('dispatch_doc_vod_cuepoint_load_complate', chapters);
+    });
+
+    this.on(VHDocSDK.Event.VOD_TIME_UPDATE, data => {
+      // console.log('[doc] dispatch_doc_vod_time_update:', data);
+      this.state.watchDocShow = data.watchOpen;
+      if (data.activeId) {
+        this.selectContainer(data.activeId);
+        this.state.currentCid = data.activeId;
+        if (useRoomBaseServer().state.miniElement !== 'player') {
+          useRoomBaseServer().setChangeElement('player');
+        }
+      } else {
+        this.state.currentCid = '';
+      }
+      this.$emit('dispatch_doc_vod_time_update', data);
     });
   }
 
@@ -491,6 +507,75 @@ export default class StandardDocServer extends AbstractDocServer {
   }
 
   /**
+   * 初始化容器
+   * @param {String} cid 容器id，非必填，如果不存在需要调用 createUUID 新建
+   * @param {Number} width 容器宽，必填，像素单位，数值型不带px
+   * @param {height} height 容器高，必填，像素单位，数值型不带px
+   * @param {String} fileType 创建类型，非必填，默认文档。 document：文档, board：白板
+   * @param {String} docId 具体演示文件id,演示文档时必填，白板为空
+   */
+  async initContainer({
+    cid,
+    width,
+    height,
+    fileType = 'document',
+    docId = '',
+    noDispatch = false
+  }) {
+    console.log('[doc] initContainer ');
+    try {
+      if (!cid) {
+        cid = this.createUUID(fileType);
+        console.log('[doc] domain 新建的cid:', cid);
+      } else {
+        console.log('[doc] domain 指定的cid:', cid);
+      }
+      if (this.state.containerList.findIndex(item => item.cid === cid) === -1) {
+        // 说明容器不在列表中，主动添加
+        console.log('[doc] --------向列表中添加容器------');
+        this.state.containerList.push({ cid, docId });
+        // 确保dom渲染
+        await this.domNextTick();
+      }
+
+      if (useRoomBaseServer().state.clientType != 'send') {
+        //TODO: 区分场景逻辑处理,还需要处理
+        noDispatch = true;
+      }
+
+      if (fileType === 'board') {
+        this.boardCid = cid;
+        const opts = {
+          id: cid,
+          elId: cid,
+          width: width,
+          height: width,
+          noDispatch: noDispatch,
+          backgroundColor: '#FFFFFF'
+        };
+        await this.createBoard(opts);
+      } else {
+        const opts = {
+          id: cid,
+          docId: docId,
+          elId: cid, // div 容器 必须
+          width: width,
+          height: height,
+          noDispatch: noDispatch
+        };
+        console.log('[doc] opts:', opts);
+        await this.createDocument(opts);
+      }
+    } catch (ex) {
+      // 移除失败的容器
+      this.state.containerList = this.state.containerList.filter(item => item.cid !== cid);
+      console.error('[doc]:--------移除失败的容器------', ex);
+      return;
+    }
+    return cid;
+  }
+
+  /**
    * 激活容器
    */
   activeContainer(cid) {
@@ -664,5 +749,13 @@ export default class StandardDocServer extends AbstractDocServer {
       .catch(ex => {
         console.error('[doc] groupReInitDocProcess error:', ex);
       });
+  }
+
+  async domNextTick() {
+    if (window.Vue) {
+      await Vue.$nextTick();
+    } else {
+      await sleep(0);
+    }
   }
 }

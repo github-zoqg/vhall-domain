@@ -2,6 +2,7 @@ import { meeting } from '@/request/index.js';
 import { setRequestHeaders } from '@/utils/http.js';
 import { merge } from '@/utils/index.js';
 import BaseServer from '../common/base.server';
+import useMsgServer from '../common/msg.server';
 /**
  * send:发起端
  * standard:标准直播
@@ -34,6 +35,7 @@ class RoomBaseServer extends BaseServer {
       faultTipMsg: '', // 黄金链路-降级提示文案
       lowerGradeInterval: null, // 黄金链路计时器
       clientType: '',
+      deviceType: '', // 设备类型   pc 或 手机
       skinInfo: {}, // 皮肤信息
       webinarTag: {}, //活动标识
       screenPosterInfo: {}, // 开屏海报信息
@@ -50,14 +52,15 @@ class RoomBaseServer extends BaseServer {
       timerInfo: {}, //计时器
       interactToolStatus: {}, //互动工具状态信息
       roomVisibleModules: [],
-      miniElement: 'stream-list' // 可能的值：doc  stream-list
+      miniElement: 'stream-list', // 可能的值：doc  stream-list
+      //多语言信息
+      languages: {
+        curLang: 'zh',
+        langList: []
+      }
     };
     RoomBaseServer.instance = this;
     return this;
-  }
-
-  setClientType(type) {
-    this.state.clientType = type;
   }
 
   // 初始化房间信息,包含发起/观看(嵌入/标品)
@@ -69,7 +72,8 @@ class RoomBaseServer extends BaseServer {
     if (['standard', 'embed'].includes(options.clientType) && !options.visitor_id) {
       options.visitor_id = sessionStorage.getItem('visitorId');
     }
-    this.setClientType(options.clientType);
+    this.state.clientType = options.clientType;
+    this.state.deviceType = options.deviceType;
     return new Promise((resolve, reject) => {
       meeting[liveType.get(options.clientType)](options).then(res => {
         if (res.code === 200) {
@@ -79,11 +83,20 @@ class RoomBaseServer extends BaseServer {
             'interact-token': res.data.interact.interact_token
           });
           sessionStorage.setItem('visitorId', res.data.visitor_id);
+          this.addListeners();
           resolve(res);
         } else {
           reject(res);
         }
       });
+    });
+  }
+
+  addListeners() {
+    useMsgServer().$onMsg('ROOM_MSG', msg => {
+      if (msg.data.type == 'live_start') {
+        this.state.watchInitData.webinar.type = 1;
+      }
     });
   }
 
@@ -137,7 +150,17 @@ class RoomBaseServer extends BaseServer {
       return res;
     });
   }
-
+  //获取多语言配置
+  getLangList() {
+    return meeting.getLangList({ webinar_id: this.state.watchInitData.webinar.id }).then(res => {
+      if (res.code == 200) {
+        this.state.languages.langList = res.data.list;
+        this.state.languages.curLang = res.data.list.find(item => {
+          return item.language_type == res.data.default_language;
+        });
+      }
+    });
+  }
   /**
    * 功能介绍：黄金链路
    * 作用：系统崩溃 配置项降级处理方案
@@ -294,24 +317,30 @@ class RoomBaseServer extends BaseServer {
   }
 
   // 开始/恢复录制
-  startRecord() {
-    return meeting.recordApi({
+  startRecord(params = {}) {
+    const retParmams = {
+      webinar_id: params.webinarId || this.state.watchInitData.webinar.id,
       status: 1
-    });
+    };
+    return meeting.recordApi(retParmams);
   }
 
   // 暂停录制
-  pauseRecord() {
-    return meeting.recordApi({
+  pauseRecord(params = {}) {
+    const retParmams = {
+      webinar_id: params.webinarId || this.state.watchInitData.webinar.id,
       status: 2
-    });
+    };
+    return meeting.recordApi(retParmams);
   }
 
   // 结束录制
-  endRecord() {
-    return meeting.recordApi({
+  endRecord(params = {}) {
+    const retParmams = {
+      webinar_id: params.webinarId || this.state.watchInitData.webinar.id,
       status: 3
-    });
+    };
+    return meeting.recordApi(retParmams);
   }
 
   //初始化回放录制

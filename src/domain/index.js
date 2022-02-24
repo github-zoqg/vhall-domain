@@ -46,6 +46,10 @@ import useQuestionnaireServer from '@/domain/interactiveTools/questionnaireServe
 
 import useMenuServer from '@/domain/brand/menu.server';
 import useInviteServer from '@/domain/interactiveTools/invite.server.js';
+import useEntryformServer from '@/domain/entryform/entry.server.js';
+import useSubscribeServer from '@/domain/subscribe/subscribe.server';
+import useSubjectServer from '@/domain/brand/subject.server';
+
 /**
  * options:{
     token,
@@ -86,9 +90,12 @@ class Domain {
 
   //设置请求相关配置
   setRequestConfig(options) {
-    const { token, liveToken, requestHeaders } = options;
+    const { token, liveToken } = options;
     setToken(token, liveToken);
-    requestHeaders && setRequestHeaders(requestHeaders);
+
+    token && delete options.token;
+    liveToken && delete options.liveToken;
+    setRequestHeaders(options || {});
   }
 
   //初始化房间信息
@@ -141,5 +148,8 @@ export {
   useMenuServer,
   useQuestionnaireServer,
   useInviteServer,
-  version
+  version,
+  useEntryformServer,
+  useSubscribeServer,
+  useSubjectServer
 };
