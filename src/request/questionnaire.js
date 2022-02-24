@@ -68,6 +68,15 @@ const editQuestionnaire = params => {
   });
 };
 
+// 提交问卷
+const submitQuestionnaire = params => {
+  return request({
+    url: '/v3/vss/survey/submit-answer',
+    method: 'POST',
+    data: params
+  });
+};
+
 export default {
   queryQuestionnaireList,
   copyQuestionnaire,
@@ -76,5 +85,6 @@ export default {
   copyMainQuestion,
   copyQuestion,
   publishQuestionnaire,
-  editQuestionnaire
+  editQuestionnaire,
+  submitQuestionnaire
 };

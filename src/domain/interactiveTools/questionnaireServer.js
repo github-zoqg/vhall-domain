@@ -1,20 +1,24 @@
 /**
- * 问卷模块(基于paas问卷SDK)
+ * 问卷模块(基于问卷SDK)
  */
 
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import questionnaireApi from '../../request/questionnaire';
+import useMsgServer from '../common/msg.server';
+
+const QUESTIONNAIRE_PUSH = 'questionnaire_push'; // 推送消息
 class QuestionnaireServer extends BaseServer {
-  constructor(opts) {
+  constructor(opts = {}) {
     super();
+    console.log('QuestionnaireServer QuestionnaireServer');
     this._uploadUrl = opts.uploadUrl;
     this._creatSelector = opts.creatSelector;
     // this._prevSelector = opts.prevSelector;
     this._mode = opts?.mode || null; // watch观看端 or live发起端
     this._paasSDKInstance = null;
     this.useRoomBaseServer = useRoomBaseServer();
-    this.intiPaasQuestionnaireServerSDK();
+    this.intiPaasQuestionnaireServerSDK(opts);
   }
   /**
    * @description 初始化问卷服务sdk
@@ -32,15 +36,13 @@ class QuestionnaireServer extends BaseServer {
       uploadUrl: this._uploadUrl,
       iphoneNumber: ''
     });
-    this.initEvent();
+    if (opts.mode === 'watch') {
+      this.initWatchEvent();
+    } else {
+      this.initLiveEvent();
+    }
   }
-  initEvent() {
-    // this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.READY, () => {
-    // });
-    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.SUBMIT, evt => {
-      this.submitQuestion(data);
-      this.$emit(VHall_Questionnaire_Const.EVENT.SUBMIT, evt);
-    });
+  initLiveEvent() {
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.CREATE, data => {
       this.$emit(VHall_Questionnaire_Const.EVENT.CREATE, data);
     });
@@ -49,9 +51,30 @@ class QuestionnaireServer extends BaseServer {
       const relt = await this.editQuestionnaire(data, extension.playback_filling);
       this.$emit(VHall_Questionnaire_Const.EVENT.UPDATE, relt);
     });
-    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, evt => {
-      this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, evt);
+    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
+      this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, data);
       // console.log('问卷错误', data);
+    });
+  }
+  initWatchEvent() {
+    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.SUBMIT, async data => {
+      const res = await this.submitQuestion(data);
+      this.$emit(VHall_Questionnaire_Const.EVENT.SUBMIT, res);
+    });
+    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
+      this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, data);
+      console.log('问卷错误', data);
+      this.$toast('问卷错误', data);
+    });
+    useMsgServer().$onMsg('ROOM_MSG', msg => {
+      console.log('问卷server监听', msg);
+      switch (msg.data.event_type || msg.data.type) {
+        //【分组创建/新增完成】
+        case QUESTIONNAIRE_PUSH:
+          console.log('问卷消息', msg);
+          this.$emit(QUESTIONNAIRE_PUSH, msg.data.questionnaire_id);
+          break;
+      }
     });
   }
   /**
@@ -68,6 +91,14 @@ class QuestionnaireServer extends BaseServer {
   renderQuestionnaire4Watch(selector, id) {
     document.querySelector(selector).innerHTML = '';
     this._paasSDKInstance.renderPagePC(selector, id);
+  }
+  /**
+   * @description 渲染问卷的视图(wap)
+   */
+  renderQuestionnaire4Wap(selector, id) {
+    document.querySelector(selector).innerHTML = '';
+    this._paasSDKInstance.renderPageH5(selector, id);
+    // this._paasSDKInstance.renderPagePC(selector, id);
   }
   /**
    * @description 条件查询问卷列表
@@ -130,9 +161,12 @@ class QuestionnaireServer extends BaseServer {
       room_id: interact.room_id
     });
   }
-
+  /**
+   * @description 推送问卷的回调处理
+   */
+  handlerQuestionnairePush() {}
   // 提交问卷
-  submitQuestion(opt) {
+  async submitQuestion(opt) {
     const { naire_id, data, answer } = opt;
     const quesData = {};
     // vss数据
@@ -173,27 +207,19 @@ class QuestionnaireServer extends BaseServer {
             break;
         }
       });
-    this.$fetch('userSendQuestion', {
+    const { watchInitData } = this.useRoomBaseServer.state;
+    const { webinar, interact, join_info } = watchInitData;
+    return await questionnaireApi.submitQuestionnaire({
       survey_id: naire_id,
-      room_id: this.roomId,
       answer_id: data,
-      user_id: this.userId,
       visit_id: sessionStorage.getItem('visitorWatchId') || '',
-      webinar_id: this.ilId,
       vss_token: this.accessToken,
       extend: JSON.stringify(quesData),
-      res: answer
-    })
-      .then(res => {
-        this.showPreview = false;
-        this.isDoListcShow = false;
-      })
-      .catch(e => {
-        this.$message.error('提交失败');
-        console.log('提交失败', e);
-        this.showPreview = false;
-        this.isDoListcShow = false;
-      });
+      res: answer,
+      room_id: interact.room_id,
+      webinar_id: webinar.id,
+      user_id: join_info.user_id || join_info.third_party_user_id
+    });
   }
 
   /**
