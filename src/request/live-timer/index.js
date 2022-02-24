@@ -1,4 +1,5 @@
 import request from '@/utils/http.js';
+import env from '../env';
 
 // 发起端创建计时器
 const timerCreate = (params = {}) => {
@@ -8,8 +9,10 @@ const timerCreate = (params = {}) => {
     is_timeout: params.is_timeout ? 1 : 0
   };
 
+  let url = env.liveTimer == 'v4' ? '' : '/v3/interacts/timer/create';
+
   return request({
-    url: '/v3/interacts/timer/create',
+    url: url,
     method: 'POST',
     data: retParmams
   });
@@ -17,8 +20,10 @@ const timerCreate = (params = {}) => {
 
 // 发起端查询活动计时器信息
 const getTimerInfo = (params = {}) => {
+  let url = env.liveTimer == 'v4' ? '' : '/v3/interacts/timer/info';
+
   return request({
-    url: '/v3/interacts/timer/info',
+    url: url,
     method: 'POST'
   });
 };
@@ -33,8 +38,10 @@ const timerEdit = (params = {}) => {
     is_timeout: params.is_timeout ? 1 : 0
   };
 
+  let url = env.liveTimer == 'v4' ? '' : '/v3/interacts/timer/edit';
+
   return request({
-    url: '/v3/interacts/timer/edit',
+    url: url,
     method: 'POST',
     data: retParmams
   });
