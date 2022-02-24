@@ -8,6 +8,7 @@ export default {
   virtualClient: 'v3',
   interactive: 'v3',
   doc: 'v3',
+  group: 'v3',
   imChat: 'v3',
   imKeyWords: 'v3',
   imPrivateChat: 'v3',
