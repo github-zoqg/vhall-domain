@@ -45,7 +45,7 @@ service.interceptors.request.use(
       // config.data = JSON.stringify(config.data);
     }
     if (config.headers['Content-Type'] === 'multipart/form-data') {
-      if (config.data && typeof config.data === 'object') {
+      if (config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
         const params = config.data;
         const formData = new FormData();
         Object.keys(params).forEach(key => {
