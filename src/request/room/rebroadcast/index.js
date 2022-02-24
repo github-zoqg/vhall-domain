@@ -41,7 +41,7 @@ function startRebroadcast(data = {}) {
 }
 
 // 结束转播
-function stopRebroadCast(data = {}) {
+function stopRebroadcast(data = {}) {
   const v3 = '/v3/webinars/rebroadcast/stop';
   const middle = '';
   const url = env.rebroadcast === 'v3' ? v3 : middle;
@@ -57,5 +57,5 @@ export default {
   getRebroadcastList,
   rebroadcastPreview,
   startRebroadcast,
-  stopRebroadCast
+  stopRebroadcast
 };
