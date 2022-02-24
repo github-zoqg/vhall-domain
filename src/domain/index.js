@@ -46,6 +46,7 @@ import useQuestionnaireServer from '@/domain/interactiveTools/questionnaireServe
 
 import useMenuServer from '@/domain/brand/menu.server';
 import useInviteServer from '@/domain/interactiveTools/invite.server.js';
+import useEntryformServer from '@/domain/entryform/entry.server.js';
 import useSubscribeServer from '@/domain/subscribe/subscribe.server';
 import useSubjectServer from '@/domain/brand/subject.server';
 
@@ -147,7 +148,8 @@ export {
   useMenuServer,
   useQuestionnaireServer,
   useInviteServer,
+  version,
+  useEntryformServer,
   useSubscribeServer,
-  useSubjectServer,
-  version
+  useSubjectServer
 };

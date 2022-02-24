@@ -23,6 +23,7 @@ import cash from './cash';
 import attentionApi from './attention';
 import praiseApi from './praise/index';
 import inviteApi from './invite';
+import entryformApi from './entryform/index';
 import subscribeApi from './subscribe';
 import gray from './gray';
 import wechatApi from './brand/wechat';
@@ -73,6 +74,7 @@ export {
   praiseApi,
   watchSignApi,
   inviteApi,
+  entryformApi,
   subscribeApi,
   gray,
   wechatApi,

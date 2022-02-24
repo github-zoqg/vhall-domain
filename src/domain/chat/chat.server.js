@@ -190,7 +190,11 @@ class ChatServer extends BaseServer {
       imgUrls: this.state.imgUrls || []
     };
   }
-
+  //往聊天列表里手动添加消息
+  addChatToList(item) {
+    item.count = Msg.getcount();
+    this.state.chatList.push(item);
+  }
   // 清空聊天消息
   clearHistoryMsg() {
     this.state.chatList.splice(0, this.state.chatList.length);
