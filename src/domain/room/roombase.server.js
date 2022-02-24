@@ -34,6 +34,7 @@ class RoomBaseServer extends BaseServer {
       faultTipMsg: '', // 黄金链路-降级提示文案
       lowerGradeInterval: null, // 黄金链路计时器
       clientType: '',
+      deviceType: '', // 设备类型   pc 或 手机
       skinInfo: {}, // 皮肤信息
       webinarTag: {}, //活动标识
       screenPosterInfo: {}, // 开屏海报信息
@@ -61,10 +62,6 @@ class RoomBaseServer extends BaseServer {
     return this;
   }
 
-  setClientType(type) {
-    this.state.clientType = type;
-  }
-
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
     if (!['send', 'standard', 'embed', 'sdk'].includes(options.clientType)) {
@@ -74,7 +71,8 @@ class RoomBaseServer extends BaseServer {
     if (['standard', 'embed'].includes(options.clientType) && !options.visitor_id) {
       options.visitor_id = sessionStorage.getItem('visitorId');
     }
-    this.setClientType(options.clientType);
+    this.state.clientType = options.clientType;
+    this.state.deviceType = options.deviceType;
     return new Promise((resolve, reject) => {
       meeting[liveType.get(options.clientType)](options).then(res => {
         if (res.code === 200) {
