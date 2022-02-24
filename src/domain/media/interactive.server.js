@@ -522,9 +522,9 @@ class InteractiveServer extends BaseServer {
 
   // 创建桌面共享流
   createLocaldesktopStream(options = {}, addConfig = {}) {
-    return this.interactiveInstance.createLocaldesktopStream(options, addConfig);
+    const params = merge.recursive({}, options, addConfig);
+    return this.createLocalStream(params);
   }
-
   // 创建本地音频流
   createLocalAudioStream(options = {}, addConfig = {}) {
     return this.interactiveInstance.createLocalAudioStream(options, addConfig);
@@ -602,11 +602,11 @@ class InteractiveServer extends BaseServer {
   }
 
   // 推送本地流到远端
-  publishStream() {
+  publishStream(options = {}) {
     const { state: roomBaseServerState } = useRoomBaseServer();
     return this.interactiveInstance
       .publish({
-        streamId: this.state.localStream.streamId
+        streamId: options.streamId || this.state.localStream.streamId
       })
       .then(data => {
         return data;
