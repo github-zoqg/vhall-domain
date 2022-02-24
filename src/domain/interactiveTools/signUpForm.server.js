@@ -13,7 +13,7 @@ class SignUpFormServer {
   /**
    * 检查报名表单独立链接是否有效
    * */
-  getFormOpenLinkStatus(params = {}) {
+  getFormLinkStatus(params = {}) {
     return signUpFormApi.fetchVerifyOpenLink(params);
   }
 
