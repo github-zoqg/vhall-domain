@@ -10,9 +10,17 @@ class SubscribeServer extends BaseServer {
   listenMsg() {
     const msgServer = useMsgServer();
     // 房间消息
-    msgServer.$onMsg('CHAT', msg => {
-      if (msg.data.type === 'live_start') {
+    msgServer.$onMsg('ROOM_MSG', msg => {
+      if (msg.data.type == 'live_start') {
         this.$emit('live_start', msg.data);
+      }
+
+      if (msg.data.type === 'pay_success') {
+        this.$emit('pay_success', msg.data);
+      }
+
+      if (msg.data.type === 'live_over') {
+        window.location.reload();
       }
     });
   }
