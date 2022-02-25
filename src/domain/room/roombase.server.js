@@ -53,6 +53,7 @@ class RoomBaseServer extends BaseServer {
       interactToolStatus: {}, //互动工具状态信息
       roomVisibleModules: [],
       miniElement: 'stream-list', // 可能的值：doc  stream-list
+      isShareScreen: false, // 是否桌面共享
       //多语言信息
       languages: {
         curLang: 'zh',
@@ -120,6 +121,10 @@ class RoomBaseServer extends BaseServer {
   // 设置miniELement的值
   setChangeElement(val) {
     this.state.miniElement = val;
+  }
+  // 设置isShareScreen的值
+  setShareScreenStatus(val) {
+    this.state.isShareScreen = val;
   }
 
   // 更新roomVisibleModule

@@ -17,10 +17,19 @@ class RebroadCastServer {
 
   resetState() {
     return {
+      // 列表用
       total: 0,
       current: '',
       sourceWebinarId: '',
-      list: []
+      list: [],
+
+      appId: '',
+      token: '',
+      accountId: '',
+      roomId: '',
+      videoParam: {
+        type: 'live'
+      }
     };
   }
 
@@ -36,8 +45,15 @@ class RebroadCastServer {
   }
 
   // 预览转播
-  preview(params = {}) {
-    return rebroadcastRequest.rebroadcastPreview(params);
+  async preview(params = {}) {
+    const res = await rebroadcastRequest.rebroadcastPreview(params);
+    const data = res.data;
+    this.state.token = data.paas_access_token;
+    this.state.accountId = data.third_party_user_id;
+    this.state.appId = data.paas_app_id;
+    this.state.roomId = data.room_id;
+
+    return res;
   }
 
   // 开始转播

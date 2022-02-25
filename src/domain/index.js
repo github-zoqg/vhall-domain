@@ -24,6 +24,7 @@ import useWatchRewardServer from '@/domain/interactiveTools/reward.server.js';
 import useAttentionServer from '@/domain/interactiveTools/attention.server.js';
 import usePraiseServer from '@/domain/interactiveTools/praise.server.js';
 import useSignServer from '@/domain/interactiveTools/sign.server.js';
+import userSignUpFormServer from "@/domain/interactiveTools/signUpForm.server.js";
 
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
@@ -151,6 +152,7 @@ export {
   useInviteServer,
   version,
   useEntryformServer,
+  userSignUpFormServer,
   useSubscribeServer,
   useSubjectServer,
   useRedPacketServer

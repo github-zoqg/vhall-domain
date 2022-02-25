@@ -1,8 +1,7 @@
-import contextServer from '../common/context.server';
+import useInteractiveServer from './interactive.server';
+import useRoomBaseServer from '../room/roombase.server';
 export default function useDesktopShareServer() {
   let state = { localDesktopStreamId: '' };
-
-  const interactiveServer = contextServer.get('interactiveServer');
 
   //检测浏览器是否支持桌面共享
   function browserDetection() {
@@ -30,6 +29,8 @@ export default function useDesktopShareServer() {
 
   //分享屏幕检测
   function shareScreenCheck() {
+    const interactiveServer = useInteractiveServer();
+
     return new Promise((resolve, reject) => {
       interactiveServer.checkSystemRequirements().then(checkResult => {
         console.log('result', checkResult, checkResult.result, 'detail', checkResult.detail);
@@ -47,7 +48,10 @@ export default function useDesktopShareServer() {
 
   // 开始桌面共享
   function startShareScreen(options) {
-    const { state: roomBaseServerState } = contextServer.get('roomBaseServer');
+    const interactiveServer = useInteractiveServer();
+    const roomBaseServer = useRoomBaseServer();
+
+    const { state: roomBaseServerState } = roomBaseServer;
 
     const retOptions = {
       videoNode: options.videoNode,
@@ -69,6 +73,8 @@ export default function useDesktopShareServer() {
 
   // 推桌面共享流
   function publishDesktopShareStream(streamId) {
+    const interactiveServer = useInteractiveServer();
+
     return new Promise((resolve, reject) => {
       interactiveServer
         .publishStream({ streamId })
