@@ -30,7 +30,9 @@ class MemberServer extends BaseServer {
       //房间号
       roomId,
       //是否在分组里
-      isInGroup:groupInitData.isInGroup
+      isInGroup:groupInitData.isInGroup,
+      //组长的id
+      leaderId:''
     };
 
     this.listenEvents();
@@ -54,6 +56,9 @@ class MemberServer extends BaseServer {
           _this.state.onlineUsers.forEach(item => {
             if (element.accountId === item.accountId) {
               item.is_apply = true;
+            }
+            if ([20,'20'].includes(item.role_name)) {
+              this.state.leaderId = item.account_id;
             }
           });
         });
@@ -175,8 +180,10 @@ class MemberServer extends BaseServer {
     let assistant = []; // 助理
     let onMicAudience = []; // 上麦观众
     let downMicAudience = []; // 普通观众
+    const leader = []; // 组长
     list.forEach(item => {
-      switch (Number(item.role_name)) {
+      const role = Number(item.role_name)
+      switch (role) {
         // 主持人
         case 1:
           host.push(item);
@@ -186,7 +193,10 @@ class MemberServer extends BaseServer {
         case 2:
           item.is_speak ? onMicAudience.push(item) : downMicAudience.push(item);
           break;
-
+        // 组长
+        case 20:
+          leader.push(item);
+          break;
         // 助理
         case 3:
           assistant.push(item);
@@ -205,7 +215,7 @@ class MemberServer extends BaseServer {
     if (downMicAudience.length > 200) {
       downMicAudience = downMicAudience.slice(-200);
     }
-    return host.concat(onMicGuest, downMicGuest, assistant, onMicAudience, downMicAudience);
+    return host.concat(onMicGuest, downMicGuest, assistant, leader, onMicAudience, downMicAudience);
   }
 
 }
