@@ -3,15 +3,26 @@ import useRoomBaseServer from '@/domain/room/roombase.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
 import redPacketApi from '../../request/redPacket';
 
+const RED_ENVELOPE_OK = 'red_envelope_ok'; // 支付成功消息
 class RedPacketServer extends BaseServer {
   constructor() {
     super();
+    this.listenMsg();
+  }
+
+  listenMsg() {
+    useMsgServer().$onMsg('ROOM_MSG', msg => {
+      switch (msg.data.event_type || msg.data.type) {
+        case RED_ENVELOPE_OK:
+          this.$emit(RED_ENVELOPE_OK, msg);
+          break;
+      }
+    });
   }
   /**
    * @description 发送红包
    */
   createRedPacket(params) {
-    console.log(params);
     const { watchInitData } = useRoomBaseServer().state;
     const { interact } = watchInitData;
     return redPacketApi.createRedpacket({
@@ -19,6 +30,9 @@ class RedPacketServer extends BaseServer {
       ...params
     });
   }
+  /**
+   * @description 发送红包后的数据上报
+   */
   createReport(params) {
     this.$vhall_paas_port({
       k: 110054,
