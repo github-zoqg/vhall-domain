@@ -49,6 +49,7 @@ import useInviteServer from '@/domain/interactiveTools/invite.server.js';
 import useEntryformServer from '@/domain/entryform/entry.server.js';
 import useSubscribeServer from '@/domain/subscribe/subscribe.server';
 import useSubjectServer from '@/domain/brand/subject.server';
+import useRedPacketServer from '@/domain/interactiveTools/redPacketServer.js';
 
 /**
  * options:{
@@ -151,5 +152,6 @@ export {
   version,
   useEntryformServer,
   useSubscribeServer,
-  useSubjectServer
+  useSubjectServer,
+  useRedPacketServer
 };
