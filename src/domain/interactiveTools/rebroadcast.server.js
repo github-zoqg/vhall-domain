@@ -1,3 +1,4 @@
+import useRoomBaseServer from '../room/roombase.server';
 import { rebroadcast as rebroadcastRequest } from '@/request';
 
 class RebroadCastServer {
@@ -23,7 +24,9 @@ class RebroadCastServer {
       sourceWebinarId: '',
       list: [],
 
+      subject: '',
       appId: '',
+      channelId: '',
       token: '',
       accountId: '',
       roomId: '',
@@ -31,6 +34,18 @@ class RebroadCastServer {
         type: 'live'
       }
     };
+  }
+
+  init() {
+    const roomState = useRoomBaseServer().state;
+    const rebroadcast = roomState.watchInitData.rebroadcast;
+    if (!rebroadcast) return;
+
+    this.state.roomId = rebroadcast.room_id;
+    this.state.channelId = rebroadcast.channel_id;
+    this.state.subject = rebroadcast.subject;
+
+    debugger;
   }
 
   // 获取转播列表页
