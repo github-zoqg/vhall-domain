@@ -12,7 +12,7 @@ const getWebinarInfo = (params = {}) => {
 
   return $http({
     url: '/v3/webinars/webinar/info',
-    type: 'POST',
+    method: 'POST',
     data: retParmams
   });
 };

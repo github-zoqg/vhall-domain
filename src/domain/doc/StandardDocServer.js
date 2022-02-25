@@ -32,8 +32,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
       thumbnailList: [], // 缩略图列表
       switchStatus: false, // 直播中观众是否可见
-      hasDocPermission: false, //是否文档的演示(操作)权限
-      watchDocShow: false //回放观看端文档是否可见
+      hasDocPermission: false //是否文档的演示(操作)权限
     };
   }
 
@@ -243,7 +242,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     this.on(VHDocSDK.Event.VOD_TIME_UPDATE, data => {
       // console.log('[doc] dispatch_doc_vod_time_update:', data);
-      this.state.watchDocShow = data.watchOpen;
+      this.state.switchStatus = data.watchOpen;
       if (data.activeId) {
         this.selectContainer(data.activeId);
         this.state.currentCid = data.activeId;
