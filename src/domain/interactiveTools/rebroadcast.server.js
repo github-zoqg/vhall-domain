@@ -12,8 +12,8 @@ class RebroadCastServer extends BaseServer {
     super();
 
     this.state = this.resetState();
-    
-    this.listenEvent()
+
+    this.listenEvent();
     RebroadCastServer.instance = this;
     return this;
   }
@@ -33,7 +33,7 @@ class RebroadCastServer extends BaseServer {
       rebroadcastId: '',
       subject: '',
       appId: '',
-      docUrl:'',
+      docUrl: '',
       // docUrl:'//t-alistatic01.e.vhall.com/static/img/video_default_nologo.png',
       channelId: '',
       token: '',
@@ -57,28 +57,37 @@ class RebroadCastServer extends BaseServer {
 
   /**
    * 监听(维护)转播事件
-   * 
+   *
    */
   listenEvent() {
     const msgServer = useMsgServer();
+    const roomBaseServer = useRoomBaseServer();
 
     msgServer.$onMsg('ROOM_MSG', rawMsg => {
-      let temp = Object.assign({}, rawMsg);
-      if (typeof temp.data !== 'object') {
-        temp.data = JSON.parse(temp.data);
-        temp.context = JSON.parse(temp.context);
+      let msg = Object.assign({}, rawMsg);
+      if (typeof msg.data !== 'object') {
+        msg.data = JSON.parse(msg.data);
+        msg.context = JSON.parse(msg.context);
       }
 
-      console.log('domain rebroadcastServer websocket msg:', temp);
-      const { type = '' } = temp.data || {};
+      console.log('domain rebroadcastServer websocket msg:', msg);
+      const { type = '' } = msg.data || {};
 
       switch (type) {
         // 转播开始
         case 'live_broadcast_start':
+          roomBaseServer.setRebroadcastInfo({
+            id: msg.data.source_id,
+            channel_id: msg.data.channel_id
+          });
           this.$emit('live_broadcast_start');
           break;
         // 转播结束
         case 'live_broadcast_stop':
+          roomBaseServer.setRebroadcastInfo({
+            id: '',
+            channel_id: ''
+          });
           this.$emit('live_broadcast_stop');
           break;
         default:

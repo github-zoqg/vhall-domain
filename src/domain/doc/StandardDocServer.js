@@ -2,6 +2,7 @@ import AbstractDocServer from './AbstractDocServer';
 import { merge, sleep } from '../../utils';
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
+import useRebroadcastServer from '../interactiveTools/rebroadcast.server';
 import { doc as docApi } from '../../request/index.js';
 import request from '@/utils/http.js';
 /**
@@ -72,9 +73,8 @@ export default class StandardDocServer extends AbstractDocServer {
         if (watchInitData?.rebroadcast?.channel_id) {
           // 直播中旁路频道
           // this.docServer.setAccountId({ accountId: this.accountId + '7890' });
-          // this.$VhallEventBus.$emit('docInfo', this.docInfo);
-          // this.docServer.setRole(roleTypeMap[2]);
-          // this.docServer.setPlayMode(VHDocSDK.PlayMode.FLV);
+          this.setRole(VHDocSDK.RoleType.GUEST);
+          this.setPlayMode(VHDocSDK.PlayMode.FLV);
         }
       })
       .catch(ex => {
@@ -142,6 +142,17 @@ export default class StandardDocServer extends AbstractDocServer {
   }
 
   _initEvent() {
+    const rebroadcastServer = useRebroadcastServer();
+    // 转播开始，将观众可见置为 false 通过getContainerList判断最新的值
+    rebroadcastServer.$on('live_broadcast_start', () => {
+      this.state.switchStatus = false;
+    });
+
+    // 转播结束，将观众可见置为 false 通过getContainerList判断最新的值
+    rebroadcastServer.$on('live_broadcast_stop', () => {
+      this.state.switchStatus = false;
+    });
+
     // 所有文档加载完成事件
     this.on(VHDocSDK.Event.ALL_COMPLETE, () => {
       // if (process.env.NODE_ENV !== 'production') console.debug('所有文档加载完成');
