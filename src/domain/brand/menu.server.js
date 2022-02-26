@@ -12,8 +12,7 @@ class MenuServer extends BaseServer {
       list: [
         { name: '聊天', type: 3, status: '1', welcome_content: '' },
         { name: '公告', type: 'notice', status: '1' },
-        { name: '成员', type: 8, text: '成员', status: '1' },
-        { name: '问答', type: 'v5', text: '问答', status: '1' }
+        { name: '成员', type: 8, text: '成员', status: '1' }
       ]
     };
   }
