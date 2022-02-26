@@ -132,6 +132,14 @@ class RoomBaseServer extends BaseServer {
     this.state.isShareScreen = val;
   }
 
+  // 设置转播信息
+  setRebroadcastInfo(data) {
+    this.state.watchInitData.rebroadcast = {
+      ...this.state.watchInitData.rebroadcast,
+      ...data
+    };
+  }
+
   // 更新roomVisibleModule
   updateRoomVisibleModules(cb) {
     this.state.roomVisibleModules = cb(this.state.roomVisibleModules);
