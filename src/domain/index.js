@@ -24,8 +24,8 @@ import useWatchRewardServer from '@/domain/interactiveTools/reward.server.js';
 import useAttentionServer from '@/domain/interactiveTools/attention.server.js';
 import usePraiseServer from '@/domain/interactiveTools/praise.server.js';
 import useSignServer from '@/domain/interactiveTools/sign.server.js';
-import useSignUpFormServer from "@/domain/interactiveTools/signUpForm.server.js";
-import useKeyLoginServer from "@/domain/keyLogin/keyLogin.server.js";
+import useSignUpFormServer from '@/domain/interactiveTools/signUpForm.server.js';
+import useKeyLoginServer from '@/domain/keyLogin/keyLogin.server.js';
 
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
@@ -51,6 +51,7 @@ import useInviteServer from '@/domain/interactiveTools/invite.server.js';
 import useEntryformServer from '@/domain/entryform/entry.server.js';
 import useSubscribeServer from '@/domain/subscribe/subscribe.server';
 import useSubjectServer from '@/domain/brand/subject.server';
+import useRedPacketServer from '@/domain/interactiveTools/redPacketServer.js';
 
 /**
  * options:{
@@ -155,5 +156,6 @@ export {
   useSignUpFormServer,
   useSubscribeServer,
   useSubjectServer,
+  useRedPacketServer,
   useKeyLoginServer
 };
