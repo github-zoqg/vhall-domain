@@ -9,6 +9,8 @@ class RebroadCastServer {
 
     this.state = this.resetState();
     RebroadCastServer.instance = this;
+
+    window.rebroadcast = this;
     return this;
   }
 
@@ -20,10 +22,11 @@ class RebroadCastServer {
     return {
       // 列表用
       total: 0,
-      current: '',
+      currentRoomId: '',
       sourceWebinarId: '',
       list: [],
 
+      rebroadcastId: '',
       subject: '',
       appId: '',
       channelId: '',
@@ -40,12 +43,10 @@ class RebroadCastServer {
     const roomState = useRoomBaseServer().state;
     const rebroadcast = roomState.watchInitData.rebroadcast;
     if (!rebroadcast) return;
-
+    this.state.rebroadcastId = rebroadcast.id;
     this.state.roomId = rebroadcast.room_id;
     this.state.channelId = rebroadcast.channel_id;
     this.state.subject = rebroadcast.subject;
-
-    debugger;
   }
 
   // 获取转播列表页
