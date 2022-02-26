@@ -66,8 +66,6 @@ class InteractiveServer extends BaseServer {
           this._addListeners();
           // 房间当前远端流列表
           this.state.remoteStreams = event.currentStreams.filter(stream => stream.streamType === 2);
-
-          console.error('11111', event.currentStreams);
           resolve(event);
         },
         error => {
@@ -897,15 +895,7 @@ class InteractiveServer extends BaseServer {
 
   // 订阅流列表
   getRoomStreams() {
-    console.log('[interactive server] 调用了getRoomStreams');
-    const streamList = this.interactiveInstance.getRoomStreams();
-    this.state.remoteStreams = streamList
-      .filter(stream => stream.streamType === 2)
-      .map(stream => ({
-        ...stream,
-        attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
-      }));
-    return this.state.remoteStreams;
+    return this.interactiveInstance.getRoomStreams();
   }
 
   /**
