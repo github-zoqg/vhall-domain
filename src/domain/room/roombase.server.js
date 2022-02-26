@@ -81,9 +81,7 @@ class RoomBaseServer extends BaseServer {
         if (res.code === 200) {
           this.state.watchInitData = res.data;
           console.log('watchInitData', res.data);
-          setRequestHeaders({
-            'interact-token': res.data.interact.interact_token
-          });
+          sessionStorage.setItem('interact_token', res.data.interact.interact_token);
           sessionStorage.setItem('visitorId', res.data.visitor_id);
           this.addListeners();
           resolve(res);
