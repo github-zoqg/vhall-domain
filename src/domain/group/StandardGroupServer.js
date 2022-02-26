@@ -225,7 +225,9 @@ class StandardGroupServer extends BaseServer {
   }
 
   //【进入/退出小组】消息处理
-  async msgdoForGroupManagerEnter(msg) {}
+  async msgdoForGroupManagerEnter(msg) {
+    this.$emit('dispatch_group_enter', msg);
+  }
 
   //【小组解散】消息处理
   async msgdoForGroupDisband(msg) {
