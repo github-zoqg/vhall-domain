@@ -2,6 +2,7 @@ import { meeting } from '@/request/index.js';
 import { setRequestHeaders } from '@/utils/http.js';
 import { merge } from '@/utils/index.js';
 import BaseServer from '../common/base.server';
+import useMsgServer from '../common/msg.server';
 /**
  * send:发起端
  * standard:标准直播
@@ -13,7 +14,8 @@ const liveType = new Map([
   ['send', 'initSendLive'], //发起端
   ['standard', 'initStandardReceiveLive'], //标准观看端
   ['embed', 'initEmbeddedReceiveLive'], //嵌入直播
-  ['sdk', 'initSdkReceiveLive'] //sdk直播
+  ['sdk', 'initSdkReceiveLive'], //sdk直播
+  ['record', 'initRecordVideo'] //录制
 ]);
 class RoomBaseServer extends BaseServer {
   constructor() {
@@ -51,7 +53,8 @@ class RoomBaseServer extends BaseServer {
       timerInfo: {}, //计时器
       interactToolStatus: {}, //互动工具状态信息
       roomVisibleModules: [],
-      miniElement: 'stream-list', // 可能的值：doc  stream-list
+      miniElement: 'stream-list', // 可能的值：doc  stream-list sceen
+      isShareScreen: false, // 是否桌面共享
       //多语言信息
       languages: {
         curLang: 'zh',
@@ -64,7 +67,7 @@ class RoomBaseServer extends BaseServer {
 
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
-    if (!['send', 'standard', 'embed', 'sdk'].includes(options.clientType)) {
+    if (!['send', 'standard', 'embed', 'sdk', 'record'].includes(options.clientType)) {
       throw new Error('不合法的客户端类型');
     }
     console.log('初始化初始化', options.clientType);
@@ -80,6 +83,7 @@ class RoomBaseServer extends BaseServer {
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
           sessionStorage.setItem('visitorId', res.data.visitor_id);
+          this.addListeners();
           resolve(res);
         } else {
           reject(res);
@@ -88,19 +92,31 @@ class RoomBaseServer extends BaseServer {
     });
   }
 
+  addListeners() {
+    useMsgServer().$onMsg('ROOM_MSG', msg => {
+      if (msg.data.type == 'live_start') {
+        this.state.watchInitData.webinar.type = 1;
+      }
+    });
+  }
+
   // 设置是否是嵌入
   setEmbedObj(param) {
     // 嵌入
-    this.embedObj.embed = param.isEmbed;
+    this.state.embedObj.embed = param.isEmbed;
     // 单视频嵌入
-    this.embedObj.embedVideo = param.isEmbedVideo;
+    this.state.embedObj.embedVideo = param.isEmbedVideo;
   }
 
   // 设置miniELement
   requestChangeMiniElement(requestEle) {
     switch (requestEle) {
       case 'stream-list':
-        this.state.miniElement = this.state.miniElement == 'doc' ? 'stream-list' : 'doc';
+        if (this.state.isShareScreen) {
+          this.state.miniElement = this.state.miniElement == 'screen' ? 'stream-list' : 'screen';
+        } else {
+          this.state.miniElement = this.state.miniElement == 'doc' ? 'stream-list' : 'doc';
+        }
         break;
     }
   }
@@ -108,6 +124,10 @@ class RoomBaseServer extends BaseServer {
   // 设置miniELement的值
   setChangeElement(val) {
     this.state.miniElement = val;
+  }
+  // 设置isShareScreen的值
+  setShareScreenStatus(val) {
+    this.state.isShareScreen = val;
   }
 
   // 更新roomVisibleModule
@@ -294,9 +314,34 @@ class RoomBaseServer extends BaseServer {
     });
   }
 
+  // 回放录制页面，开始录制
+  startRecord(data = {}) {
+    return meeting.startRecord(data).then(res => {
+      if (res.code == 200) {
+        this.state.watchInitData.is_recording = 1;
+      }
+      return res;
+    });
+  }
+
+  // 回放录制页面，结束录制
+  endRecord(data = {}) {
+    return meeting.endRecord(data).then(res => {
+      if (res.code == 200) {
+        this.state.watchInitData.is_recording = 0;
+      }
+      return res;
+    });
+  }
+
+  // 录制结束生成回放
+  createRecordInRecord(data = {}) {
+    return meeting.createRecordInRecord(data);
+  }
+
   // 直播结束生成回放
-  createRecord(data = {}) {
-    return meeting.createRecord(data);
+  createRecordInLive(data = {}) {
+    return meeting.createRecordInLive(data);
   }
 
   // 设为默认回放
@@ -304,30 +349,31 @@ class RoomBaseServer extends BaseServer {
     return meeting.setDefaultRecord(data);
   }
 
-  // 开始/恢复录制
-  startRecord() {
-    return meeting.recordApi({
+  // 开始/恢复打点录制
+  startRecordInLive(params = {}) {
+    const retParmams = {
+      webinar_id: params.webinarId || this.state.watchInitData.webinar.id,
       status: 1
-    });
+    };
+    return meeting.recordApi(retParmams);
   }
 
-  // 暂停录制
-  pauseRecord() {
-    return meeting.recordApi({
+  // 暂停打点录制
+  pauseRecordInLive(params = {}) {
+    const retParmams = {
+      webinar_id: params.webinarId || this.state.watchInitData.webinar.id,
       status: 2
-    });
+    };
+    return meeting.recordApi(retParmams);
   }
 
-  // 结束录制
-  endRecord() {
-    return meeting.recordApi({
+  // 结束打点录制
+  endRecordInLive(params = {}) {
+    const retParmams = {
+      webinar_id: params.webinarId || this.state.watchInitData.webinar.id,
       status: 3
-    });
-  }
-
-  //初始化回放录制
-  initReplayRecord(params = {}) {
-    return meeting.initRecordApi(params);
+    };
+    return meeting.recordApi(retParmams);
   }
 
   // 获取第三方推流地址

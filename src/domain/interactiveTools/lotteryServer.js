@@ -9,7 +9,7 @@ import BaseServer from '../common/base.server';
 const LOTTERY_PUSH = 'lottery_push';
 const LOTTERY_RESULT_NOTICE = 'lottery_result_notice';
 class LotteryServer extends BaseServer {
-  constructor(opt) {
+  constructor(opt = {}) {
     super();
     const watchInitData = useRoomBaseServer().state.watchInitData;
     this._roomId = watchInitData.interact.room_id;

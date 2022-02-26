@@ -49,6 +49,7 @@ class MicServer extends BaseServer {
           break;
         // 用户取消申请上麦
         case 'vrtc_connect_apply_cancel':
+          this.$emit('vrtc_connect_apply_cancel', msg);
           break;
         // 主持人拒绝用户上麦申请
         // case 'user_apply_host_reject':
@@ -103,7 +104,7 @@ class MicServer extends BaseServer {
         case 'vrtc_big_screen_set':
           const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
           interactToolStatus.main_screen = msg.data.room_join_id;
-
+          this.$emit('vrtc_big_screen_set', msg);
           // const str = watchInitData.webinar.mode == 6 ? '主画面' : '主讲人';
           // this.$message.warning(`${msg.nick_name}设成为${str}`);
           break;

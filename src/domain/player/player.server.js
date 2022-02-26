@@ -213,6 +213,10 @@ class PlayerServer extends BaseServer {
       if (msg.data.type == 'live_start') {
         this.$emit('live_start', msg.data);
       }
+
+      if (msg.data.type === 'pay_success') {
+        this.$emit('pay_success', msg.data);
+      }
     });
 
     // 视频加载完成

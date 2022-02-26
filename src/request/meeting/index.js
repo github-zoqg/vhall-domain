@@ -42,6 +42,16 @@ function initSdkReceiveLive(params) {
   });
 }
 
+//发起端回放录制初始化
+function initRecordVideo(data = {}) {
+  const url = env.meeting === 'v3' ? '/v3/webinars/record/init' : '';
+  return request({
+    url,
+    method: 'POST',
+    data
+  });
+}
+
 // 通过活动id获取活动拥有者用户id
 function webinarInitBefore(params) {
   const url =
@@ -73,6 +83,25 @@ function endLive(params) {
   });
 }
 
+// 开始录制
+function startRecord(params) {
+  const url = env.meeting === 'v3' ? '/v3/webinars/record/start-record' : '';
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
+
+// 结束录制
+function endRecord(params) {
+  const url = env.meeting === 'v3' ? '/v3/webinars/record/stop-record' : '';
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
 // 进入直播前检测
 function checkLive(params) {
   const url = env.meeting === 'v3' ? '/v3/webinars/live/check' : '';
@@ -203,8 +232,18 @@ function tipOffInfo(params) {
   });
 }
 
+// 开始暂停结束打点录制api
+function recordApi(data) {
+  console.log('录制接口', data);
+  return request({
+    url: '/v3/webinars/record/ticker',
+    method: 'POST',
+    data
+  });
+}
+
 // 直播结束生成回放
-function createRecord(data) {
+function createRecordInLive(data) {
   const url = env.meeting === 'v3' ? '/v3/webinars/record/live-create-record' : '';
   return request({
     url,
@@ -216,6 +255,16 @@ function createRecord(data) {
 // 设为默认回放
 function setDefaultRecord(data) {
   const url = env.meeting === 'v3' ? '/v3/webinars/record/set-default' : '';
+  return request({
+    url,
+    method: 'POST',
+    data
+  });
+}
+
+// 录制页面录制完成,生成回放/v3/webinars/record/create
+function createRecordInRecord(data) {
+  const url = env.meeting === 'v3' ? '/v3/webinars/record/create' : '';
   return request({
     url,
     method: 'POST',
@@ -244,8 +293,13 @@ const meeting = {
   getLowerGradeConfigInfo,
   feedbackInfo,
   tipOffInfo,
-  createRecord,
-  setDefaultRecord
+  createRecordInLive,
+  setDefaultRecord,
+  recordApi,
+  initRecordVideo,
+  startRecord,
+  endRecord,
+  createRecordInRecord
 };
 
 export default meeting;
