@@ -27,7 +27,8 @@ class InteractiveServer extends BaseServer {
         streamId: null
       },
       remoteStreams: [], // 远端流数组
-      streamListHeightInWatch: 0 // PC观看端流列表高度
+      streamListHeightInWatch: 0, // PC观看端流列表高度
+      fullScreenType: false // wap 全屏状态
     };
     InteractiveServer.instance = this;
     return this;
