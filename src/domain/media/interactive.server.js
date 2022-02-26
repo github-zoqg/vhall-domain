@@ -23,6 +23,9 @@ class InteractiveServer extends BaseServer {
         audioMuted: false,
         attributes: {}
       },
+      screenStream: {
+        streamId: null
+      },
       remoteStreams: [], // 远端流数组
       streamListHeightInWatch: 0 // PC观看端流列表高度
     };
@@ -62,8 +65,7 @@ class InteractiveServer extends BaseServer {
           this.interactiveInstance = event.vhallrtc;
           this._addListeners();
           // 房间当前远端流列表
-          this.state.remoteStreams = event.currentStreams;
-
+          this.state.remoteStreams = event.currentStreams.filter(stream => stream.streamType === 2);
           resolve(event);
         },
         error => {
@@ -239,19 +241,24 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
       e.data.attributes = e.data.attributes && JSON.parse(e.data.attributes);
-      const remoteStream = {
-        ...e.data,
-        audioMuted: e.data.stream.audioMuted,
-        videoMuted: e.data.stream.videoMuted
-      };
+
+      if (e.data.streamType === 2) {
+        const remoteStream = {
+          ...e.data,
+          audioMuted: e.data.stream.audioMuted,
+          videoMuted: e.data.stream.videoMuted
+        };
+        this.state.remoteStreams.push(remoteStream);
+      }
       console.log('----流加入事件----', e);
-      this.state.remoteStreams.push(remoteStream);
+
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e);
     });
 
     // 远端流离开事件,自己的流删除事件收不到
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
       console.log('---流删除事件---', e);
+
       // 从流列表中删除
       this.state.remoteStreams = this.state.remoteStreams.filter(
         stream => stream.streamId != e.data.streamId
@@ -288,8 +295,26 @@ class InteractiveServer extends BaseServer {
       // 本地推流或订阅远端流异常断开事件
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e);
     });
+
+    // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
-      // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
+      // if(this.roleName == 1){
+      //   this.resetLayout()
+      // }
+      if (e.data.streamId == this.state.screenStream.streamId) {
+        this.state.screenStream.streamId = '';
+        useRoomBaseServer().setShareScreenStatus(false);
+        useRoomBaseServer().setChangeElement('stream-list');
+      }
+
+      // if (e.data.streamId == this.state.localStream.streamId) {
+
+      //   if (this.splited) return; // 解决17565 【H5】主持人结束“分屏”，主持人自动下麦
+      //   EventBus.$emit('EVENT_STREAM_END_ERROR');
+      //   if (this.$localStreamId == e.data.streamId) {
+      //     this.speakOff();
+      //   }
+      // }
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e);
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e => {
@@ -371,14 +396,22 @@ class InteractiveServer extends BaseServer {
       .createStream(options)
       .then(data => {
         console.log('----创建本地流成功----', data);
-        this.state.localStream = {
-          streamId: data.streamId,
-          audioMuted: options.mute?.audio || false,
-          videoMuted: options.mute?.video || false
-        };
+        // 如果创建的是桌面共享流
+        if (options.streamType === 3) {
+          this.state.screenStream.streamId = data.streamId;
+        } else {
+          this.state.localStream = {
+            streamId: data.streamId,
+            audioMuted: options.mute?.audio || false,
+            videoMuted: options.mute?.video || false
+          };
+        }
         return data;
       })
       .catch(err => {
+        if (err?.data?.error?.msg?.message === 'Permission denied') {
+          return err;
+        }
         // 创建失败重试三次
         if (InteractiveServer._createLocalStreamRetryCount >= 3) {
           InteractiveServer._createLocalStreamRetryCount = 0;
@@ -522,7 +555,7 @@ class InteractiveServer extends BaseServer {
 
   // 创建桌面共享流
   createLocaldesktopStream(options = {}, addConfig = {}) {
-    const params = merge.recursive({}, options, addConfig);
+    const params = merge.recursive({ streamType: 3 }, options, addConfig);
     return this.createLocalStream(params);
   }
   // 创建本地音频流
@@ -699,21 +732,63 @@ class InteractiveServer extends BaseServer {
     return this.interactiveInstance.stopBroadCast();
   }
 
+  // 获取插播和桌面共享的流信息
+  getDesktopAndIntercutInfo() {
+    let streamList = this.interactiveInstance.getRoomStreams();
+    streamList = streamList.map(stream => ({
+      ...stream,
+      attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
+    }));
+
+    // 此处默认插播和桌面共享不共存，只会返回一个
+    let stream = streamList.find(stream => stream.streamType === 3 || stream.streamType === 4);
+    return stream;
+  }
+  // 重新旁路布局
+  resetLayout() {
+    const role_name = useRoomBaseServer().state.watchInitData.join_info.role_name;
+    if (role_name != 1) return;
+
+    const isInGroup = useGroupServer().state.groupInitData.isInGroup;
+    if (isInGroup) return;
+
+    const stream = this.getDesktopAndIntercutInfo();
+
+    // 如果有桌面共享或插播
+    if (stream) {
+      this.setBroadCastScreen(stream.streamId)
+        .then(() => {
+          console.log('动态设置旁路主屏幕成功', stream.streamId);
+        })
+        .catch(e => {
+          console.error('动态设置旁路主屏幕失败', e);
+        });
+    }
+
+    if (stream) {
+      // 一人铺满布局
+      this.setBroadCastLayout({ layout: VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 });
+    } else {
+      // 自适应布局
+      const adaptiveLayoutMode = useMediaSettingServer().state.layout;
+      this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode });
+    }
+  }
+
   // 动态配置指定旁路布局模板
   setBroadCastLayout(options = {}) {
     return this.interactiveInstance.setBroadCastLayout(options);
   }
-
   // 配置旁路布局自适应模式
   setBroadCastAdaptiveLayoutMode(options = {}) {
     return this.interactiveInstance.setBroadCastAdaptiveLayoutMode(options);
   }
 
   // 动态配置旁路主屏
-  setBroadCastScreen(options = {}) {
+  setBroadCastScreen(streamId) {
     return this.interactiveInstance
       .setBroadCastScreen({
-        mainScreenStreamId: options.mainScreenStreamId || this.state.localStream.streamId
+        mainScreenStreamId: streamId || this.state.localStream.streamId
       })
       .catch(async err => {
         // 设置失败重试三次
@@ -726,7 +801,7 @@ class InteractiveServer extends BaseServer {
         InteractiveServer._setBroadCastScreenRetryCount
           ? InteractiveServer._setBroadCastScreenRetryCount++
           : (InteractiveServer._setBroadCastScreenRetryCount = 1);
-        return this.setBroadCastScreen(options);
+        return this.setBroadCastScreen(streamId);
       });
   }
 
@@ -820,12 +895,7 @@ class InteractiveServer extends BaseServer {
 
   // 订阅流列表
   getRoomStreams() {
-    const streamList = this.interactiveInstance.getRoomStreams();
-    this.state.remoteStreams = streamList.map(stream => ({
-      ...stream,
-      attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
-    }));
-    return this.state.remoteStreams;
+    return this.interactiveInstance.getRoomStreams();
   }
 
   /**

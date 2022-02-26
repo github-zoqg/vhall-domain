@@ -1,10 +1,44 @@
 import useInteractiveServer from './interactive.server';
 import useRoomBaseServer from '../room/roombase.server';
-export default function useDesktopShareServer() {
-  let state = { localDesktopStreamId: '' };
+import BaseServer from '../common/base.server';
+import VhallPaasSDK from '@/sdk/index';
+import { merge } from '../../utils';
+class DesktopShareServer extends BaseServer {
+  constructor() {
+    super();
+    if (typeof DesktopShareServer.instance === 'object') {
+      return DesktopShareServer.instance;
+    }
+    this.state = {
+      localStream: { localDesktopStreamId: '' }
+    };
+    DesktopShareServer.instance = this;
+
+    this._addListeners();
+    return this;
+  }
+
+  _addListeners() {
+    const interactiveServer = useInteractiveServer();
+
+    // 远端流加入事件
+    interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
+      // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
+      if (e.data.streamType === 3) {
+        this.$emit('screen_stream_add', e);
+      }
+    });
+    // 远端流离开事件
+    interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
+      // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
+      if (e.data.streamType === 3) {
+        this.$emit('screen_stream_remove', e);
+      }
+    });
+  }
 
   //检测浏览器是否支持桌面共享
-  function browserDetection() {
+  browserDetection() {
     const ua = navigator.userAgent;
     const chromeTest = ua.match(/chrome\/([\d\.]+)/i);
     const chromeVersion = chromeTest ? chromeTest[1] : 0;
@@ -28,7 +62,7 @@ export default function useDesktopShareServer() {
   }
 
   //分享屏幕检测
-  function shareScreenCheck() {
+  shareScreenCheck() {
     const interactiveServer = useInteractiveServer();
 
     return new Promise((resolve, reject) => {
@@ -47,7 +81,7 @@ export default function useDesktopShareServer() {
   }
 
   // 开始桌面共享
-  function startShareScreen(options) {
+  startShareScreen(options) {
     const interactiveServer = useInteractiveServer();
     const roomBaseServer = useRoomBaseServer();
 
@@ -72,14 +106,28 @@ export default function useDesktopShareServer() {
   }
 
   // 推桌面共享流
-  function publishDesktopShareStream(streamId) {
+  publishDesktopShareStream(streamId) {
     const interactiveServer = useInteractiveServer();
 
     return new Promise((resolve, reject) => {
       interactiveServer
         .publishStream({ streamId })
         .then(res => {
-          state.localDesktopStreamId = streamId;
+          // state.localDesktopStreamId = streamId;
+          resolve(res);
+        })
+        .catch(reject);
+    });
+  }
+  // 订阅桌面共享流
+  subscribeDesktopShareStream(options) {
+    const interactiveServer = useInteractiveServer();
+
+    return new Promise((resolve, reject) => {
+      interactiveServer
+        .subscribe(options)
+        .then(res => {
+          // state.localDesktopStreamId = options.streamId;
           resolve(res);
         })
         .catch(reject);
@@ -89,16 +137,10 @@ export default function useDesktopShareServer() {
   /**
    * 停止桌面共享
    * */
-  function stopShareScreen(streamId) {
+  stopShareScreen(streamId) {
     return interactiveServer.unpublishStream(streamId || state.localDesktopStreamId);
   }
-
-  return {
-    state,
-    browserDetection,
-    shareScreenCheck,
-    startShareScreen,
-    publishDesktopShareStream,
-    stopShareScreen
-  };
+}
+export default function useDesktopShareServer() {
+  return new DesktopShareServer();
 }

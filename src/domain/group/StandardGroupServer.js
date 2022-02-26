@@ -160,6 +160,25 @@ class StandardGroupServer extends BaseServer {
         case 'room_group_kickout':
           this.msgdoForRoomGroupKickout(msg);
           break;
+        // 邀请演示(主直播间主持人邀请其它成员演示，小组内组长邀请其它成员演示)
+        case 'vrtc_connect_presentation':
+          this.$emit(this.EVENT_TYPE.VRTC_CONNECT_PRESENTATION, msg);
+          break;
+        // 邀请演示-同意
+        case 'vrtc_connect_presentation_agree':
+          break;
+        // 同意演示成功 ——> 开始演示
+        case 'vrtc_connect_presentation_success':
+          this.msgdoForVrtcConnectPresentationSuccess(msg);
+          break;
+        // 结束演示
+        case 'vrtc_disconnect_presentation_success':
+          this.msgdoForVrtcDisconnectPresentationSuccess(msg);
+          break;
+        // 拒绝演示邀请
+        case 'vrtc_connect_presentation_refused':
+          this.$emit(this.EVENT_TYPE.VRTC_CONNECT_PRESENTATION_REFUSED, msg);
+          break;
       }
     });
 
@@ -200,7 +219,6 @@ class StandardGroupServer extends BaseServer {
           // 更新待分配的人员列表
           this.getWaitingUserList();
         }
-        this.$emit('dispatch_group_room_create');
       }
       this.getGroupedUserList();
     }
@@ -247,7 +265,7 @@ class StandardGroupServer extends BaseServer {
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
 
-      this.$emit('dispatch_group_disband');
+      this.$emit(this.EVENT_TYPE.GROUP_DISBAND);
     }
   }
 
@@ -291,7 +309,7 @@ class StandardGroupServer extends BaseServer {
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
 
-      this.$emit('dispatch_group_switch_start');
+      this.$emit(this.EVENT_TYPE.GROUP_SWITCH_START);
     }
   }
 
@@ -335,7 +353,7 @@ class StandardGroupServer extends BaseServer {
     // 处理文档channel切换逻辑
     useDocServer().groupReInitDocProcess();
 
-    this.$emit('dispatch_group_switch_end');
+    this.$emit(this.EVENT_TYPE.GROUP_SWITCH_END);
   }
 
   //【切换小组】小组人员变动
@@ -468,7 +486,7 @@ class StandardGroupServer extends BaseServer {
       if (msg.data.group_id == this.state.groupInitData.group_id) {
         // 在一个组里面，需要更新小组数据
         await this.updateGroupInitData();
-        this.$emit('dispatch_group_leader_change');
+        this.$emit(this.EVENT_TYPE.GROUP_LEADER_CHANGE);
       }
     }
   }
@@ -513,13 +531,53 @@ class StandardGroupServer extends BaseServer {
         useDocServer().groupReInitDocProcess();
 
         // 本人被提出提示
-        this.$emit('dispatch_room_group_kickout');
+        this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT);
       } else {
         console.log('[group ------没有被踢出');
       }
     }
   }
 
+  // 同意邀请演示成功消息
+  async msgdoForVrtcConnectPresentationSuccess(msg) {
+    if (this.isInGroup) {
+      // 如果在小组内
+      await this.updateGroupInitData();
+      // if(msg.data.room_join_id===)
+    } else {
+      // 在直播间内
+      await useRoomBaseServer().getInavToolStatus();
+      const { watchInitData } = useRoomBaseServer().state;
+      if (msg.data.room_join_id == watchInitData.join_info.third_party_user_id) {
+        // 如果演示者是自己，设置文档操作权限为主人
+        useDocServer().setRole(VHDocSDK.RoleType.HOST);
+      } else {
+        // 演示者不是自己，设置文档操作权限为观众
+        useDocServer().setRole(VHDocSDK.RoleType.SPECTATOR);
+      }
+    }
+    this.$emit(this.EVENT_TYPE.VRTC_CONNECT_PRESENTATION_SUCCESS, msg);
+  }
+
+  // 结束演示 成功消息
+  async msgdoForVrtcDisconnectPresentationSuccess(msg) {
+    if (this.isInGroup) {
+      // 如果在小组内
+      await this.updateGroupInitData();
+    } else {
+      // 在直播间内
+      await useRoomBaseServer().getInavToolStatus();
+      const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
+      if (interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id) {
+        // 设置文档操作权限为主人
+        useDocServer().setRole(VHDocSDK.RoleType.HOST);
+      } else {
+        // 设置文档操作权限为观众
+        useDocServer().setRole(VHDocSDK.RoleType.SPECTATOR);
+      }
+    }
+    this.$emit(this.EVENT_TYPE.VRTC_DISCONNECT_PRESENTATION_SUCCESS, msg);
+  }
   /**
    * 功能1：初始化分配小组
    * 功能2：新增n个小组 （此时固定way=2）
@@ -735,25 +793,6 @@ class StandardGroupServer extends BaseServer {
     }
   }
 
-  // 结束别的用户演示
-  async endOtherPresentation() {
-    const { watchInitData } = useRoomBaseServer().state;
-    const params = {
-      room_id: watchInitData.interact.room_id, // 主直播房间ID
-      receive_account_id: ''
-    };
-    return await groupApi.endOtherPresentation(params);
-  }
-
-  // 结束自己演示
-  async endSelfPresentation() {
-    const { watchInitData } = useRoomBaseServer().state;
-    const params = {
-      room_id: watchInitData.interact.room_id // 主直播房间ID
-    };
-    return await groupApi.endSelfPresentation(params);
-  }
-
   /**
    * 收到切换小组消息,判断是否需要切换 channel
    * 服务端无法确定是group_ids数组的id的 from,to 顺序
@@ -804,6 +843,15 @@ class StandardGroupServer extends BaseServer {
       isBanned: options.isBanned
     };
     useMsgServer().sendMainRoomMsg(JSON.stringify(body));
+  }
+
+  // 设置主讲人（邀请演示）
+  async presentation() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const params = {
+      room_id: watchInitData.interact.room_id // 主直播房间ID
+    };
+    return await groupApi.presentation(params);
   }
 
   // 请求协助

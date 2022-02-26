@@ -97,25 +97,16 @@ export default class StandardDocServer extends AbstractDocServer {
     // 如果当前用户进入了某个小组
     if (groupInitData && groupInitData.isInGroup) {
       // 当前用户在小组房间内
-      this.state.hasDocPermission =
-        groupInitData.main_screen == watchInitData.join_info.third_party_user_id;
-      defaultOptions.role = this.mapDocRole(this.state.hasDocPermission ? 1 : 2); // 角色
+      const hasDocPermission =
+        groupInitData.presentation_screen == watchInitData.join_info.third_party_user_id;
+      defaultOptions.role = this.mapDocRole(hasDocPermission ? 1 : 3); // 角色
       defaultOptions.roomId = groupInitData.group_room_id;
       defaultOptions.channelId = groupInitData.channel_id;
       defaultOptions.token = groupInitData.access_token;
     } else {
-      //当前用户在主直播间内
-      if (interactToolStatus && interactToolStatus.main_screen) {
-        // 分组直播和非分组直播的文档权限字段不同
-        if (watchInitData.webinar.mode === 6) {
-          this.state.hasDocPermission =
-            interactToolStatus.main_screen == watchInitData.join_info.third_party_user_id; // 演示权限-> 主屏权限
-        } else {
-          this.state.hasDocPermission =
-            interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
-        }
-      }
-      defaultOptions.role = this.mapDocRole(watchInitData.join_info.role_name);
+      const hasDocPermission =
+        interactToolStatus.presentation_screen == watchInitData.join_info.third_party_user_id;
+      defaultOptions.role = this.mapDocRole(hasDocPermission ? 1 : 3);
       defaultOptions.roomId = watchInitData.interact.room_id; // 必填。
       defaultOptions.channelId = watchInitData.interact.channel_id; // 频道id 必须
       defaultOptions.token = watchInitData.interact.paas_access_token; // access_token，必填

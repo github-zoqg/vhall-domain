@@ -75,29 +75,30 @@ class giftsServer extends BaseServer {
   }
 
   sendGift(params, msgContext) {
-    const { watchInitData } = roomBaseServer().state;
-    const msgData = {
-      type: 'permit',
-      event_type: 'free_gift_send',
-      avatar: watchInitData.join_info.avatar,
-      barrageTxt: '',
-      text_content: '',
-      nickname: watchInitData.join_info.nickname,
-      role_name: 2,
-      gift_name: msgContext.name,
-      gift_url: msgContext.image_url,
-      source_status: msgContext.source_status
-    };
-    const context = {
-      avatar: watchInitData.join_info.avatar,
-      nickname: watchInitData.join_info.nickname
-    };
-    return giftsApi.sendGift(params).then(res => {
-      if (res.code == 200) {
-        useMsgServer().sendChatMsg(msgData, context);
-        return res;
-      }
-    });
+    // const { watchInitData } = roomBaseServer().state;
+    // const msgData = {
+    //   type: 'permit',
+    //   event_type: 'free_gift_send',
+    //   avatar: watchInitData.join_info.avatar,
+    //   barrageTxt: '',
+    //   text_content: '',
+    //   nickname: watchInitData.join_info.nickname,
+    //   role_name: 2,
+    //   gift_name: msgContext.name,
+    //   gift_url: msgContext.image_url,
+    //   source_status: msgContext.source_status
+    // };
+    // const context = {
+    //   avatar: watchInitData.join_info.avatar,
+    //   nickname: watchInitData.join_info.nickname
+    // };
+    return giftsApi.sendGift(params);
+    // .then(res => {
+    //   if (res.code == 200) {
+    //     useMsgServer().sendChatMsg(msgData, context);
+    //     return res;
+    //   }
+    // });
   }
 }
 
