@@ -330,6 +330,14 @@ class ChatServer extends BaseServer {
   getKickedList(params = {}) {
     return iMRequest.chat.getKickedList(params);
   }
+  //获取私聊的聊天内容
+  getPrivateChatList(params={}){
+    return iMRequest.chat.fetchPrivateChatList(params);
+  }
+  //获取私聊的联系人列表
+  getPrivateContactList(params={}){
+    return iMRequest.chat.fetchPrivateContactList(params);
+  }
 }
 
 export default function useChatServer() {
