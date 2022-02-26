@@ -106,7 +106,7 @@ class RebroadCastServer extends BaseServer {
     this.state.accountId = data.third_party_user_id;
     this.state.appId = data.paas_app_id;
     this.state.roomId = data.room_id;
-    // this.state.docUrl = data.document_url;
+    this.state.docUrl = data.document_url;
 
     return res;
   }
