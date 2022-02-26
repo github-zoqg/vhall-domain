@@ -104,9 +104,9 @@ class RoomBaseServer extends BaseServer {
   // 设置是否是嵌入
   setEmbedObj(param) {
     // 嵌入
-    this.embedObj.embed = param.isEmbed;
+    this.state.embedObj.embed = param.isEmbed;
     // 单视频嵌入
-    this.embedObj.embedVideo = param.isEmbedVideo;
+    this.state.embedObj.embedVideo = param.isEmbedVideo;
   }
 
   // 设置miniELement
