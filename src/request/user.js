@@ -186,6 +186,15 @@ const uploadImage = (data = {}) => {
   });
 };
 
+//口令登录
+function roleLogin(params = {}) {
+  return request({
+    url: '/v3/webinars/live/role-login',
+    method: 'GET',
+    params: params
+  });
+}
+
 export default {
   getCapthaKey,
   sendCode,
@@ -203,5 +212,6 @@ export default {
   editUserNickName,
   thirdUnbind,
   bindInfo,
-  uploadImage
+  uploadImage,
+  roleLogin
 };

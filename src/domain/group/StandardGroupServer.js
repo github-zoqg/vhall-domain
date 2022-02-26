@@ -160,6 +160,20 @@ class StandardGroupServer extends BaseServer {
         case 'room_group_kickout':
           this.msgdoForRoomGroupKickout(msg);
           break;
+        // 邀请演示(主直播间主持人邀请其它成员演示，小组内组长邀请其它成员演示)
+        case 'vrtc_connect_presentation':
+          this.$emit('dispatch_vrtc_connect_presentation', msg);
+          break;
+        // 同意演示成功 ——> 开始演示
+        case 'vrtc_connect_presentation_success':
+          break;
+        // 结束演示
+        case 'vrtc_disconnect_presentation_success':
+          break;
+        // 拒绝演示邀请
+        case 'vrtc_connect_presentation_refused':
+          this.$emit(this.EVENT_TYPE.VRTC_CONNECT_PRESENTATION_REFUSED, msg);
+          break;
       }
     });
 
@@ -804,6 +818,15 @@ class StandardGroupServer extends BaseServer {
       isBanned: options.isBanned
     };
     useMsgServer().sendMainRoomMsg(JSON.stringify(body));
+  }
+
+  // 设置主讲人（邀请演示）
+  async presentation() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const params = {
+      room_id: watchInitData.interact.room_id // 主直播房间ID
+    };
+    return await groupApi.presentation(params);
   }
 
   // 请求协助
