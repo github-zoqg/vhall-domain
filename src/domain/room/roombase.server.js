@@ -250,6 +250,11 @@ class RoomBaseServer extends BaseServer {
     return meeting.getInavToolStatus(retParams).then(res => {
       if (res.code == 200) {
         this.state.interactToolStatus = res.data;
+        if (!this.state.interactToolStatus.presentation_screen) {
+          // 演示人没有，设置主讲人是演示人
+          this.state.interactToolStatus.presentation_screen =
+            this.state.interactToolStatus.doc_permission;
+        }
       }
       return res;
     });
