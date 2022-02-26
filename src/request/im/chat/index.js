@@ -213,6 +213,18 @@ function fetchPrivateContactList(params={}){
   });
 }
 
+/**
+ * 获取私聊聊天记录（PC观看）
+ * */
+function fetchPrivateChatHistoryList(params={}){
+  const url = env.imChat === 'v3' ? '/v3/interacts/qa/get-webinar-history-questions':'';
+  return request({
+    url,
+    method:'POST',
+    data:params
+  });
+}
+
 export default {
   getChatList,
   getBannedList,
@@ -228,5 +240,6 @@ export default {
   deleteUserMessage,
   sendCustomMessage,
   fetchPrivateChatList,
-  fetchPrivateContactList
+  fetchPrivateContactList,
+  fetchPrivateChatHistoryList
 };

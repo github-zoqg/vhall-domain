@@ -338,6 +338,10 @@ class ChatServer extends BaseServer {
   getPrivateContactList(params={}){
     return iMRequest.chat.fetchPrivateContactList(params);
   }
+  //获取私聊的记录列表
+  getPrivateChatHistoryList(params={}){
+    return iMRequest.chat.fetchPrivateChatHistoryList(params);
+  }
 }
 
 export default function useChatServer() {
