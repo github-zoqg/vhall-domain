@@ -130,7 +130,7 @@ const endSelfPresentation = (params = {}) => {
   });
 };
 
-// 切换主讲人
+// 切换主讲人（用户上麦并开始演示）
 const presentation = (params = {}) => {
   const url = env.group === 'v3' ? '/v3/interacts/inav-user/presentation' : ''; // TODO 补充v4接口
   return request({
