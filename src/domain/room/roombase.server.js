@@ -52,7 +52,7 @@ class RoomBaseServer extends BaseServer {
       timerInfo: {}, //计时器
       interactToolStatus: {}, //互动工具状态信息
       roomVisibleModules: [],
-      miniElement: 'stream-list', // 可能的值：doc  stream-list
+      miniElement: 'stream-list', // 可能的值：doc  stream-list sceen
       isShareScreen: false, // 是否桌面共享
       //多语言信息
       languages: {
@@ -113,7 +113,11 @@ class RoomBaseServer extends BaseServer {
   requestChangeMiniElement(requestEle) {
     switch (requestEle) {
       case 'stream-list':
-        this.state.miniElement = this.state.miniElement == 'doc' ? 'stream-list' : 'doc';
+        if (this.state.isShareScreen) {
+          this.state.miniElement = this.state.miniElement == 'screen' ? 'stream-list' : 'screen';
+        } else {
+          this.state.miniElement = this.state.miniElement == 'doc' ? 'stream-list' : 'doc';
+        }
         break;
     }
   }
