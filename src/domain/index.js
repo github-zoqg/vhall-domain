@@ -29,9 +29,9 @@ import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
 import useRebroadcastServer from '@/domain/interactiveTools/rebroadcast.server';
 
-// 问答
+// 问答关联
+import useQaAdminServer from '@/domain/interactiveTools/qaadmin.server.js';
 import useQaServer from '@/domain/interactiveTools/qa.server.js';
-
 import { setToken, setRequestHeaders } from '@/utils/http.js';
 import VhallPaasSDK from '../sdk';
 import { Dep } from '@/domain/common/base.server';
@@ -133,6 +133,7 @@ export {
   useNoticeServer,
   useMemberServer,
   useGroupServer,
+  useQaAdminServer,
   useQaServer,
   useCustomMenuServer,
   useRebroadcastServer,
