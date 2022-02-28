@@ -745,6 +745,7 @@ class InteractiveServer extends BaseServer {
 
   // 获取插播和桌面共享的流信息
   getDesktopAndIntercutInfo() {
+    if (!this.interactiveInstance) return
     let streamList = this.interactiveInstance.getRoomStreams();
     streamList = streamList.map(stream => ({
       ...stream,
