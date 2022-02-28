@@ -1,19 +1,15 @@
-import {im as imRequest} from '@/request/index.js';
+import { im as imRequest } from '@/request/index.js';
 import BaseServer from '@/domain/common/base.server';
-import useMsgServer from "../common/msg.server";
 import useRoomBaseServer from "../room/roombase.server";
 //基础服务
 const roomServer = useRoomBaseServer();
-//消息服务
-const msgServer = useMsgServer();
-
 class MemberServer extends BaseServer {
   constructor() {
     if (typeof MemberServer.instance === 'object') {
       return MemberServer.instance;
     }
     super();
-    const {roomId = '', roleName, avatar = ''} = roomServer.state.watchInitData;
+    const { roomId = '', roleName, avatar = '' } = roomServer.state.watchInitData;
     const { groupInitData = {} } = roomServer.state;
 
     this.state = {
@@ -30,9 +26,9 @@ class MemberServer extends BaseServer {
       //房间号
       roomId,
       //是否在分组里
-      isInGroup:groupInitData.isInGroup,
+      isInGroup: groupInitData.isInGroup,
       //组长的id
-      leaderId:''
+      leaderId: ''
     };
 
     this.listenEvents();
@@ -57,7 +53,7 @@ class MemberServer extends BaseServer {
             if (element.accountId === item.accountId) {
               item.is_apply = true;
             }
-            if ([20,'20'].includes(item.role_name)) {
+            if ([20, '20'].includes(item.role_name)) {
               this.state.leaderId = item.account_id;
             }
           });
@@ -84,11 +80,11 @@ class MemberServer extends BaseServer {
       pos: 0,
       limit: 100
     };
-    let requestParams = Object.assign(data,params);
+    let requestParams = Object.assign(data, params);
     try {
       const bannedList = await _this.getMutedUserList(requestParams);
       const kickedList = _this.state.isInGroup
-        ? {data: {list: []}}
+        ? { data: { list: [] } }
         : await _this.getKickedUserList(requestParams);
       const list = bannedList.data.list.concat(kickedList.data.list);
       const hash = {};
