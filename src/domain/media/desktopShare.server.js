@@ -13,19 +13,28 @@ class DesktopShareServer extends BaseServer {
       localStream: { localDesktopStreamId: '' }
     };
     DesktopShareServer.instance = this;
-
     this._addListeners();
+
     return this;
   }
-
+  init() {}
   _addListeners() {
     const interactiveServer = useInteractiveServer();
 
     // 远端流加入事件
+    interactiveServer.$on('VhallRTC_init_success', () => {
+      // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
+
+      let stream = interactiveServer.getDesktopAndIntercutInfo();
+      if (stream?.streamType === 3) {
+        this.$emit('screen_stream_add', stream.streamId);
+      }
+    });
+    // 远端流加入事件
     interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
       if (e.data.streamType === 3) {
-        this.$emit('screen_stream_add', e);
+        this.$emit('screen_stream_add', e.data.streamId);
       }
     });
     // 远端流离开事件
