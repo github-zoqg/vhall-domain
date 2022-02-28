@@ -310,6 +310,7 @@ class StandardGroupServer extends BaseServer {
       // useRoomBaseServer().groupReInitInteractProcess();
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
+      this._setDocPermisson();
 
       this.$emit(this.EVENT_TYPE.GROUP_SWITCH_START);
     }
@@ -354,7 +355,7 @@ class StandardGroupServer extends BaseServer {
 
     // 处理文档channel切换逻辑
     useDocServer().groupReInitDocProcess();
-
+    this._setDocPermisson();
     this.$emit(this.EVENT_TYPE.GROUP_SWITCH_END);
   }
 
@@ -478,20 +479,11 @@ class StandardGroupServer extends BaseServer {
   //【组长变更/组长更改】消息处理
   async msgdoForGroupLeaderChange(msg) {
     console.log('[group] room-msg group_leader_change:', msg);
-    const { watchInitData } = useRoomBaseServer().state;
     if (msg.data.group_id == this.state.groupInitData.group_id) {
       // 在一个组里面，需要更新小组数据
       await this.updateGroupInitData();
-      if (
-        this.state.groupInitData.presentation_screen == watchInitData.join_info.third_party_user_id
-      ) {
-        // 如果演示者是自己
-        // 设置文档操作权限为主人
-        useDocServer().setRole(VHDocSDK.RoleType.HOST);
-      } else {
-        // 设置文档操作权限为观众
-        useDocServer().setRole(VHDocSDK.RoleType.SPECTATOR);
-      }
+
+      this._setDocPermisson();
     }
     if (useRoomBaseServer().state.watchInitData.join_info.role_name != 2) {
       this.state.groupInitData.doc_permission = msg.data.account_id;
@@ -553,14 +545,7 @@ class StandardGroupServer extends BaseServer {
       // 在直播间内
       await useRoomBaseServer().getInavToolStatus();
     }
-    const { watchInitData } = useRoomBaseServer().state;
-    if (msg.data.room_join_id == watchInitData.join_info.third_party_user_id) {
-      // 如果演示者是自己，设置文档操作权限为主人
-      useDocServer().setRole(VHDocSDK.RoleType.HOST);
-    } else {
-      // 演示者不是自己，设置文档操作权限为观众
-      useDocServer().setRole(VHDocSDK.RoleType.SPECTATOR);
-    }
+    this._setDocPermisson();
     this.$emit(this.EVENT_TYPE.VRTC_CONNECT_PRESENTATION_SUCCESS, msg);
   }
 
@@ -569,29 +554,29 @@ class StandardGroupServer extends BaseServer {
     if (this.isInGroup) {
       // 如果在小组内
       await this.updateGroupInitData();
-      if (
-        this.state.groupInitData.presentation_screen == watchInitData.join_info.third_party_user_id
-      ) {
-        // 设置文档操作权限为主人
-        useDocServer().setRole(VHDocSDK.RoleType.HOST);
-      } else {
-        // 设置文档操作权限为观众
-        useDocServer().setRole(VHDocSDK.RoleType.SPECTATOR);
-      }
     } else {
       // 在直播间内
       await useRoomBaseServer().getInavToolStatus();
-      const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
-      if (interactToolStatus.presentation_screen == watchInitData.join_info.third_party_user_id) {
-        // 设置文档操作权限为主人
-        useDocServer().setRole(VHDocSDK.RoleType.HOST);
-      } else {
-        // 设置文档操作权限为观众
-        useDocServer().setRole(VHDocSDK.RoleType.SPECTATOR);
-      }
     }
+    this._setDocPermisson();
     this.$emit(this.EVENT_TYPE.VRTC_DISCONNECT_PRESENTATION_SUCCESS, msg);
   }
+
+
+  // 设置文档操作权限
+  _setDocPermisson() {
+    const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
+    if ((this.isInGroup && this.state.groupInitData.presentation_screen == watchInitData.join_info.third_party_user_id) ||
+      (!this.isInGroup && interactToolStatus.presentation_screen == watchInitData.join_info.third_party_user_id)) {
+      // 在小组内有要是权限，或者在主直播间有演示权限
+      // 设置文档操作权限为主人
+      useDocServer().setRole(VHDocSDK.RoleType.HOST);
+    } else {
+      // 设置文档操作权限为观众
+      useDocServer().setRole(VHDocSDK.RoleType.SPECTATOR);
+    }
+  }
+
   /**
    * 功能1：初始化分配小组
    * 功能2：新增n个小组 （此时固定way=2）
