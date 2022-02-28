@@ -5,6 +5,8 @@ import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useInteractiveServer from './interactive.server';
 import userMemberServer from '../member/member.server';
+import useGroupServer from '../group/StandardGroupServer';
+
 class MicServer extends BaseServer {
   constructor() {
     super();
@@ -116,6 +118,14 @@ class MicServer extends BaseServer {
   initMicState() {
     const roomBaseServer = useRoomBaseServer();
     const { speaker_list } = roomBaseServer.state.interactToolStatus;
+    // 分组直播speaker list
+    const groupSpeakerList = useGroupServer().state.groupInitData?.speaker_list;
+    if (groupSpeakerList && groupSpeakerList.length) {
+      this.state.isSpeakOn = groupSpeakerList.some(
+        item => item.account_id == join_info.third_party_user_id
+      );
+      return this.state.isSpeakOn;
+    }
     if (!speaker_list) return;
     const { join_info } = roomBaseServer.state.watchInitData;
     if (speaker_list && speaker_list.length) {
