@@ -48,6 +48,11 @@ class ChatServer extends BaseServer {
         //表情处理
         rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
         //格式化消息用于渲染并添加到消息列表
+        //私聊我的消息
+        if (this.isMyMsg(rawMsg) || this.isSelfMsg(rawMsg)) {
+          this.$emit('receivePrivateMsg', rawMsg);
+          return
+        }
         this.state.chatList.push(Msg._handleGenerateMsg(rawMsg));
         //@当前用户
         if (this.isAtMe(rawMsg)) {
@@ -331,15 +336,15 @@ class ChatServer extends BaseServer {
     return iMRequest.chat.getKickedList(params);
   }
   //获取私聊的聊天内容
-  getPrivateChatList(params={}){
+  getPrivateChatList(params = {}) {
     return iMRequest.chat.fetchPrivateChatList(params);
   }
   //获取私聊的联系人列表
-  getPrivateContactList(params={}){
+  getPrivateContactList(params = {}) {
     return iMRequest.chat.fetchPrivateContactList(params);
   }
   //获取私聊的记录列表
-  getPrivateChatHistoryList(params={}){
+  getPrivateChatHistoryList(params = {}) {
     return iMRequest.chat.fetchPrivateChatHistoryList(params);
   }
 }
