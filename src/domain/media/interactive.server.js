@@ -328,9 +328,11 @@ class InteractiveServer extends BaseServer {
       // }
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e);
     });
+
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e => {
       // 本地流视频发送帧率异常事件
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e);
+      console.error(e)
+      // this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e);
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e => {
       // 新增设备或移除设备时触发
