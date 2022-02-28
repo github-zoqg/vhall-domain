@@ -524,4 +524,10 @@ export default class AbstractDocServer extends BaseServer {
   getThumbnailList() {
     return this.docInstance.getThumbnailList();
   }
+
+
+  @checkDocInstance()
+  loadVodIframe() {
+    return this.docInstance.loadVodIframe();
+  }
 }

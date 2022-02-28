@@ -17,8 +17,8 @@ class UserServer {
     this.state = {
       captchaVal: null, // 云盾图形码
       second: -1, // 倒计时的秒数
-      errorMsg: '', // 错误提示
-      userInfo: {}, // 用户信息
+      capErrorMsg: '', // 错误提示
+      userInfo: null, // 用户信息
       thirdInfo: {} // 第三方授权绑定的信息 从userInfo拆分的
     };
   }
@@ -102,7 +102,7 @@ class UserServer {
       }, 1000);
     };
     const failure = res => {
-      this.state.errorMsg = res.msg;
+      this.state.capcapErrorMsg = res.msg;
       this.refreshNECaptha();
     };
     const params = {
@@ -263,13 +263,13 @@ class UserServer {
    * 跳转到qq授权登录链接、跳转到微信授权登录链接
    * /v3/users/oauth/callback
    * */
-  authLogin(params) {}
+  authLogin(params) { }
 
   /**
    * 微信浏览器微信授权登录
    * /v3/commons/auth/weixin
    * */
-  authLoginByWx() {}
+  authLoginByWx() { }
 
   /**-----------------------  以下是否B端接口?  -----------------------**/
 
@@ -277,19 +277,19 @@ class UserServer {
    * 校验验证码,获取验证码（图形验证码）
    * /v3/users/code-consumer/send
    * */
-  getGraphCode() {}
+  getGraphCode() { }
 
   /**
    * 校验手机验证码、邮件验证码
    * /v3/users/code/check
    * */
-  checkCode() {}
+  checkCode() { }
 
   /**
    * 角度口令登录
    * /v3/webinars/live/role-login
    * */
-  roleLogin() {}
+  roleLogin() { }
 
   // 获取用户信息
   getUserInfo(data) {
@@ -356,6 +356,6 @@ class UserServer {
   }
 }
 
-export default function useuserServer() {
+export default function useUserServer() {
   return UserServer.getInstance();
 }

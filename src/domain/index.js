@@ -53,6 +53,8 @@ import useSubscribeServer from '@/domain/subscribe/subscribe.server';
 import useSubjectServer from '@/domain/brand/subject.server';
 import useRedPacketServer from '@/domain/interactiveTools/redPacketServer.js';
 
+import useSplitScreenServer from '@/domain/media/splitScreen.server';
+
 /**
  * options:{
     token,
@@ -158,5 +160,6 @@ export {
   useSubscribeServer,
   useSubjectServer,
   useRedPacketServer,
-  useKeyLoginServer
+  useKeyLoginServer,
+  useSplitScreenServer
 };
