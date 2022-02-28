@@ -81,9 +81,7 @@ class RoomBaseServer extends BaseServer {
         if (res.code === 200) {
           this.state.watchInitData = res.data;
           console.log('watchInitData', res.data);
-          setRequestHeaders({
-            'interact-token': res.data.interact.interact_token
-          });
+          sessionStorage.setItem('interact_token', res.data.interact.interact_token);
           sessionStorage.setItem('visitorId', res.data.visitor_id);
           this.addListeners();
           resolve(res);
@@ -130,6 +128,14 @@ class RoomBaseServer extends BaseServer {
   // 设置isShareScreen的值
   setShareScreenStatus(val) {
     this.state.isShareScreen = val;
+  }
+
+  // 设置转播信息
+  setRebroadcastInfo(data) {
+    this.state.watchInitData.rebroadcast = {
+      ...this.state.watchInitData.rebroadcast,
+      ...data
+    };
   }
 
   // 更新roomVisibleModule
@@ -250,6 +256,11 @@ class RoomBaseServer extends BaseServer {
     return meeting.getInavToolStatus(retParams).then(res => {
       if (res.code == 200) {
         this.state.interactToolStatus = res.data;
+        if (!this.state.interactToolStatus.presentation_screen) {
+          // 演示人没有，设置主讲人是演示人
+          this.state.interactToolStatus.presentation_screen =
+            this.state.interactToolStatus.doc_permission;
+        }
       }
       return res;
     });

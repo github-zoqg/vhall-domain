@@ -24,16 +24,16 @@ import useWatchRewardServer from '@/domain/interactiveTools/reward.server.js';
 import useAttentionServer from '@/domain/interactiveTools/attention.server.js';
 import usePraiseServer from '@/domain/interactiveTools/praise.server.js';
 import useSignServer from '@/domain/interactiveTools/sign.server.js';
-import useSignUpFormServer from "@/domain/interactiveTools/signUpForm.server.js";
-import useKeyLoginServer from "@/domain/keyLogin/keyLogin.server.js";
+import useSignUpFormServer from '@/domain/interactiveTools/signUpForm.server.js';
+import useKeyLoginServer from '@/domain/keyLogin/keyLogin.server.js';
 
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
 import useRebroadcastServer from '@/domain/interactiveTools/rebroadcast.server';
 
-// 问答
+// 问答关联
+import useQaAdminServer from '@/domain/interactiveTools/qaadmin.server.js';
 import useQaServer from '@/domain/interactiveTools/qa.server.js';
-
 import { setToken, setRequestHeaders } from '@/utils/http.js';
 import VhallPaasSDK from '../sdk';
 import { Dep } from '@/domain/common/base.server';
@@ -51,6 +51,7 @@ import useInviteServer from '@/domain/interactiveTools/invite.server.js';
 import useEntryformServer from '@/domain/entryform/entry.server.js';
 import useSubscribeServer from '@/domain/subscribe/subscribe.server';
 import useSubjectServer from '@/domain/brand/subject.server';
+import useRedPacketServer from '@/domain/interactiveTools/redPacketServer.js';
 
 /**
  * options:{
@@ -135,6 +136,7 @@ export {
   useNoticeServer,
   useMemberServer,
   useGroupServer,
+  useQaAdminServer,
   useQaServer,
   useCustomMenuServer,
   useRebroadcastServer,
@@ -155,5 +157,6 @@ export {
   useSignUpFormServer,
   useSubscribeServer,
   useSubjectServer,
+  useRedPacketServer,
   useKeyLoginServer
 };

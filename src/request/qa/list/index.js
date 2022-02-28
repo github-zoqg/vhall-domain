@@ -31,7 +31,15 @@ const qaDisable = (params = {}) => {
     data: params
   });
 };
-
+// 发送问答
+const sendQaMsg = (params = {}) => {
+  const url = env.qa === 'v3' ? '/v3/interacts/qa/submit-one-question' : '';
+  return request({
+    url: url,
+    method: 'POST',
+    data: params
+  });
+};
 // 获取当前场次收集到的问题个数
 const getCurrentPlayQuestionNum = (params = {}) => {
   const url = env.qa === 'v3' ? '/v3/interacts/qa/get-current-play-question-num' : '';
@@ -61,7 +69,14 @@ const getQuestionByStatus = (params = {}) => {
     data: params
   });
 };
-
+const getHistoryQaMsg = (params = {}) => {
+  const url = env.qa === 'v3' ? '/v3/interacts/qa/get-webinar-history-questions' : '';
+  return request({
+    url: url,
+    method: 'POST',
+    data: params
+  });
+};
 // 发送私聊信息
 const chatPrivateSendMessage = (params = {}) => {
   const url = env.qa === 'v3' ? '/v3/interacts/chat-private/send-message' : '';
@@ -126,6 +141,8 @@ export default {
   initChatMess,
   qaEnable,
   qaDisable,
+  sendQaMsg,
+  getHistoryQaMsg,
   getCurrentPlayQuestionNum,
   replyUserQuestion,
   getQuestionByStatus,

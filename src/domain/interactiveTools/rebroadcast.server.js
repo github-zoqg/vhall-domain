@@ -1,12 +1,19 @@
+import BaseServer from '../common/base.server';
+import useRoomBaseServer from '../room/roombase.server';
 import { rebroadcast as rebroadcastRequest } from '@/request';
+import useMsgServer from '@/domain/common/msg.server.js';
 
-class RebroadCastServer {
+class RebroadCastServer extends BaseServer {
   constructor() {
     if (typeof RebroadCastServer.instance === 'object') {
       return RebroadCastServer.instance;
     }
 
+    super();
+
     this.state = this.resetState();
+
+    this.listenEvent();
     RebroadCastServer.instance = this;
     return this;
   }
@@ -19,11 +26,16 @@ class RebroadCastServer {
     return {
       // 列表用
       total: 0,
-      current: '',
+      currentRoomId: '',
       sourceWebinarId: '',
       list: [],
 
+      rebroadcastId: '',
+      subject: '',
       appId: '',
+      docUrl: '',
+      // docUrl:'//t-alistatic01.e.vhall.com/static/img/video_default_nologo.png',
+      channelId: '',
       token: '',
       accountId: '',
       roomId: '',
@@ -31,6 +43,57 @@ class RebroadCastServer {
         type: 'live'
       }
     };
+  }
+
+  init() {
+    const roomState = useRoomBaseServer().state;
+    const rebroadcast = roomState.watchInitData.rebroadcast;
+    if (!rebroadcast || Object.keys(rebroadcast).length === 0) return;
+    this.state.rebroadcastId = rebroadcast.id;
+    this.state.roomId = rebroadcast.room_id;
+    this.state.channelId = rebroadcast.channel_id;
+    this.state.subject = rebroadcast.subject;
+  }
+
+  /**
+   * 监听(维护)转播事件
+   *
+   */
+  listenEvent() {
+    const msgServer = useMsgServer();
+    const roomBaseServer = useRoomBaseServer();
+
+    msgServer.$onMsg('ROOM_MSG', rawMsg => {
+      let msg = Object.assign({}, rawMsg);
+      if (typeof msg.data !== 'object') {
+        msg.data = JSON.parse(msg.data);
+        msg.context = JSON.parse(msg.context);
+      }
+
+      console.log('domain rebroadcastServer websocket msg:', msg);
+      const { type = '' } = msg.data || {};
+
+      switch (type) {
+        // 转播开始
+        case 'live_broadcast_start':
+          roomBaseServer.setRebroadcastInfo({
+            id: msg.data.source_id,
+            channel_id: msg.data.channel_id
+          });
+          this.$emit('live_broadcast_start');
+          break;
+        // 转播结束
+        case 'live_broadcast_stop':
+          roomBaseServer.setRebroadcastInfo({
+            id: '',
+            channel_id: ''
+          });
+          this.$emit('live_broadcast_stop');
+          break;
+        default:
+          break;
+      }
+    });
   }
 
   // 获取转播列表页
@@ -52,6 +115,7 @@ class RebroadCastServer {
     this.state.accountId = data.third_party_user_id;
     this.state.appId = data.paas_app_id;
     this.state.roomId = data.room_id;
+    this.state.docUrl = data.document_url;
 
     return res;
   }

@@ -193,7 +193,7 @@ function endUserPresentation(params = {}) {
  * */
 function userEndPresentation(params = {}) {
   return request({
-    url: '/v4/interacts/inav/user-nopresentation',
+    url: '/v3/interacts/inav-user/nopresentation',
     method: 'POST',
     data: params
   });
@@ -234,9 +234,9 @@ export default {
   userAgreeInvite,
   userRejectInvite,
   // getSpeakList,
-  // userPresentation,
-  // endUserPresentation,
-  // userEndPresentation,
+  userPresentation,
+  endUserPresentation,
+  userEndPresentation,
   // preBreakSpeak,
   // userUnableSpeak,
   userSpeakOn
