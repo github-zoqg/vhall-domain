@@ -234,7 +234,7 @@ export default {
   userAgreeInvite,
   userRejectInvite,
   // getSpeakList,
-  // userPresentation,
+  userPresentation,
   endUserPresentation,
   userEndPresentation,
   // preBreakSpeak,
