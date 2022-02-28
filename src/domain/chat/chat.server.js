@@ -49,7 +49,7 @@ class ChatServer extends BaseServer {
         rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
         //格式化消息用于渲染并添加到消息列表
         //私聊我的消息
-        if (this.isMyMsg(rawMsg) || this.isSelfMsg(rawMsg)) {
+        if (rawMsg.target_id && (this.isMyMsg(rawMsg) || this.isSelfMsg(rawMsg))) {
           this.$emit('receivePrivateMsg', rawMsg);
           return
         }
