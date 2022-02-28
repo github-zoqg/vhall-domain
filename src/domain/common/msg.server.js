@@ -3,6 +3,7 @@ import { isPc, merge, randomNumGenerator } from '@/utils/index.js';
 import BaseServer from './base.server';
 import VhallPaasSDK from '@/sdk/index.js';
 import useGroupServer from '../group/StandardGroupServer';
+import useMediaCheckServer from '../media/mediaCheck.server';
 class MsgServer extends BaseServer {
   constructor() {
     if (typeof MsgServer.instance === 'object') {
@@ -254,8 +255,8 @@ class MsgServer extends BaseServer {
       pv: watchInitData.pv && (watchInitData.pv.num2 || watchInitData.pv.real), // pv
       uv: watchInitData.online && (watchInitData.online.num || watchInitData.online.virtual),
       role_name: watchInitData.join_info.role_name,
-      device_type: isPcClient ? '2' : '1', // 设备类型 1手机端 2PC 0未检测
-      device_status: '0', // 设备状态  0未检测 1可以上麦 2不可以上麦
+      device_type: useMediaCheckServer().state.deviceInfo.device_type, // 设备类型 1手机端 2PC 0未检测
+      device_status: useMediaCheckServer().state.deviceInfo.device_status, // 设备状态  0未检测 1可以上麦 2不可以上麦
       audience: roomBaseServerState.clientType !== 'send',
       kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
       privacies: watchInitData.join_info.privacies || ''
@@ -285,8 +286,8 @@ class MsgServer extends BaseServer {
       pv: watchInitData.pv.num2 || watchInitData.pv.real, // pv
       uv: watchInitData.online.num || watchInitData.online.virtual,
       role_name: watchInitData.join_info.role_name,
-      device_type: isPcClient ? '2' : '1', // 设备类型 1手机端 2PC 0未检测
-      device_status: '0', // 设备状态  0未检测 1可以上麦 2不可以上麦
+      device_type: useMediaCheckServer().state.deviceInfo.device_type, // 设备类型 1手机端 2PC 0未检测
+      device_status: useMediaCheckServer().state.deviceInfo.device_status, // 设备状态  0未检测 1可以上麦 2不可以上麦
       watch_type: isPcClient ? '1' : '2', // 1 pc  2 h5  3 app  4 是客户端
       audience: roomBaseServerState.clientType !== 'send', //是不是观众
       kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,

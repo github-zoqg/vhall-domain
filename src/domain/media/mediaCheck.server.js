@@ -10,6 +10,10 @@ class MediaCheckServer {
       return MediaCheckServer.instance;
     }
     this.state = {
+      deviceInfo: {
+        device_status: 0,
+        device_type: 0
+      },
       selectedVideoDeviceId: '', // 当前选取的设备id
       localStreamId: '', // 本地流id
       devices: {
@@ -43,18 +47,34 @@ class MediaCheckServer {
   }
 
   // 获取用户媒体输入许可
-  getMediaInputPermission() {
+  getMediaInputPermission(options = { isNeedBroadcast: false }) {
     if (navigator.mediaDevices) {
       return navigator.mediaDevices
         .getUserMedia({ audio: true, video: true })
         .then(async stream => {
-          this.setDevice({ status: 1 });
+          // 更新当前用户设备信息
+          this.state.deviceInfo = {
+            status: 1,
+            type: this.isMobileDevice() ? 1 : 2
+          };
+          // 根据参数判断是否调接口同步状态
+          if (options.isNeedBroadcast) {
+            this.setDevice({ status: 1 });
+          }
           stream.getTracks().forEach(trackInput => {
             trackInput.stop();
           });
         })
-        .catch(async error => {
-          this.setDevice({ status: 2 });
+        .catch(async () => {
+          // 更新当前用户设备信息
+          this.state.deviceInfo = {
+            status: 2,
+            type: this.isMobileDevice() ? 1 : 2
+          };
+          // 根据参数判断是否调接口同步状态
+          if (options.isNeedBroadcast) {
+            this.setDevice({ status: 2 });
+          }
         });
     }
     return Promise.resolve(false);
