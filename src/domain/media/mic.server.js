@@ -120,7 +120,6 @@ class MicServer extends BaseServer {
     const { speaker_list } = roomBaseServer.state.interactToolStatus;
     const { join_info } = roomBaseServer.state.watchInitData;
     // 分组直播speaker list
-    await useGroupServer().init();
     const groupSpeakerList = useGroupServer().state.groupInitData?.speaker_list;
     if (groupSpeakerList && groupSpeakerList.length) {
       this.state.isSpeakOn = groupSpeakerList.some(
