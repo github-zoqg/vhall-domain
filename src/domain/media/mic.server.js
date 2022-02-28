@@ -115,10 +115,12 @@ class MicServer extends BaseServer {
   }
 
   // 初始化用户上麦状态
-  initMicState() {
+  async initMicState() {
     const roomBaseServer = useRoomBaseServer();
     const { speaker_list } = roomBaseServer.state.interactToolStatus;
+    const { join_info } = roomBaseServer.state.watchInitData;
     // 分组直播speaker list
+    await useGroupServer().init();
     const groupSpeakerList = useGroupServer().state.groupInitData?.speaker_list;
     if (groupSpeakerList && groupSpeakerList.length) {
       this.state.isSpeakOn = groupSpeakerList.some(
@@ -127,7 +129,6 @@ class MicServer extends BaseServer {
       return this.state.isSpeakOn;
     }
     if (!speaker_list) return;
-    const { join_info } = roomBaseServer.state.watchInitData;
     if (speaker_list && speaker_list.length) {
       this.state.isSpeakOn = speaker_list.some(
         item => item.account_id == join_info.third_party_user_id
