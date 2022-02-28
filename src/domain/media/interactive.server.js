@@ -66,7 +66,12 @@ class InteractiveServer extends BaseServer {
           this.interactiveInstance = event.vhallrtc;
           this._addListeners();
           // 房间当前远端流列表
-          this.state.remoteStreams = event.currentStreams.filter(stream => stream.streamType === 2);
+          this.state.remoteStreams = event.currentStreams.filter(stream => {
+            if (typeof stream.attributes == 'string') {
+              stream.attributes = JSON.parse(stream.attributes);
+            }
+            return stream.streamType === 2;
+          });
 
           this.$emit('VhallRTC_init_success');
           resolve(event);
