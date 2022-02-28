@@ -236,28 +236,30 @@ export default class StandardDocServer extends AbstractDocServer {
       // }
     });
 
-    // 回放文档加载完成事件
-    this.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, ({ chapters }) => {
-      // 获取点播或回放设置的章节
-      this.$emit('dispatch_doc_vod_cuepoint_load_complate', chapters);
-    });
+    // 非单视频嵌入监听此事件
+    if (!useRoomBaseServer().state.embedObj.embedVideo) {
+      // 回放文档加载完成事件
+      this.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, ({ chapters }) => {
+        // 获取点播或回放设置的章节
+        this.$emit('dispatch_doc_vod_cuepoint_load_complate', chapters);
+      });
 
-    this.on(VHDocSDK.Event.VOD_TIME_UPDATE, data => {
-      // console.log('[doc] dispatch_doc_vod_time_update:', data);
-      this.state.switchStatus = data.watchOpen;
-      if (data.activeId) {
-        this.selectContainer(data.activeId);
-        this.state.currentCid = data.activeId;
-        if (useRoomBaseServer().state.miniElement !== 'player') {
-          useRoomBaseServer().setChangeElement('player');
+      this.on(VHDocSDK.Event.VOD_TIME_UPDATE, data => {
+        // console.log('[doc] dispatch_doc_vod_time_update:', data);
+        this.state.switchStatus = data.watchOpen;
+        if (data.activeId) {
+          this.selectContainer(data.activeId);
+          this.state.currentCid = data.activeId;
+          if (useRoomBaseServer().state.miniElement !== 'player') {
+            useRoomBaseServer().setChangeElement('player');
+          }
+        } else {
+          this.state.currentCid = '';
         }
-      } else {
-        this.state.currentCid = '';
-      }
-      this.$emit('dispatch_doc_vod_time_update', data);
-    });
+        this.$emit('dispatch_doc_vod_time_update', data);
+      });
+    }
   }
-
   /**
    * 观众是否可见
    */
