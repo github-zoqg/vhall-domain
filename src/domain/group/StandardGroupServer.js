@@ -478,7 +478,6 @@ class StandardGroupServer extends BaseServer {
 
   //【组长变更/组长更改】消息处理
   async msgdoForGroupLeaderChange(msg) {
-    console.log('[group] room-msg group_leader_change:', msg);
     if (msg.data.group_id == this.state.groupInitData.group_id) {
       // 在一个组里面，需要更新小组数据
       await this.updateGroupInitData();
@@ -538,7 +537,7 @@ class StandardGroupServer extends BaseServer {
 
   // 同意邀请演示成功消息
   async msgdoForVrtcConnectPresentationSuccess(msg) {
-    if (this.isInGroup) {
+    if (this.state.groupInitData.isInGroup) {
       // 如果在小组内
       await this.updateGroupInitData();
     } else {
@@ -551,7 +550,7 @@ class StandardGroupServer extends BaseServer {
 
   // 结束演示 成功消息
   async msgdoForVrtcDisconnectPresentationSuccess(msg) {
-    if (this.isInGroup) {
+    if (this.state.groupInitData.isInGroup) {
       // 如果在小组内
       await this.updateGroupInitData();
     } else {
@@ -562,12 +561,16 @@ class StandardGroupServer extends BaseServer {
     this.$emit(this.EVENT_TYPE.VRTC_DISCONNECT_PRESENTATION_SUCCESS, msg);
   }
 
-
   // 设置文档操作权限
   _setDocPermisson() {
     const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
-    if ((this.isInGroup && this.state.groupInitData.presentation_screen == watchInitData.join_info.third_party_user_id) ||
-      (!this.isInGroup && interactToolStatus.presentation_screen == watchInitData.join_info.third_party_user_id)) {
+    if (
+      (this.state.groupInitData.isInGroup &&
+        this.state.groupInitData.presentation_screen ==
+        watchInitData.join_info.third_party_user_id) ||
+      (!this.state.groupInitData.isInGroup &&
+        interactToolStatus.presentation_screen == watchInitData.join_info.third_party_user_id)
+    ) {
       // 在小组内有要是权限，或者在主直播间有演示权限
       // 设置文档操作权限为主人
       useDocServer().setRole(VHDocSDK.RoleType.HOST);
