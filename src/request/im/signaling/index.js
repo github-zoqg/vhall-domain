@@ -171,7 +171,7 @@ function getSpeakList(params = {}) {
  * */
 function userPresentation(params = {}) {
   return request({
-    url: '/v4/interacts/inav/user-presentation',
+    url: env.imChat === 'v3' ? '/v3/interacts/inav-user/presentation' : '/v4/interacts/inav/user-presentation',
     method: 'POST',
     data: params
   });
