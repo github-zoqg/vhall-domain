@@ -1,5 +1,6 @@
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
+import useInteractiveServer from '../media/interactive.server';
 import useMsgServer from '../common/msg.server';
 import useDocServer from '../doc/doc.server';
 import { group as groupApi, room } from '../../request/index.js';
@@ -307,6 +308,7 @@ class StandardGroupServer extends BaseServer {
       this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED);
 
       // 处理分组下互动sdk切换channel
+      useInteractiveServer().groupReInitInteractProcess()
       // useRoomBaseServer().groupReInitInteractProcess();
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
@@ -397,6 +399,7 @@ class StandardGroupServer extends BaseServer {
       // 销毁子房间聊天实例
       useMsgServer().destroyGroupMsg();
       // 处理分组下互动sdk切换channel
+
       // useRoomBaseServer().groupReInitInteractProcess();
 
       // 处理文档channel切换逻辑
