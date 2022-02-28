@@ -24,6 +24,10 @@ export default class Msg {
       user_id
     };
   }
+  //设置私聊对象
+  setTarget(targetId) {
+    this.data.target_id = targetId
+  }
   //给消息添加文本
   setText(val) {
     this.data.barrageTxt = val.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br/>');
