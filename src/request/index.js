@@ -29,6 +29,7 @@ import gray from './gray';
 import wechatApi from './brand/wechat';
 import subjectApi from './brand/subject';
 import signUpFormApi from "./signUpForm";
+import homepageApi from './homepage';
 
 // 问答
 import qaList from './qa/list/index.js';
@@ -80,5 +81,6 @@ export {
   gray,
   wechatApi,
   subjectApi,
-  signUpFormApi
+  signUpFormApi,
+  homepageApi
 };

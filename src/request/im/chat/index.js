@@ -192,36 +192,36 @@ function sendCustomMessage(params = {}) {
 /**
  * 获取私聊的聊天记录
  * */
-function fetchPrivateChatList(params={}){
-  const url = env.imChat === 'v3' ? '/v3/interacts/chat-private/get-list':'';
+function fetchPrivateChatList(params = {}) {
+  const url = env.imChat === 'v3' ? '/v3/interacts/chat-private/get-list' : '';
   return request({
     url,
-    method:'POST',
-    data:params
+    method: 'POST',
+    data: params
   });
 }
 
 /**
  * 获取私聊的所有联系人列表
  * */
-function fetchPrivateContactList(params={}){
-  const url = env.imChat === 'v3' ? '/v3/interacts/chat-private/get-rank-list':'';
+function fetchPrivateContactList(params = {}) {
+  const url = env.imChat === 'v3' ? '/v3/interacts/chat-private/get-rank-list' : '';
   return request({
     url,
-    method:'POST',
-    data:params
+    method: 'POST',
+    data: params
   });
 }
 
 /**
  * 获取私聊聊天记录（PC观看）
  * */
-function fetchPrivateChatHistoryList(params={}){
-  const url = env.imChat === 'v3' ? '/v3/interacts/qa/get-webinar-history-questions':'';
+function fetchPrivateChatHistoryList(params = {}) {
+  const url = env.imChat === 'v3' ? '/v3/interacts/chat-private/get-list' : '';
   return request({
     url,
-    method:'POST',
-    data:params
+    method: 'POST',
+    data: params
   });
 }
 
