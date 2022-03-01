@@ -26,7 +26,7 @@ class DesktopShareServer extends BaseServer {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
 
       let stream = interactiveServer.getDesktopAndIntercutInfo();
-      if (stream?.streamType === 3 || 4) {
+      if (stream?.streamType === 3 || stream?.streamType === 4) {
         this.$emit('screen_stream_add', stream.streamId);
       }
     });
