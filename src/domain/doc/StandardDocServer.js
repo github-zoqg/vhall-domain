@@ -251,6 +251,10 @@ export default class StandardDocServer extends AbstractDocServer {
       }
       this.$emit('dispatch_doc_vod_time_update', data);
     });
+
+    //  ppt文档播放完毕事件
+    // this.on(VHDocSDK.Event.PLAYBACKCOMPLETE, ({ docId }) => {
+    // })
   }
 
   /**
