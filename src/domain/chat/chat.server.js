@@ -348,7 +348,14 @@ class ChatServer extends BaseServer {
   }
   //获取私聊的记录列表
   getPrivateChatHistoryList(params = {}) {
-    return iMRequest.chat.fetchPrivateChatHistoryList(params);
+    const { watchInitData } = useRoomBaseServer().state;
+    params.room_id = watchInitData.interact.room_id;
+    params.webinar_id = watchInitData.webinar.id
+    params.to_user = watchInitData.webinar.userinfo.user_id
+    return iMRequest.chat.fetchPrivateChatHistoryList(params).then(res => {
+      // alert(JSON.stringify(res))
+      // this.state.privateChatList = []
+    });
   }
 }
 
