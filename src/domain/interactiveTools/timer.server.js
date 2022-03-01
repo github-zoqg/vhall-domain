@@ -43,6 +43,9 @@ class timerServer extends BaseServer {
         case 'timer_resume':
           this.$emit('timer_resume', temp);
           break;
+        // 直播结束
+        case 'live_over':
+          this.$emit('timer_end', temp);
         default:
           break;
       }
