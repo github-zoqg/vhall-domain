@@ -19,6 +19,8 @@ class ChatServer extends BaseServer {
     this.state = {
       //聊天记录
       chatList: [],
+      //私聊列表
+      privateChatList: [],
       //过滤的敏感词列表
       keywordList: [],
       //预览图片地址
@@ -49,8 +51,9 @@ class ChatServer extends BaseServer {
         rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
         //格式化消息用于渲染并添加到消息列表
         //私聊我的消息
-        if (rawMsg.target_id && (this.isMyMsg(rawMsg) || this.isSelfMsg(rawMsg))) {
-          this.$emit('receivePrivateMsg', rawMsg);
+        if (rawMsg.data.target_id && (this.isMyMsg(rawMsg) || this.isSelfMsg(rawMsg))) {
+          this.state.privateChatList.push(Msg._handleGenerateMsg(rawMsg))
+          this.$emit('receivePrivateMsg', Msg._handleGenerateMsg(rawMsg));
           return
         }
         this.state.chatList.push(Msg._handleGenerateMsg(rawMsg));
@@ -345,7 +348,13 @@ class ChatServer extends BaseServer {
   }
   //获取私聊的记录列表
   getPrivateChatHistoryList(params = {}) {
-    return iMRequest.chat.fetchPrivateChatHistoryList(params);
+    const { watchInitData } = useRoomBaseServer().state;
+    params.room_id = watchInitData.interact.room_id;
+    params.webinar_id = watchInitData.webinar.id
+    params.to_user = watchInitData.webinar.userinfo.user_id
+    return iMRequest.chat.fetchPrivateChatHistoryList(params).then(res => {
+      //TODO
+    });
   }
 }
 

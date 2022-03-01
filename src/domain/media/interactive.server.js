@@ -28,7 +28,8 @@ class InteractiveServer extends BaseServer {
       },
       remoteStreams: [], // 远端流数组
       streamListHeightInWatch: 0, // PC观看端流列表高度
-      fullScreenType: false // wap 全屏状态
+      fullScreenType: false, // wap 全屏状态
+      defaultStreamBg: false //开始推流到成功期间展示默认图
     };
     InteractiveServer.instance = this;
     return this;
@@ -649,7 +650,6 @@ class InteractiveServer extends BaseServer {
         type: type, // 必填，支持'video'和'audio'，分别表示视频设备和音频设备
         deviceId: deviceId // 必填，设备ID，可通过getDevices()方法获取。
       };
-      console.warn('%ccxs ---最终参数-------', 'color: blue', defaultPa);
       return this.interactiveInstance.switchDevice(defaultPa);
     });
   }
