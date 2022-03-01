@@ -17,8 +17,8 @@ class UserServer {
     this.state = {
       captchaVal: null, // 云盾图形码
       second: -1, // 倒计时的秒数
-      errorMsg: '', // 错误提示
-      userInfo: {}, // 用户信息
+      capErrorMsg: '', // 错误提示
+      userInfo: null, // 用户信息
       thirdInfo: {} // 第三方授权绑定的信息 从userInfo拆分的
     };
   }
@@ -102,7 +102,7 @@ class UserServer {
       }, 1000);
     };
     const failure = res => {
-      this.state.errorMsg = res.msg;
+      this.state.capcapErrorMsg = res.msg;
       this.refreshNECaptha();
     };
     const params = {
@@ -359,6 +359,6 @@ class UserServer {
   }
 }
 
-export default function useuserServer() {
+export default function useUserServer() {
   return UserServer.getInstance();
 }

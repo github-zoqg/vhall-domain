@@ -290,7 +290,7 @@ class InteractiveServer extends BaseServer {
 
     // 房间信令异常断开事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e => {
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e);
+      this.$emit('EVENT_ROOM_EXCDISCONNECTED', e);
     });
 
     // 远端流音视频状态改变事件
@@ -315,7 +315,7 @@ class InteractiveServer extends BaseServer {
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
       // 本地推流或订阅远端流异常断开事件
-      this.$emit('EVENT_REMOTESTREAM_FAILED', e);
+      // this.$emit('EVENT_REMOTESTREAM_FAILED', e);
     });
 
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
@@ -711,6 +711,7 @@ class InteractiveServer extends BaseServer {
         if (this.retrySubScribeNum > 3) {
           this.retrySubScribeNum = 0
           reject(e)
+          return
         }
         this.retrySubScribeNum++
         this.subscribe(options)

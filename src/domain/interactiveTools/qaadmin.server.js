@@ -1,9 +1,10 @@
 import BaseServer from '@/domain/common/base.server.js';
-import { Domain } from '@/domain';
 import VhallPaasSDK from '@/sdk/index.js';
 import { qa } from '@/request/index.js';
 import { textToEmojiText, emojiToText } from '@/domain/chat/emoji.js';
 import useRoomBaseServer from '../room/roombase.server';
+import useMsgServer from '../common/msg.server';
+
 /**
  * 问答服务
  * @returns
@@ -76,9 +77,9 @@ class QaAdminServer extends BaseServer {
 
   //监听msgServer通知
   listenEvents() {
-    this.chatInstance.onRoomMsg(msg => {
-      // msg.context = msg.context && JSON.parse(msg.context);
-      let msgData = msg.context && JSON.parse(msg.data);
+    const msgServer = useMsgServer()
+    msgServer.$onMsg("ROOM_MSG", msg => {
+      const msgData = msg.data
       if (msgData.type == 'question_answer_create') {
         // 发起端收到消息
         msgData.content = emojiToText(msgData.content);
@@ -89,24 +90,8 @@ class QaAdminServer extends BaseServer {
   }
 
   // 初始化聊天实例
-  async initChatInstance(params = {}, callbackFn) {
-    const options = {
-      appId: this.state.baseObj.interact.paas_app_id, // appId 必须
-      accountId: this.state.baseObj.join_info.third_party_user_id, // 第三方用户ID
-      channelId: this.state.baseObj.interact.channel_id, // 频道id 必须
-      token: this.state.baseObj.interact.paas_access_token, // 必须， token，初始化接口获取
-      hide: true
-    };
+  async initQaAdmin(params = {}, callbackFn) {
 
-    // 创建domain实例
-    await new Domain({
-      plugins: ['chat'],
-      isNotInitRoom: true
-    });
-
-    // 创建聊天实例
-    const vhallchat = await VhallPaasSDK.modules.VhallChat.createInstance(options);
-    this.chatInstance = vhallchat.message; // 聊天实例句柄
     this.listenEvents();
 
     // 使用侧可以添加回调函数
