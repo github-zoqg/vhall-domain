@@ -64,7 +64,6 @@ class QuestionnaireServer extends BaseServer {
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
       this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, data);
       console.log('问卷错误', data);
-      this.$toast('问卷错误', data);
     });
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       console.log('问卷server监听', msg);
@@ -124,13 +123,30 @@ class QuestionnaireServer extends BaseServer {
       survey_id: surveyId
     });
   }
+  // 推送问卷
   publishQuestionnaire(surveyId) {
     const { watchInitData } = this.useRoomBaseServer.state;
     const { interact } = watchInitData;
-    return questionnaireApi.publishQuestionnaire({
-      room_id: interact.room_id,
-      survey_id: surveyId
-    });
+    return new Promise((resolve, reject) => {
+      questionnaireApi.publishQuestionnaire({
+        room_id: interact.room_id,
+        survey_id: surveyId
+      }).then(res => {
+        if (res.code === 200) {
+          // 防止首次推送后没有发布
+          this._paasSDKInstance.$http(VHall_Questionnaire_Const.HTTP.PUBLISH_QUESTIONNAIRE, surveyId).then(() => {
+            resolve(res)
+          }).catch(error => {
+            reject(error)
+          })
+        } else {
+          reject(res)
+        }
+      }).catch(error => {
+        reject(error)
+      })
+    })
+
   }
   /**
    * @description 删除问卷
@@ -164,7 +180,7 @@ class QuestionnaireServer extends BaseServer {
   /**
    * @description 推送问卷的回调处理
    */
-  handlerQuestionnairePush() {}
+  handlerQuestionnairePush() { }
   // 提交问卷
   async submitQuestion(opt) {
     const { naire_id, data, answer } = opt;
@@ -241,10 +257,10 @@ class QuestionnaireServer extends BaseServer {
         });
       }
     }
-    this.createLiveQuestion(data);
+    await this.createLiveQuestion(data);
     return relt;
   }
-  copeMainQuestion() {}
+  copeMainQuestion() { }
   /**
    * @description 创建直播间的问卷
    */
