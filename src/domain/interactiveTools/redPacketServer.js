@@ -2,21 +2,23 @@ import BaseServer from '@/domain/common/base.server.js';
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
 import redPacketApi from '../../request/redPacket';
+import chatApi from '../../request/im/chat/index'
 
 const RED_ENVELOPE_OK = 'red_envelope_ok'; // 支付成功消息
 class RedPacketServer extends BaseServer {
-  constructor() {
-    super();
+  constructor(opts) {
+    super(opts);
     this._uuid = '';
     this.state = {
       info: {},
+      online: 0, // 在线人数
       amount: 0,
       status: -1 // 红包状态: 0 抢光了
     };
-    this.listenMsg();
+    this.listenMsg(opts);
   }
 
-  listenMsg() {
+  listenMsg(opts) {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       switch (msg.data.event_type || msg.data.type) {
         case RED_ENVELOPE_OK:
@@ -24,6 +26,35 @@ class RedPacketServer extends BaseServer {
           break;
       }
     });
+    // 发起端需要监听在线人数
+    if (opts?.mode === 'live') {
+      useMsgServer().$onMsg('JOIN', () => {
+        this.state.online++
+      });
+      useMsgServer().$onMsg('LEFT', msg => {
+        // 离开房间
+        this.state.online--
+        if (this.state.online < 0) {
+          this.state.online = 0
+        }
+
+      });
+    }
+  }
+  /**
+   * @description 获取在线人数
+   */
+  getOnline() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const { interact } = watchInitData;
+    return chatApi.getOnlineList({
+      room_id: interact.room_id,
+      pos: 0,
+      limit: 1 // 只需要取总数  不需要列表
+    }).then(res => {
+      this.state.online = res.data.total;
+      return res
+    })
   }
   /**
    * @description 获取红包(观看端的初始化)
@@ -133,6 +164,6 @@ class RedPacketServer extends BaseServer {
   }
 }
 
-export default function useRedPacketServer() {
-  return new RedPacketServer();
+export default function useRedPacketServer(opts) {
+  return new RedPacketServer(opts);
 }
