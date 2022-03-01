@@ -82,6 +82,7 @@ class QaAdminServer extends BaseServer {
       const msgData = msg.data
       if (msgData.type == 'question_answer_create') {
         // 发起端收到消息
+        msgData.user_id = msgData.account_id
         msgData.content = emojiToText(msgData.content);
         this.state.awaitList.push(msgData);
         this.state.List[0].count = this.state.awaitList.length;

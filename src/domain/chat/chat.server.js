@@ -118,7 +118,7 @@ class ChatServer extends BaseServer {
   //判断是不是发送给当前用户的消息
   isMyMsg(msg) {
     const { watchInitData } = useRoomBaseServer().state;
-    console.log(msg.data.target_id, '-', watchInitData.join_info.third_party_user_id);
+    console.log(msg.data.target_id, '-', watchInitData.join_info);
     return msg.data.target_id == watchInitData.join_info.third_party_user_id;
   }
   //判断是不是@当前用户
