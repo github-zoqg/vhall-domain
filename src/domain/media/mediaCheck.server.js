@@ -54,8 +54,8 @@ class MediaCheckServer {
         .then(async stream => {
           // 更新当前用户设备信息
           this.state.deviceInfo = {
-            status: 1,
-            type: this.isMobileDevice() ? 1 : 2
+            device_status: 1,
+            device_type: this.isMobileDevice() ? 1 : 2
           };
           // 根据参数判断是否调接口同步状态
           if (options.isNeedBroadcast) {
@@ -68,8 +68,8 @@ class MediaCheckServer {
         .catch(async () => {
           // 更新当前用户设备信息
           this.state.deviceInfo = {
-            status: 2,
-            type: this.isMobileDevice() ? 1 : 2
+            device_status: 2,
+            device_type: this.isMobileDevice() ? 1 : 2
           };
           // 根据参数判断是否调接口同步状态
           if (options.isNeedBroadcast) {
