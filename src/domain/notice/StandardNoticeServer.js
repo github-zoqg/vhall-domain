@@ -29,6 +29,7 @@ export default class StandardNoticeServer extends BaseServer {
       //总条数
       total: 0
     };
+    this.listenMsg();
   }
   /**
    * 获取单实例
@@ -88,7 +89,7 @@ export default class StandardNoticeServer extends BaseServer {
 
   /**
    * 增加一条消息
-   * @param {*} msg 
+   * @param {*} msg
    */
   addNotice(msg) {
     this.state.noticeList.unshift({

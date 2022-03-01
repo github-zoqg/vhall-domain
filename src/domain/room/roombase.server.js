@@ -14,6 +14,7 @@ const liveType = new Map([
   ['send', 'initSendLive'], //发起端
   ['standard', 'initStandardReceiveLive'], //标准观看端
   ['embed', 'initEmbeddedReceiveLive'], //嵌入直播
+  ['clientEmbed', 'clientEmbed'], //客户端嵌入直播
   ['sdk', 'initSdkReceiveLive'], //sdk直播
   ['record', 'initRecordVideo'] //录制
 ]);
@@ -67,10 +68,12 @@ class RoomBaseServer extends BaseServer {
 
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
-    if (!['send', 'standard', 'embed', 'sdk', 'record'].includes(options.clientType)) {
+    if (
+      !['send', 'standard', 'embed', 'sdk', 'record', 'clientEmbed'].includes(options.clientType)
+    ) {
       throw new Error('不合法的客户端类型');
     }
-    console.log('初始化初始化', options.clientType);
+    console.log('初始化初始化', options.clientType, liveType.get(options.clientType));
     if (['standard', 'embed'].includes(options.clientType) && !options.visitor_id) {
       options.visitor_id = sessionStorage.getItem('visitorId');
     }
