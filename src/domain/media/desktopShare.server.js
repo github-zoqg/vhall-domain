@@ -33,7 +33,7 @@ class DesktopShareServer extends BaseServer {
     // 远端流加入事件
     interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      if (e.data.streamType === 3 || 4) {
+      if (e.data.streamType === 3 || e.data.streamType === 4) {
         this.$emit('screen_stream_add', e.data.streamId);
       }
     });
