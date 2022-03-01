@@ -353,8 +353,7 @@ class ChatServer extends BaseServer {
     params.webinar_id = watchInitData.webinar.id
     params.to_user = watchInitData.webinar.userinfo.user_id
     return iMRequest.chat.fetchPrivateChatHistoryList(params).then(res => {
-      // alert(JSON.stringify(res))
-      // this.state.privateChatList = []
+      //TODO
     });
   }
 }
