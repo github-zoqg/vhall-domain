@@ -649,7 +649,6 @@ class InteractiveServer extends BaseServer {
         type: type, // 必填，支持'video'和'audio'，分别表示视频设备和音频设备
         deviceId: deviceId // 必填，设备ID，可通过getDevices()方法获取。
       };
-      console.warn('%ccxs ---最终参数-------', 'color: blue', defaultPa);
       return this.interactiveInstance.switchDevice(defaultPa);
     });
   }
