@@ -1,4 +1,4 @@
-import request from '@/utils/http.js';
+import request, { setToken } from '@/utils/http.js';
 import env from '../env';
 import axios from 'axios/dist/axios';
 
@@ -12,6 +12,16 @@ function initSendLive(params) {
   });
 }
 
+// 客户端嵌入-发起端初始化
+function clientEmbed(params) {
+  setToken(params.token);
+  const url = env.meeting === 'v3' ? '/v3/webinars/live/client-init' : '';
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
 // 观看端初始化（标品）
 function initStandardReceiveLive(params) {
   const url = env.meeting === 'v3' ? '/v3/webinars/watch/init' : '';
@@ -275,6 +285,7 @@ function createRecordInRecord(data) {
 const meeting = {
   initSendLive,
   initStandardReceiveLive,
+  clientEmbed,
   initEmbeddedReceiveLive,
   initSdkReceiveLive,
   webinarInitBefore,
