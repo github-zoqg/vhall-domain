@@ -1,4 +1,4 @@
-import request from '@/utils/http.js';
+import request, { setToken } from '@/utils/http.js';
 import env from '../env';
 import axios from 'axios/dist/axios';
 
@@ -14,6 +14,7 @@ function initSendLive(params) {
 
 // 客户端嵌入-发起端初始化
 function clientEmbed(params) {
+  setToken(params.token);
   const url = env.meeting === 'v3' ? '/v3/webinars/live/client-init' : '';
   return request({
     url,
