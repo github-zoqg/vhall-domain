@@ -87,6 +87,19 @@ export default class StandardNoticeServer extends BaseServer {
   }
 
   /**
+   * 增加一条消息
+   * @param {*} msg 
+   */
+  addNotice(msg) {
+    this.state.noticeList.unshift({
+      created_at: msg.push_time,
+      content: {
+        content: msg.room_announcement_text
+      }
+    });
+  }
+
+  /**
    * 发送公告
    * @param {String} content 消息内容
    * @param {String} messageType 1:主直播公告 2:小组公告 如果不是分组直播会报错
