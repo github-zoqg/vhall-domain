@@ -60,7 +60,7 @@ service.interceptors.request.use(
     }
 
     config.headers = {
-      'interact-token': sessionStorage.getItem('interact_token'),
+      'interact-token': sessionStorage.getItem('interact_token') || '',
       ...HEADERS,
       ...config.headers
     };
