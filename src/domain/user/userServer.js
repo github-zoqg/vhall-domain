@@ -263,13 +263,16 @@ class UserServer {
    * 跳转到qq授权登录链接、跳转到微信授权登录链接
    * /v3/users/oauth/callback
    * */
-  authLogin(params) {}
+  authLogin(params) { }
 
   /**
    * 微信浏览器微信授权登录
    * /v3/commons/auth/weixin
    * */
-  authLoginByWx() {}
+  authLoginByWx(params) {
+    return userApi.authLoginByWx(params);
+  };
+
 
   /**-----------------------  以下是否B端接口?  -----------------------**/
 
@@ -277,19 +280,19 @@ class UserServer {
    * 校验验证码,获取验证码（图形验证码）
    * /v3/users/code-consumer/send
    * */
-  getGraphCode() {}
+  getGraphCode() { }
 
   /**
    * 校验手机验证码、邮件验证码
    * /v3/users/code/check
    * */
-  checkCode() {}
+  checkCode() { }
 
   /**
    * 角度口令登录
    * /v3/webinars/live/role-login
    * */
-  roleLogin() {}
+  roleLogin() { }
 
   // 获取用户信息
   getUserInfo(data) {
