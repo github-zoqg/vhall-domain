@@ -210,30 +210,25 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 删除文档
     this.on(VHDocSDK.Event.DELETE_CONTAINER, data => {
-      console.log('=========删除容器=============', data);
+      console.log('doc] =========删除容器=============', data);
       if (data && data.id) {
-        this.destroyContainer({ id: data.id });
+        this.destroyContainer(data.id);
       }
       this.$emit('dispatch_doc_delete_container', data);
     });
 
     this.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT, ({ cid, docId }) => {
       console.log('=============文档不存在或已删除========', cid, docId);
-      this.$emit('dispatch_doc_not_exit', { cid, docId });
-      // if (cid == this.currentCid) {
-      //   this.$message({
-      //     type: 'error',
-      //     message: '文档不存在或已删除'
-      //   });
-      //   this.deleteTimer = setTimeout(() => {
-      //     this.docId = '';
-      //     const index = this.cids.indexOf(cid);
-      //     this.cids.splice(index, 1);
-      //     this.docServer.destroyContainer({ id: this.currentCid });
-      //     this.currentCid = '';
-      //     this.docInfo.docShowType = '';
-      //   }, 3000); // 其他地方调用回将值重新传入
-      // }
+      if (cid == this.currentCid) {
+        setTimeout(() => {
+          const index = this.containerList.findIndex(item => item.cid == cid);
+          this.containerList.splice(index, 1);
+          this.docServer.destroyContainer(cid);
+          this.docCid = '';
+          this.currentCid = '';
+        }, 3000); // 其他地方调用回将值重新传入      
+        this.$emit('dispatch_doc_not_exit', { cid, docId });
+      }
     });
 
     // 非单视频嵌入监听此事件

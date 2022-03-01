@@ -66,7 +66,17 @@ class InteractiveServer extends BaseServer {
           this.interactiveInstance = event.vhallrtc;
           this._addListeners();
           // 房间当前远端流列表
-          this.state.remoteStreams = event.currentStreams.filter(stream => stream.streamType === 2);
+          this.state.remoteStreams = event.currentStreams.filter(stream => {
+            try {
+              if (typeof stream.attributes == 'string') {
+                stream.attributes = JSON.parse(stream.attributes);
+              }
+            } catch (error) {
+            }
+            return stream.streamType === 2;
+          });
+
+          this.$emit('VhallRTC_init_success');
           resolve(event);
         },
         error => {
@@ -74,6 +84,17 @@ class InteractiveServer extends BaseServer {
         }
       );
     });
+  }
+
+  /*
+  * 分组开始讨论后续操作
+  */
+  groupReInitInteractProcess() {
+    this.init().then(res => {
+      console.warn('开始----res', res)
+    }).catch(err => {
+      console.warn('开始----err', res)
+    })
   }
 
   /**
@@ -129,18 +150,18 @@ class InteractiveServer extends BaseServer {
       broadcastConfig:
         watchInitData.join_info.role_name == 1
           ? {
-              adaptiveLayoutMode:
-                VhallPaasSDK.modules.VhallRTC[sessionStorage.getItem('layout')] ||
-                VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
-              profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
-              paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
-              precastPic: false, // 选填，当旁路布局模板未填满时，剩余的窗格默认会填充系统默认小人图标。可配置是否显示此图标。
-              border: {
-                // 旁路边框属性
-                width: 2,
-                color: '0x1a1a1a'
-              }
+            adaptiveLayoutMode:
+              VhallPaasSDK.modules.VhallRTC[sessionStorage.getItem('layout')] ||
+              VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
+            profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
+            paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
+            precastPic: false, // 选填，当旁路布局模板未填满时，剩余的窗格默认会填充系统默认小人图标。可配置是否显示此图标。
+            border: {
+              // 旁路边框属性
+              width: 2,
+              color: '0x1a1a1a'
             }
+          }
           : {}, // 自动旁路   开启旁路直播方法所需参数
       otherOption: watchInitData.report_data
     };
@@ -269,7 +290,7 @@ class InteractiveServer extends BaseServer {
 
     // 房间信令异常断开事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e => {
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e);
+      this.$emit('EVENT_ROOM_EXCDISCONNECTED', e);
     });
 
     // 远端流音视频状态改变事件
@@ -294,7 +315,7 @@ class InteractiveServer extends BaseServer {
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
       // 本地推流或订阅远端流异常断开事件
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e);
+      // this.$emit('EVENT_REMOTESTREAM_FAILED', e);
     });
 
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
@@ -316,23 +337,21 @@ class InteractiveServer extends BaseServer {
       //     this.speakOff();
       //   }
       // }
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e);
+      this.$emit('EVENT_REMOTESTREAM_FAILED', e);
     });
+
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e => {
       // 本地流视频发送帧率异常事件
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e);
+      console.error(e)
+      // this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e);
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e => {
       // 新增设备或移除设备时触发
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e);
     });
-    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_FORCELEAVE, e => {
-      // 强行踢出房间事件
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_FORCELEAVE, e);
-    });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_PLAYABORT, e => {
-      // 订阅流自动播放失败
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_PLAYABORT, e);
+      // 订阅流--  自动播放失败
+      this.$emit('EVENT_STREAM_PLAYABORT', e);
     });
 
     // -------------------------房间业务消息--------------------------------------------
@@ -630,7 +649,6 @@ class InteractiveServer extends BaseServer {
         type: type, // 必填，支持'video'和'audio'，分别表示视频设备和音频设备
         deviceId: deviceId // 必填，设备ID，可通过getDevices()方法获取。
       };
-      console.warn('%ccxs ---最终参数-------', 'color: blue', defaultPa);
       return this.interactiveInstance.switchDevice(defaultPa);
     });
   }
@@ -681,7 +699,23 @@ class InteractiveServer extends BaseServer {
    * @returns {Promise} - 订阅成功后的promise 回调
    */
   subscribe(options = {}) {
-    return this.interactiveInstance.subscribe(options);
+    return new Promise((resolve, reject) => {
+      if (!this.retrySubScribeNum) {
+        this.retrySubScribeNum = 0
+      }
+      this.interactiveInstance.subscribe(options).then(res => {
+        this.retrySubScribeNum = 0
+        resolve(res)
+      }).catch((e) => {
+        if (this.retrySubScribeNum > 3) {
+          this.retrySubScribeNum = 0
+          reject(e)
+          return
+        }
+        this.retrySubScribeNum++
+        this.subscribe(options)
+      })
+    })
   }
 
   // 取消订阅远端流
@@ -735,6 +769,7 @@ class InteractiveServer extends BaseServer {
 
   // 获取插播和桌面共享的流信息
   getDesktopAndIntercutInfo() {
+    if (!this.interactiveInstance) return
     let streamList = this.interactiveInstance.getRoomStreams();
     streamList = streamList.map(stream => ({
       ...stream,
