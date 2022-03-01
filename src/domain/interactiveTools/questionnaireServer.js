@@ -134,7 +134,7 @@ class QuestionnaireServer extends BaseServer {
       }).then(res => {
         if (res.code === 200) {
           // 防止首次推送后没有发布
-          this._paasSDKInstance.$http(VHall_Questionnaire_Const.HTTP.PUBLISH_QUESTIONNAIRE, surveyId).then(res => {
+          this._paasSDKInstance.$http(VHall_Questionnaire_Const.HTTP.PUBLISH_QUESTIONNAIRE, surveyId).then(() => {
             resolve(res)
           }).catch(error => {
             reject(error)
@@ -257,7 +257,7 @@ class QuestionnaireServer extends BaseServer {
         });
       }
     }
-    this.createLiveQuestion(data);
+    await this.createLiveQuestion(data);
     return relt;
   }
   copeMainQuestion() { }
