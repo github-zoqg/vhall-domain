@@ -402,6 +402,7 @@ class InteractiveServer extends BaseServer {
       } else if (msg.data.type === 'live_over') {
         // 直播结束
         this.setStreamListHeightInWatch(0);
+        this.$emit('live_over')
       }
     });
   }
