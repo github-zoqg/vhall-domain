@@ -308,6 +308,7 @@ class StandardGroupServer extends BaseServer {
       this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED);
 
       // 处理分组下互动sdk切换channel
+      // useRoomBaseServer().setInavToolStatus('main_screen', 1);
       useInteractiveServer().groupReInitInteractProcess()
       // useRoomBaseServer().groupReInitInteractProcess();
       // 处理文档channel切换逻辑

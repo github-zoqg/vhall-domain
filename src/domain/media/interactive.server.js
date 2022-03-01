@@ -704,7 +704,7 @@ class InteractiveServer extends BaseServer {
       if (!this.retrySubScribeNum) {
         this.retrySubScribeNum = 0
       }
-      this.subscribe(options).then(res => {
+      this.interactiveInstance.subscribe(options).then(res => {
         this.retrySubScribeNum = 0
         resolve(res)
       }).catch((e) => {
