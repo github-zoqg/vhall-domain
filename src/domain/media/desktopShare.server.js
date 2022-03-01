@@ -26,21 +26,21 @@ class DesktopShareServer extends BaseServer {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
 
       let stream = interactiveServer.getDesktopAndIntercutInfo();
-      if (stream?.streamType === 3 || 4) {
+      if (stream?.streamType === 3 || stream?.streamType === 4) {
         this.$emit('screen_stream_add', stream.streamId);
       }
     });
     // 远端流加入事件
     interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      if (e.data.streamType === 3 || 4) {
+      if (e.data.streamType === 3 || stream?.streamType === 4) {
         this.$emit('screen_stream_add', e.data.streamId);
       }
     });
     // 远端流离开事件
     interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      if (e.data.streamType === 3) {
+      if (e.data.streamType === 3 || e.data.streamType === 4) {
         this.$emit('screen_stream_remove', e);
       }
     });

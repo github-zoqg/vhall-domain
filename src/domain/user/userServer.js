@@ -269,7 +269,10 @@ class UserServer {
    * 微信浏览器微信授权登录
    * /v3/commons/auth/weixin
    * */
-  authLoginByWx() { }
+  authLoginByWx(params) {
+    return userApi.authLoginByWx(params);
+  };
+
 
   /**-----------------------  以下是否B端接口?  -----------------------**/
 
