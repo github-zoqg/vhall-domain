@@ -57,10 +57,8 @@ class MediaCheckServer {
             device_status: 1,
             device_type: this.isMobileDevice() ? 1 : 2
           };
-          // 根据参数判断是否调接口同步状态
-          if (options.isNeedBroadcast) {
-            this.setDevice({ status: 1 });
-          }
+          // TODO: 根据参数判断是否发消息同步状态
+          this.setDevice({ status: 1 });
           stream.getTracks().forEach(trackInput => {
             trackInput.stop();
           });
@@ -71,10 +69,8 @@ class MediaCheckServer {
             device_status: 2,
             device_type: this.isMobileDevice() ? 1 : 2
           };
-          // 根据参数判断是否调接口同步状态
-          if (options.isNeedBroadcast) {
-            this.setDevice({ status: 2 });
-          }
+          // TODO: 根据参数判断是否发消息同步状态
+          this.setDevice({ status: 2 });
         });
     }
     return Promise.resolve(false);

@@ -292,7 +292,7 @@ class RoomBaseServer extends BaseServer {
         this.state.officicalInfo = res.data['public-account']
           ? res.data['public-account'].data
           : {}; //公众号信息
-        this.state.interactToolStatus = res.data['room-tool'] ? res.data['room-tool'].data : {}; //互动工具状态信息
+        this.state.interactToolStatus = res.data['room-tool'] && res.data['room-tool'].data ? res.data['room-tool'].data : {}; //互动工具状态信息
         this.state.customMenu = res.data['menu'] ? res.data['menu'].data : {}; // 自定义菜单
         this.state.goodsDefault = res.data['goods-default'] ? res.data['goods-default'].data : {}; // 商品
         this.state.advDefault = res.data['adv-default'] ? res.data['adv-default'].data : {}; // 广告
