@@ -307,8 +307,6 @@ class StandardGroupServer extends BaseServer {
       // 派发子房间聊天实例创建成功事件，通知成员列表请求 online-list
       this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED);
 
-      // 更新主屏的状态
-      useRoomBaseServer().setInavToolStatus('main_screen', this.state.groupInitData.main_screen);
       // 处理分组下互动sdk切换channel
       useInteractiveServer().groupReInitInteractProcess()
 
@@ -325,8 +323,6 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] domain group_switch_end', msg);
     // 设置开始为未讨论状态
     useRoomBaseServer().setInavToolStatus('is_open_switch', 0);
-    // 更新主屏的状态
-    useRoomBaseServer().setInavToolStatus('is_open_switch', useRoomBaseServer().state.interactToolStatus.main_screen);
     // TODO: 演示权限交还主持人
     if (useRoomBaseServer().state.clientType === 'send') {
       //主持端
