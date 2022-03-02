@@ -15,7 +15,8 @@ class MicServer extends BaseServer {
     }
     this.state = {
       // isAllowhandup: false, // 是否开始允许举手
-      isSpeakOn: false // 是否在麦上
+      isSpeakOn: false, // 是否在麦上
+      isSpeakOffToInit: false // 是否下麦后自动初始化互动
     };
     MicServer.instance = this;
     return this;
@@ -81,6 +82,7 @@ class MicServer extends BaseServer {
         // 用户成功下麦
         case 'vrtc_disconnect_success':
           if (join_info.third_party_user_id == msg.data.target_id) {
+            this.state.isSpeakOffToInit = true
             this.state.isSpeakOn = false;
             this.$emit('vrtc_disconnect_success', msg);
           }
@@ -112,6 +114,10 @@ class MicServer extends BaseServer {
           break;
       }
     });
+  }
+
+  setSpeakOffToInit(val) {
+    this.state.isSpeakOffToInit = val
   }
 
   // 初始化用户上麦状态
