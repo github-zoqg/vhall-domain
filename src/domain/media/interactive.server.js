@@ -201,7 +201,7 @@ class InteractiveServer extends BaseServer {
     // 如果是无延迟直播、不在麦、开启自动上麦
     if (interactToolStatus.auto_speak == 1 && !micServer.state.isSpeakOffToInit) {
       // 调上麦接口判断当前人是否可以上麦
-      const res = micServer.userSpeakOn();
+      const res = await micServer.userSpeakOn();
       // 如果上麦成功，设为 HOST
       if (res.code == 200) return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     } else {
