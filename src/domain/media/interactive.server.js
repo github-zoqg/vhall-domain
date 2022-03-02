@@ -423,7 +423,7 @@ class InteractiveServer extends BaseServer {
         // 如果创建的是桌面共享流
         if (options.streamType === 3) {
           this.state.screenStream.streamId = data.streamId;
-        } else {
+        } else if (options.streamType == 2) {
           this.state.localStream = {
             streamId: data.streamId,
             audioMuted: options.mute?.audio || false,
