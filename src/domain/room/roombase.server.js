@@ -171,7 +171,11 @@ class RoomBaseServer extends BaseServer {
     const retParams = merge.recursive({}, defaultParams, data);
     return meeting.getConfigList(retParams).then(res => {
       if (res.code == 200) {
-        this.state.configList = JSON.parse(res.data.permissions);
+        const configList = JSON.parse(res.data.permissions);
+        for (let key in configList) {
+          configList[key] = Number(configList[key])
+        }
+        this.state.configList = configList
       }
       return res;
     });

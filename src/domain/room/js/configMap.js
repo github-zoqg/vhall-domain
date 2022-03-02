@@ -35,17 +35,9 @@ export const configMap = function (data) {
     100034: 'webinar.timer',
     100035: 'webinar.group',
   }
-  let m = new Map()
+  let configList = {}
   data.map(item => {
-    m.set(keyMap[item], 1)
+    configList[keyMap[item]] = 1
   })
-  return JSON.stringify(_mapToObj(m))
-}
-
-function _mapToObj(strMap) {
-  let obj = Object.create(null);
-  for (let [k, v] of strMap) {
-    obj[k] = v;
-  }
-  return obj
+  return configList
 }
