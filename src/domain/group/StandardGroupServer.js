@@ -468,11 +468,8 @@ class StandardGroupServer extends BaseServer {
     if (!this.state.groupInitData.isInGroup) return;
     const { room_join_id } = msg.data;
     if (room_join_id == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id) {
-      useDocServer().state.hasDocPermission = true;
       // this.handleGroupPermissionChangeInteract();
     } else {
-      // 切换左侧控制栏disabled状态
-      useDocServer().state.hasDocPermission = false;
       // 停止桌面共享推流
       // if (this.speicalStreamId && this.isShowSpeicalStream) {
       //   this.$refs.desktopRef.stopDesktopShare();
