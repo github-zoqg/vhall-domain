@@ -197,13 +197,15 @@ class InteractiveServer extends BaseServer {
     if (watchInitData.webinar.no_delay_webinar == 0) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
-
+    const micServer = useMicServer()
     // 如果是无延迟直播、不在麦、开启自动上麦
-    if (interactToolStatus.auto_speak == 1) {
+    if (interactToolStatus.auto_speak == 1 && !micServer.state.isSpeakOffToInit) {
       // 调上麦接口判断当前人是否可以上麦
-      const res = await useMicServer().userSpeakOn();
+      const res = micServer.userSpeakOn();
       // 如果上麦成功，设为 HOST
       if (res.code == 200) return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
+    } else {
+      micServer.setSpeakOffToInit(false)
     }
 
     // 如果是无延迟直播、不在麦、未开启自动上麦，设为 AUDIENCE
