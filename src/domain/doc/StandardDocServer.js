@@ -244,11 +244,6 @@ export default class StandardDocServer extends AbstractDocServer {
         if (data.activeId) {
           this.selectContainer(data.activeId);
           this.state.currentCid = data.activeId;
-          if (data.watchOpen) {
-            if (useRoomBaseServer().state.miniElement !== 'player') {
-              useRoomBaseServer().setChangeElement('player');
-            }
-          }
         } else {
           this.state.currentCid = '';
         }
