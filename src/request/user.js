@@ -128,7 +128,7 @@ const authLoginByWx = (params = {}) => {
   return request({
     url: env.user === 'v3' ? '/v3/commons/auth/weixin' : '/v3/commons/auth/weixin',
     method: 'GET',
-    data: params
+    params: params
   });
 };
 // 手机||邮箱验证码
