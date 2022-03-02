@@ -164,8 +164,8 @@ class RoomBaseServer extends BaseServer {
   // 获取房间权限配置列表
   getConfigList(data = {}) {
     const defaultParams = {
-      webinar_id: this.state.watchInitData.webinar.id,
-      webinar_user_id: this.state.watchInitData.webinar.userinfo.user_id,
+      webinar_id: this.state.watchInitData.webinar && this.state.watchInitData.webinar.id,
+      webinar_user_id: this.state.watchInitData.webinar && this.state.watchInitData.webinar.userinfo.user_id,
       scene_id: 2
     };
     const retParams = merge.recursive({}, defaultParams, data);

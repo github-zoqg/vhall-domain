@@ -19,8 +19,14 @@ class UserServer {
       second: -1, // 倒计时的秒数
       capErrorMsg: '', // 错误提示
       userInfo: null, // 用户信息
-      thirdInfo: {} // 第三方授权绑定的信息 从userInfo拆分的
+      thirdInfo: {}, // 第三方授权绑定的信息 从userInfo拆分的
+
     };
+  }
+
+  // 修改数据
+  setState(key, value) {
+    this.state[key] = value;
   }
 
   /**
@@ -184,6 +190,7 @@ class UserServer {
     }
     return retPassword;
   }
+
   /**
    * 明文密码加密
    * */
@@ -239,38 +246,36 @@ class UserServer {
         return err;
       });
   }
-  // 第三方授权回调
-  callbackUserInfo(params) {
-    return userApi.callbackUserInfo(params);
-  }
 
   // 验证码登录&&账号登录
-  loginInfo(data) {
-    return requestApi.user.loginInfo(data);
+  loginInfo(params) {
+    return userApi.loginInfo(params);
   }
 
   // 手机||邮箱验证码
-  codeCheck(data) {
-    return userApi.codeCheck(data);
+  codeCheck(params) {
+    return userApi.codeCheck(params);
   }
 
   // 密码重置
-  resetPassword(data) {
-    return userApi.resetPassword(data);
+  resetPassword(params) {
+    return userApi.resetPassword(params);
   }
 
   /**
-   * 跳转到qq授权登录链接、跳转到微信授权登录链接
+   * 第三方授权回调 跳转到qq授权登录链接、跳转到微信授权登录链接
    * /v3/users/oauth/callback
    * */
-  authLogin(params) { }
+  oauthCallback(params) {
+    return userApi.oauthCallback(params);
+  }
 
   /**
-   * 微信浏览器微信授权登录
-   * /v3/commons/auth/weixin
+   * 微信授权接口获取
+   * /v3/commons/auth/weixin-ajax
    * */
-  authLoginByWx(params) {
-    return userApi.authLoginByWx(params);
+  authWeixinAjax(params) {
+    return userApi.authWeixinAjax(params);
   };
 
 
