@@ -88,14 +88,22 @@ const acceptPrize = params => {
   });
 };
 
+const joinLottery = params => {
+  return request('/v3/vss/lottery/participation', {
+    method: 'POST',
+    data: params
+  });
+};
+
+
 // /v3/vss/lottery/award/check 「聊天内点击」
-function resultCheck() {}
+function resultCheck() { }
 
 // /v3/vss/lottery/users-get 「设置是否公布中奖结果」
-function setPublishResult() {}
+function setPublishResult() { }
 
 // /v3/vss/lottery/award
-function getAwardInfo() {}
+function getAwardInfo() { }
 
 export default {
   getPrizeList,
@@ -107,5 +115,6 @@ export default {
   getWinnerList,
   checkLotteryResult,
   getDrawPrizeInfo,
-  acceptPrize
+  acceptPrize,
+  joinLottery
 };

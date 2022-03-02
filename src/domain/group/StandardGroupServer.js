@@ -871,6 +871,18 @@ class StandardGroupServer extends BaseServer {
     };
     return await groupApi.groupHelp(params);
   }
+
+  // 获取小组内上麦状态
+  getGroupSpeakStatus() {
+    const { watchInitData: { join_info } } = useRoomBaseServer().state;
+    const speakerList = this.state.groupInitData.speaker_list
+    if (!speakerList) return false;
+    if (speakerList.length) {
+      return speakerList.some(item => item.account_id == join_info.third_party_user_id);
+    } else {
+      return false;
+    }
+  }
 }
 
 export default function useGroupServer() {
