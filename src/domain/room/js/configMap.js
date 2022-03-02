@@ -5,10 +5,11 @@ export const configMap = function (data) {
     100003: 'ui.hide_favicon',
     100004: 'ui.hide_hostOnly',
     100005: 'ui.hide_share',
-    100008: 'ui.hide_guest_normal_userlist',
-    100008: 'ui.hide_assistant_userlist',
-    100009: 'ui.hide_host_userlist_nums',
-    100009: 'ui.hide_guest_userlist_nums',
+    // 100008: 发起端没用
+    // 100008: 'ui.hide_guest_normal_userlist',
+    // 100008: 'ui.hide_assistant_userlist',
+    // 100009: ui.hide_host_userlist_nums/ui.hide_host_userlist_nums
+    100009: 'ui.hide_host_nums',
     100010: 'ui.hide_handsUp',
     100011: 'close_assistant_flip_doc',
     100012: 'ui.hide_survey',
