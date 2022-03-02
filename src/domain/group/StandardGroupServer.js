@@ -307,10 +307,11 @@ class StandardGroupServer extends BaseServer {
       // 派发子房间聊天实例创建成功事件，通知成员列表请求 online-list
       this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED);
 
+      // 更新主屏的状态
+      useRoomBaseServer().setInavToolStatus('main_screen', this.state.groupInitData.main_screen);
       // 处理分组下互动sdk切换channel
-      // useRoomBaseServer().setInavToolStatus('main_screen', 1);
       useInteractiveServer().groupReInitInteractProcess()
-      // useRoomBaseServer().groupReInitInteractProcess();
+
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
       this._setDocPermisson();
@@ -324,6 +325,8 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] domain group_switch_end', msg);
     // 设置开始为未讨论状态
     useRoomBaseServer().setInavToolStatus('is_open_switch', 0);
+    // 更新主屏的状态
+    useRoomBaseServer().setInavToolStatus('is_open_switch', useRoomBaseServer().state.interactToolStatus.main_screen);
     // TODO: 演示权限交还主持人
     if (useRoomBaseServer().state.clientType === 'send') {
       //主持端
@@ -354,7 +357,7 @@ class StandardGroupServer extends BaseServer {
     useMsgServer().destroyGroupMsg();
 
     // 处理分组下互动sdk切换channel
-    // useRoomBaseServer().groupReInitInteractProcess();
+    useInteractiveServer().groupReInitInteractProcess();
 
     // 处理文档channel切换逻辑
     useDocServer().groupReInitDocProcess();
@@ -468,11 +471,8 @@ class StandardGroupServer extends BaseServer {
     if (!this.state.groupInitData.isInGroup) return;
     const { room_join_id } = msg.data;
     if (room_join_id == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id) {
-      useDocServer().state.hasDocPermission = true;
       // this.handleGroupPermissionChangeInteract();
     } else {
-      // 切换左侧控制栏disabled状态
-      useDocServer().state.hasDocPermission = false;
       // 停止桌面共享推流
       // if (this.speicalStreamId && this.isShowSpeicalStream) {
       //   this.$refs.desktopRef.stopDesktopShare();
@@ -794,6 +794,7 @@ class StandardGroupServer extends BaseServer {
     if (this.state.groupInitData?.group_id) {
       this.state.groupInitData.isInGroup = true;
       this.state.groupInitData.isBanned = false;
+      useRoomBaseServer().setInavToolStatus('main_screen', this.state.groupInitData.main_screen);
     } else {
       this.state.groupInitData.isInGroup = false;
     }

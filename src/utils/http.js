@@ -39,7 +39,9 @@ service.interceptors.request.use(
 
     // live_token 放在 body 中传
     if (LIVETOKEN) {
-      config.data = (config.data && JSON.parse(config.data)) || {};
+      if (typeof config.data === 'string') {
+        config.data = (config.data && JSON.parse(config.data)) || {};
+      }
       config.data = {
         live_token: LIVETOKEN,
         ...config.data
@@ -62,7 +64,7 @@ service.interceptors.request.use(
     }
 
     config.headers = {
-      'interact-token': sessionStorage.getItem('interact_token'),
+      'interact-token': sessionStorage.getItem('interact_token') || '',
       ...HEADERS,
       ...config.headers
     };

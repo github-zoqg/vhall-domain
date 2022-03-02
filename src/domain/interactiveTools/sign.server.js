@@ -13,8 +13,8 @@ class SignServer extends BaseServer {
     super();
     this.state = {};
     SignServer.instance = this;
+    this.listenMsg()
   }
-
   setState(key, value) {
     this.state[key] = value;
   }
