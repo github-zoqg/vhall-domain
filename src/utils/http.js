@@ -29,6 +29,8 @@ service.interceptors.request.use(
     // console.log('----axios----请求配置', JSON.stringify(config));
     // set baseURL
     config.baseURL = config.url.startsWith('/v3') ? V3_BASE_URL : MIDDLE_BASE_URL;
+    // 调试
+    config.baseURL = config.url.includes('weixin') ? 'https://t-saas-dispatch.vhall.com' : V3_BASE_URL;
 
     // 如果有 live_token 就不需要传 token
     if (TOKEN && !LIVETOKEN) {
