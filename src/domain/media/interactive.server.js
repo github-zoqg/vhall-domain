@@ -153,7 +153,7 @@ class InteractiveServer extends BaseServer {
           ? {
             adaptiveLayoutMode:
               VhallPaasSDK.modules.VhallRTC[sessionStorage.getItem('layout')] ||
-              VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
+              VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_FLOAT_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
             profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
             paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
             precastPic: false, // 选填，当旁路布局模板未填满时，剩余的窗格默认会填充系统默认小人图标。可配置是否显示此图标。
