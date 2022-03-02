@@ -3,6 +3,7 @@ import { setRequestHeaders } from '@/utils/http.js';
 import { merge } from '@/utils/index.js';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
+import { configMap } from './js/configMap'
 /**
  * send:发起端
  * standard:标准直播
@@ -83,6 +84,10 @@ class RoomBaseServer extends BaseServer {
       meeting[liveType.get(options.clientType)](options).then(res => {
         if (res.code === 200) {
           this.state.watchInitData = res.data;
+          // 设置发起端权限
+          if (options.clientType === 'send') {
+            this.state.configList = configMap(res.data.permission)
+          }
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
           sessionStorage.setItem('visitorId', res.data.visitor_id);
@@ -102,6 +107,8 @@ class RoomBaseServer extends BaseServer {
       }
     });
   }
+
+
 
   // 设置是否是嵌入
   setEmbedObj(param) {
