@@ -7,8 +7,12 @@ import useMsgServer from '@/domain/common/msg.server.js';
 import { watchSignApi } from '@/request/index.js';
 class SignServer extends BaseServer {
   constructor() {
+    if (typeof SignServer.instance === 'object') {
+      return SignServer.instance;
+    }
     super();
     this.state = {};
+    SignServer.instance = this;
     this.listenMsg()
   }
   setState(key, value) {
@@ -24,7 +28,7 @@ class SignServer extends BaseServer {
         temp.data = JSON.parse(temp.data);
         temp.context = JSON.parse(temp.context);
       }
-      console.log(temp, '原始消息');
+      // console.log(temp, '原始消息');
       const { type = '' } = temp.data || {};
       switch (type) {
         // 开始签到
