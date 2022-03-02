@@ -32,8 +32,7 @@ export default class StandardDocServer extends AbstractDocServer {
       docLoadComplete: true, // 文档是否加载完成
 
       thumbnailList: [], // 缩略图列表
-      switchStatus: false, // 直播中观众是否可见
-      hasDocPermission: false //是否文档的演示(操作)权限
+      switchStatus: false // 直播中观众是否可见
     };
   }
 
@@ -245,8 +244,10 @@ export default class StandardDocServer extends AbstractDocServer {
         if (data.activeId) {
           this.selectContainer(data.activeId);
           this.state.currentCid = data.activeId;
-          if (useRoomBaseServer().state.miniElement !== 'player') {
-            useRoomBaseServer().setChangeElement('player');
+          if (data.watchOpen) {
+            if (useRoomBaseServer().state.miniElement !== 'player') {
+              useRoomBaseServer().setChangeElement('player');
+            }
           }
         } else {
           this.state.currentCid = '';
