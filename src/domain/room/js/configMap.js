@@ -11,7 +11,7 @@ export const configMap = function (data) {
     // 100009: ui.hide_host_userlist_nums/ui.hide_host_userlist_nums
     100009: 'ui.hide_host_nums', // 在线人数（人员列表下面）TODO 接口好了，用上面两个字端判断
     100010: 'ui.hide_handsUp', // 允许举手开关
-    100011: 'close_assistant_flip_doc', //文档白板模块  v3-lives没有用
+    100011: 'white_board', //文档白板模块  v3-lives没有用
     100012: 'ui.hide_survey', //问卷
     100013: 'members_manager', // TODO成员
     100014: 'ui.hide_lottery', // 抽奖
