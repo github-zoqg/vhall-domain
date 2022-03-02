@@ -9,8 +9,8 @@ class SignServer extends BaseServer {
   constructor() {
     super();
     this.state = {};
+    this.listenMsg()
   }
-
   setState(key, value) {
     this.state[key] = value;
   }

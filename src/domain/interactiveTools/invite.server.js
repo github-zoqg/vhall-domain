@@ -9,12 +9,12 @@ class InviteServer {
     this.state = {};
   }
 
-  createInvite(data = {}) {
-    return inviteApi.createInvite(data);
+  createInvite(data = {}, options = {}) {
+    return inviteApi.createInvite(data, options);
   }
 
-  createInviteItem(data = {}) {
-    return inviteApi.createInviteItem(data);
+  createInviteItem(data = {}, options = {}) {
+    return inviteApi.createInviteItem(data, options);
   }
 
   wechatShare(data = {}) {
