@@ -18,7 +18,7 @@ class UserServer {
       captchaVal: null, // 云盾图形码
       second: -1, // 倒计时的秒数
       capErrorMsg: '', // 错误提示
-      userInfo: null, // 用户信息
+      userInfo: {}, // 用户信息
       thirdInfo: {} // 第三方授权绑定的信息 从userInfo拆分的
     };
   }
@@ -306,7 +306,7 @@ class UserServer {
         this.state.thirdInfo.QQBind = QQ.length > 0;
         this.state.thirdInfo.QQNickName = QQ[0] ? QQ[0].nick_name : '';
         // 用户基本信息
-        this.state.userInfo = res.data;
+        this.state.userInfo = res.data || {};
       }
       return res;
     });
