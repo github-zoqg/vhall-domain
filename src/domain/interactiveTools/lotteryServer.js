@@ -56,7 +56,16 @@ class LotteryServer extends BaseServer {
   checkLottery() {
     return lotteryApi.checkLottery();
   }
+  // 参加口令抽奖
+  joinLottery(lotteryId) {
+    return lotteryApi.joinLottery({
+      lottery_id: lotteryId,
+      room_id: this._roomId
+    }).then(res => {
 
+      return res
+    });
+  }
   // 获取可参与抽奖用户
   queryQualifiedPerson(params) {
     return lotteryApi.queryQualifiedPerson({
