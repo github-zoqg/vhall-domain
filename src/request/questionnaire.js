@@ -77,6 +77,14 @@ const submitQuestionnaire = params => {
   });
 };
 
+const checkAnswerStatus = params => {
+  return request({
+    url: '/v3/vss/survey/check-can-answer',
+    method: 'POST',
+    data: params
+  });
+};
+
 export default {
   queryQuestionnaireList,
   copyQuestionnaire,
@@ -86,5 +94,6 @@ export default {
   copyQuestion,
   publishQuestionnaire,
   editQuestionnaire,
-  submitQuestionnaire
+  submitQuestionnaire,
+  checkAnswerStatus
 };
