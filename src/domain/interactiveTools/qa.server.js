@@ -37,15 +37,15 @@ class QaServer extends BaseServer {
       switch (msg.data.type) {
         //开启问答
         case this.Events.QA_OPEN:
-          if (!this.isSelfMsg(msg)) {
-            this.$emit(this.Events.QA_OPEN, msg);
-          }
+          // if (!this.isSelfMsg(msg)) {
+          this.$emit(this.Events.QA_OPEN, msg);
+          // }
           break;
         //关闭问答
         case this.Events.QA_CLOSE:
-          if (!this.isSelfMsg(msg)) {
-            this.$emit(this.Events.QA_CLOSE, msg);
-          }
+          // if (!this.isSelfMsg(msg)) {
+          this.$emit(this.Events.QA_CLOSE, msg);
+          // }
           break;
         //收到问答
         case this.Events.QA_CREATE:
