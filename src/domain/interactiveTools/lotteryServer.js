@@ -6,8 +6,8 @@ import lotteryApi from '../../request/lottery';
 import useMsgServer from '../common/msg.server';
 import BaseServer from '../common/base.server';
 
-const LOTTERY_PUSH = 'lottery_push';
-const LOTTERY_RESULT_NOTICE = 'lottery_result_notice';
+// const LOTTERY_PUSH = 'lottery_push';
+// const LOTTERY_RESULT_NOTICE = 'lottery_result_notice';
 class LotteryServer extends BaseServer {
   constructor(opt = {}) {
     super();
@@ -25,13 +25,17 @@ class LotteryServer extends BaseServer {
   };
   // 监听消息
   listenMsg() {
+    console.log('监听了 抽奖消息')
     useMsgServer().$onMsg('ROOM_MSG', msg => {
+      console.log('抽奖消息:' + msg.data.event_type)
       switch (msg.data.event_type || msg.data.type) {
         //【分组创建/新增完成】
-        case LOTTERY_PUSH:
+        case this.Events.LOTTERY_PUSH:
+          console.log('抽奖消息:' + msg)
           this.$emit(this.Events.LOTTERY_PUSH, msg);
           break;
-        case LOTTERY_RESULT_NOTICE:
+        case this.Events.LOTTERY_RESULT_NOTICE:
+          console.log('抽奖消息:' + msg)
           this.$emit(this.Events.LOTTERY_RESULT_NOTICE, msg);
           break;
       }
@@ -56,7 +60,16 @@ class LotteryServer extends BaseServer {
   checkLottery() {
     return lotteryApi.checkLottery();
   }
+  // 参加口令抽奖
+  joinLottery(lotteryId) {
+    return lotteryApi.joinLottery({
+      lottery_id: lotteryId,
+      room_id: this._roomId
+    }).then(res => {
 
+      return res
+    });
+  }
   // 获取可参与抽奖用户
   queryQualifiedPerson(params) {
     return lotteryApi.queryQualifiedPerson({

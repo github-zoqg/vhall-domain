@@ -34,7 +34,7 @@ class entryformServer extends BaseServer {
         temp.data = JSON.parse(temp.data);
         temp.context = JSON.parse(temp.context);
       }
-      console.log(temp, '原始消息');
+      // console.log(temp, '原始消息');
       const { type = '' } = temp.data || {};
       switch (type) {
         // 计时器开始

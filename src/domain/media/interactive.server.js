@@ -153,7 +153,7 @@ class InteractiveServer extends BaseServer {
           ? {
             adaptiveLayoutMode:
               VhallPaasSDK.modules.VhallRTC[sessionStorage.getItem('layout')] ||
-              VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
+              VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_FLOAT_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
             profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
             paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
             precastPic: false, // 选填，当旁路布局模板未填满时，剩余的窗格默认会填充系统默认小人图标。可配置是否显示此图标。
@@ -197,13 +197,15 @@ class InteractiveServer extends BaseServer {
     if (watchInitData.webinar.no_delay_webinar == 0) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
-
+    const micServer = useMicServer()
     // 如果是无延迟直播、不在麦、开启自动上麦
-    if (interactToolStatus.auto_speak == 1) {
+    if (interactToolStatus.auto_speak == 1 && !micServer.state.isSpeakOffToInit) {
       // 调上麦接口判断当前人是否可以上麦
-      const res = await useMicServer().userSpeakOn();
+      const res = await micServer.userSpeakOn();
       // 如果上麦成功，设为 HOST
       if (res.code == 200) return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
+    } else {
+      micServer.setSpeakOffToInit(false)
     }
 
     // 如果是无延迟直播、不在麦、未开启自动上麦，设为 AUDIENCE
@@ -421,7 +423,7 @@ class InteractiveServer extends BaseServer {
         // 如果创建的是桌面共享流
         if (options.streamType === 3) {
           this.state.screenStream.streamId = data.streamId;
-        } else {
+        } else if (options.streamType == 2) {
           this.state.localStream = {
             streamId: data.streamId,
             audioMuted: options.mute?.audio || false,

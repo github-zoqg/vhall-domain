@@ -16,7 +16,9 @@ export default class StandardNoticeServer extends BaseServer {
         noticeContent:
           roomBaseServer.state.noticeInfo.total &&
           roomBaseServer.state.noticeInfo.list[0].content['content'],
-        total: roomBaseServer.state.noticeInfo.total
+        total: roomBaseServer.state.noticeInfo.total,
+        created_at: roomBaseServer.state.noticeInfo.total &&
+          roomBaseServer.state.noticeInfo.list[0].created_at
       },
       //请求的分页参数
       pageInfo: {
@@ -47,6 +49,15 @@ export default class StandardNoticeServer extends BaseServer {
     msgServer.$onMsg('ROOM_MSG', msg => {
       if (msg.data.type === 'room_announcement') {
         this.$emit('room_announcement', msg.data);
+      }
+      if (msg.data.type == 'live_over') {
+        this.$emit('live_over', msg.data);
+      }
+      // 分组直播 没有结束讨论 直接结束直播
+      if (msg.data.type == 'group_switch_end') {
+        if (msg.data.over_live) {
+          this.$emit('live_over', msg.data);
+        }
       }
     });
   }

@@ -7,8 +7,12 @@ import { liveTimerApi } from '@/request/index.js';
  */
 class timerServer extends BaseServer {
   constructor() {
+    if (typeof timerServer.instance === 'object') {
+      return timerServer.instance;
+    }
     super();
     this.state = {};
+    timerServer.instance = this;
   }
 
   setState(key, value) {
@@ -24,7 +28,7 @@ class timerServer extends BaseServer {
         temp.data = JSON.parse(temp.data);
         temp.context = JSON.parse(temp.context);
       }
-      console.log(temp, '原始消息');
+      // console.log(temp, '原始消息');
       const { type = '' } = temp.data || {};
       switch (type) {
         // 计时器开始
@@ -43,6 +47,9 @@ class timerServer extends BaseServer {
         case 'timer_resume':
           this.$emit('timer_resume', temp);
           break;
+        // 直播结束
+        case 'live_over':
+          this.$emit('timer_end', temp);
         default:
           break;
       }

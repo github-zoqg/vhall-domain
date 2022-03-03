@@ -29,6 +29,8 @@ service.interceptors.request.use(
     // console.log('----axios----请求配置', JSON.stringify(config));
     // set baseURL
     config.baseURL = config.url.startsWith('/v3') ? V3_BASE_URL : MIDDLE_BASE_URL;
+    // 调试
+    config.baseURL = config.url.includes('weixin') ? 'https://t-saas-dispatch.vhall.com' : V3_BASE_URL;
 
     // 如果有 live_token 就不需要传 token
     if (TOKEN && !LIVETOKEN) {
@@ -37,7 +39,9 @@ service.interceptors.request.use(
 
     // live_token 放在 body 中传
     if (LIVETOKEN) {
-      config.data = (config.data && JSON.parse(config.data)) || {};
+      if (typeof config.data === 'string') {
+        config.data = (config.data && JSON.parse(config.data)) || {};
+      }
       config.data = {
         live_token: LIVETOKEN,
         ...config.data
@@ -60,7 +64,7 @@ service.interceptors.request.use(
     }
 
     config.headers = {
-      'interact-token': sessionStorage.getItem('interact_token'),
+      'interact-token': sessionStorage.getItem('interact_token') || '',
       ...HEADERS,
       ...config.headers
     };

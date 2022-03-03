@@ -308,9 +308,8 @@ class StandardGroupServer extends BaseServer {
       this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED);
 
       // 处理分组下互动sdk切换channel
-      // useRoomBaseServer().setInavToolStatus('main_screen', 1);
       useInteractiveServer().groupReInitInteractProcess()
-      // useRoomBaseServer().groupReInitInteractProcess();
+
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
       this._setDocPermisson();
@@ -354,7 +353,7 @@ class StandardGroupServer extends BaseServer {
     useMsgServer().destroyGroupMsg();
 
     // 处理分组下互动sdk切换channel
-    // useRoomBaseServer().groupReInitInteractProcess();
+    useInteractiveServer().groupReInitInteractProcess();
 
     // 处理文档channel切换逻辑
     useDocServer().groupReInitDocProcess();
@@ -468,11 +467,8 @@ class StandardGroupServer extends BaseServer {
     if (!this.state.groupInitData.isInGroup) return;
     const { room_join_id } = msg.data;
     if (room_join_id == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id) {
-      useDocServer().state.hasDocPermission = true;
       // this.handleGroupPermissionChangeInteract();
     } else {
-      // 切换左侧控制栏disabled状态
-      useDocServer().state.hasDocPermission = false;
       // 停止桌面共享推流
       // if (this.speicalStreamId && this.isShowSpeicalStream) {
       //   this.$refs.desktopRef.stopDesktopShare();
@@ -794,6 +790,7 @@ class StandardGroupServer extends BaseServer {
     if (this.state.groupInitData?.group_id) {
       this.state.groupInitData.isInGroup = true;
       this.state.groupInitData.isBanned = false;
+      useRoomBaseServer().setInavToolStatus('main_screen', this.state.groupInitData.main_screen);
     } else {
       this.state.groupInitData.isInGroup = false;
     }
@@ -869,6 +866,18 @@ class StandardGroupServer extends BaseServer {
       group_id: this.state.groupInitData.group_id // 分组ID
     };
     return await groupApi.groupHelp(params);
+  }
+
+  // 获取小组内上麦状态
+  getGroupSpeakStatus() {
+    const { watchInitData: { join_info } } = useRoomBaseServer().state;
+    const speakerList = this.state.groupInitData.speaker_list
+    if (!speakerList) return false;
+    if (speakerList.length) {
+      return speakerList.some(item => item.account_id == join_info.third_party_user_id);
+    } else {
+      return false;
+    }
   }
 }
 

@@ -1,5 +1,6 @@
 import { insertFile } from '../../request/index.js';
 import { uploadFile, isChrome88 } from '@/utils/index.js';
+import { im as iMRequest } from '@/request/index.js';
 import useRoomBaseServer from '../room/roombase.server';
 import BaseServer from '../common/base.server.js';
 import useInteractiveServer from './interactive.server.js';
@@ -11,35 +12,115 @@ class InsertFileServer extends BaseServer {
       return InsertFileServer.instance;
     }
 
+    this.currentLocalInsertFile = null // file 对象或者是  insertFileListItem 对象
+    this.insertVideoElement = null // 本地插播，当前正在播放的 videoELement
     this.state = {
-      localInsertStream: null,
+      // 插播流信息
+      insertStreamInfo: {
+        streamId: '',
+        userInfo: { // 推插播流的人的信息
+          accountId: '',
+          role: 1,
+          nickname: '',
+        },
+        has_video: true // 是否音频插播
+      },
+      currentRemoteInsertFile: {}, // 远端插播文件信息
+      insertFileType: 'local', // 插播类型 local本地插播 remote云插播(观看端不会关心这个状态)
+      isInsertFilePushing: false, // 是否有人正在插播（可能不是当前用户）
       isChrome88: isChrome88()
     };
     InsertFileServer.instance = this;
     return this;
   }
 
+  init() {
+    this._addListeners()
+  }
+
   // 注册监听事件
-  _addListeners(cb) {
+  _addListeners() {
     const interactiveServer = useInteractiveServer();
-    interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
+    // 流加入
+    interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       e.data.attributes = JSON.parse(e.data.attributes);
-      if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
+      if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) { // 判断两种类型的 streamType 是为了兼容客户端
+        this.getInsertFileStream()
         this.$emit('INSERT_FILE_STREAM_ADD', e);
       }
     });
-    interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
+    // 流删除
+    interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
       e.data.attributes = JSON.parse(e.data.attributes);
       if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
+        this.getInsertFileStream()
         this.$emit('INSERT_FILE_STREAM_REMOVE', e);
       }
     });
-    interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
+    interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
       e.data.attributes = JSON.parse(e.data.attributes);
       if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
         this.$emit('INSERT_FILE_STREAM_FAILED', e);
       }
     });
+  }
+
+
+  // 设置当前本地插播文件
+  setLocalInsertFile(file) {
+    this.currentLocalInsertFile = file
+  }
+
+  // 设置云插播文件
+  setRemoteInsertFile(file) {
+    this.state.currentRemoteInsertFile = file
+  }
+
+  // 设置当前是否有在插播的状态
+  setInsertFilePushing(status) {
+    this.state.isInsertFilePushing = status
+  }
+
+  // 设置插播类型,local 本地插播   remote 云插播
+  setInsertFileType(type) {
+    this.state.insertFileType = type
+  }
+
+  // 设置远端流播放器videoElement
+  setInsertVideoElement(videoElement) {
+    this.insertVideoElement = videoElement
+  }
+
+  // 获取插播流信息
+  getInsertFileStream() {
+    const interactiveServer = useInteractiveServer()
+    if (!interactiveServer.interactiveInstance) return
+    const streamList = interactiveServer.getRoomStreams();
+    const stream = streamList.find(stream => {
+      if (stream.streamType === 4) {
+
+        const retStream = {
+          ...stream,
+          attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
+        }
+
+        this.state.insertStreamInfo.streamId = stream.streamId
+        this.state.insertStreamInfo.userInfo = {
+          accountId: retStream.accountId,
+          role: retStream.role,
+          nickname: retStream.nickname,
+
+        }
+        this.state.isInsertFilePushing = true
+        this.state.insertStreamInfo.has_video = retStream.has_video // 是否音频插播
+
+        return retStream
+      }
+    });
+    if (!stream) {
+      this.clearInsertFileInfo()
+    }
+    return stream;
   }
 
   // 注册插播流删除事件
@@ -78,7 +159,7 @@ class InsertFileServer extends BaseServer {
   }
 
   // 选择音视频文件
-  selectLocalFile(onChange = e => {}) {
+  selectLocalFile(onChange = e => { }) {
     const { watchInitData } = useRoomBaseServer().state;
     let accept = 'video/mp4,video/webm,audio/ogg';
     if (watchInitData.webinar.mode == 1) {
@@ -96,9 +177,8 @@ class InsertFileServer extends BaseServer {
   // 创建video标签播放本地音视频文件
   createLocalVideoElement(file, options = {}) {
     return new Promise((resolve, reject) => {
-      this.state._isAudio = file.type.includes('ogg');
+      this.state.insertStreamInfo.has_video = !file.type.includes('ogg');
       const videoElement = document.createElement('video');
-      this.state._videoElement = videoElement;
       videoElement.setAttribute('width', '100%');
       videoElement.setAttribute('height', '100%');
       const windowURL = window.URL || window.webkitURL;
@@ -113,6 +193,7 @@ class InsertFileServer extends BaseServer {
       videoElement.addEventListener('canplay', e => {
         setTimeout(() => {
           console.log(
+            '----本地插播video信息----',
             videoElement.videoHeight,
             videoElement.videoWidth,
             '分辨率',
@@ -121,6 +202,7 @@ class InsertFileServer extends BaseServer {
           if (videoElement.videoHeight > 720 || videoElement.videoWidth > 1281) {
             reject({ msg: '视频分辨率过高，请打开分辨率为1280*720以下的视频' });
           } else {
+            this.insertVideoElement = videoElement
             resolve(videoElement);
           }
         }, 100);
@@ -131,13 +213,13 @@ class InsertFileServer extends BaseServer {
   // 使用canvas抓流
   captureStreamByCanvas() {
     //先做检测，存在没有video引用的情况
-    if (!this.state._videoElement) {
-      this.state._videoElement = document.createElement('video');
-      this.state._videoElement.setAttribute('width', '100%');
-      this.state._videoElement.setAttribute('height', '100%');
+    if (!this.insertVideoElement) {
+      this.insertVideoElement = document.createElement('video');
+      this.insertVideoElement.setAttribute('width', '100%');
+      this.insertVideoElement.setAttribute('height', '100%');
     }
 
-    const videoElement = this.state._videoElement;
+    const videoElement = this.insertVideoElement;
     const chrome88Canvas = document.createElement('canvas');
     const chrome88canvasContext = chrome88Canvas.getContext('2d');
 
@@ -171,7 +253,7 @@ class InsertFileServer extends BaseServer {
   // 使用videoElement抓流
   captureStreamByVideo() {
     let videoStream;
-    const videoElement = this.state._videoElement;
+    const videoElement = this.insertVideoElement;
     if (videoElement.captureStream) {
       videoStream = videoElement.captureStream();
       if (!videoStream) {
@@ -186,7 +268,7 @@ class InsertFileServer extends BaseServer {
 
   // 抓取本地音视频轨道
   captureLocalStream() {
-    if (this.state.isChrome88 && !this.state._isAudio) {
+    if (this.state.isChrome88 && this.state.insertStreamInfo.has_video) {
       return this.captureStreamByCanvas();
     } else {
       return this.captureStreamByVideo();
@@ -206,12 +288,12 @@ class InsertFileServer extends BaseServer {
         role: watchInitData.join_info.role_name,
         nickname: watchInitData.join_info.nickname,
         stream_type: 4,
-        has_video: this.state._isAudio ? 0 : 1
+        has_video: this.state.insertStreamInfo.has_video ? 1 : 0
       }),
       streamType: 4
     };
 
-    if (this.state.isChrome88 && !this.state._isAudio) {
+    if (this.state.isChrome88 && this.state.insertStreamInfo.has_video) {
       retOptions = {
         ...retOptions,
         audioTrack: retSteram.audioTrack, // 音频轨道
@@ -222,7 +304,7 @@ class InsertFileServer extends BaseServer {
         ...retOptions,
         mixOption: {
           // 选填，指定此本地流的音频和视频是否加入旁路混流。支持版本：2.3.2及以上。
-          mixVideo: this.state._isAudio ? false : true, // 视频是否加入旁路混流
+          mixVideo: !this.state.insertStreamInfo.has_video ? false : true, // 视频是否加入旁路混流
           mixAudio: true // 音频是否加入旁路混流
         },
         hasInsertedStream: true, // 使用外部插入的MediaStream流对象
@@ -231,7 +313,11 @@ class InsertFileServer extends BaseServer {
     }
 
     const interactiveServer = useInteractiveServer();
-    return interactiveServer.createLocalStream(retOptions);
+    return interactiveServer.createLocalStream(retOptions).then(data => {
+      // 更新 insertStreamInfo 信息
+      this.state.insertStreamInfo.streamId = data.streamId
+      return data
+    });
   }
 
   // 推插播流
@@ -241,7 +327,7 @@ class InsertFileServer extends BaseServer {
       interactiveServer
         .publishStream({ streamId: stream.streamId })
         .then(res => {
-          this.state._LoclaStreamId = res.streamId;
+          this.state.insertStreamInfo.streamId = res.streamId;
           resolve(res);
         })
         .catch(reject);
@@ -254,13 +340,39 @@ class InsertFileServer extends BaseServer {
       const interactiveServer = useInteractiveServer();
       console.log('stopPublishInsertStream', streamId);
       interactiveServer
-        .unpublishStream(streamId || this._LoclaStreamId)
+        .unpublishStream({
+          streamId: streamId || this.state.insertStreamInfo.streamId
+        })
         .then(res => {
-          this.state._LoclaStreamId = null;
           resolve(res);
         })
         .catch(reject);
     });
+  }
+
+  // 清空插播状态
+  clearInsertFileInfo() {
+    this.state.insertStreamInfo.streamId = null;
+    this.state.isInsertFilePushing = false
+    this.currentLocalInsertFile = null
+    this.state.currentRemoteInsertFile = {}
+  }
+
+  /**
+   * 插播开始、暂停发送自定义消息通知对端，更改、还原麦克风状态
+   * @param {*} status 1 开始播放、关闭麦克风   2 暂停播放、还原麦克风
+   */
+  sendStateChangeMessage(status) {
+    const { watchInitData } = useRoomBaseServer().state
+    const _data = {
+      room_id: watchInitData.interact.room_id,
+      body: JSON.stringify({
+        type: 'insert_file_status',
+        status: status // 1：播放关闭麦克风  0：暂停打开麦克风（如果之前静音布处理）
+      }),
+      client: 'pc_browser'
+    };
+    return iMRequest.chat.sendCustomMessage(_data)
   }
 
   // 订阅插播流
@@ -273,12 +385,6 @@ class InsertFileServer extends BaseServer {
   unsubscribeInsertStream(options = {}) {
     const interactiveServer = useInteractiveServer();
     return interactiveServer.unSubscribeStream(options);
-  }
-
-  // 设置已经存在的videoElement
-  setExistVideoElement(videoElement) {
-    this.state._videoElement = videoElement;
-    this.state._isAudio = videoElement.isAudio;
   }
 }
 
