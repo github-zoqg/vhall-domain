@@ -1,4 +1,11 @@
-export const configMap = function (data) {
+/**
+ * configMap 发起端 permissions 数组转 json 的方法
+ * @param {Array} data 必传，permission 数字数组
+ * @param {Number} value 选传，将 data 中匹配到的 key 对应的 value 设置为的值，  0 或 1
+ * @param {Object} configList 选传，权限列表，如果传了会基于这个权限列表对照 data 以及 value 生成最终的权限列表
+ * @returns
+ */
+export const configMap = function (data, value = 1, configList) {
   const keyMap = {
     100001: 'ui.hide_logo_but_show_login', //logo下显示登录注册
     100002: 'ui.hide_live_helper',  //直播助手
@@ -35,9 +42,9 @@ export const configMap = function (data) {
     100034: 'webinar.timer', //计时器
     100035: 'webinar.group' // 分组
   }
-  let configList = {}
+  let retConfigList = configList || {}
   data.map(item => {
-    configList[keyMap[item]] = 1
+    retConfigList[keyMap[item]] = value
   })
-  return configList
+  return retConfigList
 }

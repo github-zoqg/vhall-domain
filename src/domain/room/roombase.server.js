@@ -86,7 +86,7 @@ class RoomBaseServer extends BaseServer {
         if (res.code === 200) {
           this.state.watchInitData = res.data;
           // 设置发起端权限
-          if (options.clientType === 'send') {
+          if (['send', 'record', 'clientEmbed'].includes(options.clientType)) {
             this.state.configList = configMap(res.data.permission)
           }
           console.log('watchInitData', res.data);
@@ -241,13 +241,13 @@ class RoomBaseServer extends BaseServer {
 
       if (activityConfig) {
         // 活动级别降级命中
-        this.handleDegradationHit(activityConfig.permissions, activityConfig.tip_message)
+        this.handleDegradationHit(activityConfig.permissions, activityConfig.tip_message);
       } else if (userConfig) {
         // 用户级别降级命中
-        this.handleDegradationHit(userConfig.permissions, userConfig.tip_message)
+        this.handleDegradationHit(userConfig.permissions, userConfig.tip_message);
       } else if (global && global.permissions) {
         // 全局级别降级命中
-        this.handleDegradationHit(global.permissions, global.tip_message)
+        this.handleDegradationHit(global.permissions, global.tip_message);
       }
     } catch (e) {
       // 调用异常情况下，计时器停止
@@ -259,7 +259,15 @@ class RoomBaseServer extends BaseServer {
 
   // 黄金链路命中之后的处理
   handleDegradationHit(permissions, tip_message) {
-    this.state.configList = Object.assign({}, this.state.configList, permissions);
+    // 设置发起端权限
+    if (['send', 'record', 'clientEmbed'].includes(this.state.clientType) && permissions && permissions.initiator && permissions.initiator.length) {
+      // 发起端需要将数组转成json
+      this.state.configList = configMap(permissions.initiator, 0, this.state.configList);
+    } else if (['standard', 'embed', 'sdk'].includes(this.state.clientType) && permissions) {
+      this.state.configList = Object.assign({}, this.state.configList, permissions);
+    } else {
+      return;
+    }
     this.state.degradationOptions.isDegraded = true;
     // 击中情况下，友好提示
     this.$emit('DEGRADED_TIP', tip_message);
