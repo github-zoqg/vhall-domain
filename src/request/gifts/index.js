@@ -30,7 +30,7 @@ const sendGift = (params = {}) => {
   return request({
     url: url,
     method: 'POST',
-    data: retParmams
+    data: params
   });
 };
 
