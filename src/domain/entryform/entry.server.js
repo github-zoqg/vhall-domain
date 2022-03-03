@@ -5,6 +5,7 @@
 import BaseServer from '@/domain/common/base.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
 import { entryformApi } from '@/request/index.js';
+// import { room } from '@/request/index.js';
 
 class entryformServer extends BaseServer {
   constructor() {
@@ -65,10 +66,6 @@ class entryformServer extends BaseServer {
           break;
       }
     });
-  }
-
-  initGrayBefore(params) {
-    return entryformApi.initGrayBefore(params);
   }
 
   verifyOpenLink(params) {
