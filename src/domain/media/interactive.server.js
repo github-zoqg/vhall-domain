@@ -91,11 +91,7 @@ class InteractiveServer extends BaseServer {
   * 分组开始讨论后续操作
   */
   groupReInitInteractProcess() {
-    this.init().then(res => {
-      console.warn('开始----res', res)
-    }).catch(err => {
-      console.warn('开始----err', res)
-    })
+    this.init()
   }
 
   /**
