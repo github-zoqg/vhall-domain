@@ -50,6 +50,15 @@ export default class StandardNoticeServer extends BaseServer {
       if (msg.data.type === 'room_announcement') {
         this.$emit('room_announcement', msg.data);
       }
+      if (msg.data.type == 'live_over') {
+        this.$emit('live_over', msg.data);
+      }
+      // 分组直播 没有结束讨论 直接结束直播
+      if (msg.data.type == 'group_switch_end') {
+        if (msg.data.over_live) {
+          this.$emit('live_over', msg.data);
+        }
+      }
     });
   }
 
