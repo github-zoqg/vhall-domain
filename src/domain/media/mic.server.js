@@ -99,11 +99,6 @@ class MicServer extends BaseServer {
         case 'vrtc_connect_invite_refused':
           this.$emit('vrtc_connect_invite_refused', msg);
           break;
-        // 主持人开启允许举手
-        case 'vrtc_connect_open':
-          useRoomBaseServer().setInavToolStatus('is_handsup', true);
-          this.$emit('vrtc_connect_open', msg);
-          break;
         // 设置主画面
         case 'vrtc_big_screen_set':
           const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
