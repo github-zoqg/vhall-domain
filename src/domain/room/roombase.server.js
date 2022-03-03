@@ -1,9 +1,10 @@
-import { meeting } from '@/request/index.js';
+import { meeting, room } from '@/request/index.js';
 import { setRequestHeaders } from '@/utils/http.js';
 import { merge } from '@/utils/index.js';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import { configMap } from './js/configMap'
+
 /**
  * send:发起端
  * standard:标准直播
@@ -67,6 +68,11 @@ class RoomBaseServer extends BaseServer {
     return this;
   }
 
+  // 通过活动id获取活动拥有者用户id
+  webinarInitBefore(params) {
+    return room.webinar.webinarInitBefore(params);
+  }
+
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
     if (
@@ -104,11 +110,11 @@ class RoomBaseServer extends BaseServer {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       if (msg.data.type == 'live_start') {
         this.state.watchInitData.webinar.type = 1;
+      } else if (msg.data.type == 'live_over') {
+        this.state.watchInitData.webinar.type = 3;
       }
     });
   }
-
-
 
   // 设置是否是嵌入
   setEmbedObj(param) {
@@ -180,6 +186,7 @@ class RoomBaseServer extends BaseServer {
       return res;
     });
   }
+
   //获取多语言配置
   getLangList() {
     return meeting.getLangList({ webinar_id: this.state.watchInitData.webinar.id }).then(res => {
@@ -191,6 +198,7 @@ class RoomBaseServer extends BaseServer {
       }
     });
   }
+
   /**
    * 功能介绍：黄金链路
    * 作用：系统崩溃 配置项降级处理方案
@@ -440,6 +448,7 @@ class RoomBaseServer extends BaseServer {
   screenPostClose(data = {}) {
     this.$emit('screenPostClose', data);
   }
+  
   // 获取上麦状态
   getSpeakStatus() {
     const {

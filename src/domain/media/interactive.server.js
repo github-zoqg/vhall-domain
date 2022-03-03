@@ -29,7 +29,8 @@ class InteractiveServer extends BaseServer {
       remoteStreams: [], // 远端流数组
       streamListHeightInWatch: 0, // PC观看端流列表高度
       fullScreenType: false, // wap 全屏状态
-      defaultStreamBg: false //开始推流到成功期间展示默认图
+      defaultStreamBg: false, //开始推流到成功期间展示默认图
+      showPlayIcon: false // 展示播放按钮
     };
     InteractiveServer.instance = this;
     return this;
@@ -91,11 +92,7 @@ class InteractiveServer extends BaseServer {
   * 分组开始讨论后续操作
   */
   groupReInitInteractProcess() {
-    this.init().then(res => {
-      console.warn('开始----res', res)
-    }).catch(err => {
-      console.warn('开始----err', res)
-    })
+    this.init()
   }
 
   /**
