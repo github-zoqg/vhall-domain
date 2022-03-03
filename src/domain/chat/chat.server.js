@@ -30,7 +30,8 @@ class ChatServer extends BaseServer {
       //当前频道全部禁言状态
       allBanned: interactToolStatus.all_banned == 1 ? true : false, //1禁言 0取消禁言
       limit: 10,
-      curMsg: null //当前正在编辑的消息
+      curMsg: null,//当前正在编辑的消息
+      prevTime: ''//用来记录每条消息的上一条消息发送的时间
     };
     this.listenEvents();
     this.controller = null;
@@ -50,13 +51,25 @@ class ChatServer extends BaseServer {
         //表情处理
         rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
         //格式化消息用于渲染并添加到消息列表
-        //私聊我的消息
-        if (rawMsg.data.target_id && (this.isMyMsg(rawMsg) || this.isSelfMsg(rawMsg))) {
+        //私聊我的消息，//自己发的消息不处理
+        if (rawMsg.data.target_id && this.isMyMsg(rawMsg)) {
           this.state.privateChatList.push(Msg._handleGenerateMsg(rawMsg))
           this.$emit('receivePrivateMsg', Msg._handleGenerateMsg(rawMsg));
           return
         }
-        this.state.chatList.push(Msg._handleGenerateMsg(rawMsg));
+        const msg = Msg._handleGenerateMsg(rawMsg)
+        msg.prevTime = this.state.prevTime;
+        //自己发的消息不处理
+        !this.isSelfMsg(rawMsg) && this.state.chatList.push(msg);
+        this.state.prevTime = msg.sendTime;
+        //消息过多时丢掉
+        if (this.state.chatList.length > 10000) {
+          this.state.chatList.splice(0, 5000)
+        }
+        //普通消息
+        if (!this.isSelfMsg(rawMsg)) {
+          this.$emit('receiveMsg');
+        }
         //@当前用户
         if (this.isAtMe(rawMsg)) {
           this.$emit('atMe');
@@ -65,10 +78,7 @@ class ChatServer extends BaseServer {
         if (this.isReplyMe(rawMsg)) {
           this.$emit('replyMe');
         }
-        //普通消息
-        if (!this.isSelfMsg(rawMsg)) {
-          this.$emit('receiveMsg');
-        }
+
       }
       // 禁言当前用户
       if (rawMsg.data.type === 'disable' && this.isMyMsg(rawMsg)) {
@@ -132,9 +142,9 @@ class ChatServer extends BaseServer {
   }
   //判断是不是回复当前用户
   isReplyMe(msg) {
-    if (msg.context.replayMsg) {
+    if (msg.context.replyMsg) {
       return (
-        msg.context.replayMsg.sendId ==
+        msg.context.replyMsg.sendId ==
         useRoomBaseServer().state.watchInitData.join_info.third_party_user_id
       );
     }
@@ -165,7 +175,10 @@ class ChatServer extends BaseServer {
           item.context.atList = item.context.at_list;
         }
         //实例化消息
-        return Msg._handleGenerateMsg(item, true); //第二个参数区别是否为历史消息
+        const msg = Msg._handleGenerateMsg(item, true)
+        msg.prevTime = this.state.prevTime;
+        this.state.prevTime = msg.sendTime;
+        return msg; //第二个参数区别是否为历史消息
       })
       .reduce((acc, curr) => {
         const showTime = curr.showTime;
@@ -220,6 +233,12 @@ class ChatServer extends BaseServer {
   sendMsg = debounce(this.sendChatMsg.bind(this), 300, true);
   //发送聊天消息
   sendChatMsg({ data, context }) {
+    //判断私聊还是普通消息
+    if (data.target_id) {
+      this.state.privateChatList.push(Msg._handleGenerateMsg({ data, context }))
+    } else {
+      this.state.chatList.push(Msg._handleGenerateMsg({ data, context }))
+    }
     useMsgServer().sendChatMsg(data, context);
   }
 

@@ -62,7 +62,7 @@ export default class Msg {
     let resultMsg = {
       type: item.data.type,
       avatar: item.context.avatar || defaultAvatar,
-      sendId: item.sender_id || item.sourceId,
+      sendId: item.sender_id || item.sourceId || item.context.user_id,
       showTime: item.context.showTime,
       nickname: item.nickname || item.context.nickname,
       roleName: item.context.role_name,
