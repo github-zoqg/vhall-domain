@@ -34,9 +34,10 @@ class RoomBaseServer extends BaseServer {
       }, //是否是嵌入
       watchInitErrorData: undefined, // 默认undefined，如果为其他值将触发特殊逻辑
       configList: {},
-      handleLowerConfig: false, // 黄金链路-是否触发标记
-      faultTipMsg: '', // 黄金链路-降级提示文案
-      lowerGradeInterval: null, // 黄金链路计时器
+      degradationOptions: {
+        isDegraded: false, // 黄金链路-是否触发标记
+        degradeInterval: null, // 黄金链路计时器
+      },
       clientType: '',
       deviceType: '', // 设备类型   pc 或 手机
       skinInfo: {}, // 皮肤信息
@@ -85,7 +86,7 @@ class RoomBaseServer extends BaseServer {
         if (res.code === 200) {
           this.state.watchInitData = res.data;
           // 设置发起端权限
-          if (options.clientType === 'send') {
+          if (['send', 'record', 'clientEmbed'].includes(options.clientType)) {
             this.state.configList = configMap(res.data.permission)
           }
           console.log('watchInitData', res.data);
@@ -194,72 +195,84 @@ class RoomBaseServer extends BaseServer {
     });
   }
   /**
-   * 功能介绍：黄金链路
-   * 作用：系统崩溃 配置项降级处理方案
-   * @param {*} data 接口入参
-   * data.params 接口入参
-   * data.environment 黄金链路环境
-   * data.systemKey 渠道 2 - 直播；4 - 知客。
-   * data.time 计时器 - 计时步骤
+   * 黄金链路定时器启动
+   * @param {*} options
+   * options.staticDomain 静态资源域名
+   * options.environment 请求环境 test product
+   * options.systemKey 系统key 2 直播   4 知客
+   * options.time 间隔时间 5 ——> 5+options.time 之间的随机数
    */
-  getLowerConfigList(data = { params: {}, environment: 'test', systemKey: 2, time: 5 }) {
-    // 黄金链路 - 内置逻辑
-    async function getLowerGradeConfig(that, meeting, obj) {
-      const { params, environment, systemKey } = obj;
-      try {
-        const lowerGrade = await meeting.getLowerGradeConfigInfo(params, environment, systemKey);
-        const { activity, user, global } = lowerGrade;
-        const { watchInitData } = that.state;
+  async startGetDegradationInterval(options = { staticDomain: '', environment: 'test', systemKey: 2 }) {
+    // 启动立即执行一次
+    await this.getDegradationConfig(options)
+    // 如果没有命中
+    if (!this.state.degradationOptions.isDegraded) {
+      // 定时执行
+      this.state.degradationOptions.degradeInterval = setInterval(() => {
+        this.getDegradationConfig(options);
+      }, (Math.random() * 5 + 5) * 1000);
+    }
+  }
 
-        // 优先顺序：互动 > 用户 > 全局
-        const activityConfig =
-          activity && activity.length > 0 && watchInitData
-            ? activity.find(option => option.audience_id == watchInitData.webinar.id)
-            : null;
+  /**
+   * 黄金链路接口请求
+   * @param {*} options
+   * options.staticDomain 静态资源域名
+   * options.environment 请求环境 test product
+   * options.systemKey 系统key 2 直播   4 知客
+   */
+  async getDegradationConfig(options = { staticDomain: '', environment: 'test', systemKey: 2 }) {
+    const { staticDomain, environment, systemKey } = options;
+    try {
+      const lowerGrade = await meeting.getLowerGradeConfigInfo(staticDomain, environment, systemKey);
+      const { activity, user, global } = lowerGrade.data;
+      const { watchInitData } = this.state;
 
-        const userConfig =
-          user && user.length > 0 && watchInitData
-            ? user.find(option => option.audience_id == watchInitData.webinar.userinfo.user_id)
-            : null;
+      // 优先顺序：活动 > 用户 > 全局
+      const activityConfig =
+        activity && activity.length > 0 && watchInitData
+          ? activity.find(option => option.audience_id == watchInitData.webinar.id)
+          : null;
 
-        if (activityConfig) {
-          that.state.configList = Object.assign(
-            {},
-            that.state.configList,
-            activityConfig.permissions
-          );
-          that.state.handleLowerConfig = true;
-          that.state.faultTipMsg = activityConfig.tip_message;
-        } else if (userConfig) {
-          that.state.configList = Object.assign({}, that.state.configList, userConfig.permissions);
-          that.state.handleLowerConfig = true;
-          that.state.faultTipMsg = userConfig.tip_message;
-        } else if (global && global.permissions) {
-          that.state.configList = Object.assign({}, that.state.configList, global.permissions);
-          that.state.handleLowerConfig = true;
-          that.state.faultTipMsg = global.tip_message;
-        }
-      } catch (e) {
-        // 调用异常情况下，计时器停止
-        if (that.state.lowerGradeInterval) {
-          clearInterval(that.state.lowerGradeInterval);
-        }
+      const userConfig =
+        user && user.length > 0 && watchInitData
+          ? user.find(option => option.audience_id == watchInitData.webinar.userinfo.user_id)
+          : null;
+
+      if (activityConfig) {
+        // 活动级别降级命中
+        this.handleDegradationHit(activityConfig.permissions, activityConfig.tip_message);
+      } else if (userConfig) {
+        // 用户级别降级命中
+        this.handleDegradationHit(userConfig.permissions, userConfig.tip_message);
+      } else if (global && global.permissions) {
+        // 全局级别降级命中
+        this.handleDegradationHit(global.permissions, global.tip_message);
+      }
+    } catch (e) {
+      // 调用异常情况下，计时器停止
+      if (this.state.degradationOptions.degradeInterval) {
+        clearInterval(this.state.degradationOptions.degradeInterval);
       }
     }
+  }
 
-    // 黄金链路 - 功能流程[前题config调用完毕]
-    if (!this.state.handleLowerConfig) {
-      // 没有击中黄金链路配置项情况下，调用-黄金链路心跳调用
-      if (this.state.lowerGradeInterval) {
-        console.log('计时器存在，先清空一次');
-        clearInterval(this.state.lowerGradeInterval);
-      }
-      this.state.lowerGradeInterval = setInterval(() => {
-        getLowerGradeConfig(this, meeting, data);
-      }, (Math.random() * data.time + data.time) * 1000);
+  // 黄金链路命中之后的处理
+  handleDegradationHit(permissions, tip_message) {
+    // 设置发起端权限
+    if (['send', 'record', 'clientEmbed'].includes(this.state.clientType) && permissions && permissions.initiator && permissions.initiator.length) {
+      // 发起端需要将数组转成json
+      this.state.configList = configMap(permissions.initiator, 0, this.state.configList);
+    } else if (['standard', 'embed', 'sdk'].includes(this.state.clientType) && permissions) {
+      this.state.configList = Object.assign({}, this.state.configList, permissions);
     } else {
-      // 击中情况下，友好提示
-      this.$emit(ROOM_BASE_LOWER_WARNING, this.state.faultTipMsg);
+      return;
+    }
+    this.state.degradationOptions.isDegraded = true;
+    // 击中情况下，友好提示
+    this.$emit('DEGRADED_TIP', tip_message);
+    if (this.state.degradationOptions.degradeInterval) {
+      clearInterval(that.state.degradationOptions.degradeInterval);
     }
   }
 
