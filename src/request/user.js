@@ -115,7 +115,7 @@ const loginOut = (params = {}) => {
 };
 
 // 第三方授权
-const callbackUserInfo = (params = {}) => {
+const oauthCallback = (params = {}) => {
   return request({
     url: env.user === 'v3' ? '/v3/users/oauth/callback' : '/v4/ucenter-login-reg/oauth/callback',
     method: 'POST',
@@ -123,14 +123,15 @@ const callbackUserInfo = (params = {}) => {
   });
 };
 
-//微信授权登录
-const authLoginByWx = (params = {}) => {
+//微信授权接口获取
+const authWeixinAjax = (params = {}) => {
   return request({
-    url: env.user === 'v3' ? '/v3/commons/auth/weixin' : '/v3/commons/auth/weixin',
+    url: env.user === 'v3' ? '/v3/commons/auth/weixin-ajax' : '',
     method: 'GET',
     params: params
   });
 };
+
 // 手机||邮箱验证码
 const codeCheck = (params = {}) => {
   return request({
@@ -225,7 +226,7 @@ export default {
   getKeyLogin,
   loginInfo,
   loginOut,
-  callbackUserInfo,
+  oauthCallback,
   codeCheck,
   resetPassword,
   getUserInfo,
@@ -235,5 +236,5 @@ export default {
   bindInfo,
   uploadImage,
   roleLogin,
-  authLoginByWx
+  authWeixinAjax
 };
