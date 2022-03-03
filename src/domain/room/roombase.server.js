@@ -104,6 +104,8 @@ class RoomBaseServer extends BaseServer {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       if (msg.data.type == 'live_start') {
         this.state.watchInitData.webinar.type = 1;
+      } else if (msg.data.type == 'live_over') {
+        this.state.watchInitData.webinar.type = 3;
       }
     });
   }
