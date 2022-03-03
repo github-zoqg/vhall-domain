@@ -225,7 +225,7 @@ export default class StandardDocServer extends AbstractDocServer {
           this.docServer.destroyContainer(cid);
           this.docCid = '';
           this.currentCid = '';
-        }, 3000); // 其他地方调用回将值重新传入      
+        }, 3000); // 其他地方调用回将值重新传入
         this.$emit('dispatch_doc_not_exit', { cid, docId });
       }
     });
@@ -244,11 +244,6 @@ export default class StandardDocServer extends AbstractDocServer {
         if (data.activeId) {
           this.selectContainer(data.activeId);
           this.state.currentCid = data.activeId;
-          if (data.watchOpen) {
-            if (useRoomBaseServer().state.miniElement !== 'player') {
-              useRoomBaseServer().setChangeElement('player');
-            }
-          }
         } else {
           this.state.currentCid = '';
         }
@@ -308,20 +303,32 @@ export default class StandardDocServer extends AbstractDocServer {
     // 观看端(
     console.log('this.state.switchStatus:', this.state.switchStatus);
 
-    this.roomBaseServer = useRoomBaseServer();
-    if (this.roomBaseServer.state.clientType != 'send') {
-      if (this.state.switchStatus) {
-        // 是否在麦上
-        if (this.roomBaseServer.getSpeakStatus()) {
-          this.roomBaseServer.setChangeElement('stream-list');
-        } else {
-          // 文档如果可见,直接设置 播放器 为小屏
-          this.roomBaseServer.setChangeElement('player');
+    const roomBaseServer = useRoomBaseServer();
+    if (roomBaseServer.state.clientType != 'send') {
+
+
+      if (useGroupServer().state.groupInitData.isInGroup) {
+        // 如果在小组内
+        if (useGroupServer().getGroupSpeakStatus) {
+          // 如果小组成员在麦上,小屏默认显示流窗口
+          roomBaseServer.setChangeElement('stream-list');
         }
+
       } else {
-        this.roomBaseServer.setChangeElement('');
-        // useRoomBaseServer().setChangeElement('doc');
+        if (this.state.switchStatus) {
+          if (roomBaseServer.getSpeakStatus()) {
+            // 在主房间时，在麦上
+            roomBaseServer.setChangeElement('stream-list');
+          } else {
+            // 文档如果可见,直接设置 播放器 为小屏
+            roomBaseServer.setChangeElement('player');
+          }
+        } else {
+          roomBaseServer.setChangeElement('');
+          // useRoomBaseServer().setChangeElement('doc');
+        }
       }
+
     }
 
     // 小组内是否去显示文档判断根据是否有文档内容

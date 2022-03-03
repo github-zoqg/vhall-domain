@@ -311,7 +311,7 @@ class UserServer {
         this.state.thirdInfo.QQBind = QQ.length > 0;
         this.state.thirdInfo.QQNickName = QQ[0] ? QQ[0].nick_name : '';
         // 用户基本信息
-        this.state.userInfo = res.data;
+        this.state.userInfo = res.data || {};
       }
       return res;
     });
