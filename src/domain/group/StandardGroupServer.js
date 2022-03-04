@@ -4,7 +4,7 @@ import useInteractiveServer from '../media/interactive.server';
 import useMsgServer from '../common/msg.server';
 import useDocServer from '../doc/doc.server';
 import { group as groupApi } from '../../request/index.js';
-import { isPc } from '@/utils/index.js';
+import { isPc, sleep } from '@/utils/index.js';
 
 /**
  * 标准分组直播场景下的分组相关服务
@@ -81,6 +81,9 @@ class StandardGroupServer extends BaseServer {
       // 进入与退出小组
       GROUP_MANAGER_ENTER: 'GROUP_MANAGER_ENTER',
     };
+
+    this.groupLeaderLeaveMap = new Map()
+
     this.listenMsg();
   }
   /**
@@ -189,10 +192,6 @@ class StandardGroupServer extends BaseServer {
         case 'vrtc_connect_presentation_refused':
           this.$emit(this.EVENT_TYPE.VRTC_CONNECT_PRESENTATION_REFUSED, msg);
           break;
-        // 切换小组
-        case 'group_join_change_update':
-          this.$emit(this.EVENT_TYPE.GROUP_JOIN_CHANGE)
-          break;
       }
     });
 
@@ -202,6 +201,8 @@ class StandardGroupServer extends BaseServer {
       if (useRoomBaseServer().state.clientType === 'send') {
         this.getWaitingUserList();
         this.getGroupedUserList();
+
+        // this.handleGroupLeaderBack(msg) // 处理组长回归
       }
     });
     useMsgServer().$onMsg('LEFT', msg => {
@@ -210,6 +211,8 @@ class StandardGroupServer extends BaseServer {
       if (useRoomBaseServer().state.clientType === 'send') {
         this.getWaitingUserList();
         this.getGroupedUserList();
+
+        // this.handleGroupLeaderLeave(msg) // 处理组长离开
       }
     });
   }
@@ -285,7 +288,7 @@ class StandardGroupServer extends BaseServer {
       // this.handleGroupSelectMenuInfoChange();
 
       // 派发切换 channel 事件,清空聊天等操作
-      this.$emit(this.EVENT_TYPE.ROOM_CHANNEL_CHANGE);
+      this.$emit(this.EVENT_TYPE.ROOM_CHANNEL_CHANGE, msg);
       useMsgServer().destroyGroupMsg();
 
       // 处理文档channel切换逻辑
@@ -326,14 +329,14 @@ class StandardGroupServer extends BaseServer {
       await useMsgServer().initGroupMsg();
       console.log('[group] 开始讨论，子房间聊天初始化成功');
       // 派发切换 channel 事件,清空聊天等操作
-      this.$emit(this.EVENT_TYPE.ROOM_CHANNEL_CHANGE);
+      this.$emit(this.EVENT_TYPE.ROOM_CHANNEL_CHANGE, msg);
       // 给主房间发消息通知当前人离开主房间进入子房间
       this.sendMainRoomJoinChangeMsg({
         isJoinMainRoom: false,
         isBanned: useRoomBaseServer().state.interactToolStatus.is_banned
       });
       // 派发子房间聊天实例创建成功事件，通知成员列表请求 online-list
-      this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED);
+      this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
       // 处理分组下互动sdk切换channel
       useInteractiveServer().groupReInitInteractProcess()
@@ -384,7 +387,7 @@ class StandardGroupServer extends BaseServer {
     // this.handleGroupSelectMenuInfoChange();
 
     // 派发切换 channel 事件,清空聊天等操作
-    this.$emit(this.EVENT_TYPE.ROOM_CHANNEL_CHANGE);
+    this.$emit(this.EVENT_TYPE.ROOM_CHANNEL_CHANGE, msg);
 
     useMsgServer().destroyGroupMsg();
 
@@ -403,7 +406,7 @@ class StandardGroupServer extends BaseServer {
       // 主持端
       this.getWaitingUserList();
       this.getGroupedUserList();
-      this.$emit(this.EVENT_TYPE.GROUP_JOIN_CHANGE)
+      this.$emit(this.EVENT_TYPE.GROUP_JOIN_CHANGE, msg)
     }
     if (useRoomBaseServer().state.interactToolStatus.is_open_switch != 1) {
       console.log('[group] 未开启讨论，不处理分组切换逻辑。');
@@ -419,7 +422,7 @@ class StandardGroupServer extends BaseServer {
     }
 
     // 派发切换 channel 事件,清空聊天等操作
-    this.$emit(this.EVENT_TYPE.ROOM_CHANNEL_CHANGE);
+    this.$emit(this.EVENT_TYPE.ROOM_CHANNEL_CHANGE, msg);
     // 如果需要关心这条消息,并且是从小组中进入到主直播间
     if (groupJoinChangeInfo.to === 0) {
       // to 为 0 从子直播间切换到主房间
@@ -463,7 +466,7 @@ class StandardGroupServer extends BaseServer {
         await useMsgServer().initGroupMsg();
 
         // 派发子房间聊天实例创建成功事件，通知成员列表请求 online-list
-        this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED);
+        this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
         // 处理分组下互动sdk切换channel
         useInteractiveServer().groupReInitInteractProcess();
@@ -488,7 +491,7 @@ class StandardGroupServer extends BaseServer {
         await useMsgServer().initGroupMsg();
 
         // 派发子房间聊天实例创建成功事件，通知成员列表请求 online-list
-        this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED);
+        this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
         // 处理分组下互动sdk切换channel
         // useRoomBaseServer().groupReInitInteractProcess();
@@ -531,7 +534,7 @@ class StandardGroupServer extends BaseServer {
       this.state.groupInitData.doc_permission = msg.data.account_id;
       this.getGroupedUserList();
     }
-    this.$emit(this.EVENT_TYPE.GROUP_LEADER_CHANGE);
+    this.$emit(this.EVENT_TYPE.GROUP_LEADER_CHANGE, msg);
   }
 
   //【组内踢出】消息
@@ -540,7 +543,7 @@ class StandardGroupServer extends BaseServer {
       // 主持端
       this.getWaitingUserList();
       this.getGroupedUserList();
-      this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT);
+      this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT, msg);
     }
     if (!this.state.groupInitData.isInGroup) return;
     await this.updateGroupInitData();
@@ -562,7 +565,7 @@ class StandardGroupServer extends BaseServer {
       // this.handleGroupSelectMenuInfoChange();
 
       // 派发切换 channel 事件,清空聊天等操作
-      this.$emit(this.EVENT_TYPE.ROOM_CHANNEL_CHANGE);
+      this.$emit(this.EVENT_TYPE.ROOM_CHANNEL_CHANGE, msg);
       // 销毁子房间聊天实例
       useMsgServer().destroyGroupMsg();
 
@@ -718,11 +721,14 @@ class StandardGroupServer extends BaseServer {
    */
   async setLeader(groupId, leaderId) {
     const { watchInitData } = useRoomBaseServer().state;
-    const params = {
+    let params = {
       room_id: watchInitData.interact.room_id, // 主直播房间ID
       group_id: groupId,
-      leader_account_id: leaderId
-    };
+    }; // 不传leader_account_id将会自动设置
+
+    if (leaderId) {
+      params.leader_account_id = leaderId
+    }
     const result = await groupApi.groupSetLeader(params);
     console.log('[group] groupSetLeader result', result);
     if (result && result.code === 200) {
@@ -917,6 +923,37 @@ class StandardGroupServer extends BaseServer {
       return speakerList.some(item => item.account_id == join_info.third_party_user_id);
     } else {
       return false;
+    }
+  }
+
+  /**
+   * 处理组长异常掉线状态
+   */
+  handleGroupLeaderLeave(msg) {
+    if (useRoomBaseServer().state.clientType !== 'send') return;
+
+    const originUserList = [...this.state.groupedUserList.group_joins]
+    const leader = originUserList.find(item => item.account_id === msg.sender_id)
+    if (!leader) return;
+
+    const TIMEOUT = 15 * 1000; // 15秒
+    const timer = setTimeout(() => {
+      clearTimeout(timer)
+      this.groupLeaderLeaveMap.delete(msg.sender_id)
+      this.setLeader(leader.group_id)
+    }, TIMEOUT)
+
+    this.groupLeaderLeaveMap.set(msg.sender_id, timer)
+  }
+
+  async handleGroupLeaveBack(msg) {
+    if (useRoomBaseServer().state.clientType !== 'send') return;
+
+
+    const timer = this.groupLeaderLeaveMap.get(msg.sender_id)
+    if (timer) {
+      clearTimeout(timer)
+      this.groupLeaderLeaveMap.delete(msg.sender_id)
     }
   }
 }
