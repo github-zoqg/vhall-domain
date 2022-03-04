@@ -70,7 +70,7 @@ class InteractiveServer extends BaseServer {
           // 房间当前远端流列表
           this.state.remoteStreams = event.vhallrtc.getRoomStreams().filter(stream => {
             try {
-              if (typeof stream.attributes == 'string') {
+              if (stream.attributes && typeof stream.attributes == 'string') {
                 stream.attributes = JSON.parse(stream.attributes);
               }
             } catch (error) { }
@@ -802,7 +802,7 @@ class InteractiveServer extends BaseServer {
     let streamList = this.interactiveInstance.getRoomStreams();
     streamList = streamList.map(stream => ({
       ...stream,
-      attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
+      attributes: stream.attributes && typeof stream.attributes == 'string' ? JSON.parse(stream.attributes) : ''
     }));
 
     // 此处默认插播和桌面共享不共存，只会返回一个
