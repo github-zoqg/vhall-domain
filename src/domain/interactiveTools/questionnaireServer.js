@@ -71,7 +71,7 @@ class QuestionnaireServer extends BaseServer {
         //【分组创建/新增完成】
         case QUESTIONNAIRE_PUSH:
           console.log('问卷消息', msg);
-          this.$emit(QUESTIONNAIRE_PUSH, msg.data.questionnaire_id);
+          this.$emit(QUESTIONNAIRE_PUSH, msg.data);
           break;
       }
     });
@@ -279,6 +279,18 @@ class QuestionnaireServer extends BaseServer {
       user_id: join_info.user_id || join_info.third_party_user_id
     });
   }
+  /**
+   * 检查用户是否已提交文件
+   */
+  checkAnswerStatus(surveyId) {
+    const { watchInitData } = this.useRoomBaseServer.state;
+    const { webinar } = watchInitData;
+    return questionnaireApi.checkAnswerStatus({
+      survey_id: surveyId,
+      webinar_id: webinar.id,
+    });
+  }
+
 }
 
 export default function useQuestionnaireServer(opts = {}) {
