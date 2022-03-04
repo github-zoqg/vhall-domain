@@ -292,7 +292,7 @@ class StandardGroupServer extends BaseServer {
       useDocServer().groupReInitDocProcess();
     }
 
-    this.$emit(this.EVENT_TYPE.GROUP_DISBAND);
+    this.$emit(this.EVENT_TYPE.GROUP_DISBAND, msg);
   }
 
   // 请求协助,主持端收到请求协助消息，会在对应的小组面板头部显示“请求协助中...”文字
@@ -343,7 +343,7 @@ class StandardGroupServer extends BaseServer {
       this._setDocPermisson();
     }
 
-    this.$emit(this.EVENT_TYPE.GROUP_SWITCH_START);
+    this.$emit(this.EVENT_TYPE.GROUP_SWITCH_START, msg);
   }
 
   //【结束讨论】
@@ -351,6 +351,10 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] domain group_switch_end', msg);
     // 设置开始为未讨论状态
     useRoomBaseServer().setInavToolStatus('is_open_switch', 0);
+    // 重置分配人员列表
+    this.state.waitingUserList = [];
+    this.state.groupedUserList = [];
+
     // TODO: 演示权限交还主持人
     if (useRoomBaseServer().state.clientType === 'send') {
       //主持端
@@ -386,7 +390,7 @@ class StandardGroupServer extends BaseServer {
     // 处理文档channel切换逻辑
     useDocServer().groupReInitDocProcess();
     this._setDocPermisson();
-    this.$emit(this.EVENT_TYPE.GROUP_SWITCH_END);
+    this.$emit(this.EVENT_TYPE.GROUP_SWITCH_END, msg);
   }
 
   //【切换小组】小组人员变动
@@ -563,12 +567,8 @@ class StandardGroupServer extends BaseServer {
 
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
-
-      this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT);
-      // 本人被踢出提示
-    } else {
-      console.log('[group] ------没有被踢出');
     }
+    this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT, msg);
   }
 
   // 同意邀请演示成功消息
