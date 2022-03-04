@@ -11,6 +11,7 @@ function setBaseUrl(options) {
   console.log('---V3_BASE_URL----', options);
   V3_BASE_URL = options.v3Url;
   MIDDLE_BASE_URL = options.middleUrl;
+  WX_BIND_BASE_URL = options.wxBindBaseUrl;
 }
 function setToken(token, livetoken) {
   TOKEN = token;
@@ -27,8 +28,13 @@ const service = axios.create({ headers: { 'Content-Type': 'application/x-www-for
 service.interceptors.request.use(
   config => {
     // console.log('----axios----请求配置', JSON.stringify(config));
-    // set baseURL
-    config.baseURL = config.url.startsWith('/v3') ? V3_BASE_URL : MIDDLE_BASE_URL;
+    if (config.url.indexOf("/v3/commons/auth/weixin-ajax")) {
+      //TODO: test4 由于微信只能在测试环境跑通, 所以授权暂时指定到test环境
+      config.baseURL = WX_BIND_BASE_URL;
+    } else {
+      // set baseURL
+      config.baseURL = config.url.startsWith('/v3') ? V3_BASE_URL : MIDDLE_BASE_URL;
+    }
 
     // 如果有 live_token 就不需要传 token
     if (TOKEN && !LIVETOKEN) {
