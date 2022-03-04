@@ -53,7 +53,7 @@ const pluginsConfig = [
     historyApiFallback: true,
     openPage: './index.html',
     // Options used in setting up server
-    host: 'localhost',
+    host: '0.0.0.0',
     port: 10001
   })
 ];
