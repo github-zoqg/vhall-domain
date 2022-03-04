@@ -1,9 +1,9 @@
-import { meeting } from '@/request/index.js';
-import { setRequestHeaders } from '@/utils/http.js';
+import { meeting, roomApi } from '@/request/index.js';
 import { merge } from '@/utils/index.js';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import { configMap } from './js/configMap'
+
 /**
  * send:发起端
  * standard:标准直播
@@ -68,6 +68,11 @@ class RoomBaseServer extends BaseServer {
     return this;
   }
 
+  // 通过活动id获取活动拥有者用户id
+  webinarInitBefore(params) {
+    return roomApi.webinar.webinarInitBefore(params);
+  }
+
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
     if (
@@ -110,8 +115,6 @@ class RoomBaseServer extends BaseServer {
       }
     });
   }
-
-
 
   // 设置是否是嵌入
   setEmbedObj(param) {
@@ -183,6 +186,7 @@ class RoomBaseServer extends BaseServer {
       return res;
     });
   }
+
   //获取多语言配置
   getLangList() {
     return meeting.getLangList({ webinar_id: this.state.watchInitData.webinar.id }).then(res => {
@@ -194,6 +198,7 @@ class RoomBaseServer extends BaseServer {
       }
     });
   }
+
   /**
    * 黄金链路定时器启动
    * @param {*} options
@@ -455,6 +460,7 @@ class RoomBaseServer extends BaseServer {
   screenPostClose(data = {}) {
     this.$emit('screenPostClose', data);
   }
+
   // 获取上麦状态
   getSpeakStatus() {
     const {

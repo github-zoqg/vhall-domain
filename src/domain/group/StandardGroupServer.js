@@ -3,7 +3,7 @@ import useRoomBaseServer from '../room/roombase.server';
 import useInteractiveServer from '../media/interactive.server';
 import useMsgServer from '../common/msg.server';
 import useDocServer from '../doc/doc.server';
-import { group as groupApi, room } from '../../request/index.js';
+import { group as groupApi } from '../../request/index.js';
 import { isPc } from '@/utils/index.js';
 
 /**

@@ -1,10 +1,10 @@
 import request, { setToken } from '@/utils/http.js';
-import env from '../env';
+import env, { meetingApiList, roomApiList } from '@/request/env';
 import axios from 'axios/dist/axios';
 
 // 发起端初始化
 function initSendLive(params) {
-  const url = env.meeting === 'v3' ? '/v3/webinars/live/init' : '';
+  const url = meetingApiList['initSendLive']['v3'];
   return request({
     url,
     method: 'POST',
@@ -22,6 +22,7 @@ function clientEmbed(params) {
     data: params
   });
 }
+
 // 观看端初始化（标品）
 function initStandardReceiveLive(params) {
   const url = env.meeting === 'v3' ? '/v3/webinars/watch/init' : '';
@@ -62,20 +63,11 @@ function initRecordVideo(data = {}) {
   });
 }
 
-// 通过活动id获取活动拥有者用户id
-function webinarInitBefore(params) {
-  const url =
-    env.meeting === 'v3' ? '/v3/webinars/webinar/init-before' : '/v4/room/webinar/init-before';
-  return request({
-    url,
-    method: 'POST',
-    data: params
-  });
-}
 
 // 开始直播
 function startLive(params) {
-  const url = env.meeting === 'v3' ? '/v3/webinars/live/start' : '/v4/room/webinar/start';
+  const url = roomApiList['startLive']['v3'];
+
   return request({
     url,
     method: 'POST',
@@ -112,6 +104,7 @@ function endRecord(params) {
     data: params
   });
 }
+
 // 进入直播前检测
 function checkLive(params) {
   const url = env.meeting === 'v3' ? '/v3/webinars/live/check' : '';
@@ -131,6 +124,7 @@ const getConfigList = (params = {}) => {
     data: params
   });
 };
+
 //获取活动多语言配置信息
 const getLangList = (params = {}) => {
   return request({
@@ -139,9 +133,10 @@ const getLangList = (params = {}) => {
     data: params
   });
 };
+
 // 查询活动互动状态
 const getInavToolStatus = (params = {}) => {
-  const url = env.meeting === 'v3' ? '/v3/interacts/room/get-inav-tool-status' : '';
+  const url = roomApiList['getInavToolStatus']['v3'];
   return request({
     url,
     method: 'POST',
@@ -201,7 +196,7 @@ function getStreamPushAddress(params) {
 
 // 设置设备检测状态
 function setDevice(params) {
-  const url = env.meeting === 'v3' ? '/v3/interacts/room/set-device' : '';
+  const url = roomApiList['setDevice']['v3'];
   return request({
     url,
     method: 'POST',
@@ -284,7 +279,6 @@ const meeting = {
   clientEmbed,
   initEmbeddedReceiveLive,
   initSdkReceiveLive,
-  webinarInitBefore,
   startLive,
   endLive,
   checkLive,

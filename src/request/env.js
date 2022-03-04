@@ -24,5 +24,44 @@ export default {
   entryform: 'v3',
   gray: 'v3',
   gifts: 'v3',
-  signUpForm:'v3'
+  signUpForm: 'v3'
 };
+
+//中台api接口清单
+export const meetingApiList = {
+  initSendLive: {
+    v3: "/v3/webinars/live/init",
+    middle: "/v4/meeting/live/init"
+  },
+}
+
+export const roomApiList = {
+  startLive: {
+    v3: "/v3/webinars/live/start",
+    middle: "/v4/room/webinar/start"
+  },
+  endLive: {
+    v3: "/v3/webinars/live/end",
+    middle: "/v4/room/webinar/end"
+  },
+  getInavToolStatus: {
+    v3: "/v3/interacts/room/get-inav-tool-status",
+    middle: "/v4/room/get-inav-tool-status"
+  },
+  setDeviceStatus: {
+    v3: "/v3/interacts/room/set-device-status",
+    middle: "/v4/room/set-device-status"
+  },
+  setDevice: {
+    v3: "/v3/interacts/room/set-device",
+    middle: "/v4/room/set-device"
+  },
+  webinarInitBefore: {
+    v3: "/v3/webinars/webinar/init-before",
+    middle: "/v4/room/webinar/init-before"
+  },
+  subjectInitBefore: {
+    v3: "/v3/webinars/subject/init-before",
+    middle: "/v4/room-subject/subject/init-before"
+  }
+}
