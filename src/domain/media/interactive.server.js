@@ -1,4 +1,4 @@
-import { room } from '../../request';
+import { roomApi } from '../../request';
 import { merge, sleep } from '../../utils';
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
@@ -1041,7 +1041,7 @@ class InteractiveServer extends BaseServer {
       broadcast: 1
     };
     const retParams = merge.recursive({}, defaultParams, params);
-    return room.activity.setDeviceStatus(retParams);
+    return roomApi.activity.setDeviceStatus(retParams);
   }
 
   /**

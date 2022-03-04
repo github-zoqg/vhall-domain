@@ -1,4 +1,6 @@
 import request from '@/utils/http.js';
+import env, { meetingApiList, roomApiList } from '@/request/env';
+
 
 /**
  * 查询活动基础信息
@@ -15,8 +17,9 @@ function getActivityBasicInfo(params = {}) {
  * 设置音视频设备状态接口
  * */
 function setDeviceStatus(params) {
+  const url = roomApiList['setDeviceStatus']['v3'];
   return request({
-    url: '/v3/interacts/room/set-device-status',
+    url: url,
     method: 'POST',
     data: params
   });

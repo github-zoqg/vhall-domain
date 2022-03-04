@@ -13,6 +13,8 @@ import imSignaling from './im/signaling/index.js';
 import imNotice from './im/notice/index.js';
 import imChatAuth from './im/chatAuth/index.js';
 import activity from './room/activity/index.js';
+import roomBase from './room/index.js';
+import webinar from './room/webinar/index.js';
 import player from './player.js';
 import rebroadcast from './room/rebroadcast';
 import liveTimerApi from './live-timer';
@@ -45,14 +47,18 @@ const im = {
   notice: imNotice,
   chatAuth: imChatAuth
 };
-const room = {
-  activity: activity
+
+const roomApi = {
+  base: roomBase,
+  activity: activity,
+  webinar: webinar
 };
 
 // 问答
 const qa = {
   list: qaList
 };
+
 export {
   customMenu,
   meeting,
@@ -64,7 +70,7 @@ export {
   group,
   player,
   im,
-  room,
+  roomApi,
   qa,
   rebroadcast,
   liveTimerApi,
