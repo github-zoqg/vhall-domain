@@ -27,9 +27,7 @@ import praiseApi from './praise/index';
 import inviteApi from './invite';
 import entryformApi from './entryform/index';
 import subscribeApi from './subscribe';
-import gray from './gray';
 import wechatApi from './brand/wechat';
-import subjectApi from './brand/subject';
 import signUpFormApi from "./signUpForm";
 import homepageApi from './homepage';
 
@@ -38,6 +36,8 @@ import qaList from './qa/list/index.js';
 
 // 商品
 import goodSaasApi from './good/index.js';
+// 专题
+import subject from './room-subject/subject';
 
 const im = {
   chat: imChat,
@@ -53,6 +53,10 @@ const roomApi = {
   activity: activity,
   webinar: webinar
 };
+
+const roomSubjectApi = {
+  subject: subject
+}
 
 // 问答
 const qa = {
@@ -84,9 +88,8 @@ export {
   inviteApi,
   entryformApi,
   subscribeApi,
-  gray,
   wechatApi,
-  subjectApi,
   signUpFormApi,
-  homepageApi
+  homepageApi,
+  roomSubjectApi
 };
