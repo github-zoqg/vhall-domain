@@ -361,7 +361,11 @@ class StandardGroupServer extends BaseServer {
       this.state.panelShow = false;
     }
     // 结束讨论但不在分组中，不需要发消息，直接 return
-    if (!this.state.groupInitData.isInGroup) return;
+    if (!this.state.groupInitData.isInGroup) {
+      // 通知需要更新在线人员列表
+      this.$emit(this.EVENT_TYPE.GROUP_SWITCH_END, msg);
+      return;
+    }
 
     // 更新个人所在小组信息
     await this.updateGroupInitData();
