@@ -27,7 +27,6 @@ import praiseApi from './praise/index';
 import inviteApi from './invite';
 import entryformApi from './entryform/index';
 import subscribeApi from './subscribe';
-// import gray from './gray';
 import wechatApi from './brand/wechat';
 import signUpFormApi from "./signUpForm";
 import homepageApi from './homepage';
@@ -89,7 +88,6 @@ export {
   inviteApi,
   entryformApi,
   subscribeApi,
-  // gray,
   wechatApi,
   signUpFormApi,
   homepageApi,

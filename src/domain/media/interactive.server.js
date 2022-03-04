@@ -268,6 +268,9 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
       e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      if (this.state.remoteStreams.find(s => s.streamId == e.data.streamId)) {
+        return
+      }
       if (e.data.streamType === 2) {
         const remoteStream = {
           ...e.data,
@@ -278,7 +281,7 @@ class InteractiveServer extends BaseServer {
       }
       console.log('----流加入事件----', e);
 
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e);
+      this.$emit('EVENT_REMOTESTREAM_ADD', e);
     });
 
     // 远端流离开事件,自己的流删除事件收不到
@@ -289,7 +292,7 @@ class InteractiveServer extends BaseServer {
       this.state.remoteStreams = this.state.remoteStreams.filter(
         stream => stream.streamId != e.data.streamId
       );
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e);
+      this.$emit('EVENT_REMOTESTREAM_REMOVED', e);
     });
 
     // 房间信令异常断开事件
@@ -424,7 +427,7 @@ class InteractiveServer extends BaseServer {
         // 如果创建的是桌面共享流
         if (options.streamType === 3) {
           this.state.screenStream.streamId = data.streamId;
-        } else if (options.streamType == 2) {
+        } else {
           this.state.localStream = {
             streamId: data.streamId,
             audioMuted: options.mute?.audio || false,
