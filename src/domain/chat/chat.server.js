@@ -238,12 +238,13 @@ class ChatServer extends BaseServer {
   //发送聊天消息
   sendChatMsg({ data, context }) {
     //判断私聊还是普通消息
+    useMsgServer().sendChatMsg(data, context);
     if (data.target_id) {
       this.state.privateChatList.push(Msg._handleGenerateMsg({ data, context }))
     } else {
       this.state.chatList.push(Msg._handleGenerateMsg({ data, context }))
     }
-    useMsgServer().sendChatMsg(data, context);
+    data.text_content = textToEmojiText(data.text_content);
   }
 
   //发起请求，或者聊天记录数据
