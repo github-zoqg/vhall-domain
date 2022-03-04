@@ -149,8 +149,12 @@ class StandardGroupServer extends BaseServer {
         case 'group_leader_change':
           this.msgdoForGroupLeaderChange(msg);
           break;
+        // // 主讲人--设置主屏
+        // case 'vrtc_speaker_switch':
+        //   this.msgdoForVrtcSpeakerSwitch(msg);
+        //   break;
         // 主讲人--设置主屏
-        case 'vrtc_speaker_switch':
+        case 'vrtc_big_screen_set':
           this.msgdoForVrtcSpeakerSwitch(msg);
           break;
         // 分组成员上线信息(含该成员信息)
@@ -475,10 +479,16 @@ class StandardGroupServer extends BaseServer {
   async msgdoForVrtcSpeakerSwitch(msg) {
     if (!this.state.groupInitData.isInGroup) return;
     const { room_join_id } = msg.data;
+
+    this.state.groupInitData.main_screen = room_join_id
     if (room_join_id == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id) {
       // this.handleGroupPermissionChangeInteract();
     } else {
+
       // 停止桌面共享推流
+      // if (useDesktopShareServer().state.isShareScreen) {
+
+      // }
       // if (this.speicalStreamId && this.isShowSpeicalStream) {
       //   this.$refs.desktopRef.stopDesktopShare();
       // }
