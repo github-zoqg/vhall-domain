@@ -1,4 +1,4 @@
-import { meeting } from '@/request/index.js';
+import { meeting, roomApi } from '@/request/index.js';
 import { merge } from '@/utils/index.js';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';

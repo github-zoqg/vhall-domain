@@ -4,6 +4,7 @@ import qs from 'qs';
 let TOKEN = '';
 let V3_BASE_URL = '';
 let MIDDLE_BASE_URL = '';
+let WX_BIND_BASE_URL = '';
 let LIVETOKEN = '';
 let HEADERS = {};
 
@@ -28,7 +29,7 @@ const service = axios.create({ headers: { 'Content-Type': 'application/x-www-for
 service.interceptors.request.use(
   config => {
     // console.log('----axios----请求配置', JSON.stringify(config));
-    if (config.url.indexOf("/v3/commons/auth/weixin-ajax")) {
+    if (config.url.indexOf("/v3/commons/auth/weixin-ajax") != -1) {
       //TODO: test4 由于微信只能在测试环境跑通, 所以授权暂时指定到test环境
       config.baseURL = WX_BIND_BASE_URL;
     } else {
