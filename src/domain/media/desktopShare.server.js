@@ -10,7 +10,9 @@ class DesktopShareServer extends BaseServer {
       return DesktopShareServer.instance;
     }
     this.state = {
-      localStream: { localDesktopStreamId: '' }
+      localStream: { localDesktopStreamId: '' },
+      isShareScreen: false, // 是否桌面共享
+
     };
     DesktopShareServer.instance = this;
     this._addListeners();
@@ -22,7 +24,7 @@ class DesktopShareServer extends BaseServer {
     const interactiveServer = useInteractiveServer();
 
     // 远端流加入事件
-    interactiveServer.$on('VhallRTC_init_success', () => {
+    interactiveServer.$on('INTERACTIVE_INSTANCE_INIT_SUCCESS', () => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
 
       let stream = interactiveServer.getDesktopAndIntercutInfo();
@@ -30,6 +32,7 @@ class DesktopShareServer extends BaseServer {
         this.$emit('screen_stream_add', stream.streamId);
       }
     });
+
     // 远端流加入事件
     interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
@@ -44,6 +47,10 @@ class DesktopShareServer extends BaseServer {
         this.$emit('screen_stream_remove', e);
       }
     });
+  }
+  // 设置isShareScreen的值
+  setShareScreenStatus(val) {
+    this.state.isShareScreen = val;
   }
 
   //检测浏览器是否支持桌面共享

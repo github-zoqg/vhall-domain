@@ -8,6 +8,7 @@ import VhallPaasSDK from '@/sdk/index';
 import useMicServer from './mic.server';
 import interactive from '@/request/interactive';
 import useMediaSettingServer from './mediaSetting.server';
+import useDesktopShareServer from './desktopShare.server';
 class InteractiveServer extends BaseServer {
   constructor() {
     super();
@@ -32,6 +33,9 @@ class InteractiveServer extends BaseServer {
       defaultStreamBg: false, //开始推流到成功期间展示默认图
       showPlayIcon: false // 展示播放按钮
     };
+    this.EVENT_TYPE = {
+      'INTERACTIVE_INSTANCE_INIT_SUCCESS': 'INTERACTIVE_INSTANCE_INIT_SUCCESS'
+    }
     InteractiveServer.instance = this;
     return this;
   }
@@ -77,17 +81,8 @@ class InteractiveServer extends BaseServer {
             return stream.streamType === 2 && stream.streamSource == 'remote';
           });
 
-          // this.state.remoteStreams = event.currentStreams.filter(stream => {
-          //   try {
-          //     if (typeof stream.attributes == 'string') {
-          //       stream.attributes = JSON.parse(stream.attributes);
-          //     }
-          //   } catch (error) {
-          //   }
-          //   return stream.streamType === 2;
-          // });
 
-          this.$emit('VhallRTC_init_success');
+          this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
           resolve(event);
         },
         error => {
@@ -246,6 +241,7 @@ class InteractiveServer extends BaseServer {
       .then(() => {
         this.interactiveInstance = null;
         this.state.remoteStreams = [];
+        this._clearLocalStream()
       })
       .catch(err => {
         console.log('互动sdk销毁失败', err);
@@ -336,7 +332,7 @@ class InteractiveServer extends BaseServer {
       // }
       if (e.data.streamId == this.state.screenStream.streamId) {
         this.state.screenStream.streamId = '';
-        useRoomBaseServer().setShareScreenStatus(false);
+        useDesktopShareServer().setShareScreenStatus(false);
         useRoomBaseServer().setChangeElement('stream-list');
       }
 
@@ -431,7 +427,7 @@ class InteractiveServer extends BaseServer {
         // 如果创建的是桌面共享流
         if (options.streamType === 3) {
           this.state.screenStream.streamId = data.streamId;
-        } else if (options.streamType == 2) {
+        } else {
           this.state.localStream = {
             streamId: data.streamId,
             audioMuted: options.mute?.audio || false,
