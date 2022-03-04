@@ -4,7 +4,7 @@ import useInteractiveServer from '../media/interactive.server';
 import useMsgServer from '../common/msg.server';
 import useDocServer from '../doc/doc.server';
 import { group as groupApi } from '../../request/index.js';
-import { isPc } from '@/utils/index.js';
+import { isPc, sleep } from '@/utils/index.js';
 
 /**
  * 标准分组直播场景下的分组相关服务
@@ -81,6 +81,9 @@ class StandardGroupServer extends BaseServer {
       // 进入与退出小组
       GROUP_MANAGER_ENTER: 'GROUP_MANAGER_ENTER',
     };
+
+    this.groupLeaderLeaveMap = new Map()
+
     this.listenMsg();
   }
   /**
@@ -202,6 +205,8 @@ class StandardGroupServer extends BaseServer {
       if (useRoomBaseServer().state.clientType === 'send') {
         this.getWaitingUserList();
         this.getGroupedUserList();
+
+        this.handleGroupLeaderBack(msg) // 处理组长回归
       }
     });
     useMsgServer().$onMsg('LEFT', msg => {
@@ -210,6 +215,8 @@ class StandardGroupServer extends BaseServer {
       if (useRoomBaseServer().state.clientType === 'send') {
         this.getWaitingUserList();
         this.getGroupedUserList();
+
+        this.handleGroupLeaderLeave(msg) // 处理组长离开
       }
     });
   }
@@ -714,11 +721,14 @@ class StandardGroupServer extends BaseServer {
    */
   async setLeader(groupId, leaderId) {
     const { watchInitData } = useRoomBaseServer().state;
-    const params = {
+    let params = {
       room_id: watchInitData.interact.room_id, // 主直播房间ID
       group_id: groupId,
-      leader_account_id: leaderId
-    };
+    }; // 不传leader_account_id将会自动设置
+
+    if (leaderId) {
+      params.leader_account_id = leaderId
+    }
     const result = await groupApi.groupSetLeader(params);
     console.log('[group] groupSetLeader result', result);
     if (result && result.code === 200) {
@@ -913,6 +923,37 @@ class StandardGroupServer extends BaseServer {
       return speakerList.some(item => item.account_id == join_info.third_party_user_id);
     } else {
       return false;
+    }
+  }
+
+  /**
+   * 处理组长异常掉线状态
+   */
+  async handleGroupLeaderLeave(msg) {
+    if (useRoomBaseServer().state.clientType !== 'send') return;
+
+    const originUserList = [...this.state.groupedUserList.group_joins]
+    const leader = originUserList.find(item => item.account_id === msg.sender_id)
+    if (!leader) return;
+
+    const TIMEOUT = 15 * 1000; // 15秒
+    const timer = setTimeout(() => {
+      clearTimeout(timer)
+      this.groupLeaderLeaveMap.delete(msg.sender_id)
+      this.setLeader(leader.group_id)
+    }, TIMEOUT)
+
+    this.groupLeaderLeaveMap.set(msg.sender_id, timer)
+  }
+
+  async handleGroupLeaveBack(msg) {
+    if (useRoomBaseServer().state.clientType !== 'send') return;
+
+
+    const timer = this.groupLeaderLeaveMap.get(msg.sender_id)
+    if (timer) {
+      clearTimeout(timer)
+      this.groupLeaderLeaveMap.delete(msg.sender_id)
     }
   }
 }
