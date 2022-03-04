@@ -1,5 +1,5 @@
 import request from '@/utils/http.js';
-import env, { meetingApiList, roomApiList } from '@/request/env';
+import { roomApiList } from '@/request/env';
 
 
 

@@ -60,8 +60,15 @@ export const roomApiList = {
     v3: "/v3/webinars/webinar/init-before",
     middle: "/v4/room/webinar/init-before"
   },
+}
+
+export const roomSubjectApiList = {
   subjectInitBefore: {
     v3: "/v3/webinars/subject/init-before",
     middle: "/v4/room-subject/subject/init-before"
+  },
+  getSubjectInfo: {
+    v3: "/v3/webinars/subject/info",
+    middle: "/v4/room-subject/subject/info"
   }
 }
