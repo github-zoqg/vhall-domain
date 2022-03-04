@@ -643,7 +643,6 @@ class InteractiveServer extends BaseServer {
       };
     }
     const params = merge.recursive({}, defaultOptions, options, addConfig);
-    console.warn()
     return await this.createLocalStream(params);
   }
 

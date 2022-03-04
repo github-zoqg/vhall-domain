@@ -379,7 +379,7 @@ class ChatAuthServer extends BaseServer {
     if (!params.msg_id) return;
     this.operateMessage(params)
       .finally(() => {
-        this.getAuditMessageList();
+        this.fetchChatMessageList();
       });
   }
 
