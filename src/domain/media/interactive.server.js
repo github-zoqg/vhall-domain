@@ -70,7 +70,7 @@ class InteractiveServer extends BaseServer {
           // 房间当前远端流列表
           this.state.remoteStreams = event.vhallrtc.getRoomStreams().filter(stream => {
             try {
-              if (typeof stream.attributes == 'string') {
+              if (stream.attributes && typeof stream.attributes == 'string') {
                 stream.attributes = JSON.parse(stream.attributes);
               }
             } catch (error) { }
@@ -464,6 +464,13 @@ class InteractiveServer extends BaseServer {
 
     const { interactToolStatus } = useRoomBaseServer().state;
 
+    const { groupInitData } = useGroupServer().state
+
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
+
+    const roleName = isGroupLeader ? 20 : watchInitData.join_info.role_name
+
+
     let defaultOptions = {
       videoNode: options.videoNode, // 必填，传入本地视频显示容器ID
       audio: true, // 选填，是否采集音频设备，默认为true
@@ -480,7 +487,7 @@ class InteractiveServer extends BaseServer {
         VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
       streamType: 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。
       attributes: JSON.stringify({
-        roleName: watchInitData.join_info.role_name,
+        roleName: roleName,
         accountId: watchInitData.join_info.third_party_user_id,
         nickname: watchInitData.join_info.nickname
       }) //选填，自定义信息，支持字符串类型
@@ -795,7 +802,7 @@ class InteractiveServer extends BaseServer {
     let streamList = this.interactiveInstance.getRoomStreams();
     streamList = streamList.map(stream => ({
       ...stream,
-      attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
+      attributes: stream.attributes && typeof stream.attributes == 'string' ? JSON.parse(stream.attributes) : ''
     }));
 
     // 此处默认插播和桌面共享不共存，只会返回一个

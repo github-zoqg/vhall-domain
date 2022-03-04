@@ -362,8 +362,7 @@ class StandardGroupServer extends BaseServer {
 
     useMsgServer().destroyGroupMsg();
 
-    // 处理分组下互动sdk切换channel
-    useInteractiveServer().groupReInitInteractProcess();
+
 
     // 处理文档channel切换逻辑
     useDocServer().groupReInitDocProcess();
