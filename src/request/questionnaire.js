@@ -80,8 +80,8 @@ const submitQuestionnaire = params => {
 const checkAnswerStatus = params => {
   return request({
     url: '/v3/vss/survey/check-can-answer',
-    method: 'POST',
-    data: params
+    method: 'GET',
+    params
   });
 };
 
