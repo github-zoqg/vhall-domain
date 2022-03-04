@@ -1,5 +1,4 @@
-import { meeting, room } from '@/request/index.js';
-import { setRequestHeaders } from '@/utils/http.js';
+import { meeting } from '@/request/index.js';
 import { merge } from '@/utils/index.js';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
@@ -70,7 +69,7 @@ class RoomBaseServer extends BaseServer {
 
   // 通过活动id获取活动拥有者用户id
   webinarInitBefore(params) {
-    return room.webinar.webinarInitBefore(params);
+    return roomApi.webinar.webinarInitBefore(params);
   }
 
   // 初始化房间信息,包含发起/观看(嵌入/标品)
@@ -448,7 +447,7 @@ class RoomBaseServer extends BaseServer {
   screenPostClose(data = {}) {
     this.$emit('screenPostClose', data);
   }
-  
+
   // 获取上麦状态
   getSpeakStatus() {
     const {

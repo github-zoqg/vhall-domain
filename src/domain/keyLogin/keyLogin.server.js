@@ -1,4 +1,4 @@
-import { meeting, room, user } from '@/request/index.js';
+import { meeting, user } from '@/request/index.js';
 import { setRequestHeaders } from "@/utils/http.js";
 
 class KeyLoginServer {

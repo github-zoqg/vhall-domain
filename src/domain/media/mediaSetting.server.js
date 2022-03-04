@@ -1,7 +1,7 @@
 import VhallPaasSDK from '@/sdk/index';
 import { merge } from '../../utils';
 import useInteractiveServer from './interactive.server';
-import { meeting } from '@/request/index.js';
+import { roomApi } from '@/request/index.js';
 import useRoomBaseServer from '../room/roombase.server';
 
 class MediaSettingServer {
@@ -236,7 +236,7 @@ class MediaSettingServer {
   }
 
   async setStream(params = {}) {
-    return meeting.setStream(params);
+    return roomApi.base.setStream(params);
   }
 }
 

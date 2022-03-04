@@ -1,9 +1,9 @@
 import { merge } from '../../utils/index';
-import { im, room } from '../../request';
+import { im } from '../../request';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
-import useInteractiveServer from './interactive.server';
+// import useInteractiveServer from './interactive.server';
 import userMemberServer from '../member/member.server';
 import useGroupServer from '../group/StandardGroupServer';
 
