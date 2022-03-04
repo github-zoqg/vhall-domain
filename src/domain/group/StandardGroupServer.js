@@ -234,13 +234,22 @@ class StandardGroupServer extends BaseServer {
     }
   }
 
-  //【进入/退出小组】消息处理
+  /**
+   * 进入/退出小组 消息处理
+   * @note 发起端、接受端 广播
+   * @param {*} msg 
+   */
   async msgdoForGroupManagerEnter(msg) {
     // this.$emit('dispatch_group_enter', msg);
     this.$emit(this.EVENT_TYPE.GROUP_MANAGER_ENTER, msg)
   }
 
-  //【小组解散】消息处理
+  /**
+   * 小组解散 / 消息处理
+   * @param {*} msg 
+   * @note 发起端、接收端 广播
+   * @returns 
+   */
   async msgdoForGroupDisband(msg) {
     console.log('[group] domain group_disband');
     if (useRoomBaseServer().state.clientType === 'send') {
@@ -277,9 +286,9 @@ class StandardGroupServer extends BaseServer {
 
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
-
-      this.$emit(this.EVENT_TYPE.GROUP_DISBAND);
     }
+
+    this.$emit(this.EVENT_TYPE.GROUP_DISBAND);
   }
 
   // 请求协助,主持端收到请求协助消息，会在对应的小组面板头部显示“请求协助中...”文字
@@ -287,7 +296,12 @@ class StandardGroupServer extends BaseServer {
     this.getGroupedUserList();
   }
 
-  //【开启讨论/开始讨论】
+  /**
+   * //【开启讨论/开始讨论】
+   * @param {*} msg 
+   * @notes 发起端、接收端 广播
+   * @returns 
+   */
   async msgdoForGroupSwitchStart(msg) {
     console.log('[group] domain group_switch_start', msg);
     // 设置开始为开始讨论状态
