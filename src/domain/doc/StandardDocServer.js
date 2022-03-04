@@ -3,6 +3,7 @@ import { merge, sleep } from '../../utils';
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
 import useRebroadcastServer from '../interactiveTools/rebroadcast.server';
+import useMsgServer from '../common/msg.server';
 import { doc as docApi } from '../../request/index.js';
 import request from '@/utils/http.js';
 /**
@@ -96,16 +97,12 @@ export default class StandardDocServer extends AbstractDocServer {
     // 如果当前用户进入了某个小组
     if (groupInitData && groupInitData.isInGroup) {
       // 当前用户在小组房间内
-      const hasDocPermission =
-        groupInitData.presentation_screen == watchInitData.join_info.third_party_user_id;
-      defaultOptions.role = this.mapDocRole(hasDocPermission ? 1 : 3); // 角色
+      defaultOptions.role = this.mapDocRole(this.hasDocPermission() ? 1 : 2); // 角色
       defaultOptions.roomId = groupInitData.group_room_id;
       defaultOptions.channelId = groupInitData.channel_id;
       defaultOptions.token = groupInitData.access_token;
     } else {
-      const hasDocPermission =
-        interactToolStatus.presentation_screen == watchInitData.join_info.third_party_user_id;
-      defaultOptions.role = this.mapDocRole(hasDocPermission ? 1 : 3);
+      defaultOptions.role = this.mapDocRole(this.hasDocPermission() ? 1 : 2);
       defaultOptions.roomId = watchInitData.interact.room_id; // 必填。
       defaultOptions.channelId = watchInitData.interact.channel_id; // 频道id 必须
       defaultOptions.token = watchInitData.interact.paas_access_token; // access_token，必填
@@ -119,13 +116,12 @@ export default class StandardDocServer extends AbstractDocServer {
   }
 
   /**
-   * 根据直播用户的角色映射文档角色
-   * 直播角色：1-主持人；2-观众；3-助理；4-嘉宾
+   * 根据直播用户的角色返回映射的文档角色
    * 文档角色：1-主持人 编辑、翻页、缩放
    *         2-嘉宾  缩放
    *         3-观众  缩放
    *         4-助理 翻页、缩放
-   * @param {*} role
+   * @param {*} role 直播角色 1-主持人；2-观众；3-助理；4-嘉宾
    */
   mapDocRole(role) {
     if (role === 1) {
@@ -151,6 +147,16 @@ export default class StandardDocServer extends AbstractDocServer {
     rebroadcastServer.$on('live_broadcast_stop', () => {
       this.state.switchStatus = false;
     });
+
+    useMsgServer().$onMsg('ROOM_MSG', msg => {
+      // 直播结束
+      if (msg.data.type == 'live_over') {
+        for (const item of this.state.containerList) {
+          // 删除所有容器
+          this.destroyContainer(item.cid);
+        }
+      }
+    })
 
     // 所有文档加载完成事件
     this.on(VHDocSDK.Event.ALL_COMPLETE, () => {
@@ -242,7 +248,7 @@ export default class StandardDocServer extends AbstractDocServer {
         // console.log('[doc] dispatch_doc_vod_time_update:', data);
         this.state.switchStatus = data.watchOpen;
         if (data.activeId) {
-          this.selectContainer(data.activeId);
+          this.selectContainer(data.activeId, !this.hasDocPermission());
           this.state.currentCid = data.activeId;
         } else {
           this.state.currentCid = '';
@@ -316,8 +322,10 @@ export default class StandardDocServer extends AbstractDocServer {
 
       } else {
         if (this.state.switchStatus) {
-          if (roomBaseServer.getSpeakStatus()) {
-            // 在主房间时，在麦上
+          if (roomBaseServer.state.watchInitData.webinar.type == 1 && (
+            roomBaseServer.state.watchInitData.webinar.no_delay_webinar == 1 || roomBaseServer.getSpeakStatus()
+          )) {
+            // 直播状态下，无延迟或上麦是流列表
             roomBaseServer.setChangeElement('stream-list');
           } else {
             // 文档如果可见,直接设置 播放器 为小屏
@@ -474,11 +482,10 @@ export default class StandardDocServer extends AbstractDocServer {
     // });
     if (!cid) {
       cid = this.createUUID(fileType);
-      console.log('[doc] domain 新建的cid:', cid);
-    } else {
-      console.log('[doc] domain 指定的cid:', cid);
     }
+    let noDispatch = true;
 
+    console.log('noDis:', !this.hasDocPermission())
     let opt = {
       id: cid,
       elId: cid, // 创建时，该参数就是cid
@@ -486,13 +493,7 @@ export default class StandardDocServer extends AbstractDocServer {
       width,
       height,
       backgroundColor: '#fff',
-      noDispatch: false,
-      option: {
-        // 初始画笔
-        graphicType: window.VHDocSDK.GRAPHIC.PEN,
-        stroke: '#FD2C0A',
-        strokeWidth: 7
-      }
+      noDispatch
     };
     if (this.state.containerList.findIndex(item => item.cid === cid) === -1) {
       // 说明容器不在列表中，主动添加
@@ -537,23 +538,14 @@ export default class StandardDocServer extends AbstractDocServer {
     try {
       if (!cid) {
         cid = this.createUUID(fileType);
-        console.log('[doc] domain 新建的cid:', cid);
-      } else {
-        console.log('[doc] domain 指定的cid:', cid);
       }
       if (this.state.containerList.findIndex(item => item.cid === cid) === -1) {
         // 说明容器不在列表中，主动添加
-        console.log('[doc] --------向列表中添加容器------');
         this.state.containerList.push({ cid, docId });
         // 确保dom渲染
         await this.domNextTick();
       }
-
-      if (useRoomBaseServer().state.clientType != 'send') {
-        //TODO: 区分场景逻辑处理,还需要处理
-        noDispatch = true;
-      }
-
+      let noDispatch = !this.hasDocPermission();
       if (fileType === 'board') {
         this.boardCid = cid;
         const opts = {
@@ -561,7 +553,7 @@ export default class StandardDocServer extends AbstractDocServer {
           elId: cid,
           width: width,
           height: width,
-          noDispatch: noDispatch,
+          noDispatch,
           backgroundColor: '#FFFFFF'
         };
         await this.createBoard(opts);
@@ -572,7 +564,7 @@ export default class StandardDocServer extends AbstractDocServer {
           elId: cid, // div 容器 必须
           width: width,
           height: height,
-          noDispatch: noDispatch
+          noDispatch
         };
         console.log('[doc] opts:', opts);
         await this.createDocument(opts);
@@ -590,7 +582,7 @@ export default class StandardDocServer extends AbstractDocServer {
    * 激活容器
    */
   activeContainer(cid) {
-    this.selectContainer(cid);
+    this.selectContainer(cid, !this.hasDocPermission());
     this.state.currentCid = cid;
     const type = cid.split('-')[0];
     if (type === 'document') {
@@ -709,6 +701,24 @@ export default class StandardDocServer extends AbstractDocServer {
       }
     }
     return list;
+  }
+
+  // 是否有文档演示权限
+  hasDocPermission() {
+    const { clientType, watchInitData, interactToolStatus } = useRoomBaseServer().state;
+    const webinarType = Number(watchInitData.webinar.type);
+    const isWatch = !['send', 'record', 'clientEmbed'].includes(clientType);
+    if (isWatch && [4, 5].includes(webinarType)) {
+      // 对于观看端 && 点播和回放，所有人都没有文档演示权限
+      return false;
+    }
+
+    const { groupInitData } = useGroupServer().state;
+    const userId = watchInitData.join_info.third_party_user_id;
+    const presenterId = groupInitData.isInGroup ? groupInitData.presentation_screen :
+      interactToolStatus.presentation_screen;
+    // 当前用户是否演示者
+    return presenterId == userId;
   }
 
   // 同步文档

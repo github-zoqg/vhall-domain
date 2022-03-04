@@ -1,4 +1,4 @@
-import { room } from '../../request';
+import { roomApi } from '../../request';
 import { merge, sleep } from '../../utils';
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
@@ -8,6 +8,7 @@ import VhallPaasSDK from '@/sdk/index';
 import useMicServer from './mic.server';
 import interactive from '@/request/interactive';
 import useMediaSettingServer from './mediaSetting.server';
+import useDesktopShareServer from './desktopShare.server';
 class InteractiveServer extends BaseServer {
   constructor() {
     super();
@@ -29,8 +30,12 @@ class InteractiveServer extends BaseServer {
       remoteStreams: [], // 远端流数组
       streamListHeightInWatch: 0, // PC观看端流列表高度
       fullScreenType: false, // wap 全屏状态
-      defaultStreamBg: false //开始推流到成功期间展示默认图
+      defaultStreamBg: false, //开始推流到成功期间展示默认图
+      showPlayIcon: false // 展示播放按钮
     };
+    this.EVENT_TYPE = {
+      'INTERACTIVE_INSTANCE_INIT_SUCCESS': 'INTERACTIVE_INSTANCE_INIT_SUCCESS'
+    }
     InteractiveServer.instance = this;
     return this;
   }
@@ -67,17 +72,17 @@ class InteractiveServer extends BaseServer {
           this.interactiveInstance = event.vhallrtc;
           this._addListeners();
           // 房间当前远端流列表
-          this.state.remoteStreams = event.currentStreams.filter(stream => {
+          this.state.remoteStreams = event.vhallrtc.getRoomStreams().filter(stream => {
             try {
-              if (typeof stream.attributes == 'string') {
+              if (stream.attributes && typeof stream.attributes == 'string') {
                 stream.attributes = JSON.parse(stream.attributes);
               }
-            } catch (error) {
-            }
-            return stream.streamType === 2;
+            } catch (error) { }
+            return stream.streamType === 2 && stream.streamSource == 'remote';
           });
 
-          this.$emit('VhallRTC_init_success');
+
+          this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
           resolve(event);
         },
         error => {
@@ -236,6 +241,7 @@ class InteractiveServer extends BaseServer {
       .then(() => {
         this.interactiveInstance = null;
         this.state.remoteStreams = [];
+        this._clearLocalStream()
       })
       .catch(err => {
         console.log('互动sdk销毁失败', err);
@@ -261,19 +267,21 @@ class InteractiveServer extends BaseServer {
     // 远端流加入事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      e.data.attributes = e.data.attributes && JSON.parse(e.data.attributes);
-
+      e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      if (this.state.remoteStreams.find(s => s.streamId == e.data.streamId)) {
+        return
+      }
       if (e.data.streamType === 2) {
         const remoteStream = {
           ...e.data,
-          audioMuted: e.data.stream.audioMuted,
-          videoMuted: e.data.stream.videoMuted
+          audioMuted: e.data.stream.initMuted.audio,
+          videoMuted: e.data.stream.initMuted.video
         };
         this.state.remoteStreams.push(remoteStream);
       }
       console.log('----流加入事件----', e);
 
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e);
+      this.$emit('EVENT_REMOTESTREAM_ADD', e);
     });
 
     // 远端流离开事件,自己的流删除事件收不到
@@ -284,7 +292,7 @@ class InteractiveServer extends BaseServer {
       this.state.remoteStreams = this.state.remoteStreams.filter(
         stream => stream.streamId != e.data.streamId
       );
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e);
+      this.$emit('EVENT_REMOTESTREAM_REMOVED', e);
     });
 
     // 房间信令异常断开事件
@@ -324,7 +332,7 @@ class InteractiveServer extends BaseServer {
       // }
       if (e.data.streamId == this.state.screenStream.streamId) {
         this.state.screenStream.streamId = '';
-        useRoomBaseServer().setShareScreenStatus(false);
+        useDesktopShareServer().setShareScreenStatus(false);
         useRoomBaseServer().setChangeElement('stream-list');
       }
 
@@ -419,7 +427,7 @@ class InteractiveServer extends BaseServer {
         // 如果创建的是桌面共享流
         if (options.streamType === 3) {
           this.state.screenStream.streamId = data.streamId;
-        } else if (options.streamType == 2) {
+        } else {
           this.state.localStream = {
             streamId: data.streamId,
             audioMuted: options.mute?.audio || false,
@@ -454,6 +462,13 @@ class InteractiveServer extends BaseServer {
 
     const { interactToolStatus } = useRoomBaseServer().state;
 
+    const { groupInitData } = useGroupServer().state
+
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
+
+    const roleName = isGroupLeader ? 20 : watchInitData.join_info.role_name
+
+
     let defaultOptions = {
       videoNode: options.videoNode, // 必填，传入本地视频显示容器ID
       audio: true, // 选填，是否采集音频设备，默认为true
@@ -470,7 +485,7 @@ class InteractiveServer extends BaseServer {
         VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
       streamType: 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。
       attributes: JSON.stringify({
-        roleName: watchInitData.join_info.role_name,
+        roleName: roleName,
         accountId: watchInitData.join_info.third_party_user_id,
         nickname: watchInitData.join_info.nickname
       }) //选填，自定义信息，支持字符串类型
@@ -615,8 +630,20 @@ class InteractiveServer extends BaseServer {
         nickname: watchInitData.join_info.nickname
       })
     };
+    // 当前用户是否在上麦列表中
+    const isOnMicObj = interactToolStatus.speaker_list.find(
+      item => item.account_id == watchInitData.join_info.third_party_user_id
+    );
 
+    // 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
+    if (isOnMicObj) {
+      defaultOptions.mute = {
+        audio: !isOnMicObj.audio,
+        video: !isOnMicObj.video
+      };
+    }
     const params = merge.recursive({}, defaultOptions, options, addConfig);
+    console.warn()
     return await this.createLocalStream(params);
   }
 
@@ -773,7 +800,7 @@ class InteractiveServer extends BaseServer {
     let streamList = this.interactiveInstance.getRoomStreams();
     streamList = streamList.map(stream => ({
       ...stream,
-      attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
+      attributes: stream.attributes && typeof stream.attributes == 'string' ? JSON.parse(stream.attributes) : stream.attributes
     }));
 
     // 此处默认插播和桌面共享不共存，只会返回一个
@@ -1019,7 +1046,7 @@ class InteractiveServer extends BaseServer {
       broadcast: 1
     };
     const retParams = merge.recursive({}, defaultParams, params);
-    return room.activity.setDeviceStatus(retParams);
+    return roomApi.activity.setDeviceStatus(retParams);
   }
 
   /**

@@ -13,6 +13,8 @@ import imSignaling from './im/signaling/index.js';
 import imNotice from './im/notice/index.js';
 import imChatAuth from './im/chatAuth/index.js';
 import activity from './room/activity/index.js';
+import roomBase from './room/index.js';
+import webinar from './room/webinar/index.js';
 import player from './player.js';
 import rebroadcast from './room/rebroadcast';
 import liveTimerApi from './live-timer';
@@ -25,9 +27,7 @@ import praiseApi from './praise/index';
 import inviteApi from './invite';
 import entryformApi from './entryform/index';
 import subscribeApi from './subscribe';
-import gray from './gray';
 import wechatApi from './brand/wechat';
-import subjectApi from './brand/subject';
 import signUpFormApi from "./signUpForm";
 import homepageApi from './homepage';
 
@@ -36,6 +36,8 @@ import qaList from './qa/list/index.js';
 
 // 商品
 import goodSaasApi from './good/index.js';
+// 专题
+import subject from './room-subject/subject';
 
 const im = {
   chat: imChat,
@@ -45,14 +47,22 @@ const im = {
   notice: imNotice,
   chatAuth: imChatAuth
 };
-const room = {
-  activity: activity
+
+const roomApi = {
+  base: roomBase,
+  activity: activity,
+  webinar: webinar
 };
+
+const roomSubjectApi = {
+  subject: subject
+}
 
 // 问答
 const qa = {
   list: qaList
 };
+
 export {
   customMenu,
   meeting,
@@ -64,7 +74,7 @@ export {
   group,
   player,
   im,
-  room,
+  roomApi,
   qa,
   rebroadcast,
   liveTimerApi,
@@ -78,9 +88,8 @@ export {
   inviteApi,
   entryformApi,
   subscribeApi,
-  gray,
   wechatApi,
-  subjectApi,
   signUpFormApi,
-  homepageApi
+  homepageApi,
+  roomSubjectApi
 };

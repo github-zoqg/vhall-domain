@@ -1,4 +1,4 @@
-import { subjectApi, wechatApi } from '@/request/index';
+import { roomSubjectApi, wechatApi } from '@/request/index';
 
 class SubjectServer {
   constructor() {
@@ -10,7 +10,7 @@ class SubjectServer {
   }
 
   getSubjectInfo(data = {}) {
-    return subjectApi.getSubjectInfo(data);
+    return roomSubjectApi.subject.getSubjectInfo(data);
   }
 
   wechatShare(data = {}) {

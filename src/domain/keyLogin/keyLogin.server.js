@@ -1,6 +1,5 @@
-import {meeting, entryformApi, user} from '@/request/index.js';
-import roomBase from "@/request/roomBase.js";
-import {setRequestHeaders} from "@/utils/http.js";
+import { meeting, user } from '@/request/index.js';
+import { setRequestHeaders } from "@/utils/http.js";
 
 class KeyLoginServer {
   constructor() {
@@ -19,12 +18,7 @@ class KeyLoginServer {
 
   //获取活动信息
   getWebinarInfo(params = {}) {
-    return roomBase.getWebinarInfo(params);
-  }
-
-  //获取灰度信息
-  getGrayConfig(params = {}, header = {}) {
-    return entryformApi.initGrayBefore(params);
+    return meeting.getWebinarInfo(params);
   }
 
   //获取配置信息

@@ -1,9 +1,9 @@
 import { merge } from '../../utils/index';
-import { im, room } from '../../request';
+import { im } from '../../request';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
-import useInteractiveServer from './interactive.server';
+// import useInteractiveServer from './interactive.server';
 import userMemberServer from '../member/member.server';
 import useGroupServer from '../group/StandardGroupServer';
 
@@ -101,7 +101,9 @@ class MicServer extends BaseServer {
           break;
         // 设置主画面
         case 'vrtc_big_screen_set':
+          if (useGroupServer().state.groupInitData.isInGroup) return;
           const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
+          // if(useGroupServer().state.groupInitData.isInGroup)
           interactToolStatus.main_screen = msg.data.room_join_id;
           this.$emit('vrtc_big_screen_set', msg);
           // const str = watchInitData.webinar.mode == 6 ? '主画面' : '主讲人';
