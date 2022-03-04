@@ -1,7 +1,7 @@
 /**
  * 聊天服务
  * */
-import { textToEmojiText } from './emoji';
+import { textToEmojiText } from '@/utils/emoji';
 import Msg from './msg-class';
 import { im as iMRequest } from '@/request/index.js';
 import BaseServer from '@/domain/common/base.server';
@@ -216,9 +216,13 @@ class ChatServer extends BaseServer {
     item.count = Msg.getcount();
     this.state.chatList.push(item);
   }
-  // 清空聊天消息
-  clearHistoryMsg() {
+  // 清空普通聊天消息
+  clearChatMsg() {
     this.state.chatList.splice(0, this.state.chatList.length);
+  }
+  //清空私聊列表
+  clearPrivateChatMsg() {
+    this.state.privateChatList.splice(0, this.state.privateChatList.length);
   }
   //创建当前编辑消息
   createCurMsg() {
@@ -234,12 +238,13 @@ class ChatServer extends BaseServer {
   //发送聊天消息
   sendChatMsg({ data, context }) {
     //判断私聊还是普通消息
+    useMsgServer().sendChatMsg(data, context);
     if (data.target_id) {
       this.state.privateChatList.push(Msg._handleGenerateMsg({ data, context }))
     } else {
       this.state.chatList.push(Msg._handleGenerateMsg({ data, context }))
     }
-    useMsgServer().sendChatMsg(data, context);
+    data.text_content = textToEmojiText(data.text_content);
   }
 
   //发起请求，或者聊天记录数据
@@ -357,10 +362,7 @@ class ChatServer extends BaseServer {
   getKickedList(params = {}) {
     return iMRequest.chat.getKickedList(params);
   }
-  //获取私聊的聊天内容
-  getPrivateChatList(params = {}) {
-    return iMRequest.chat.fetchPrivateChatList(params);
-  }
+
   //获取私聊的联系人列表
   getPrivateContactList(params = {}) {
     return iMRequest.chat.fetchPrivateContactList(params);
@@ -370,9 +372,13 @@ class ChatServer extends BaseServer {
     const { watchInitData } = useRoomBaseServer().state;
     params.room_id = watchInitData.interact.room_id;
     params.webinar_id = watchInitData.webinar.id
-    params.to_user = watchInitData.webinar.userinfo.user_id
     return iMRequest.chat.fetchPrivateChatHistoryList(params).then(res => {
-      //TODO
+      if (res.code == 200) {
+        res.data.list.forEach(ele => {
+          ele.data.text_content = textToEmojiText(ele.data.text_content);
+        });
+        this.state.privateChatList.splice(0, 0, ...res.data.list)
+      }
     });
   }
 }
