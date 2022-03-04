@@ -102,6 +102,7 @@ class MicServer extends BaseServer {
         // 设置主画面
         case 'vrtc_big_screen_set':
           const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
+          // if(useGroupServer().state.groupInitData.isInGroup)
           interactToolStatus.main_screen = msg.data.room_join_id;
           this.$emit('vrtc_big_screen_set', msg);
           // const str = watchInitData.webinar.mode == 6 ? '主画面' : '主讲人';
