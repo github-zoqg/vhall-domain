@@ -271,8 +271,7 @@ class InteractiveServer extends BaseServer {
     // 远端流加入事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      e.data.attributes = e.data.attributes && JSON.parse(e.data.attributes);
-
+      e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
       if (e.data.streamType === 2) {
         const remoteStream = {
           ...e.data,
@@ -802,7 +801,7 @@ class InteractiveServer extends BaseServer {
     let streamList = this.interactiveInstance.getRoomStreams();
     streamList = streamList.map(stream => ({
       ...stream,
-      attributes: stream.attributes && typeof stream.attributes == 'string' ? JSON.parse(stream.attributes) : ''
+      attributes: stream.attributes && typeof stream.attributes == 'string' ? JSON.parse(stream.attributes) : stream.attributes
     }));
 
     // 此处默认插播和桌面共享不共存，只会返回一个
