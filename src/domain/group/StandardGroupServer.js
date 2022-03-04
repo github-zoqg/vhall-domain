@@ -377,6 +377,7 @@ class StandardGroupServer extends BaseServer {
       // 主持端
       this.getWaitingUserList();
       this.getGroupedUserList();
+      this.$emit(this.EVENT_TYPE.GROUP_JOIN_CHANGE)
     }
     if (useRoomBaseServer().state.interactToolStatus.is_open_switch != 1) {
       console.log('[group] 未开启讨论，不处理分组切换逻辑。');
@@ -507,6 +508,7 @@ class StandardGroupServer extends BaseServer {
       // 主持端
       this.getWaitingUserList();
       this.getGroupedUserList();
+      this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT);
     }
     if (!this.state.groupInitData.isInGroup) return;
     await this.updateGroupInitData();
@@ -538,8 +540,8 @@ class StandardGroupServer extends BaseServer {
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
 
-      // 本人被踢出提示
       this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT);
+      // 本人被踢出提示
     } else {
       console.log('[group] ------没有被踢出');
     }
