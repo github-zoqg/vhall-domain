@@ -68,15 +68,24 @@ class InteractiveServer extends BaseServer {
           this.interactiveInstance = event.vhallrtc;
           this._addListeners();
           // 房间当前远端流列表
-          this.state.remoteStreams = event.currentStreams.filter(stream => {
+          this.state.remoteStreams = event.vhallrtc.getRoomStreams().filter(stream => {
             try {
               if (typeof stream.attributes == 'string') {
                 stream.attributes = JSON.parse(stream.attributes);
               }
-            } catch (error) {
-            }
-            return stream.streamType === 2;
+            } catch (error) { }
+            return stream.streamType === 2 && stream.streamSource == 'remote';
           });
+
+          // this.state.remoteStreams = event.currentStreams.filter(stream => {
+          //   try {
+          //     if (typeof stream.attributes == 'string') {
+          //       stream.attributes = JSON.parse(stream.attributes);
+          //     }
+          //   } catch (error) {
+          //   }
+          //   return stream.streamType === 2;
+          // });
 
           this.$emit('VhallRTC_init_success');
           resolve(event);
@@ -267,8 +276,8 @@ class InteractiveServer extends BaseServer {
       if (e.data.streamType === 2) {
         const remoteStream = {
           ...e.data,
-          audioMuted: e.data.stream.audioMuted,
-          videoMuted: e.data.stream.videoMuted
+          audioMuted: e.data.stream.initMuted.audio,
+          videoMuted: e.data.stream.initMuted.video
         };
         this.state.remoteStreams.push(remoteStream);
       }
@@ -616,8 +625,20 @@ class InteractiveServer extends BaseServer {
         nickname: watchInitData.join_info.nickname
       })
     };
+    // 当前用户是否在上麦列表中
+    const isOnMicObj = interactToolStatus.speaker_list.find(
+      item => item.account_id == watchInitData.join_info.third_party_user_id
+    );
 
+    // 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
+    if (isOnMicObj) {
+      defaultOptions.mute = {
+        audio: !isOnMicObj.audio,
+        video: !isOnMicObj.video
+      };
+    }
     const params = merge.recursive({}, defaultOptions, options, addConfig);
+    console.warn()
     return await this.createLocalStream(params);
   }
 

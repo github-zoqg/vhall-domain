@@ -3,6 +3,7 @@ import { merge, sleep } from '../../utils';
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
 import useRebroadcastServer from '../interactiveTools/rebroadcast.server';
+import useMsgServer from '../common/msg.server';
 import { doc as docApi } from '../../request/index.js';
 import request from '@/utils/http.js';
 /**
@@ -151,6 +152,16 @@ export default class StandardDocServer extends AbstractDocServer {
     rebroadcastServer.$on('live_broadcast_stop', () => {
       this.state.switchStatus = false;
     });
+
+    useMsgServer().$onMsg('ROOM_MSG', msg => {
+      // 直播结束
+      if (msg.data.type == 'live_over') {
+        for (const item of this.state.containerList) {
+          // 删除所有容器
+          this.destroyContainer(item.cid);
+        }
+      }
+    })
 
     // 所有文档加载完成事件
     this.on(VHDocSDK.Event.ALL_COMPLETE, () => {
@@ -316,8 +327,10 @@ export default class StandardDocServer extends AbstractDocServer {
 
       } else {
         if (this.state.switchStatus) {
-          if (roomBaseServer.getSpeakStatus()) {
-            // 在主房间时，在麦上
+          if (roomBaseServer.state.watchInitData.webinar.type == 1 && (
+            roomBaseServer.state.watchInitData.webinar.no_delay_webinar == 1 || roomBaseServer.getSpeakStatus()
+          )) {
+            // 直播状态下，无延迟或上麦是流列表
             roomBaseServer.setChangeElement('stream-list');
           } else {
             // 文档如果可见,直接设置 播放器 为小屏

@@ -205,13 +205,10 @@ function setDevice(params) {
 }
 
 // 获取黄金链路内容
-function getLowerGradeConfigInfo(params, environment = 'test', systemKey = 2) {
+function getLowerGradeConfigInfo(staticDomain, environment, systemKey = 2) {
   const url =
     env.meeting === 'v3'
-      ? `${environment == 'test'
-        ? 'https://t-alistatic01.e.vhall.com'
-        : 'https://cnstatic01.e.vhall.com'
-      }/fault/${environment}/ops_fault_code_publish_${systemKey}.json`
+      ? `${staticDomain}/fault/${environment}/ops_fault_code_publish_${systemKey}.json`
       : '';
   return axios.get(url);
 }

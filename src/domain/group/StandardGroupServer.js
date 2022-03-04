@@ -79,7 +79,7 @@ class StandardGroupServer extends BaseServer {
       // 主房间人员变动
       MAIN_ROOM_JOIN_CHANGE: 'MAIN_ROOM_JOIN_CHANGE',
       // 进入与退出小组
-      GROUP_MANAGER_ENTER: 'GROUP_MANAGER_ENTER'
+      GROUP_MANAGER_ENTER: 'GROUP_MANAGER_ENTER',
     };
     this.listenMsg();
   }
@@ -153,6 +153,10 @@ class StandardGroupServer extends BaseServer {
         case 'vrtc_speaker_switch':
           this.msgdoForVrtcSpeakerSwitch(msg);
           break;
+        // 分组成员上线信息(含该成员信息)
+        case 'group_join_info':
+          this.$emit(this.EVENT_TYPE.GROUP_JOIN_INFO, msg)
+          break;
         // 换组
         case 'group_join_change':
           this.msgdoForGroupJoinChange(msg);
@@ -167,6 +171,7 @@ class StandardGroupServer extends BaseServer {
           break;
         // 邀请演示-同意
         case 'vrtc_connect_presentation_agree':
+          this.$emit(this.EVENT_TYPE.VRTC_CONNECT_PRESENTATION_AGREE, msg)
           break;
         // 同意演示成功 ——> 开始演示
         case 'vrtc_connect_presentation_success':
@@ -179,6 +184,10 @@ class StandardGroupServer extends BaseServer {
         // 拒绝演示邀请
         case 'vrtc_connect_presentation_refused':
           this.$emit(this.EVENT_TYPE.VRTC_CONNECT_PRESENTATION_REFUSED, msg);
+          break;
+        // 切换小组
+        case 'group_join_change_update':
+          this.$emit(this.EVENT_TYPE.GROUP_JOIN_CHANGE)
           break;
       }
     });
@@ -227,7 +236,8 @@ class StandardGroupServer extends BaseServer {
 
   //【进入/退出小组】消息处理
   async msgdoForGroupManagerEnter(msg) {
-    this.$emit('dispatch_group_enter', msg);
+    // this.$emit('dispatch_group_enter', msg);
+    this.$emit(this.EVENT_TYPE.GROUP_MANAGER_ENTER, msg)
   }
 
   //【小组解散】消息处理
@@ -528,7 +538,7 @@ class StandardGroupServer extends BaseServer {
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
 
-      // 本人被提出提示
+      // 本人被踢出提示
       this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT);
     } else {
       console.log('[group] ------没有被踢出');
