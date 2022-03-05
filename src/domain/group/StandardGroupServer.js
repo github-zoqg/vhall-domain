@@ -241,7 +241,7 @@ class StandardGroupServer extends BaseServer {
   /**
    * 进入/退出小组 消息处理
    * @note 发起端、接受端 广播
-   * @param {*} msg 
+   * @param {*} msg
    */
   async msgdoForGroupManagerEnter(msg) {
     // this.$emit('dispatch_group_enter', msg);
@@ -250,9 +250,9 @@ class StandardGroupServer extends BaseServer {
 
   /**
    * 小组解散 / 消息处理
-   * @param {*} msg 
+   * @param {*} msg
    * @note 发起端、接收端 广播
-   * @returns 
+   * @returns
    */
   async msgdoForGroupDisband(msg) {
     console.log('[group] domain group_disband');
@@ -302,9 +302,9 @@ class StandardGroupServer extends BaseServer {
 
   /**
    * //【开启讨论/开始讨论】
-   * @param {*} msg 
+   * @param {*} msg
    * @notes 发起端、接收端 广播
-   * @returns 
+   * @returns
    */
   async msgdoForGroupSwitchStart(msg) {
     console.log('[group] domain group_switch_start', msg);
@@ -826,7 +826,6 @@ class StandardGroupServer extends BaseServer {
     if (this.state.groupInitData?.group_id) {
       this.state.groupInitData.isInGroup = true;
       this.state.groupInitData.isBanned = false;
-      useRoomBaseServer().setInavToolStatus('main_screen', this.state.groupInitData.main_screen);
     } else {
       this.state.groupInitData.isInGroup = false;
     }
