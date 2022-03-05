@@ -21,8 +21,6 @@ class ChatServer extends BaseServer {
       chatList: [],
       //私聊列表
       privateChatList: [],
-      //过滤的敏感词列表
-      keywordList: [],
       //预览图片地址
       imgUrls: [],
       //当前用户禁言状态
@@ -238,7 +236,9 @@ class ChatServer extends BaseServer {
   //发送聊天消息
   sendChatMsg({ data, context }) {
     //判断私聊还是普通消息
-    useMsgServer().sendChatMsg(data, context);
+    if (this.checkHasKeyword(data.text_content)) {
+      useMsgServer().sendChatMsg(data, context);
+    }
     if (data.target_id) {
       this.state.privateChatList.push(Msg._handleGenerateMsg({ data, context }))
     } else {
@@ -252,18 +252,15 @@ class ChatServer extends BaseServer {
     return iMRequest.chat.getChatList(params);
   }
 
-  //获取keywordList
-  setKeywordList(list = []) {
-    this.state.keywordList = list;
-  }
 
   //检测是否包含敏感词
-  checkHasKeyword(needFilter = true, inputValue) {
+  checkHasKeyword(inputValue) {
+    const keywordList = useRoomBaseServer().state.keywords.list
+    console.log('keywordList', keywordList)
     let filterStatus = true;
-
-    if (needFilter && this.state.keywordList.length) {
+    if (keywordList.length) {
       //只要找到一个敏感词，消息就不让发
-      filterStatus = !this.state.keywordList.some(item => inputValue.includes(item.name));
+      filterStatus = !keywordList.some(item => inputValue.includes(item.name));
     }
 
     return filterStatus;
