@@ -16,11 +16,11 @@ class SubscribeServer extends BaseServer {
         this.$emit('live_start', msg.data);
       }
 
-      if (msg.data.type === 'pay_success') {
+      if (msg.data.type == 'pay_success') {
         this.$emit('pay_success', msg.data);
       }
 
-      if (msg.data.type === 'live_over') {
+      if (msg.data.type == 'live_over') {
         window.location.reload();
       }
     });
