@@ -2,7 +2,7 @@ import useInteractiveServer from './interactive.server';
 import useRoomBaseServer from '../room/roombase.server';
 import BaseServer from '../common/base.server';
 import VhallPaasSDK from '@/sdk/index';
-import { merge } from '../../utils';
+import useGroupServer from '../group/StandardGroupServer';
 class DesktopShareServer extends BaseServer {
   constructor() {
     super();
@@ -10,16 +10,17 @@ class DesktopShareServer extends BaseServer {
       return DesktopShareServer.instance;
     }
     this.state = {
-      localStream: { localDesktopStreamId: '' },
+      localDesktopStreamId: '',
       isShareScreen: false, // 是否桌面共享
 
     };
     DesktopShareServer.instance = this;
-    this._addListeners();
 
     return this;
   }
-  init() { }
+  init() {
+    this._addListeners();
+  }
   _addListeners() {
     const interactiveServer = useInteractiveServer();
 
@@ -44,6 +45,11 @@ class DesktopShareServer extends BaseServer {
     interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
       if (e.data.streamType === 3 || e.data.streamType === 4) {
+
+        const miniElement = useGroupServer().state.groupInitData.isInGroup ? 'stream-list' : ''
+        useRoomBaseServer().setChangeElement(miniElement);
+        this.setShareScreenStatus(false);
+
         this.$emit('screen_stream_remove', e);
       }
     });
@@ -129,7 +135,7 @@ class DesktopShareServer extends BaseServer {
       interactiveServer
         .publishStream({ streamId })
         .then(res => {
-          // state.localDesktopStreamId = streamId;
+          this.state.localDesktopStreamId = streamId;
           resolve(res);
         })
         .catch(reject);
@@ -143,7 +149,7 @@ class DesktopShareServer extends BaseServer {
       interactiveServer
         .subscribe(options)
         .then(res => {
-          // state.localDesktopStreamId = options.streamId;
+          this.state.localDesktopStreamId = options.streamId;
           resolve(res);
         })
         .catch(reject);
@@ -154,7 +160,7 @@ class DesktopShareServer extends BaseServer {
    * 停止桌面共享
    * */
   stopShareScreen(streamId) {
-    return interactiveServer.unpublishStream(streamId || state.localDesktopStreamId);
+    return interactiveServer.unpublishStream({ streamId: streamId || this.state.localDesktopStreamId });
   }
 }
 export default function useDesktopShareServer() {
