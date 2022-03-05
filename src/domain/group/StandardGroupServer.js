@@ -291,6 +291,9 @@ class StandardGroupServer extends BaseServer {
       this.$emit(this.EVENT_TYPE.ROOM_CHANNEL_CHANGE, msg);
       useMsgServer().destroyGroupMsg();
 
+      // 退出小组重新初始化互动
+      useInteractiveServer().groupReInitInteractProcess()
+
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
     }
@@ -494,7 +497,7 @@ class StandardGroupServer extends BaseServer {
         this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
         // 处理分组下互动sdk切换channel
-        // useRoomBaseServer().groupReInitInteractProcess();
+        useInteractiveServer().groupReInitInteractProcess();
 
         // 处理文档channel切换逻辑
         useDocServer().groupReInitDocProcess();
@@ -927,8 +930,8 @@ class StandardGroupServer extends BaseServer {
 
   /**
    * 处理组长异常掉线
-   * @param {*} msg 
-   * @returns 
+   * @param {*} msg
+   * @returns
    */
   handleGroupLeaderLeave(msg) {
     if (useRoomBaseServer().state.clientType !== 'send') return;
@@ -956,8 +959,8 @@ class StandardGroupServer extends BaseServer {
 
   /**
    * 处理组长重新回归
-   * @param {*} msg 
-   * @returns 
+   * @param {*} msg
+   * @returns
    */
   async handleGroupLeaderBack(msg) {
     if (useRoomBaseServer().state.clientType !== 'send') return;
