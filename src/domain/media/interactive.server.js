@@ -93,7 +93,7 @@ class InteractiveServer extends BaseServer {
   }
 
   /*
-  * 分组开始讨论后续操作
+  * 分组进入，退出重新初始化操作
   */
   groupReInitInteractProcess() {
     this.init()
@@ -288,10 +288,16 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
       console.log('---流删除事件---', e);
 
-      // 从流列表中删除
-      this.state.remoteStreams = this.state.remoteStreams.filter(
-        stream => stream.streamId != e.data.streamId
-      );
+      if (e.data.streamId == this.state.screenStream.streamId) {
+        this.state.screenStream.streamId = '';
+        useDesktopShareServer().setShareScreenStatus(false);
+        useRoomBaseServer().setChangeElement('stream-list');
+      } else {
+        // 从流列表中删除
+        this.state.remoteStreams = this.state.remoteStreams.filter(
+          stream => stream.streamId != e.data.streamId
+        );
+      }
       this.$emit('EVENT_REMOTESTREAM_REMOVED', e);
     });
 
@@ -344,7 +350,7 @@ class InteractiveServer extends BaseServer {
       //     this.speakOff();
       //   }
       // }
-      this.$emit('EVENT_REMOTESTREAM_FAILED', e);
+      this.$emit('EVENT_STREAM_END', e);
     });
 
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e => {
