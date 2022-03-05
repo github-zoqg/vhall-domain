@@ -249,7 +249,7 @@ class MsgServer extends BaseServer {
   getDefaultOptions() {
     const { state: roomBaseServerState } = useRoomBaseServer();
     const isPcClient = isPc();
-    const { watchInitData } = roomBaseServerState;
+    const { watchInitData, groupInitData } = roomBaseServerState;
     const defaultContext = {
       nickname: watchInitData.join_info.nickname,
       avatar: watchInitData.join_info.avatar,
@@ -260,7 +260,7 @@ class MsgServer extends BaseServer {
       device_status: useMediaCheckServer().state.deviceInfo.device_status, // 设备状态  0未检测 1可以上麦 2不可以上麦
       audience: roomBaseServerState.clientType !== 'send',
       kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
-      privacies: watchInitData.join_info.privacies || ''
+      privacies: watchInitData.join_info.privacies || '',
     };
 
     const defaultOptions = {
