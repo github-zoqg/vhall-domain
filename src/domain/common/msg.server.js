@@ -261,6 +261,7 @@ class MsgServer extends BaseServer {
       audience: roomBaseServerState.clientType !== 'send',
       kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
       privacies: watchInitData.join_info.privacies || '',
+      groupInitData//只代表刚进入直播时小组状态，不代表实时小组状态
     };
 
     const defaultOptions = {
