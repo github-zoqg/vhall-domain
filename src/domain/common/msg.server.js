@@ -249,7 +249,8 @@ class MsgServer extends BaseServer {
   getDefaultOptions() {
     const { state: roomBaseServerState } = useRoomBaseServer();
     const isPcClient = isPc();
-    const { watchInitData, groupInitData } = roomBaseServerState;
+    const { watchInitData } = roomBaseServerState;
+    const { groupInitData } = useGroupServer().state;
     const defaultContext = {
       nickname: watchInitData.join_info.nickname,
       avatar: watchInitData.join_info.avatar,
@@ -319,7 +320,9 @@ class MsgServer extends BaseServer {
   // TODO:根据中台需要，看是否这个方法还放在 msgServer中
   sendGroupInfoAfterJoin(msgInstance) {
     const roomBaseServer = useRoomBaseServer();
-    const { watchInitData, groupInitData } = roomBaseServer.state;
+    const groupServer = useGroupServer()
+    const { watchInitData } = roomBaseServer.state;
+    const { groupInitData } = groupServer.state
 
     msgInstance.emitRoomMsg({
       type: 'group_join_info',
