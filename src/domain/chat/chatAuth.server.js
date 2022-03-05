@@ -96,12 +96,31 @@ class ChatAuthServer extends BaseServer {
       const type = temp.data.type;
       switch (type) {
         case 'disable': // 禁言
-        case 'room_kickout': // 踢出
           this.operateUser(temp.data.target_id, type);
           break;
         case 'permit': // 取消禁言
+          this.state.mutedList = this.state.mutedList.filter(item => {
+            return item.account_id !== temp.data.target_id;
+          });
+          this.state.mutedNum--;
+          break;
+        default:
+          break;
+      }
+    });
+    this.chatInstance.onRoomMsg(msg => {
+      let temp = Object.assign({}, msg);
+      if (typeof temp.data !== 'object') {
+        temp.data = ![null, void (0), ''].includes(temp.context) ? JSON.parse(temp.data) : '';
+        temp.context = ![null, void (0), ''].includes(temp.context) ? JSON.parse(temp.context) : '';
+      }
+      console.log(temp, '房间消息');
+      const type = temp.data.type;
+      switch (type) {
+        case 'room_kickout': // 踢出
+          this.operateUser(temp.data.target_id, type);
+          break;
         case 'room_kickout_cancel':
-
           if (type === 'room_kickout_cancel') {
             this.state.kickedList = this.state.kickedList.filter(item => {
               return item.account_id !== temp.data.target_id;
@@ -109,17 +128,9 @@ class ChatAuthServer extends BaseServer {
             this.state.kickedNum--;
             return;
           }
-
-          if (type === 'permit') {
-            this.state.mutedList = this.state.mutedList.filter(item => {
-              return item.account_id !== temp.data.target_id;
-            });
-            this.state.mutedNum--;
-          }
-          break;
-        default:
           break;
       }
+
     });
   }
 
