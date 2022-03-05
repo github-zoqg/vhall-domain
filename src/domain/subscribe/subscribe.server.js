@@ -6,6 +6,7 @@ class SubscribeServer extends BaseServer {
   constructor() {
     super();
     this.state = {};
+    this.listenMsg();
   }
   listenMsg() {
     const msgServer = useMsgServer();

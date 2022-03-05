@@ -18,7 +18,7 @@ class UserServer {
       captchaVal: null, // 云盾图形码
       second: -1, // 倒计时的秒数
       capErrorMsg: '', // 错误提示
-      userInfo: null, // 用户信息
+      userInfo: {}, // 用户信息
       thirdInfo: {}, // 第三方授权绑定的信息 从userInfo拆分的
 
     };
