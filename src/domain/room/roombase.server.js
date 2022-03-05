@@ -112,6 +112,13 @@ class RoomBaseServer extends BaseServer {
       } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
         this.state.watchInitData.webinar.type = 3;
       }
+
+      switch (msg.data.type) {
+        // 切换主讲人
+        case 'vrtc_speaker_switch':
+          this.state.interactToolStatus.doc_permission = msg.data.room_join_id
+          this.$emit('vrtc_speaker_switch', msg.data.room_join_id)
+      }
     });
   }
 
