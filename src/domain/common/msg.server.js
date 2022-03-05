@@ -250,6 +250,7 @@ class MsgServer extends BaseServer {
     const { state: roomBaseServerState } = useRoomBaseServer();
     const isPcClient = isPc();
     const { watchInitData } = roomBaseServerState;
+    const { groupInitData } = useGroupServer().state;
     const defaultContext = {
       nickname: watchInitData.join_info.nickname,
       avatar: watchInitData.join_info.avatar,
@@ -260,7 +261,8 @@ class MsgServer extends BaseServer {
       device_status: useMediaCheckServer().state.deviceInfo.device_status, // 设备状态  0未检测 1可以上麦 2不可以上麦
       audience: roomBaseServerState.clientType !== 'send',
       kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
-      privacies: watchInitData.join_info.privacies || ''
+      privacies: watchInitData.join_info.privacies || '',
+      groupInitData//只代表刚进入直播时小组状态，不代表实时小组状态
     };
 
     const defaultOptions = {
@@ -318,7 +320,9 @@ class MsgServer extends BaseServer {
   // TODO:根据中台需要，看是否这个方法还放在 msgServer中
   sendGroupInfoAfterJoin(msgInstance) {
     const roomBaseServer = useRoomBaseServer();
-    const { watchInitData, groupInitData } = roomBaseServer.state;
+    const groupServer = useGroupServer()
+    const { watchInitData } = roomBaseServer.state;
+    const { groupInitData } = groupServer.state
 
     msgInstance.emitRoomMsg({
       type: 'group_join_info',
