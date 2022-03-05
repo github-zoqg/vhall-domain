@@ -256,9 +256,8 @@ class ChatServer extends BaseServer {
   //检测是否包含敏感词
   checkHasKeyword(inputValue) {
     const keywordList = useRoomBaseServer().state.keywords.list
-    console.log('keywordList', keywordList)
     let filterStatus = true;
-    if (keywordList.length) {
+    if (keywordList && keywordList.length) {
       //只要找到一个敏感词，消息就不让发
       filterStatus = !keywordList.some(item => inputValue.includes(item.name));
     }
