@@ -202,7 +202,7 @@ class StandardGroupServer extends BaseServer {
         this.getWaitingUserList();
         this.getGroupedUserList();
 
-        // this.handleGroupLeaderBack(msg) // 处理组长回归
+        this.handleGroupLeaderBack(msg) // 处理组长回归
       }
     });
     useMsgServer().$onMsg('LEFT', msg => {
@@ -212,7 +212,7 @@ class StandardGroupServer extends BaseServer {
         this.getWaitingUserList();
         this.getGroupedUserList();
 
-        // this.handleGroupLeaderLeave(msg) // 处理组长离开
+        this.handleGroupLeaderLeave(msg) // 处理组长离开
       }
     });
   }
@@ -244,7 +244,7 @@ class StandardGroupServer extends BaseServer {
   /**
    * 进入/退出小组 消息处理
    * @note 发起端、接受端 广播
-   * @param {*} msg 
+   * @param {*} msg
    */
   async msgdoForGroupManagerEnter(msg) {
     // this.$emit('dispatch_group_enter', msg);
@@ -253,9 +253,9 @@ class StandardGroupServer extends BaseServer {
 
   /**
    * 小组解散 / 消息处理
-   * @param {*} msg 
+   * @param {*} msg
    * @note 发起端、接收端 广播
-   * @returns 
+   * @returns
    */
   async msgdoForGroupDisband(msg) {
     console.log('[group] domain group_disband');
@@ -305,9 +305,9 @@ class StandardGroupServer extends BaseServer {
 
   /**
    * //【开启讨论/开始讨论】
-   * @param {*} msg 
+   * @param {*} msg
    * @notes 发起端、接收端 广播
-   * @returns 
+   * @returns
    */
   async msgdoForGroupSwitchStart(msg) {
     console.log('[group] domain group_switch_start', msg);
@@ -836,7 +836,6 @@ class StandardGroupServer extends BaseServer {
     if (this.state.groupInitData?.group_id) {
       this.state.groupInitData.isInGroup = true;
       this.state.groupInitData.isBanned = false;
-      useRoomBaseServer().setInavToolStatus('main_screen', this.state.groupInitData.main_screen);
     } else {
       this.state.groupInitData.isInGroup = false;
     }
@@ -927,28 +926,41 @@ class StandardGroupServer extends BaseServer {
   }
 
   /**
-   * 处理组长异常掉线状态
+   * 处理组长异常掉线
+   * @param {*} msg 
+   * @returns 
    */
   handleGroupLeaderLeave(msg) {
     if (useRoomBaseServer().state.clientType !== 'send') return;
 
-    const originUserList = [...this.state.groupedUserList.group_joins]
-    const leader = originUserList.find(item => item.account_id === msg.sender_id)
+    let [groupId, leader] = [null, null]
+    for (const group of this.state.groupedUserList) {
+      const target = group.group_joins.find(user => user.account_id === msg.sender_id)
+      if (target) {
+        groupId = group.id
+        leader = target
+        break;
+      }
+    }
     if (!leader) return;
 
     const TIMEOUT = 15 * 1000; // 15秒
     const timer = setTimeout(() => {
       clearTimeout(timer)
       this.groupLeaderLeaveMap.delete(msg.sender_id)
-      this.setLeader(leader.group_id)
+      this.setLeader(groupId)
     }, TIMEOUT)
 
     this.groupLeaderLeaveMap.set(msg.sender_id, timer)
   }
 
-  async handleGroupLeaveBack(msg) {
+  /**
+   * 处理组长重新回归
+   * @param {*} msg 
+   * @returns 
+   */
+  async handleGroupLeaderBack(msg) {
     if (useRoomBaseServer().state.clientType !== 'send') return;
-
 
     const timer = this.groupLeaderLeaveMap.get(msg.sender_id)
     if (timer) {
