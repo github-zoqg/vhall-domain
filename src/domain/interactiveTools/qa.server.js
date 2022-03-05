@@ -5,7 +5,7 @@ import BaseServer from '@/domain/common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
 import { qa } from '@/request/index.js';
-import { debounce } from '@/utils';
+import { textToEmojiText } from '@/utils/emoji';
 class QaServer extends BaseServer {
   constructor() {
     if (typeof QaServer.instance === 'object') {
@@ -14,7 +14,9 @@ class QaServer extends BaseServer {
     super();
     const { interactToolStatus } = useRoomBaseServer().state;
     //消息sdk
-    this.state = {};
+    this.state = {
+      qaList: []
+    };
     this.listenEvents();
     this.controller = null;
     QaServer.instance = this;
@@ -33,26 +35,38 @@ class QaServer extends BaseServer {
   //监听msgServer通知
   listenEvents() {
     const msgServer = useMsgServer();
+    const { watchInitData } = useRoomBaseServer().state
     msgServer.$onMsg('ROOM_MSG', msg => {
+      const { role_name, third_party_user_id, join_id } = watchInitData.join_info
       switch (msg.data.type) {
         //开启问答
         case this.Events.QA_OPEN:
-          // if (!this.isSelfMsg(msg)) {
           this.$emit(this.Events.QA_OPEN, msg);
-          // }
           break;
         //关闭问答
         case this.Events.QA_CLOSE:
-          // if (!this.isSelfMsg(msg)) {
           this.$emit(this.Events.QA_CLOSE, msg);
-          // }
           break;
         //收到问答
         case this.Events.QA_CREATE:
+          //主持人助理嘉宾接收全部问答，观众只接收自己问答
+          if (msg.sender_id == third_party_user_id || role_name != 2) {
+            msg.data.content = textToEmojiText(msg.data.content);
+            this.state.qaList.push(msg.data);
+          }
           this.$emit(this.Events.QA_CREATE, msg);
           break;
         //问答回复
         case this.Events.QA_COMMIT:
+          //处理私信回答和公开回答
+          if (
+            (msg.data.join_id == join_id && msg.data.answer.is_open == '0') ||
+            msg.data.answer.is_open != '0' ||
+            role_name == 1
+          ) {
+            msg.data.content = textToEmojiText(msg.data.content);
+            this.state.qaList.push(msg.data);
+          }
           this.$emit(this.Events.QA_COMMIT, msg);
           break;
       }
@@ -90,6 +104,24 @@ class QaServer extends BaseServer {
   getCurrentPlayQuestionNum(params = {}) {
     const { watchInitData } = useRoomBaseServer().state;
     return qa.list.getCurrentPlayQuestionNum({ room_id: watchInitData.interact.room_id });
+  }
+  getQaHistory(params = {}) {
+    const { watchInitData } = useRoomBaseServer().state;
+    params.room_id = watchInitData.interact.room_id;
+
+    // 如果是回放，需要传回放id
+    if (watchInitData.webinar.type == 5 && watchInitData.switch.switch_id) {
+      params.webinar_switch_id = watchInitData.switch.switch_id;
+    }
+    qa.list.getHistoryQaMsg(params)
+      .then(res => {
+        console.warn(res, '历史问答记录');
+        const list = res.data.list.map(h => {
+          return { ...h, content: textToEmojiText(h.content) };
+        });
+        this.state.qaList.splice(0, 0, ...list)
+
+      });
   }
 }
 
