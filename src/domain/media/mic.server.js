@@ -101,6 +101,7 @@ class MicServer extends BaseServer {
           break;
         // 设置主画面
         case 'vrtc_big_screen_set':
+          if (useGroupServer().state.groupInitData.isInGroup) return;
           const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
           // if(useGroupServer().state.groupInitData.isInGroup)
           interactToolStatus.main_screen = msg.data.room_join_id;

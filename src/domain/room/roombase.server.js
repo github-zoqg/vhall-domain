@@ -57,7 +57,6 @@ class RoomBaseServer extends BaseServer {
       interactToolStatus: {}, //互动工具状态信息
       roomVisibleModules: [],
       miniElement: 'stream-list', // 可能的值：doc  stream-list sceen
-      isShareScreen: false, // 是否桌面共享
       //多语言信息
       languages: {
         curLang: 'zh',
@@ -110,8 +109,15 @@ class RoomBaseServer extends BaseServer {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       if (msg.data.type == 'live_start') {
         this.state.watchInitData.webinar.type = 1;
-      } else if (msg.data.type == 'live_over') {
+      } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
         this.state.watchInitData.webinar.type = 3;
+      }
+
+      switch (msg.data.type) {
+        // 切换主讲人
+        case 'vrtc_speaker_switch':
+          this.state.interactToolStatus.doc_permission = msg.data.room_join_id
+          this.$emit('vrtc_speaker_switch', msg.data.room_join_id)
       }
     });
   }
@@ -140,10 +146,6 @@ class RoomBaseServer extends BaseServer {
   // 设置miniELement的值
   setChangeElement(val) {
     this.state.miniElement = val;
-  }
-  // 设置isShareScreen的值
-  setShareScreenStatus(val) {
-    this.state.isShareScreen = val;
   }
 
   // 设置转播信息

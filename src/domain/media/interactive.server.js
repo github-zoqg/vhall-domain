@@ -8,6 +8,7 @@ import VhallPaasSDK from '@/sdk/index';
 import useMicServer from './mic.server';
 import interactive from '@/request/interactive';
 import useMediaSettingServer from './mediaSetting.server';
+import useDesktopShareServer from './desktopShare.server';
 class InteractiveServer extends BaseServer {
   constructor() {
     super();
@@ -32,6 +33,9 @@ class InteractiveServer extends BaseServer {
       defaultStreamBg: false, //开始推流到成功期间展示默认图
       showPlayIcon: false // 展示播放按钮
     };
+    this.EVENT_TYPE = {
+      'INTERACTIVE_INSTANCE_INIT_SUCCESS': 'INTERACTIVE_INSTANCE_INIT_SUCCESS'
+    }
     InteractiveServer.instance = this;
     return this;
   }
@@ -77,17 +81,8 @@ class InteractiveServer extends BaseServer {
             return stream.streamType === 2 && stream.streamSource == 'remote';
           });
 
-          // this.state.remoteStreams = event.currentStreams.filter(stream => {
-          //   try {
-          //     if (typeof stream.attributes == 'string') {
-          //       stream.attributes = JSON.parse(stream.attributes);
-          //     }
-          //   } catch (error) {
-          //   }
-          //   return stream.streamType === 2;
-          // });
 
-          this.$emit('VhallRTC_init_success');
+          this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
           resolve(event);
         },
         error => {
@@ -246,6 +241,7 @@ class InteractiveServer extends BaseServer {
       .then(() => {
         this.interactiveInstance = null;
         this.state.remoteStreams = [];
+        this._clearLocalStream()
       })
       .catch(err => {
         console.log('互动sdk销毁失败', err);
@@ -322,7 +318,7 @@ class InteractiveServer extends BaseServer {
           }
         });
       }
-      this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_MUTE, e);
+      this.$emit('EVENT_REMOTESTREAM_MUTE', e);
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
       // 本地推流或订阅远端流异常断开事件
@@ -336,7 +332,7 @@ class InteractiveServer extends BaseServer {
       // }
       if (e.data.streamId == this.state.screenStream.streamId) {
         this.state.screenStream.streamId = '';
-        useRoomBaseServer().setShareScreenStatus(false);
+        useDesktopShareServer().setShareScreenStatus(false);
         useRoomBaseServer().setChangeElement('stream-list');
       }
 
@@ -379,7 +375,7 @@ class InteractiveServer extends BaseServer {
           isMute: true
         });
         // 业务消息不需要透传到ui层,ui层通过远端流音视频状态改变事件更新ui状态
-        // this.$emit('vrtc_frames_forbid', msg)
+        this.$emit('vrtc_frames_forbid', msg)
       } else if (
         msg.data.type == 'vrtc_frames_display' && // 业务开启摄像头消息
         msg.data.target_id == watchInitData.join_info.third_party_user_id
@@ -389,7 +385,7 @@ class InteractiveServer extends BaseServer {
           streamId: this.state.localStream.streamId,
           isMute: false
         });
-        // this.$emit('vrtc_frames_display', msg);
+        this.$emit('vrtc_frames_display', msg);
       } else if (
         msg.data.type == 'vrtc_mute' && // 业务关闭麦克风消息
         msg.data.target_id == watchInitData.join_info.third_party_user_id
@@ -399,7 +395,7 @@ class InteractiveServer extends BaseServer {
           streamId: this.state.localStream.streamId,
           isMute: true
         });
-        // this.$emit('vrtc_mute', msg);
+        this.$emit('vrtc_mute', msg);
       } else if (
         msg.data.type == 'vrtc_mute_cancel' && // 业务开启麦克风消息
         msg.data.target_id == watchInitData.join_info.third_party_user_id
@@ -409,7 +405,7 @@ class InteractiveServer extends BaseServer {
           streamId: this.state.localStream.streamId,
           isMute: false
         });
-        // this.$emit('vrtc_mute_cancel', msg);
+        this.$emit('vrtc_mute_cancel', msg);
       } else if (msg.data.type === 'live_over') {
         // 直播结束
         this.setStreamListHeightInWatch(0);
@@ -431,7 +427,7 @@ class InteractiveServer extends BaseServer {
         // 如果创建的是桌面共享流
         if (options.streamType === 3) {
           this.state.screenStream.streamId = data.streamId;
-        } else if (options.streamType == 2) {
+        } else {
           this.state.localStream = {
             streamId: data.streamId,
             audioMuted: options.mute?.audio || false,
@@ -647,7 +643,6 @@ class InteractiveServer extends BaseServer {
       };
     }
     const params = merge.recursive({}, defaultOptions, options, addConfig);
-    console.warn()
     return await this.createLocalStream(params);
   }
 
@@ -1072,6 +1067,17 @@ class InteractiveServer extends BaseServer {
    */
   setPause(opt) {
     return this.interactiveInstance.pause(opt);
+  }
+
+  //判断是不是发送给当前用户的消息
+  isMyMsg(msg) {
+    const { watchInitData } = useRoomBaseServer().state;
+    console.log(msg.data.target_id, '-', watchInitData.join_info);
+    if (msg.data.accountId) {
+      return msg.data.accountId == watchInitData.join_info.third_party_user_id;
+    } else {
+      return msg.data.target_id == watchInitData.join_info.third_party_user_id;
+    }
   }
 }
 
