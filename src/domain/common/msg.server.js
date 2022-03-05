@@ -261,6 +261,7 @@ class MsgServer extends BaseServer {
       audience: roomBaseServerState.clientType !== 'send',
       kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
       privacies: watchInitData.join_info.privacies || '',
+      groupInitData
     };
 
     const defaultOptions = {
