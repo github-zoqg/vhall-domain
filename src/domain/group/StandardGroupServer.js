@@ -180,6 +180,10 @@ class StandardGroupServer extends BaseServer {
         case 'vrtc_connect_presentation_agree':
           this.$emit(this.EVENT_TYPE.VRTC_CONNECT_PRESENTATION_AGREE, msg)
           break;
+        // 演示者变更
+        case 'vrtc_presentation_screen_set':
+          this.msgdoForVrtcConnectPresentationSet(msg);
+          break;
         // 同意演示成功 ——> 开始演示
         case 'vrtc_connect_presentation_success':
           this.msgdoForVrtcConnectPresentationSuccess(msg);
@@ -583,8 +587,8 @@ class StandardGroupServer extends BaseServer {
     this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT, msg);
   }
 
-  // 同意邀请演示成功消息
-  async msgdoForVrtcConnectPresentationSuccess(msg) {
+  // 演示者变更
+  async msgdoForVrtcConnectPresentationSet(msg) {
     if (this.state.groupInitData.isInGroup) {
       // 如果在小组内
       await this.updateGroupInitData();
@@ -593,7 +597,10 @@ class StandardGroupServer extends BaseServer {
       await useRoomBaseServer().getInavToolStatus();
     }
     useDocServer()._setDocPermisson();
+  }
 
+  // 同意邀请演示成功消息
+  async msgdoForVrtcConnectPresentationSuccess(msg) {
     this.$emit(this.EVENT_TYPE.VRTC_CONNECT_PRESENTATION_SUCCESS, msg);
   }
 
