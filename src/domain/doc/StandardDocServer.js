@@ -148,14 +148,25 @@ export default class StandardDocServer extends AbstractDocServer {
       this.state.switchStatus = false;
     });
 
-    useMsgServer().$onMsg('ROOM_MSG', msg => {
+    useMsgServer().$onMsg('ROOM_MSG', async (msg) => {
       switch (msg.data.event_type || msg.data.type) {
         // 直播结束
         case 'live_over':
           for (const item of this.state.containerList) {
             // 删除所有容器
-            this.destroyContainer(item.cid);
+            await this.destroyContainer(item.cid);
           }
+          // 还原
+          this.state.currentCid = ''; //当前正在展示的容器id
+          this.state.docCid = ''; // 当前文档容器Id
+          this.state.boardCid = ''; // 当前白板容器Id
+          this.state.containerList = []; // 动态容器列表
+          this.state.pageTotal = 1; //总页数
+          this.state.pageNum = 1; // 当前页码
+          this.state.allComplete = false;
+          this.state.docLoadComplete = true; // 文档是否加载完成
+          this.state.thumbnailList = []; // 缩略图列表
+          this.state.switchStatus = false; // 观众是否可见  
           break;
       }
     })
@@ -373,7 +384,6 @@ export default class StandardDocServer extends AbstractDocServer {
       console.error('容器宽高错误', width, height);
       this.setDocLoadComplete();
     }
-    console.log('[doc] recover setDocLoadComplete false');
     this.setDocLoadComplete(false);
     for (const item of this.state.containerList) {
       const fileType = item.is_board === 1 ? 'document' : 'board';
@@ -398,16 +408,13 @@ export default class StandardDocServer extends AbstractDocServer {
         docId: item.docId,
         bindCidFun
       });
-      console.log('[doc] initDocumentOrBoardContainer:', item);
       if (fileType == 'document') {
         this.state.docCid = item.cid;
       } else if (fileType == 'board') {
         this.state.boardCid = item.cid;
       }
-      console.log('[doc] domain setRemoteData:', item);
       this.setRemoteData(item);
     }
-    console.log('[doc] recover activeItem');
     this.setDocLoadComplete(true);
     const activeItem = this.state.containerList.find(item => item.active === 1);
     if (activeItem) {
@@ -492,7 +499,7 @@ export default class StandardDocServer extends AbstractDocServer {
     }
     let noDispatch = true;
 
-    console.log('noDis:', !this.hasDocPermission())
+    console.log('[doc] noDis:', !this.hasDocPermission())
     let opt = {
       id: cid,
       elId: cid, // 创建时，该参数就是cid
@@ -506,6 +513,7 @@ export default class StandardDocServer extends AbstractDocServer {
       // 说明容器不在列表中，主动添加
       console.log('[doc] --------向列表中添加容器------');
       this.state.containerList.push({ cid, docId });
+
       if (typeof bindCidFun === 'function') {
         await bindCidFun(cid);
       }
@@ -589,6 +597,7 @@ export default class StandardDocServer extends AbstractDocServer {
    * 激活容器
    */
   activeContainer(cid) {
+    console.log('[doc] activeContainer cid:', cid);
     this.selectContainer(cid, !this.hasDocPermission());
     this.state.currentCid = cid;
     const type = cid.split('-')[0];
