@@ -128,6 +128,7 @@ class RoomBaseServer extends BaseServer {
           this.state.interactToolStatus.doc_permission = msg.data.room_join_id
           this.state.interactToolStatus.presentation_screen = msg.data.room_join_id
           this.$emit('VRTC_SPEAKER_SWITCH', msg);
+          break;
         // 踢出消息
         case 'room_kickout':
           console.log('踢出房间消息----domain----', msg);
