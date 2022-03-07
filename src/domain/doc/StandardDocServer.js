@@ -205,6 +205,7 @@ export default class StandardDocServer extends AbstractDocServer {
     });
     // 文档翻页事件
     this.on(VHDocSDK.Event.PAGE_CHANGE, data => {
+      if (useRoomBaseServer().state.watchInitData.webinar.type != 1) return;
       console.log('==============文档翻页================');
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
@@ -213,6 +214,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 观众可见按钮切换
     this.on(VHDocSDK.Event.SWITCH_CHANGE, status => {
+      if (useRoomBaseServer().state.watchInitData.webinar.type != 1) return;
       console.log('==[doc] [player]========控制文档开关=============', status);
       this.state.switchStatus = status === 'on';
       if (useRoomBaseServer().state.clientType != 'send') {
