@@ -182,17 +182,24 @@ class InteractiveServer extends BaseServer {
    */
   async _getInteractiveRole() {
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state
 
     // 如果是主持人、嘉宾、助理，设为 HOST
     if (watchInitData.join_info.role_name != 2) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
+
+    let speaker_list = interactToolStatus.speaker_list
+    if (groupInitData.isInGroup) {
+      speaker_list = groupInitData.speaker_list
+    }
+
     // 如果在麦上，设为 HOST
     if (
-      interactToolStatus.speaker_list &&
-      interactToolStatus.speaker_list.length &&
-      interactToolStatus.speaker_list.some(
+      speaker_list &&
+      speaker_list.length &&
+      speaker_list.some(
         item => item.account_id == watchInitData.join_info.third_party_user_id
       )
     ) {
@@ -204,7 +211,8 @@ class InteractiveServer extends BaseServer {
       return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
     const micServer = useMicServer()
-    // 如果是无延迟直播、不在麦、开启自动上麦
+    // 如果自动上麦 且 不是因为被下麦或者手动下麦去初始化互动
+    // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
     if (interactToolStatus.auto_speak == 1 && !micServer.state.isSpeakOffToInit) {
       // 调上麦接口判断当前人是否可以上麦
       const res = await micServer.userSpeakOn();
@@ -433,20 +441,6 @@ class InteractiveServer extends BaseServer {
   createLocalStream(options = {}) {
     return this.interactiveInstance
       .createStream(options)
-      .then(data => {
-        console.log('----创建本地流成功----', data);
-        // 如果创建的是桌面共享流
-        if (options.streamType === 3) {
-          this.state.screenStream.streamId = data.streamId;
-        } else {
-          this.state.localStream = {
-            streamId: data.streamId,
-            audioMuted: options.mute?.audio || false,
-            videoMuted: options.mute?.video || false
-          };
-        }
-        return data;
-      })
       .catch(err => {
         if (err?.data?.error?.msg?.message === 'Permission denied') {
           return err;
@@ -523,7 +517,14 @@ class InteractiveServer extends BaseServer {
 
     const params = merge.recursive({}, defaultOptions, options);
 
-    return this.createLocalStream(params);
+    return this.createLocalStream(params).then(data => {
+      this.state.localStream = {
+        streamId: data.streamId,
+        audioMuted: options.mute?.audio || false,
+        videoMuted: options.mute?.video || false
+      };
+      return data
+    });
   }
 
   /**
@@ -567,16 +568,24 @@ class InteractiveServer extends BaseServer {
    * 获取分辨率
    */
   getVideoProfile() {
-    const { interactToolStatus } = useRoomBaseServer().state;
+    console.log('---获取分辨率---')
+    const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
+
+    const isHost = interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
 
     const remoteStream = this.getRoomStreams();
     if (!remoteStream || !remoteStream.length) {
-      return false;
+      if (isHost) {
+        profile = this.formatDefinition('720');
+      } else {
+        profile = this.formatDefinition('360');
+      }
+      console.log('---分辨率计算结果---', profile)
+      return profile
     }
     const onlineLength = remoteStream.filter(item => item.streamType == 2).length;
     let profile;
-    const isHost =
-      interactToolStatus.main_screen == this.accountId || this.docPermissionId == this.accountId;
+
     if (onlineLength >= 0 && onlineLength <= 6) {
       if (isHost) {
         profile = this.formatDefinition('720');
@@ -596,13 +605,17 @@ class InteractiveServer extends BaseServer {
         profile = this.formatDefinition('180');
       }
     }
+    console.log('---分辨率计算结果---', profile)
     return profile;
   }
 
   // 创建桌面共享流
   createLocaldesktopStream(options = {}, addConfig = {}) {
     const params = merge.recursive({ streamType: 3 }, options, addConfig);
-    return this.createLocalStream(params);
+    return this.createLocalStream(params).then(data => {
+      this.state.screenStream.streamId = data.streamId
+      return data
+    });
   }
   // 创建本地音频流
   createLocalAudioStream(options = {}, addConfig = {}) {
@@ -611,13 +624,32 @@ class InteractiveServer extends BaseServer {
 
   // 创建图片推流
   createLocalPhotoStream(options = {}, addConfig = {}) {
+    const { watchInitData } = useRoomBaseServer().state;
+
+    const { groupInitData } = useGroupServer().state
+
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
+
+    const roleName = isGroupLeader ? 20 : watchInitData.join_info.role_name
     let defaultOptions = {
       video: false,
       audio: true,
-      videoContentHint: 'detail'
+      videoContentHint: 'detail',
+      attributes: JSON.stringify({
+        roleName: roleName,
+        accountId: watchInitData.join_info.third_party_user_id,
+        nickname: watchInitData.join_info.nickname
+      }) //选填，自定义信息，支持字符串类型
     };
     const params = merge.recursive({}, defaultOptions, options, addConfig);
-    return this.createLocalStream(params);
+    return this.createLocalStream(params).then(data => {
+      this.state.localStream = {
+        streamId: data.streamId,
+        audioMuted: options.mute?.audio || false,
+        videoMuted: options.mute?.video || false
+      };
+      return data
+    });
   }
 
   // Wap 创建摄像头视频流
@@ -654,7 +686,14 @@ class InteractiveServer extends BaseServer {
       };
     }
     const params = merge.recursive({}, defaultOptions, options, addConfig);
-    return await this.createLocalStream(params);
+    return await this.createLocalStream(params).then(data => {
+      this.state.localStream = {
+        streamId: data.streamId,
+        audioMuted: options.mute?.audio || false,
+        videoMuted: options.mute?.video || false
+      };
+      return data
+    });;
   }
 
   // 销毁本地流
@@ -699,7 +738,9 @@ class InteractiveServer extends BaseServer {
       })
       .then(data => {
         return data;
-      });
+      }).catch(error => {
+        console.error('publishStream', error)
+      })
   }
 
   /**
@@ -713,7 +754,10 @@ class InteractiveServer extends BaseServer {
         streamId: options.streamId || this.state.localStream.streamId
       })
       .then(res => {
-        this._clearLocalStream();
+        // 如果是销毁本地上麦流，清空上麦流参数
+        if (!options.streamId || options.streamId == this.state.localStream.streamId) {
+          this._clearLocalStream();
+        }
         return res;
       });
   }

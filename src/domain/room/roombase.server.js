@@ -111,8 +111,13 @@ class RoomBaseServer extends BaseServer {
 
   addListeners() {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
+
       if (msg.data.type == 'live_start') {
         this.state.watchInitData.webinar.type = 1;
+        // 消息中未提供开播时间字段 start_time
+        this.state.watchInitData.switch.switch_id = msg.data.switch_id;
+        this.state.watchInitData.switch.switch_type = msg.data.switch_type;
+
       } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
         this.state.watchInitData.webinar.type = 3;
       }
@@ -123,6 +128,12 @@ class RoomBaseServer extends BaseServer {
           this.state.interactToolStatus.doc_permission = msg.data.room_join_id
           this.state.interactToolStatus.presentation_screen = msg.data.room_join_id
           this.$emit('VRTC_SPEAKER_SWITCH', msg);
+        // 踢出消息
+        case 'room_kickout':
+          console.log('踢出房间消息----domain----', msg);
+          if (msg.data.target_id == this.state.watchInitData.join_info.third_party_user_id) {
+            this.$emit('ROOM_KICKOUT')
+          }
       }
     });
     // 单点登录逻辑
