@@ -260,6 +260,7 @@ class MsgServer extends BaseServer {
       device_type: useMediaCheckServer().state.deviceInfo.device_type, // 设备类型 1手机端 2PC 0未检测
       device_status: useMediaCheckServer().state.deviceInfo.device_status, // 设备状态  0未检测 1可以上麦 2不可以上麦
       audience: roomBaseServerState.clientType !== 'send',
+      kick_id: sessionStorage.getItem('kickId'),
       kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
       privacies: watchInitData.join_info.privacies || '',
       groupInitData//只代表刚进入直播时小组状态，不代表实时小组状态

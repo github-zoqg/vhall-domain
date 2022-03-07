@@ -17,6 +17,7 @@ class SubscribeServer extends BaseServer {
       }
 
       if (msg.data.type == 'pay_success') {
+        console.log('woshi我是预约页')
         this.$emit('pay_success', msg.data);
       }
 

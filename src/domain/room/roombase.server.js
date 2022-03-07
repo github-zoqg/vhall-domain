@@ -92,6 +92,10 @@ class RoomBaseServer extends BaseServer {
           // 设置发起端权限
           if (['send', 'record', 'clientEmbed'].includes(options.clientType)) {
             this.state.configList = configMap(res.data.permission)
+          } else {
+            // 用来判断是否是单点登录
+            sessionStorage.setItem('kickId', res.data.sso.kick_id);
+            sessionStorage.setItem('ssoEnabled', res.data.sso.enabled);
           }
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
@@ -121,6 +125,25 @@ class RoomBaseServer extends BaseServer {
           this.$emit('VRTC_SPEAKER_SWITCH', msg);
       }
     });
+    // 单点登录逻辑
+    useMsgServer().$onMsg('JOIN', msg => {
+      if (sessionStorage.getItem('ssoEnabled') == 1) {
+        const kickId = sessionStorage.getItem('kickId');
+        const kickMark = `${sessionStorage.getItem('kickMark')}${this.state.watchInitData.webinar.id
+          }`;
+        if (kickId) {
+          if (
+            kickId == msg.context.kick_id &&
+            kickMark != msg.context.kick_mark
+          ) {
+            this.$emit('ROOM_SIGNLE_LOGIN');
+            setTimeout(() => {
+              useMsgServer().destroy()
+            }, 5000)
+          }
+        }
+      }
+    })
   }
 
   // 设置是否是嵌入
@@ -195,8 +218,9 @@ class RoomBaseServer extends BaseServer {
     return meeting.getLangList({ webinar_id: this.state.watchInitData.webinar.id }).then(res => {
       if (res.code == 200) {
         this.state.languages.langList = res.data.list;
+        let defaultLanguage = sessionStorage.getItem('lang') ? parseInt(sessionStorage.getItem('lang')) : res.data.default_language
         this.state.languages.curLang = res.data.list.find(item => {
-          return item.language_type == res.data.default_language;
+          return item.language_type == defaultLanguage;
         });
       }
     });

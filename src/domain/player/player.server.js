@@ -270,7 +270,6 @@ class PlayerServer extends BaseServer {
       accountId: watchInitData.join_info.third_party_user_id, // 第三方用户ID，必填
       token: watchInitData.interact.paas_access_token || '', // access_token，必填
       poster: '',
-      videoNode: 'vmp-player',
       type: this.state.type,
       autoplay: false,
       forceMSE: false,

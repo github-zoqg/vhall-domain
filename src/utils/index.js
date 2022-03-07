@@ -39,6 +39,17 @@ function isChrome88() {
 }
 
 function randomNumGenerator() {
+  let kickMark = '';
+  if (!sessionStorage.getItem('kickMark')) {
+    kickMark = randomNumKickmark()
+    sessionStorage.setItem('kickMark', kickMark);
+  } else {
+    kickMark = sessionStorage.getItem('kickMark');
+  }
+  return kickMark;
+}
+
+function randomNumKickmark() {
   return 'xxxxxxyxxx'.replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0;
     const v = c === 'x' ? r : (r & 0x3) | 0x8;
