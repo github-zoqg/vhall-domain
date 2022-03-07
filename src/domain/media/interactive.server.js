@@ -185,11 +185,6 @@ class InteractiveServer extends BaseServer {
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state
 
-    // 如果是主持人、嘉宾、助理，设为 HOST
-    if (watchInitData.join_info.role_name != 2) {
-      return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
-    }
-
 
     let speaker_list = interactToolStatus.speaker_list
     if (groupInitData.isInGroup) {
@@ -222,7 +217,8 @@ class InteractiveServer extends BaseServer {
       autoSpeak =
         !chatServer.state.banned &&
         !chatServer.state.allBanned &&
-        !micServer.state.isSpeakOffToInit
+        !micServer.state.isSpeakOffToInit &&
+        watchInitData.join_info.role_name != 3
     } else {
       // 不自动上麦时，如果为组长，需要自动上麦
       autoSpeak =
@@ -237,6 +233,11 @@ class InteractiveServer extends BaseServer {
       if (res.code == 200) return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     } else {
       micServer.setSpeakOffToInit(false)
+    }
+
+    // 如果是主持人、嘉宾、助理，设为 HOST
+    if (watchInitData.join_info.role_name != 2) {
+      return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
     // 如果是无延迟直播、不在麦、未开启自动上麦，设为 AUDIENCE
@@ -272,6 +273,9 @@ class InteractiveServer extends BaseServer {
         this.interactiveInstance = null;
         this.state.remoteStreams = [];
         this._clearLocalStream()
+      }).then(() => {
+        console.log('互动sdk销毁成功');
+
       })
       .catch(err => {
         console.log('互动sdk销毁失败', err);
