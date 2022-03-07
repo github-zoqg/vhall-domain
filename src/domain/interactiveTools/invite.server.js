@@ -20,6 +20,11 @@ class InviteServer {
   wechatShare(data = {}) {
     return wechatApi.wechatShare(data);
   }
+
+  bindInvite(data = {}, options = {}) {
+    return inviteApi.bindInvite(data, options)
+  }
+
 }
 
 export default function useInviteServer() {

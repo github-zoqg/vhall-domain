@@ -26,7 +26,8 @@ class QaServer extends BaseServer {
     QA_OPEN: 'question_answer_open',
     QA_CLOSE: 'question_answer_close',
     QA_CREATE: 'question_answer_create',
-    QA_COMMIT: 'question_answer_commit'
+    QA_COMMIT: 'question_answer_commit',
+    QA_BACKOUT: 'question_answer_backout'
   };
   //setSate
   setState(key, value) {
@@ -69,6 +70,15 @@ class QaServer extends BaseServer {
           }
           this.$emit(this.Events.QA_COMMIT, msg);
           break;
+        case this.Events.QA_BACKOUT:
+          const backIndex = this.state.qaList.findIndex((item) => {
+
+            return item.answer && item.answer.id == msg.data.question_answer_id;
+          })
+          this.state.qaList.splice(backIndex, 1)
+          this.$emit(this.Events.QA_BACKOUT, msg);
+          break;
+
       }
     });
   }
