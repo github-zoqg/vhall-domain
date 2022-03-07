@@ -117,7 +117,8 @@ class RoomBaseServer extends BaseServer {
         // 切换主讲人
         case 'vrtc_speaker_switch':
           this.state.interactToolStatus.doc_permission = msg.data.room_join_id
-          this.$emit('vrtc_speaker_switch', msg.data.room_join_id)
+          this.state.interactToolStatus.presentation_screen = msg.data.room_join_id
+          this.$emit('VRTC_SPEAKER_SWITCH', msg);
       }
     });
   }

@@ -149,13 +149,20 @@ export default class StandardDocServer extends AbstractDocServer {
     });
 
     useMsgServer().$onMsg('ROOM_MSG', msg => {
-      // 直播结束
-      if (msg.data.type == 'live_over') {
-        for (const item of this.state.containerList) {
-          // 删除所有容器
-          this.destroyContainer(item.cid);
-        }
+      switch (msg.data.event_type || msg.data.type) {
+        // 直播结束
+        case 'live_over':
+          for (const item of this.state.containerList) {
+            // 删除所有容器
+            this.destroyContainer(item.cid);
+          }
+          break;
       }
+    })
+
+    // 设置主讲人 
+    useRoomBaseServer().$on('VRTC_SPEAKER_SWITCH', msg => {
+      // console.log('[doc] VRTC_SPEAKER_SWITCH', msg);
     })
 
     // 所有文档加载完成事件

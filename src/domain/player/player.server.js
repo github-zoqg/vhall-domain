@@ -1,7 +1,9 @@
 import VhallPaasSDK from '@/sdk/index.js';
 import BaseServer from '@/domain/common/base.server';
+import useRoomBaseServer from '../room/roombase.server';
 import useMsgServer from '@/domain/common/msg.server.js';
 import { player } from '../../request/index';
+import { merge } from '../../utils';
 class PlayerServer extends BaseServer {
   constructor(options) {
     // // 创建单例之外的额外的实例
@@ -33,7 +35,9 @@ class PlayerServer extends BaseServer {
     return this;
   }
   //初始化播放器实例
-  init(options) {
+  init(customOptions = {}) {
+    const defaultOptions = this._getDefaultOptions();
+    const options = merge.recursive({}, defaultOptions, customOptions);
     return new Promise(resolve => {
       VhallPaasSDK.onSuccess(contollers => {
         const { VhallPlayer } = contollers;
@@ -43,6 +47,8 @@ class PlayerServer extends BaseServer {
           event => {
             this.playerInstance = event.vhallplayer;
             this.state.markPoints = event.markPoints;
+            this.openControls(false);
+            this.openUI(false);
             this._addPlayerListeners();
             resolve(event);
           },
@@ -104,7 +110,7 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.setVolume(val);
   }
 
-  getDuration(onFail = () => {}) {
+  getDuration(onFail = () => { }) {
     return this.playerInstance.getDuration(onFail);
   }
 
@@ -253,6 +259,52 @@ class PlayerServer extends BaseServer {
     this.playerInstance.on(VhallPlayer.LAG_RECOVER, e => {
       this.$emit(VhallPlayer.LAG_RECOVER, e);
     });
+  }
+
+  //获取默认初始化参数
+  _getDefaultOptions() {
+    const { watchInitData, configList } = useRoomBaseServer().state;
+    // 初始化参数
+    const defaultOptions = {
+      appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
+      accountId: watchInitData.join_info.third_party_user_id, // 第三方用户ID，必填
+      token: watchInitData.interact.paas_access_token || '', // access_token，必填
+      poster: '',
+      videoNode: 'vmp-player',
+      type: this.state.type,
+      autoplay: false,
+      forceMSE: false,
+      subtitleOption: {
+        enable: true
+      },
+      // 强制卡顿切线
+      thornOption: {
+        enable: true
+      },
+      barrageSetting: {
+        positionRange: [0, 1],
+        speed: 15000,
+        style: {
+          fontSize: 16
+        }
+      },
+      peer5Option: {
+        open: configList['ui.browser_peer5'] == '1',
+        customerId: 'ds6mupmtq5gnwa4qmtqf',
+        fallback: true
+      },
+      marqueeOption: {
+        text: '',
+        enable: false
+      },
+      watermarkOption: {
+        enable: false
+      },
+      liveOption: {
+        defaultDefinition: ''
+      }
+    };
+    return defaultOptions;
   }
 }
 

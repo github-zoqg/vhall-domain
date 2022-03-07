@@ -71,16 +71,21 @@ class InteractiveServer extends BaseServer {
           // 互动实例
           this.interactiveInstance = event.vhallrtc;
           this._addListeners();
-          // 房间当前远端流列表
-          this.state.remoteStreams = event.vhallrtc.getRoomStreams().filter(stream => {
+          this.state.remoteStreams = event.currentStreams.filter(stream => {
             try {
               if (stream.attributes && typeof stream.attributes == 'string') {
                 stream.attributes = JSON.parse(stream.attributes);
               }
-            } catch (error) { }
-            return stream.streamType === 2 && stream.streamSource == 'remote';
+            } catch (error) {
+            }
+            // 不直接使用vhallrtc.getRoomStreams()是因为有时候初始化完(非刷新页面下)此值取值有问题
+            let _muteObj = event.vhallrtc.getRoomStreams().find(s => s.streamId == stream.streamId)
+            if (_muteObj) {
+              stream.audioMuted = _muteObj.audioMuted
+              stream.videoMuted = _muteObj.videoMuted
+            }
+            return stream.streamType === 2;
           });
-
 
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
           resolve(event);
@@ -428,20 +433,6 @@ class InteractiveServer extends BaseServer {
   createLocalStream(options = {}) {
     return this.interactiveInstance
       .createStream(options)
-      .then(data => {
-        console.log('----创建本地流成功----', data);
-        // 如果创建的是桌面共享流
-        if (options.streamType === 3) {
-          this.state.screenStream.streamId = data.streamId;
-        } else {
-          this.state.localStream = {
-            streamId: data.streamId,
-            audioMuted: options.mute?.audio || false,
-            videoMuted: options.mute?.video || false
-          };
-        }
-        return data;
-      })
       .catch(err => {
         if (err?.data?.error?.msg?.message === 'Permission denied') {
           return err;
@@ -518,7 +509,14 @@ class InteractiveServer extends BaseServer {
 
     const params = merge.recursive({}, defaultOptions, options);
 
-    return this.createLocalStream(params);
+    return this.createLocalStream(params).then(data => {
+      this.state.localStream = {
+        streamId: data.streamId,
+        audioMuted: options.mute?.audio || false,
+        videoMuted: options.mute?.video || false
+      };
+      return data
+    });
   }
 
   /**
@@ -597,7 +595,10 @@ class InteractiveServer extends BaseServer {
   // 创建桌面共享流
   createLocaldesktopStream(options = {}, addConfig = {}) {
     const params = merge.recursive({ streamType: 3 }, options, addConfig);
-    return this.createLocalStream(params);
+    return this.createLocalStream(params).then(data => {
+      this.state.screenStream.streamId = data.streamId
+      return data
+    });
   }
   // 创建本地音频流
   createLocalAudioStream(options = {}, addConfig = {}) {
@@ -612,7 +613,14 @@ class InteractiveServer extends BaseServer {
       videoContentHint: 'detail'
     };
     const params = merge.recursive({}, defaultOptions, options, addConfig);
-    return this.createLocalStream(params);
+    return this.createLocalStream(params).then(data => {
+      this.state.localStream = {
+        streamId: data.streamId,
+        audioMuted: options.mute?.audio || false,
+        videoMuted: options.mute?.video || false
+      };
+      return data
+    });
   }
 
   // Wap 创建摄像头视频流
@@ -649,7 +657,14 @@ class InteractiveServer extends BaseServer {
       };
     }
     const params = merge.recursive({}, defaultOptions, options, addConfig);
-    return await this.createLocalStream(params);
+    return await this.createLocalStream(params).then(data => {
+      this.state.localStream = {
+        streamId: data.streamId,
+        audioMuted: options.mute?.audio || false,
+        videoMuted: options.mute?.video || false
+      };
+      return data
+    });;
   }
 
   // 销毁本地流
@@ -708,7 +723,10 @@ class InteractiveServer extends BaseServer {
         streamId: options.streamId || this.state.localStream.streamId
       })
       .then(res => {
-        this._clearLocalStream();
+        // 如果是销毁本地上麦流，清空上麦流参数
+        if (!options.streamId || options.streamId == this.state.localStream.streamId) {
+          this._clearLocalStream();
+        }
         return res;
       });
   }
