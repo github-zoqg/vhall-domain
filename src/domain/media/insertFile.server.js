@@ -323,31 +323,22 @@ class InsertFileServer extends BaseServer {
   // 推插播流
   publishInsertStream(stream) {
     const interactiveServer = useInteractiveServer();
-    return new Promise((resolve, reject) => {
-      interactiveServer
-        .publishStream({ streamId: stream.streamId })
-        .then(res => {
-          this.state.insertStreamInfo.streamId = res.streamId;
-          resolve(res);
-        })
-        .catch(reject);
-    });
+    return interactiveServer
+      .publishStream({ streamId: stream.streamId })
+      .then(res => {
+        this.state.insertStreamInfo.streamId = res.streamId;
+        return res
+      })
   }
 
   // 停止推流
   stopPublishInsertStream(streamId) {
-    return new Promise((resolve, reject) => {
-      const interactiveServer = useInteractiveServer();
-      console.log('stopPublishInsertStream', streamId);
-      interactiveServer
-        .unpublishStream({
-          streamId: streamId || this.state.insertStreamInfo.streamId
-        })
-        .then(res => {
-          resolve(res);
-        })
-        .catch(reject);
-    });
+    const interactiveServer = useInteractiveServer();
+    console.log('stopPublishInsertStream', streamId);
+    return interactiveServer
+      .unpublishStream({
+        streamId: streamId || this.state.insertStreamInfo.streamId
+      })
   }
 
   // 清空插播状态
