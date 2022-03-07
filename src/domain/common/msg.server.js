@@ -37,11 +37,20 @@ class MsgServer extends BaseServer {
   };
   listenEvents() {
     this.$onMsg('ROOM_MSG', msg => {
-      const { role_name } = useRoomBaseServer().state.watchInitData.join_info
+      const { join_info } = useRoomBaseServer().state.watchInitData
       // 结束直播或在小组中结束直播，需要销毁socket，并且只有观众会销毁
-      if (role_name == 2 && (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1))) {
+      if (join_info.role_name == 2 && (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1))) {
         this.destroy();
         this.destroyGroupMsg();
+      }
+
+      switch (msg.data.type) {
+        // 踢出房间消息，销毁socket
+        case 'room_kickout':
+          if (msg.data.target_id == join_info.third_party_user_id) {
+            this.destroy();
+            this.destroyGroupMsg();
+          }
       }
     });
   }
