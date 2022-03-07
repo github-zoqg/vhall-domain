@@ -182,17 +182,24 @@ class InteractiveServer extends BaseServer {
    */
   async _getInteractiveRole() {
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state
 
     // 如果是主持人、嘉宾、助理，设为 HOST
     if (watchInitData.join_info.role_name != 2) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
+
+    let speaker_list = interactToolStatus.speaker_list
+    if (groupInitData.isInGroup) {
+      speaker_list = groupInitData.speaker_list
+    }
+
     // 如果在麦上，设为 HOST
     if (
-      interactToolStatus.speaker_list &&
-      interactToolStatus.speaker_list.length &&
-      interactToolStatus.speaker_list.some(
+      speaker_list &&
+      speaker_list.length &&
+      speaker_list.some(
         item => item.account_id == watchInitData.join_info.third_party_user_id
       )
     ) {
@@ -204,7 +211,8 @@ class InteractiveServer extends BaseServer {
       return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
     const micServer = useMicServer()
-    // 如果是无延迟直播、不在麦、开启自动上麦
+    // 如果自动上麦 且 不是因为被下麦或者手动下麦去初始化互动
+    // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
     if (interactToolStatus.auto_speak == 1 && !micServer.state.isSpeakOffToInit) {
       // 调上麦接口判断当前人是否可以上麦
       const res = await micServer.userSpeakOn();
@@ -730,7 +738,9 @@ class InteractiveServer extends BaseServer {
       })
       .then(data => {
         return data;
-      });
+      }).catch(error => {
+        console.error('publishStream', error)
+      })
   }
 
   /**
