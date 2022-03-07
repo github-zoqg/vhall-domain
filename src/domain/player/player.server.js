@@ -39,25 +39,22 @@ class PlayerServer extends BaseServer {
     const defaultOptions = this._getDefaultOptions();
     const options = merge.recursive({}, defaultOptions, customOptions);
     return new Promise(resolve => {
-      VhallPaasSDK.onSuccess(contollers => {
-        const { VhallPlayer } = contollers;
-        VhallPlayer.createInstance(
-          options,
-          //创建播放器成功回调
-          event => {
-            this.playerInstance = event.vhallplayer;
-            this.state.markPoints = event.markPoints;
-            this.openControls(false);
-            this.openUI(false);
-            this._addPlayerListeners();
-            resolve(event);
-          },
-          //创建播放器失败成功回调
-          e => {
-            throw new Error(e.message);
-          }
-        );
-      });
+      VhallPlayer.createInstance(
+        options,
+        //创建播放器成功回调
+        event => {
+          this.playerInstance = event.vhallplayer;
+          this.state.markPoints = event.markPoints;
+          this.openControls(false);
+          this.openUI(false);
+          this._addPlayerListeners();
+          resolve(event);
+        },
+        //创建播放器失败成功回调
+        e => {
+          throw new Error(e.message);
+        }
+      );
     });
   }
 

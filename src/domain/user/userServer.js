@@ -338,6 +338,10 @@ class UserServer {
     return userApi.loginOut(data);
   }
 
+  // 角色退出（嘉宾、助理）
+  loginRoleOut(data) {
+    return userApi.loginRoleOut(data);
+  }
   // 替换头像
   changeAvatarSend(data) {
     return userApi.changeAvatarSend(data);
