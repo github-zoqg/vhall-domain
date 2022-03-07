@@ -560,16 +560,24 @@ class InteractiveServer extends BaseServer {
    * 获取分辨率
    */
   getVideoProfile() {
-    const { interactToolStatus } = useRoomBaseServer().state;
+    console.log('---获取分辨率---')
+    const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
+
+    const isHost = interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
 
     const remoteStream = this.getRoomStreams();
     if (!remoteStream || !remoteStream.length) {
-      return false;
+      if (isHost) {
+        profile = this.formatDefinition('720');
+      } else {
+        profile = this.formatDefinition('360');
+      }
+      console.log('---分辨率计算结果---', profile)
+      return profile
     }
     const onlineLength = remoteStream.filter(item => item.streamType == 2).length;
     let profile;
-    const isHost =
-      interactToolStatus.main_screen == this.accountId || this.docPermissionId == this.accountId;
+
     if (onlineLength >= 0 && onlineLength <= 6) {
       if (isHost) {
         profile = this.formatDefinition('720');
@@ -589,6 +597,7 @@ class InteractiveServer extends BaseServer {
         profile = this.formatDefinition('180');
       }
     }
+    console.log('---分辨率计算结果---', profile)
     return profile;
   }
 
