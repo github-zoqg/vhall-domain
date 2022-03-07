@@ -16,11 +16,6 @@ class KeyLoginServer {
     setRequestHeaders(headers);
   }
 
-  //获取活动信息
-  getWebinarInfo(params = {}) {
-    return meeting.getWebinarInfo(params);
-  }
-
   //获取配置信息
   getConfigList(params = {}) {
     return meeting.getConfigList(params);

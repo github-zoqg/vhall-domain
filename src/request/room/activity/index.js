@@ -6,8 +6,9 @@ import env, { meetingApiList, roomApiList } from '@/request/env';
  * 查询活动基础信息
  * */
 function getActivityBasicInfo(params = {}) {
+  const url = roomApiList['getActivityBasicInfo']['v3'];
   return request({
-    url: '/v4/room/webinar/info',
+    url: url,
     method: 'POST',
     data: params
   });
