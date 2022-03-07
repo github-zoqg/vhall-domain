@@ -38,8 +38,19 @@ const wechatShare = (data = {}) => {
   });
 };
 
+const bindInvite = (data = {}) => {
+  const v3 = '/v3/interacts/invite-card/create-invite-othor-relation'
+
+  return request({
+    url,
+    method: 'POST',
+    data
+  })
+}
+
 export default {
   createInvite,
   createInviteItem,
-  wechatShare
+  wechatShare,
+  bindInvite
 };
