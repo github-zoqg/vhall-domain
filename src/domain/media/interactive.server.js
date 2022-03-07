@@ -9,6 +9,7 @@ import useMicServer from './mic.server';
 import interactive from '@/request/interactive';
 import useMediaSettingServer from './mediaSetting.server';
 import useDesktopShareServer from './desktopShare.server';
+import useChatServer from '../chat/chat.server'
 class InteractiveServer extends BaseServer {
   constructor() {
     super();
@@ -211,9 +212,25 @@ class InteractiveServer extends BaseServer {
       return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
     const micServer = useMicServer()
-    // 如果自动上麦 且 不是因为被下麦或者手动下麦去初始化互动
+    const chatServer = useChatServer()
+
+    // 自动上麦 + 未开启禁言 + 未开启全体禁言 + 不是因为被下麦或者手动下麦去初始化互动
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
-    if (interactToolStatus.auto_speak == 1 && !micServer.state.isSpeakOffToInit) {
+
+    let autoSpeak = null
+    if (interactToolStatus.auto_speak == 1) {
+      autoSpeak =
+        !chatServer.state.banned &&
+        !chatServer.state.allBanned &&
+        !micServer.state.isSpeakOffToInit
+    } else {
+      // 不自动上麦时，如果为组长，需要自动上麦
+      autoSpeak =
+        groupInitData.isInGroup && groupInitData.doc_permission == watchInitData.join_info.third_party_user_id
+    }
+
+
+    if (autoSpeak) {
       // 调上麦接口判断当前人是否可以上麦
       const res = await micServer.userSpeakOn();
       // 如果上麦成功，设为 HOST
