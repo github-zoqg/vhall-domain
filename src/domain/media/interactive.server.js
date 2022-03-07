@@ -616,10 +616,22 @@ class InteractiveServer extends BaseServer {
 
   // 创建图片推流
   createLocalPhotoStream(options = {}, addConfig = {}) {
+    const { watchInitData } = useRoomBaseServer().state;
+
+    const { groupInitData } = useGroupServer().state
+
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
+
+    const roleName = isGroupLeader ? 20 : watchInitData.join_info.role_name
     let defaultOptions = {
       video: false,
       audio: true,
-      videoContentHint: 'detail'
+      videoContentHint: 'detail',
+      attributes: JSON.stringify({
+        roleName: roleName,
+        accountId: watchInitData.join_info.third_party_user_id,
+        nickname: watchInitData.join_info.nickname
+      }) //选填，自定义信息，支持字符串类型
     };
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return this.createLocalStream(params).then(data => {
