@@ -345,7 +345,8 @@ class StandardGroupServer extends BaseServer {
 
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
-      this._setDocPermisson();
+
+      useDocServer()._setDocPermisson();
     }
 
     this.$emit(this.EVENT_TYPE.GROUP_SWITCH_START, msg);
@@ -398,7 +399,9 @@ class StandardGroupServer extends BaseServer {
 
     // 处理文档channel切换逻辑
     useDocServer().groupReInitDocProcess();
-    this._setDocPermisson();
+
+    useDocServer()._setDocPermisson();
+
     this.$emit(this.EVENT_TYPE.GROUP_SWITCH_END, msg);
   }
 
@@ -530,7 +533,7 @@ class StandardGroupServer extends BaseServer {
       // 在一个组里面，需要更新小组数据
       await this.updateGroupInitData();
 
-      this._setDocPermisson();
+      useDocServer()._setDocPermisson();
     }
     if (useRoomBaseServer().state.watchInitData.join_info.role_name != 2) {
       this.state.groupInitData.doc_permission = msg.data.account_id;
@@ -589,7 +592,8 @@ class StandardGroupServer extends BaseServer {
       // 在直播间内
       await useRoomBaseServer().getInavToolStatus();
     }
-    this._setDocPermisson();
+    useDocServer()._setDocPermisson();
+
     this.$emit(this.EVENT_TYPE.VRTC_CONNECT_PRESENTATION_SUCCESS, msg);
   }
 
@@ -602,27 +606,8 @@ class StandardGroupServer extends BaseServer {
       // 在直播间内
       await useRoomBaseServer().getInavToolStatus();
     }
-    this._setDocPermisson();
+    useDocServer()._setDocPermisson();
     this.$emit(this.EVENT_TYPE.VRTC_DISCONNECT_PRESENTATION_SUCCESS, msg);
-  }
-
-  // 设置文档操作权限
-  _setDocPermisson() {
-    const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
-    if (
-      (this.state.groupInitData.isInGroup &&
-        this.state.groupInitData.presentation_screen ==
-        watchInitData.join_info.third_party_user_id) ||
-      (!this.state.groupInitData.isInGroup &&
-        interactToolStatus.presentation_screen == watchInitData.join_info.third_party_user_id)
-    ) {
-      // 在小组内有要是权限，或者在主直播间有演示权限
-      // 设置文档操作权限为主人
-      useDocServer().setRole(VHDocSDK.RoleType.HOST);
-    } else {
-      // 设置文档操作权限为观众
-      useDocServer().setRole(VHDocSDK.RoleType.SPECTATOR);
-    }
   }
 
   /**
