@@ -71,16 +71,21 @@ class InteractiveServer extends BaseServer {
           // 互动实例
           this.interactiveInstance = event.vhallrtc;
           this._addListeners();
-          // 房间当前远端流列表
-          this.state.remoteStreams = event.vhallrtc.getRoomStreams().filter(stream => {
+          this.state.remoteStreams = event.currentStreams.filter(stream => {
             try {
               if (stream.attributes && typeof stream.attributes == 'string') {
                 stream.attributes = JSON.parse(stream.attributes);
               }
-            } catch (error) { }
-            return stream.streamType === 2 && stream.streamSource == 'remote';
+            } catch (error) {
+            }
+            // 不直接使用vhallrtc.getRoomStreams()是因为有时候初始化完(非刷新页面下)此值取值有问题
+            let _muteObj = event.vhallrtc.getRoomStreams().find(s => s.streamId == stream.streamId)
+            if (_muteObj) {
+              stream.audioMuted = _muteObj.audioMuted
+              stream.videoMuted = _muteObj.videoMuted
+            }
+            return stream.streamType === 2;
           });
-
 
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
           resolve(event);
