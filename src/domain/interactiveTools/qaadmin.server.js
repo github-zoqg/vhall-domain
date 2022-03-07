@@ -152,11 +152,15 @@ class QaAdminServer extends BaseServer {
             this.state.List[0].count = 0;
           }
           this.state.List[3].count++;
-          let questionIndex = QaServer._findMsgItemByList(this.state.awaitList, params.question_id);
+          let questionIndex = QaAdminServer._findMsgItemByList(this.state.awaitList, params.question_id);
           this.state.awaitList.splice(questionIndex, 1);
         } else if (params.type == 2) {
-          this.state.List[0].count--;
-          let questionIndex = QaServer._findMsgItemByList(this.state.awaitList, params.question_id);
+          if (this.state.List[0].count == 0) {
+            this.state.List[0].count = 0;
+          } else {
+            this.state.List[0].count--;
+          }
+          let questionIndex = QaAdminServer._findMsgItemByList(this.state.awaitList, params.question_id);
           this.state.awaitList.splice(questionIndex, 1);
           this.state.List[1].count++;
         } else if (params.type == 3) {
