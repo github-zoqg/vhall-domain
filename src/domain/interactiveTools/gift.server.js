@@ -39,9 +39,9 @@ class giftsServer extends BaseServer {
 
       const { type = '' } = temp.data || {};
       switch (type) {
-        case 'timer_start': // 计时器开始
-          this.$emit('timer_start', temp);
-          break;
+        // case 'timer_start': // 计时器开始
+        //   this.$emit('timer_start', temp);
+        //   break;
         case 'gift_send_success': //接收送礼物消息
           this.$emit('gift_send_success', temp);
           break;
