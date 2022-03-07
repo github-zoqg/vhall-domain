@@ -182,17 +182,24 @@ class InteractiveServer extends BaseServer {
    */
   async _getInteractiveRole() {
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state
 
     // 如果是主持人、嘉宾、助理，设为 HOST
     if (watchInitData.join_info.role_name != 2) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
+
+    let speaker_list = interactToolStatus.speaker_list
+    if (groupInitData.isInGroup) {
+      speaker_list = groupInitData.speaker_list
+    }
+
     // 如果在麦上，设为 HOST
     if (
-      interactToolStatus.speaker_list &&
-      interactToolStatus.speaker_list.length &&
-      interactToolStatus.speaker_list.some(
+      speaker_list &&
+      speaker_list.length &&
+      speaker_list.some(
         item => item.account_id == watchInitData.join_info.third_party_user_id
       )
     ) {
@@ -730,7 +737,9 @@ class InteractiveServer extends BaseServer {
       })
       .then(data => {
         return data;
-      });
+      }).catch(error => {
+        console.error('publishStream', error)
+      })
   }
 
   /**
