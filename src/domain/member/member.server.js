@@ -40,7 +40,10 @@ class MemberServer extends BaseServer {
   listenEvents() {
 
   }
-
+  //更新state上的属性
+  updateState(key, value) {
+    !['', void 0, null].includes(key) && (this.state[key] = value);
+  }
   //请求全部在线人员列表
   getOnlineUserList(params) {
     const _this = MemberServer.instance;
