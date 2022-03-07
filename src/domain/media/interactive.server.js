@@ -204,7 +204,8 @@ class InteractiveServer extends BaseServer {
       return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
     const micServer = useMicServer()
-    // 如果是无延迟直播、不在麦、开启自动上麦
+    // 如果自动上麦 且 不是因为被下麦或者手动下麦去初始化互动
+    // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
     if (interactToolStatus.auto_speak == 1 && !micServer.state.isSpeakOffToInit) {
       // 调上麦接口判断当前人是否可以上麦
       const res = await micServer.userSpeakOn();
