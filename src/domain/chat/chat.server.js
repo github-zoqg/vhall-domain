@@ -44,6 +44,7 @@ class ChatServer extends BaseServer {
   //监听msgServer通知
   listenEvents() {
     const msgServer = useMsgServer();
+    const { role_name } = useRoomBaseServer().state.watchInitData.join_info
     msgServer.$onMsg('CHAT', rawMsg => {
       if (['text', 'image'].includes(rawMsg.data.type)) {
         //表情处理
@@ -90,13 +91,18 @@ class ChatServer extends BaseServer {
       }
       // 开启全体禁言
       if (rawMsg.data.type === 'disable_all') {
-        this.state.allBanned = true;
-        this.$emit('allBanned', this.state.allBanned);
+        if (role_name == 2) {
+          this.state.allBanned = true;
+          this.$emit('allBanned', this.state.allBanned);
+        }
+
       }
       // 关闭全体禁言
       if (rawMsg.data.type === 'permit_all') {
-        this.state.allBanned = false;
-        this.$emit('allBanned', this.state.allBanned);
+        if (role_name == 2) {
+          this.state.allBanned = false;
+          this.$emit('allBanned', this.state.allBanned);
+        }
       }
     });
     msgServer.$onMsg('ROOM_MSG', rawMsg => {
