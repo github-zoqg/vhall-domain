@@ -41,6 +41,7 @@ const wechatShare = (data = {}) => {
 const bindInvite = (data = {}) => {
   const v3 = '/v3/interacts/invite-card/create-invite-othor-relation'
 
+  const url = v3;
   return request({
     url,
     method: 'POST',
