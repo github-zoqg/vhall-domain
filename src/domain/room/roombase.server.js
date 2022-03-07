@@ -175,7 +175,7 @@ class RoomBaseServer extends BaseServer {
 
   // 获取活动信息
   getWebinarInfo(data) {
-    return meeting.getWebinarInfo(data).then(res => {
+    return roomApi.activity.getActivityBasicInfo(data).then(res => {
       // this.state.webinarVo = res.data;
       return res;
     });

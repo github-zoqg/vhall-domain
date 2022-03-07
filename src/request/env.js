@@ -60,6 +60,10 @@ export const roomApiList = {
     v3: "/v3/webinars/webinar/init-before",
     middle: "/v4/room/webinar/init-before"
   },
+  getActivityBasicInfo: {
+    v3: "/v3/webinars/webinar/info",
+    middle: "/v4/room/webinar/info"
+  }
 }
 
 export const roomSubjectApiList = {
