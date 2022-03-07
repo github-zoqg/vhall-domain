@@ -220,24 +220,23 @@ class StandardGroupServer extends BaseServer {
   //【分组创建完成】消息处理
   msgdoForGroupRoomCreate(msg) {
     console.log('[group] domain group_room_create');
-    if (useRoomBaseServer().state.clientType === 'send') {
-      // 主持端才需要处理此消息
-      if (
-        msg.sender_id === useRoomBaseServer().state.watchInitData?.join_info?.third_party_user_id
-      ) {
+    const { watchInitData, interactToolStatus, clientType } = useRoomBaseServer().state;
+    if (clientType === 'send') {
+      // 主持端才需要处理此消息，主持人和助理都可以操作分组讨论面板
+      if (watchInitData.join_info.role_name == 1 || watchInitData.join_info.role_name == 3) {
         // 0 新增小组  1 初始化分配小组
         if (msg.data.is_append === 1) {
           // 每次讨论，初始化分配小组只会执行一次
           this.state.panelShow = true;
-          if (useRoomBaseServer().state.interactToolStatus.is_open_switch == 0) {
+          if (interactToolStatus.is_open_switch == 0) {
             // 如果是未分组，置成已分组未讨论状态
             useRoomBaseServer().setInavToolStatus('is_open_switch', 2);
           }
           // 更新待分配的人员列表
           this.getWaitingUserList();
         }
+        this.getGroupedUserList();
       }
-      this.getGroupedUserList();
     }
   }
 
