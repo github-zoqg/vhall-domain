@@ -107,12 +107,11 @@ class RedPacketServer extends BaseServer {
    */
   openRedPacket() {
     const { watchInitData } = useRoomBaseServer().state;
-    const { redPacket } = useRoomBaseServer().state;
     const { interact } = watchInitData;
     return redPacketApi
       .openRedpacket({
         room_id: interact.room_id,
-        red_packet_uuid: this._uuid || redPacket.red_packet_uuid
+        red_packet_uuid: this._uuid
       })
       .then(res => {
         this.state.amount = res.data.amount;
