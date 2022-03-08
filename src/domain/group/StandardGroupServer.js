@@ -255,29 +255,16 @@ class StandardGroupServer extends BaseServer {
   }
 
   /**
-   * 小组解散 / 消息处理
+   * 小组解散消息处理
+   * 助理进入小组主持人可解散，主持人进入小组助理可以解散
    * @param {*} msg
    * @note 发起端、接收端 广播
    * @returns
    */
   async msgdoForGroupDisband(msg) {
     console.log('[group] domain group_disband');
-    if (useRoomBaseServer().state.clientType === 'send') {
-      console.log('[group] domain group_disband 主持端');
-      // 主持端
-      this.getWaitingUserList();
-      this.getGroupedUserList();
-    } else {
-      // 观看端
-
-      if (
-        !this.state.groupInitData.isInGroup ||
-        msg.data.group_id !== this.state.groupInitData.group_id
-      ) {
-        // 不在分组中，不需要处理
-        console.log('[group] domain group_disband 观看端 不在分组中，不需要处理');
-        return;
-      }
+    if (this.state.groupInitData.isInGroup &&
+      msg.data.group_id == this.state.groupInitData.group_id) {
       // 如果在小组中，小组要解散，
       await this.updateGroupInitData(); // 更新数据
       // 获取最新的互动房间状态
@@ -298,9 +285,13 @@ class StandardGroupServer extends BaseServer {
       useInteractiveServer().groupReInitInteractProcess()
 
       // 处理文档channel切换逻辑
-      useDocServer().groupReInitDocProcess();
+      await useDocServer().groupReInitDocProcess();
     }
-
+    if (useRoomBaseServer().state.clientType === 'send') {
+      // 如果是发起端，还需要更新分组讨论列表数据
+      this.getWaitingUserList();
+      this.getGroupedUserList();
+    }
     this.$emit(this.EVENT_TYPE.GROUP_DISBAND, msg);
   }
 
@@ -402,7 +393,7 @@ class StandardGroupServer extends BaseServer {
     useInteractiveServer().groupReInitInteractProcess();
 
     // 处理文档channel切换逻辑
-    useDocServer().groupReInitDocProcess();
+    await useDocServer().groupReInitDocProcess();
 
     useDocServer()._setDocPermisson();
 
@@ -411,14 +402,19 @@ class StandardGroupServer extends BaseServer {
 
   //【切换小组】小组人员变动
   async msgdoForGroupJoinChange(msg) {
-    if (useRoomBaseServer().state.clientType === 'send') {
+    const { clientType } = useRoomBaseServer().state;
+    if (clientType === 'send') {
       // 主持端
-      this.getWaitingUserList();
-      this.getGroupedUserList();
-      this.$emit(this.EVENT_TYPE.GROUP_JOIN_CHANGE, msg)
+      await Promise.all([
+        this.getWaitingUserList(),
+        this.getGroupedUserList()
+      ]);
     }
     if (useRoomBaseServer().state.interactToolStatus.is_open_switch != 1) {
       console.log('[group] 未开启讨论，不处理分组切换逻辑。');
+      if (clientType === 'send') {
+        this.$emit(this.EVENT_TYPE.GROUP_JOIN_CHANGE, msg);
+      }
       return false;
     }
 
@@ -452,7 +448,7 @@ class StandardGroupServer extends BaseServer {
       useInteractiveServer().groupReInitInteractProcess();
 
       // 处理文档channel切换逻辑
-      useDocServer().groupReInitDocProcess();
+      await useDocServer().groupReInitDocProcess();
     } else if (groupJoinChangeInfo.from === 0) {
       // from 为 0 从主房间切换到子直播间
       console.log('[group]  主直播间 → 小组（从主直播间切换到小组）');
@@ -481,7 +477,7 @@ class StandardGroupServer extends BaseServer {
         useInteractiveServer().groupReInitInteractProcess();
 
         // 处理文档channel切换逻辑
-        useDocServer().groupReInitDocProcess();
+        await useDocServer().groupReInitDocProcess();
       }
     } else {
       // 从子房间切换到另一个子房间
@@ -506,9 +502,10 @@ class StandardGroupServer extends BaseServer {
         useInteractiveServer().groupReInitInteractProcess();
 
         // 处理文档channel切换逻辑
-        useDocServer().groupReInitDocProcess();
+        await useDocServer().groupReInitDocProcess();
       }
     }
+    this.$emit(this.EVENT_TYPE.GROUP_JOIN_CHANGE, msg);
   }
 
   // 分组相关 设置组长操作权限 与 身份分离
@@ -703,7 +700,7 @@ class StandardGroupServer extends BaseServer {
       group_id: groupId
     };
     const result = await groupApi.groupDisband(params);
-    console.log('[group] result', result);
+    console.log('[group] groupDisband result', result);
     return result;
   }
 

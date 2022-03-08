@@ -775,7 +775,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
   // 重置
   groupReInitDocProcess() {
-    this.init()
+    return this.init()
       .then(() => {
         console.log('[doc] domain groupReInitDocProcess');
         this.state.currentCid = ''; //当前正在展示的容器id
