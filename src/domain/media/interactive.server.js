@@ -103,8 +103,8 @@ class InteractiveServer extends BaseServer {
   /*
   * 分组进入，退出重新初始化操作
   */
-  groupReInitInteractProcess() {
-    this.init()
+  async groupReInitInteractProcess() {
+    return await this.init()
   }
 
   /**
