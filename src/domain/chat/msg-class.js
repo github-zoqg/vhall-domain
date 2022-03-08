@@ -37,6 +37,8 @@ export default class Msg {
   setImge(imglist) {
     if (imglist.length < 1) {
       this.data.type = 'text';
+    } else {
+      this.data.type = 'image'
     }
     this.data.image_urls = imglist;
   }
