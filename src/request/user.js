@@ -114,6 +114,16 @@ const loginOut = (params = {}) => {
   });
 };
 
+// 角色退出
+const loginRoleOut = (params = {}) => {
+  return request({
+    url: env.user === 'v3' ? '/v3/webinars/live/role-logout' : '',
+    method: 'POST',
+    data: params
+  });
+};
+
+
 // 第三方授权
 const oauthCallback = (params = {}) => {
   return request({
@@ -226,6 +236,7 @@ export default {
   getKeyLogin,
   loginInfo,
   loginOut,
+  loginRoleOut,
   oauthCallback,
   codeCheck,
   resetPassword,

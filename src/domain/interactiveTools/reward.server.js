@@ -16,6 +16,8 @@ class rewardServer extends BaseServer {
     this.state = {};
 
     rewardServer.instance = this;
+
+    this.listenMsg()
     return this;
   }
 
@@ -36,8 +38,8 @@ class rewardServer extends BaseServer {
       const { type = '' } = temp.data || {};
       switch (type) {
         // 计时器开始
-        case 'timer_start':
-          this.$emit('timer_start', temp);
+        case 'reward_pay_ok':
+          this.$emit('reward_pay_ok', temp);
           break;
 
         default:

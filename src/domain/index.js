@@ -57,6 +57,8 @@ import useSplitScreenServer from '@/domain/media/splitScreen.server';
 
 import useHomepageServer from '@/domain/brand/homepage.server';
 
+import useRecommendServer from '@/domain/brand/recommend.server'
+
 /**
  * options:{
     token,
@@ -164,5 +166,6 @@ export {
   useRedPacketServer,
   useKeyLoginServer,
   useSplitScreenServer,
-  useHomepageServer
+  useHomepageServer,
+  useRecommendServer
 };

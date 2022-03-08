@@ -171,9 +171,19 @@ export default class StandardDocServer extends AbstractDocServer {
       }
     })
 
-    // 设置主讲人 
-    useRoomBaseServer().$on('VRTC_SPEAKER_SWITCH', msg => {
-      // console.log('[doc] VRTC_SPEAKER_SWITCH', msg);
+    // 设置主讲人，消息只发起端能收到
+    // 1、互动直播 - 主持人设置嘉宾为主讲人
+    // 2、互动直播 - 嘉宾主讲人下麦，把主讲人还给主持人
+    useRoomBaseServer().$on('VRTC_SPEAKER_SWITCH', async (msg) => {
+      console.log('[doc] VRTC_SPEAKER_SWITCH', msg);
+      if (useGroupServer().state.groupInitData.isInGroup) {
+        // 如果在小组内（分组直播里面没有，这个条件应该不会执行）
+        await useGroupServer().updateGroupInitData();
+      } else {
+        // 在直播间内
+        await useRoomBaseServer().getInavToolStatus();
+      }
+      this._setDocPermisson();
     })
 
     // 所有文档加载完成事件
@@ -205,6 +215,7 @@ export default class StandardDocServer extends AbstractDocServer {
     });
     // 文档翻页事件
     this.on(VHDocSDK.Event.PAGE_CHANGE, data => {
+      if (useRoomBaseServer().state.watchInitData.webinar.type != 1) return;
       console.log('==============文档翻页================');
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
@@ -213,6 +224,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 观众可见按钮切换
     this.on(VHDocSDK.Event.SWITCH_CHANGE, status => {
+      if (useRoomBaseServer().state.watchInitData.webinar.type != 1) return;
       console.log('==[doc] [player]========控制文档开关=============', status);
       this.state.switchStatus = status === 'on';
       if (useRoomBaseServer().state.clientType != 'send') {
@@ -763,7 +775,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
   // 重置
   groupReInitDocProcess() {
-    this.init()
+    return this.init()
       .then(() => {
         console.log('[doc] domain groupReInitDocProcess');
         this.state.currentCid = ''; //当前正在展示的容器id
@@ -794,5 +806,26 @@ export default class StandardDocServer extends AbstractDocServer {
     } else {
       await sleep(0);
     }
+  }
+
+
+  // 设置文档操作权限
+  _setDocPermisson() {
+    const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state;
+    if (
+      (groupInitData.isInGroup && groupInitData.presentation_screen ==
+        watchInitData.join_info.third_party_user_id) ||
+      (!groupInitData.isInGroup &&
+        interactToolStatus.presentation_screen == watchInitData.join_info.third_party_user_id)
+    ) {
+      // 在小组内有要是权限，或者在主直播间有演示权限
+      // 设置文档操作权限为主人
+      this.setRole(VHDocSDK.RoleType.HOST);
+    } else {
+      // 设置文档操作权限为观众
+      this.setRole(VHDocSDK.RoleType.SPECTATOR);
+    }
+
   }
 }

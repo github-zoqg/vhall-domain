@@ -30,6 +30,7 @@ import subscribeApi from './subscribe';
 import wechatApi from './brand/wechat';
 import signUpFormApi from "./signUpForm";
 import homepageApi from './homepage';
+import recommendApi from './recommend'
 
 // 问答
 import qaList from './qa/list/index.js';
@@ -91,5 +92,6 @@ export {
   wechatApi,
   signUpFormApi,
   homepageApi,
-  roomSubjectApi
+  roomSubjectApi,
+  recommendApi
 };

@@ -9,6 +9,7 @@ import useMicServer from './mic.server';
 import interactive from '@/request/interactive';
 import useMediaSettingServer from './mediaSetting.server';
 import useDesktopShareServer from './desktopShare.server';
+import useChatServer from '../chat/chat.server'
 class InteractiveServer extends BaseServer {
   constructor() {
     super();
@@ -100,8 +101,8 @@ class InteractiveServer extends BaseServer {
   /*
   * 分组进入，退出重新初始化操作
   */
-  groupReInitInteractProcess() {
-    this.init()
+  async groupReInitInteractProcess() {
+    return await this.init()
   }
 
   /**
@@ -184,11 +185,6 @@ class InteractiveServer extends BaseServer {
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state
 
-    // 如果是主持人、嘉宾、助理，设为 HOST
-    if (watchInitData.join_info.role_name != 2) {
-      return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
-    }
-
 
     let speaker_list = interactToolStatus.speaker_list
     if (groupInitData.isInGroup) {
@@ -211,15 +207,37 @@ class InteractiveServer extends BaseServer {
       return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
     const micServer = useMicServer()
-    // 如果自动上麦 且 不是因为被下麦或者手动下麦去初始化互动
+    const chatServer = useChatServer()
+
+    // 自动上麦 + 未开启禁言 + 未开启全体禁言 + 不是因为被下麦或者手动下麦去初始化互动
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
-    if (interactToolStatus.auto_speak == 1 && !micServer.state.isSpeakOffToInit) {
+
+    let autoSpeak = null
+    if (interactToolStatus.auto_speak == 1) {
+      autoSpeak =
+        !chatServer.state.banned &&
+        !chatServer.state.allBanned &&
+        !micServer.state.isSpeakOffToInit &&
+        watchInitData.join_info.role_name != 3
+    } else {
+      // 不自动上麦时，如果为组长，需要自动上麦
+      autoSpeak =
+        groupInitData.isInGroup && groupInitData.doc_permission == watchInitData.join_info.third_party_user_id
+    }
+
+
+    if (autoSpeak) {
       // 调上麦接口判断当前人是否可以上麦
       const res = await micServer.userSpeakOn();
       // 如果上麦成功，设为 HOST
       if (res.code == 200) return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     } else {
       micServer.setSpeakOffToInit(false)
+    }
+
+    // 如果是主持人、嘉宾、助理，设为 HOST
+    if (watchInitData.join_info.role_name != 2) {
+      return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
     // 如果是无延迟直播、不在麦、未开启自动上麦，设为 AUDIENCE
@@ -255,6 +273,9 @@ class InteractiveServer extends BaseServer {
         this.interactiveInstance = null;
         this.state.remoteStreams = [];
         this._clearLocalStream()
+      }).then(() => {
+        console.log('互动sdk销毁成功');
+
       })
       .catch(err => {
         console.log('互动sdk销毁失败', err);
