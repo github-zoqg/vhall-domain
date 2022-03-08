@@ -27,6 +27,8 @@ class RedPacketServer extends BaseServer {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       switch (msg.data.event_type || msg.data.type) {
         case RED_ENVELOPE_OK:
+          console.log('红包消息:RED_ENVELOPE_OK')
+          this.state.available = true
           this.$emit(RED_ENVELOPE_OK, msg.data);
           if (opts?.mode === 'watch') {
             useChatServer().addChatToList({
@@ -56,13 +58,19 @@ class RedPacketServer extends BaseServer {
       });
     }
     if (opts?.mode === 'watch') {
-      useMsgServer().$onMsg(RED_ENVELOPE_PUSH, msg => {
-        // 红包推送消息
-        this.state.available = true
-      });
-      useMsgServer().$onMsg(RED_ENVELOPE_OPEN_SUCCESS, () => {
-        // 
-        this.state.available = !(e.data?.red_packet_status == 0);
+      useMsgServer().$onMsg('ROOM_MSG', msg => {
+        console.log('红包消息:', msg)
+        switch (msg.data.event_type || msg.data.type) {
+          case RED_ENVELOPE_PUSH: // 红包推送消息
+            console.log('红包消息:RED_ENVELOPE_PUSH')
+            this.state.available = true
+            break;
+          case RED_ENVELOPE_OPEN_SUCCESS: // 红包领取消息
+            console.log('红包消息:RED_ENVELOPE_OPEN_SUCCESS')
+            this.state.available = !(msg.data?.red_packet_status === 0);
+            console.log('available:' + this.state.available)
+            break;
+        }
       });
     }
   }
