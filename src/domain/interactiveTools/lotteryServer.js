@@ -23,8 +23,8 @@ class LotteryServer extends BaseServer {
     LOTTERY_PUSH: 'lottery_push',
     LOTTERY_RESULT_NOTICE: 'lottery_result_notice',
     LOTTERY_WIN: 'lottery_win', // 中奖
-    LOTTERY_MISS: 'lottery_miss' // 未中奖
-
+    LOTTERY_MISS: 'lottery_miss', // 未中奖
+    LOTTERY_SUBMIT: 'lottery_submit', // 中奖提交
   };
   // 监听消息
   listenMsg() {
