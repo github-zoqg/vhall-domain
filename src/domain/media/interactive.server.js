@@ -3,6 +3,7 @@ import { merge, sleep } from '../../utils';
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
+import useMediaCheckServer from './mediaCheck.server';
 import useMsgServer from '../common/msg.server';
 import VhallPaasSDK from '@/sdk/index';
 import useMicServer from './mic.server';
@@ -220,20 +221,27 @@ class InteractiveServer extends BaseServer {
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
 
     let autoSpeak = null
-    if (interactToolStatus.auto_speak == 1) {
-      autoSpeak =
-        !chatServer.state.banned &&
-        !chatServer.state.allBanned &&
-        !micServer.state.isSpeakOffToInit &&
-        watchInitData.join_info.role_name != 3
-
-      console.log('[interactive server] auto_speak 1', autoSpeak)
-    } else {
-      // 不自动上麦时，如果为组长，需要自动上麦
-      autoSpeak =
-        groupInitData.isInGroup && groupInitData.doc_permission == watchInitData.join_info.third_party_user_id
-      console.log('[interactive server] auto_speak 0', autoSpeak)
-
+    if (useMediaCheckServer().state.deviceInfo.device_status === 1) {
+      if (interactToolStatus.auto_speak == 1) {
+        if (groupInitData.isInGroup) {
+          autoSpeak =
+            !groupInitData.isBanned &&
+            !micServer.state.isSpeakOffToInit &&
+            watchInitData.join_info.role_name != 3
+        } else {
+          autoSpeak =
+            !chatServer.state.banned &&
+            !chatServer.state.allBanned &&
+            !micServer.state.isSpeakOffToInit &&
+            watchInitData.join_info.role_name != 3
+          console.log('[interactive server] auto_speak 1', autoSpeak)
+        }
+      } else {
+        // 不自动上麦时，如果为组长，需要自动上麦
+        autoSpeak =
+          groupInitData.isInGroup && groupInitData.doc_permission == watchInitData.join_info.third_party_user_id
+        console.log('[interactive server] auto_speak 0', autoSpeak)
+      }
     }
 
 
@@ -565,8 +573,8 @@ class InteractiveServer extends BaseServer {
     return this.createLocalStream(params).then(data => {
       this.state.localStream = {
         streamId: data.streamId,
-        audioMuted: options.mute?.audio || false,
-        videoMuted: options.mute?.video || false
+        audioMuted: defaultOptions.mute?.audio || false,
+        videoMuted: defaultOptions.mute?.video || false
       };
       // 派发本地流更新事件
       this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
@@ -675,6 +683,8 @@ class InteractiveServer extends BaseServer {
 
     const { groupInitData } = useGroupServer().state
 
+    const { interactToolStatus } = useRoomBaseServer().state;
+
     const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
 
     const roleName = isGroupLeader ? 20 : watchInitData.join_info.role_name
@@ -688,12 +698,25 @@ class InteractiveServer extends BaseServer {
         nickname: watchInitData.join_info.nickname
       }) //选填，自定义信息，支持字符串类型
     };
+
+    // 当前用户是否在上麦列表中
+    const isOnMicObj = interactToolStatus.speaker_list.find(
+      item => item.account_id == watchInitData.join_info.third_party_user_id
+    );
+
+    // 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
+    if (isOnMicObj) {
+      defaultOptions.mute = {
+        audio: !isOnMicObj.audio,
+        video: !isOnMicObj.video
+      };
+    }
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return this.createLocalStream(params).then(data => {
       this.state.localStream = {
         streamId: data.streamId,
-        audioMuted: options.mute?.audio || false,
-        videoMuted: options.mute?.video || false
+        audioMuted: defaultOptions.mute?.audio || false,
+        videoMuted: defaultOptions.mute?.video || false
       };
       // 派发本地流更新事件
       this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
@@ -738,8 +761,8 @@ class InteractiveServer extends BaseServer {
     return await this.createLocalStream(params).then(data => {
       this.state.localStream = {
         streamId: data.streamId,
-        audioMuted: options.mute?.audio || false,
-        videoMuted: options.mute?.video || false
+        audioMuted: defaultOptions.mute?.audio || false,
+        videoMuted: defaultOptions.mute?.video || false
       };
       return data
     });;
