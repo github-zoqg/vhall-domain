@@ -259,7 +259,7 @@ export default class StandardDocServer extends AbstractDocServer {
           const index = this.containerList.findIndex(item => item.cid == cid);
           this.containerList.splice(index, 1);
           this.docServer.destroyContainer(cid);
-          this.docCid = '';
+          this.state.docCid = '';
           this.currentCid = '';
         }, 3000); // 其他地方调用回将值重新传入
         this.$emit('dispatch_doc_not_exit', { cid, docId });
@@ -574,7 +574,7 @@ export default class StandardDocServer extends AbstractDocServer {
       }
       let noDispatch = !this.hasDocPermission();
       if (fileType === 'board') {
-        this.boardCid = cid;
+        this.state.boardCid = cid;
         const opts = {
           id: cid,
           elId: cid,
@@ -585,6 +585,7 @@ export default class StandardDocServer extends AbstractDocServer {
         };
         await this.createBoard(opts);
       } else {
+        this.state.docCid = cid;
         const opts = {
           id: cid,
           docId: docId,
