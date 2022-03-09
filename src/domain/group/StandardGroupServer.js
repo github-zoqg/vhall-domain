@@ -265,10 +265,11 @@ class StandardGroupServer extends BaseServer {
    */
   async msgdoForGroupDisband(msg) {
     console.log('[group] domain group_disband');
+    // 任何关于分组的操作都需要重新获取主持端的互动工具状态 - 业务侧获取主持人状态
+    await useRoomBaseServer().getInavToolStatus();
     if (this.state.groupInitData.isInGroup &&
       msg.data.group_id == this.state.groupInitData.group_id) {
       // 如果在小组中，小组要解散，
-      await useRoomBaseServer().getInavToolStatus();
       await this.updateGroupInitData(); // 更新数据
       // 获取最新的互动房间状态
       // await this.handleGetCommonConfigInfo();
@@ -313,6 +314,8 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] domain group_switch_start', msg);
     // 设置开始为开始讨论状态
     useRoomBaseServer().setInavToolStatus('is_open_switch', 1);
+    // 任何关于分组的操作都需要重新获取主持端的互动工具状态 - 业务侧获取主持人状态
+    await useRoomBaseServer().getInavToolStatus();
     if (useRoomBaseServer().state.watchInitData.join_info.role_name == 2) {
       // 观看端
       // 更新个人所在小组信息
@@ -321,7 +324,6 @@ class StandardGroupServer extends BaseServer {
       if (!this.state.groupInitData.isInGroup) return;
       //----------------------------------
       // this.handleResetInteractiveTools();
-      await useRoomBaseServer().getInavToolStatus();
       // 自定义菜单切换逻辑处理
       // this.handleGroupSelectMenuInfoChange({ isEntryGroup: true });
       // 如果是分组直播并且正在讨论中并且在分组中，初始化子房间聊天
@@ -364,6 +366,8 @@ class StandardGroupServer extends BaseServer {
       //主持端
       this.state.panelShow = false;
     }
+    // 任何关于分组的操作都需要重新获取主持端的互动工具状态 - 业务侧获取主持人状态
+    await useRoomBaseServer().getInavToolStatus();
     // 结束讨论但不在分组中，不需要发消息，直接 return
     if (!this.state.groupInitData.isInGroup) {
       // 通知需要更新在线人员列表
@@ -376,7 +380,6 @@ class StandardGroupServer extends BaseServer {
 
     // 聚合接口，各种互动工具的状态拉取
     // await this.handleGetCommonConfigInfo();
-    await useRoomBaseServer().getInavToolStatus();
 
     // 给主房间发消息通知当前人离开子房间进入主房间
     this.sendMainRoomJoinChangeMsg({
@@ -413,6 +416,10 @@ class StandardGroupServer extends BaseServer {
         this.getGroupedUserList()
       ]);
     }
+
+    // 任何关于分组的操作都需要重新获取主持端的互动工具状态 - 业务侧获取主持人状态
+    await useRoomBaseServer().getInavToolStatus();
+
     if (useRoomBaseServer().state.interactToolStatus.is_open_switch != 1) {
       console.log('[group] 未开启讨论，不处理分组切换逻辑。');
       if (clientType === 'send') {
@@ -436,7 +443,6 @@ class StandardGroupServer extends BaseServer {
       // to 为 0 从子直播间切换到主房间
       console.log('[group] 小组 → 主直播间 （从小组切换到主直播间）');
       // await this.handleGetCommonConfigInfo();
-      await useRoomBaseServer().getInavToolStatus();
       // 给主房间发消息通知当前人离开子房间进入主房间
       this.sendMainRoomJoinChangeMsg({
         isJoinMainRoom: true,
