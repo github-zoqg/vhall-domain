@@ -201,5 +201,8 @@ class RedPacketServer extends BaseServer {
 }
 
 export default function useRedPacketServer(opts) {
-  return new RedPacketServer(opts);
+  if (!RedPacketServer.instance) {
+    RedPacketServer.instance = new RedPacketServer(opts);
+  }
+  return RedPacketServer.instance;
 }
