@@ -266,6 +266,7 @@ class StandardGroupServer extends BaseServer {
     if (this.state.groupInitData.isInGroup &&
       msg.data.group_id == this.state.groupInitData.group_id) {
       // 如果在小组中，小组要解散，
+      await useRoomBaseServer().getInavToolStatus();
       await this.updateGroupInitData(); // 更新数据
       // 获取最新的互动房间状态
       // await this.handleGetCommonConfigInfo();
