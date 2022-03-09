@@ -55,16 +55,6 @@ class QuestionnaireServer extends BaseServer {
       this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, data);
       // console.log('问卷错误', data);
     });
-  }
-  initWatchEvent() {
-    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.SUBMIT, async data => {
-      const res = await this.submitQuestion(data);
-      this.$emit(VHall_Questionnaire_Const.EVENT.SUBMIT, res);
-    });
-    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
-      this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, data);
-      console.log('问卷错误', data);
-    });
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       console.log('问卷server监听', msg);
       switch (msg.data.event_type || msg.data.type) {
@@ -74,6 +64,16 @@ class QuestionnaireServer extends BaseServer {
           this.$emit(QUESTIONNAIRE_PUSH, msg.data);
           break;
       }
+    });
+  }
+  initWatchEvent() {
+    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.SUBMIT, async data => {
+      const res = await this.submitQuestion(data);
+      this.$emit(VHall_Questionnaire_Const.EVENT.SUBMIT, res);
+    });
+    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
+      this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, data);
+      console.log('问卷错误', data);
     });
   }
   /**

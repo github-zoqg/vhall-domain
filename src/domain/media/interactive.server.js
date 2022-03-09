@@ -223,13 +223,19 @@ class InteractiveServer extends BaseServer {
     let autoSpeak = null
     if ((useMediaCheckServer().state.deviceInfo.device_status === 1)) {
       if (interactToolStatus.auto_speak == 1) {
-        autoSpeak =
-          !chatServer.state.banned &&
-          !chatServer.state.allBanned &&
-          !micServer.state.isSpeakOffToInit &&
-          watchInitData.join_info.role_name != 3
-
-        console.log('[interactive server] auto_speak 1', autoSpeak)
+        if (groupInitData.isInGroup) {
+          autoSpeak =
+            !groupInitData.isBanned &&
+            !micServer.state.isSpeakOffToInit &&
+            watchInitData.join_info.role_name != 3
+        } else {
+          autoSpeak =
+            !chatServer.state.banned &&
+            !chatServer.state.allBanned &&
+            !micServer.state.isSpeakOffToInit &&
+            watchInitData.join_info.role_name != 3
+          console.log('[interactive server] auto_speak 1', autoSpeak)
+        }
       } else {
         // 不自动上麦时，如果为组长，需要自动上麦
         autoSpeak =

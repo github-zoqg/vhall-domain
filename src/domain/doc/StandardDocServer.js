@@ -248,8 +248,17 @@ export default class StandardDocServer extends AbstractDocServer {
       console.log('doc] =========删除容器=============', data);
       if (data && data.id) {
         this.destroyContainer(data.id);
+        const idx = this.state.containerList.findIndex((item) => item.cid == data.id);
+        if (idx > -1) {
+          this.state.containerList.splice(idx, 1);
+        }
       }
       this.$emit('dispatch_doc_delete_container', data);
+    });
+
+    // 选中容器
+    this.on(VHDocSDK.Event.SELECT_CONTAINER, data => {
+      this.$emit('dispatch_doc_select_container', data);
     });
 
     this.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT, ({ cid, docId }) => {
@@ -259,7 +268,7 @@ export default class StandardDocServer extends AbstractDocServer {
           const index = this.containerList.findIndex(item => item.cid == cid);
           this.containerList.splice(index, 1);
           this.docServer.destroyContainer(cid);
-          this.docCid = '';
+          this.state.docCid = '';
           this.currentCid = '';
         }, 3000); // 其他地方调用回将值重新传入
         this.$emit('dispatch_doc_not_exit', { cid, docId });
@@ -337,7 +346,9 @@ export default class StandardDocServer extends AbstractDocServer {
       this.state.switchStatus = false;
     }
     // 观看端(
-    console.log('this.state.switchStatus:', this.state.switchStatus);
+    console.log('getContainerList=>switchStatus:', this.state.switchStatus);
+    // 通知观众可见状态
+    this.$emit('dispatch_doc_switch_change', this.state.switchStatus);
 
     const roomBaseServer = useRoomBaseServer();
     if (roomBaseServer.state.clientType != 'send') {
@@ -397,19 +408,24 @@ export default class StandardDocServer extends AbstractDocServer {
       this.setDocLoadComplete();
     }
     this.setDocLoadComplete(false);
+
     for (const item of this.state.containerList) {
       const fileType = item.is_board === 1 ? 'document' : 'board';
       if (
         fileType == 'document' &&
         this.state.docCid == item.cid &&
-        document.getElementById(item.cid)
+        document.getElementById(item.cid) &&
+        document.getElementById(item.cid).childNodes.length
       ) {
+        // 该文档元素已经初始化过，跳过
         continue;
       } else if (
         fileType == 'board' &&
         this.state.boardCid == item.cid &&
-        document.getElementById(item.cid)
+        document.getElementById(item.cid) &&
+        document.getElementById(item.cid).childNodes.length
       ) {
+        // 该白板元素已经初始化过，跳过
         continue;
       }
       await this.initDocumentOrBoardContainer({
@@ -428,6 +444,7 @@ export default class StandardDocServer extends AbstractDocServer {
       this.setRemoteData(item);
     }
     this.setDocLoadComplete(true);
+
     const activeItem = this.state.containerList.find(item => item.active === 1);
     if (activeItem) {
       if (activeItem.is_board === 1) {
@@ -525,10 +542,8 @@ export default class StandardDocServer extends AbstractDocServer {
       // 说明容器不在列表中，主动添加
       console.log('[doc] --------向列表中添加容器------');
       this.state.containerList.push({ cid, docId });
-
-      if (typeof bindCidFun === 'function') {
-        await bindCidFun(cid);
-      }
+      // 确保dom渲染
+      await this.domNextTick();
     }
     try {
       if (fileType === 'document') {
@@ -574,7 +589,7 @@ export default class StandardDocServer extends AbstractDocServer {
       }
       let noDispatch = !this.hasDocPermission();
       if (fileType === 'board') {
-        this.boardCid = cid;
+        this.state.boardCid = cid;
         const opts = {
           id: cid,
           elId: cid,
@@ -585,6 +600,7 @@ export default class StandardDocServer extends AbstractDocServer {
         };
         await this.createBoard(opts);
       } else {
+        this.state.docCid = cid;
         const opts = {
           id: cid,
           docId: docId,
@@ -802,7 +818,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
   async domNextTick() {
     if (window.Vue) {
-      await Vue.$nextTick();
+      await window.Vue.nextTick();
     } else {
       await sleep(0);
     }

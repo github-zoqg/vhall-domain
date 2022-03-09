@@ -197,7 +197,8 @@ class PlayerServer extends BaseServer {
     // 弹幕
     msgServer.$onMsg('CHAT', msg => {
       if (!msg.data.barrageTxt.includes('<img')) {
-        this.$emit('push_barrage', msg.data.barrageTxt);
+        this.addBarrage(msg.data.barrageTxt)
+        // this.$emit('push_barrage', msg.data.barrageTxt);
       }
     });
     // 结束直播
