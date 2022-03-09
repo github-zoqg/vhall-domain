@@ -19,6 +19,14 @@ class QuestionnaireServer extends BaseServer {
     this._paasSDKInstance = null;
     this.useRoomBaseServer = useRoomBaseServer();
     this.intiPaasQuestionnaireServerSDK(opts);
+    this.state = {
+      iconVisible: false, // icon 是否显示
+      dotVisible: false, // 小红点是否显示
+      lastQuestionnaireId: ''
+    }
+    if (opts.mode === 'watch') {
+      this.checkIconStatus()
+    }
   }
   /**
    * @description 初始化问卷服务sdk
@@ -41,6 +49,19 @@ class QuestionnaireServer extends BaseServer {
     } else {
       this.initLiveEvent();
     }
+    useMsgServer().$onMsg('ROOM_MSG', msg => {
+      console.log('问卷server监听', msg);
+      switch (msg.data.event_type || msg.data.type) {
+        //【分组创建/新增完成】
+        case QUESTIONNAIRE_PUSH:
+          console.log('问卷消息', msg);
+          this.state.dotVisible = true
+          this.state.iconVisible = true
+          this.state.lastQuestionnaireId = msg.data.questionnaire_id
+          this.$emit(QUESTIONNAIRE_PUSH, msg.data);
+          break;
+      }
+    });
   }
   initLiveEvent() {
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.CREATE, data => {
@@ -54,16 +75,6 @@ class QuestionnaireServer extends BaseServer {
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
       this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, data);
       // console.log('问卷错误', data);
-    });
-    useMsgServer().$onMsg('ROOM_MSG', msg => {
-      console.log('问卷server监听', msg);
-      switch (msg.data.event_type || msg.data.type) {
-        //【分组创建/新增完成】
-        case QUESTIONNAIRE_PUSH:
-          console.log('问卷消息', msg);
-          this.$emit(QUESTIONNAIRE_PUSH, msg.data);
-          break;
-      }
     });
   }
   initWatchEvent() {
@@ -247,10 +258,9 @@ class QuestionnaireServer extends BaseServer {
         });
       }
     }
-    await this.createLiveQuestion(data);
+    relt = await this.createLiveQuestion(data);
     return relt;
   }
-  copeMainQuestion() { }
   /**
    * @description 创建直播间的问卷
    */
@@ -280,9 +290,44 @@ class QuestionnaireServer extends BaseServer {
       webinar_id: webinar.id,
     });
   }
+  /**
+   * 检查问卷图标的状态
+   */
+  checkIconStatus() {
+    this.getLastSurvey().then(res => {
+      const questionId = res?.data?.questionId;
+      this.state.lastQuestionnaireId = questionId
+      if (questionId) {
+        this.state.iconVisible = true;
+        this.checkAnswerStatus(questionId).then(response => {
+          if (response.data) {
+            this.state.dotVisible = true;
+          }
+          console.log('checkAnswerStatus', this.state)
+        });
+      }
+    })
+  }
 
+  getLastSurvey(index = 0) {
+    const { watchInitData } = this.useRoomBaseServer.state;
+    const { interact, switch: _switch } = watchInitData;
+    return questionnaireApi.getLastSurvey({
+      room_id: interact.room_id,
+      playback_filling: index,
+      start_time: _switch.start_time,
+      end_time: _switch.end_time
+    });
+  }
+
+  setDotVisible(visivle) {
+    this.state.dotVisible = visivle
+  }
 }
 
-export default function useQuestionnaireServer(opts = {}) {
-  return new QuestionnaireServer(opts);
+export default function useQuestionnaireServer(opts) {
+  if (!QuestionnaireServer.instance) {
+    QuestionnaireServer.instance = new QuestionnaireServer(opts)
+  }
+  return QuestionnaireServer.instance
 }
