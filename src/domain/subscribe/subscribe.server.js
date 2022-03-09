@@ -20,10 +20,6 @@ class SubscribeServer extends BaseServer {
         console.log('woshi我是预约页')
         this.$emit('pay_success', msg.data);
       }
-
-      if (msg.data.type == 'live_over') {
-        window.location.reload();
-      }
     });
   }
   // 鉴权
