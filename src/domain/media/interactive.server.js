@@ -675,6 +675,8 @@ class InteractiveServer extends BaseServer {
 
     const { groupInitData } = useGroupServer().state
 
+    const { interactToolStatus } = useRoomBaseServer().state;
+
     const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
 
     const roleName = isGroupLeader ? 20 : watchInitData.join_info.role_name
