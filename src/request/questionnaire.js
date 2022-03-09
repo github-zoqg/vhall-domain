@@ -9,12 +9,20 @@ const queryQuestionnaireList = params => {
   });
 };
 
-// 复制问卷
+// 主持人复制问卷
+const copyMainQuestionnaire = params => {
+  return request({
+    url: '/v3/vss/survey/copy-shared-survey',
+    method: 'GET',
+    params
+  });
+};
+// 助理/嘉宾
 const copyQuestionnaire = params => {
   return request({
-    url: '/v3/vss/survey/copy-webinar-survey',
+    url: '/v3/vss/survey/copy-shared-survey-others',
     method: 'GET',
-    params: params
+    params
   });
 };
 // 删除问卷
@@ -33,22 +41,7 @@ const createLiveQuestion = params => {
     data: params
   });
 };
-// 主持人
-const copyMainQuestion = params => {
-  return request({
-    url: '/v3/vss/survey/copy-shared-survey',
-    method: 'GET',
-    params
-  });
-};
-// 助理/嘉宾
-const copyQuestion = params => {
-  return request({
-    url: '/v3/vss/survey/copy-shared-survey-other',
-    method: 'POST',
-    data: params
-  });
-};
+
 
 // 发布问卷
 const publishQuestionnaire = params => {
@@ -95,11 +88,10 @@ const checkAnswerStatus = params => {
 
 export default {
   queryQuestionnaireList,
+  copyMainQuestionnaire,
   copyQuestionnaire,
   deleteQuestionnaire,
   createLiveQuestion,
-  copyMainQuestion,
-  copyQuestion,
   publishQuestionnaire,
   editQuestionnaire,
   submitQuestionnaire,
