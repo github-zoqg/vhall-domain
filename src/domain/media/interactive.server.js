@@ -3,6 +3,7 @@ import { merge, sleep } from '../../utils';
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
+import useMediaCheckServer from './mediaCheck.server';
 import useMsgServer from '../common/msg.server';
 import VhallPaasSDK from '@/sdk/index';
 import useMicServer from './mic.server';
@@ -220,20 +221,27 @@ class InteractiveServer extends BaseServer {
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
 
     let autoSpeak = null
-    if (interactToolStatus.auto_speak == 1) {
-      autoSpeak =
-        !chatServer.state.banned &&
-        !chatServer.state.allBanned &&
-        !micServer.state.isSpeakOffToInit &&
-        watchInitData.join_info.role_name != 3
-
-      console.log('[interactive server] auto_speak 1', autoSpeak)
-    } else {
-      // 不自动上麦时，如果为组长，需要自动上麦
-      autoSpeak =
-        groupInitData.isInGroup && groupInitData.doc_permission == watchInitData.join_info.third_party_user_id
-      console.log('[interactive server] auto_speak 0', autoSpeak)
-
+    if (useMediaCheckServer().state.deviceInfo.device_status === 1) {
+      if (interactToolStatus.auto_speak == 1) {
+        if (groupInitData.isInGroup) {
+          autoSpeak =
+            !groupInitData.isBanned &&
+            !micServer.state.isSpeakOffToInit &&
+            watchInitData.join_info.role_name != 3
+        } else {
+          autoSpeak =
+            !chatServer.state.banned &&
+            !chatServer.state.allBanned &&
+            !micServer.state.isSpeakOffToInit &&
+            watchInitData.join_info.role_name != 3
+          console.log('[interactive server] auto_speak 1', autoSpeak)
+        }
+      } else {
+        // 不自动上麦时，如果为组长，需要自动上麦
+        autoSpeak =
+          groupInitData.isInGroup && groupInitData.doc_permission == watchInitData.join_info.third_party_user_id
+        console.log('[interactive server] auto_speak 0', autoSpeak)
+      }
     }
 
 
@@ -674,6 +682,8 @@ class InteractiveServer extends BaseServer {
     const { watchInitData } = useRoomBaseServer().state;
 
     const { groupInitData } = useGroupServer().state
+
+    const { interactToolStatus } = useRoomBaseServer().state;
 
     const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
 

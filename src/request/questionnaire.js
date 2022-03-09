@@ -76,7 +76,15 @@ const submitQuestionnaire = params => {
     data: params
   });
 };
-
+// 回放时，可以填写问卷
+const getVodQuestion = params => {
+  return request({
+    url: '/v3/vss/survey/check-can-answer',
+    method: 'GET',
+    params
+  });
+};
+// 是否提交问卷
 const checkAnswerStatus = params => {
   return request({
     url: '/v3/vss/survey/check-can-answer',
@@ -95,5 +103,6 @@ export default {
   publishQuestionnaire,
   editQuestionnaire,
   submitQuestionnaire,
-  checkAnswerStatus
+  checkAnswerStatus,
+  getVodQuestion
 };
