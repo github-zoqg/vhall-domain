@@ -565,8 +565,8 @@ class InteractiveServer extends BaseServer {
     return this.createLocalStream(params).then(data => {
       this.state.localStream = {
         streamId: data.streamId,
-        audioMuted: options.mute?.audio || false,
-        videoMuted: options.mute?.video || false
+        audioMuted: defaultOptions.mute?.audio || false,
+        videoMuted: defaultOptions.mute?.video || false
       };
       // 派发本地流更新事件
       this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
@@ -688,12 +688,25 @@ class InteractiveServer extends BaseServer {
         nickname: watchInitData.join_info.nickname
       }) //选填，自定义信息，支持字符串类型
     };
+
+    // 当前用户是否在上麦列表中
+    const isOnMicObj = interactToolStatus.speaker_list.find(
+      item => item.account_id == watchInitData.join_info.third_party_user_id
+    );
+
+    // 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
+    if (isOnMicObj) {
+      defaultOptions.mute = {
+        audio: !isOnMicObj.audio,
+        video: !isOnMicObj.video
+      };
+    }
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return this.createLocalStream(params).then(data => {
       this.state.localStream = {
         streamId: data.streamId,
-        audioMuted: options.mute?.audio || false,
-        videoMuted: options.mute?.video || false
+        audioMuted: defaultOptions.mute?.audio || false,
+        videoMuted: defaultOptions.mute?.video || false
       };
       // 派发本地流更新事件
       this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
@@ -738,8 +751,8 @@ class InteractiveServer extends BaseServer {
     return await this.createLocalStream(params).then(data => {
       this.state.localStream = {
         streamId: data.streamId,
-        audioMuted: options.mute?.audio || false,
-        videoMuted: options.mute?.video || false
+        audioMuted: defaultOptions.mute?.audio || false,
+        videoMuted: defaultOptions.mute?.video || false
       };
       return data
     });;
