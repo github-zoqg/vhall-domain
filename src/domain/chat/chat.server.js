@@ -47,9 +47,7 @@ class ChatServer extends BaseServer {
   listenEvents() {
     const msgServer = useMsgServer();
     const groupServer = useGroupServer();
-    const { interactToolStatus } = useRoomBaseServer().state;
     const { role_name } = useRoomBaseServer().state.watchInitData.join_info;
-    const { groupInitData } = groupServer.state
     msgServer.$onMsg('CHAT', rawMsg => {
       if (['text', 'image'].includes(rawMsg.data.type)) {
         //表情处理
@@ -130,8 +128,10 @@ class ChatServer extends BaseServer {
     msgServer.$on(msgServer.EVENT_TYPE.CHANNEL_CHANGE, () => {
       this.$emit('changeChannel');
     });
-    //监听进出消息
+    //监听进出子房间消息
     groupServer.$on('GROUP_ENTER_OUT', (isInGroup) => {
+      const { groupInitData } = groupServer.state
+      const { interactToolStatus } = useRoomBaseServer().state;
       if (isInGroup) {
         this.setLocalAllBanned(false);
         this.setLocalBanned(groupInitData.is_banned == 1 ? true : false)

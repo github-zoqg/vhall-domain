@@ -312,7 +312,6 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] domain group_switch_start', msg);
     // 设置开始为开始讨论状态
     useRoomBaseServer().setInavToolStatus('is_open_switch', 1);
-    // alert(JSON.stringify(useRoomBaseServer().state.watchInitData))
     if (useRoomBaseServer().state.watchInitData.join_info.role_name == 2) {
       // 观看端
       // 更新个人所在小组信息
@@ -834,7 +833,6 @@ class StandardGroupServer extends BaseServer {
     }
     if (!this.state.groupInitData.isInGroup) {
       useRoomBaseServer().getInavToolStatus().then((res) => {
-        alert(JSON.stringify(res.data))
         this.$emit('GROUP_ENTER_OUT', this.state.groupInitData.isInGroup)
       })
     } else {
