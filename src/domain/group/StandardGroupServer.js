@@ -18,14 +18,14 @@ class StandardGroupServer extends BaseServer {
     this.state = {
       // 当前用户所在小组数据
       groupInitData: {
-        isInGroup: false //不在小组中
+        isInGroup: false, //不在小组中
         // access_token: "access:fd8d3653:a68a5549b8ea8811" //访问token
         // channel_id: "ch_GeUR54XP" //通道Id
         // doc_permission: "16423152" // 主讲人ID
         // group_id: "5524386"  //小组Id
         // group_room_id: "lss_949338a9"  //分组房间id
         // inav_id: "inav_345b8731" //互动房间Id
-        // is_banned: "0"  //是否禁言
+        // is_banned: false  //个人是否禁言
         // join_role: "1"  //参会角色
         // main_screen: "16423152" //主屏账户Id
         // name: "分组1"
@@ -78,10 +78,10 @@ class StandardGroupServer extends BaseServer {
       VRTC_CONNECT_PRESENTATION_REFUSED: 'VRTC_CONNECT_PRESENTATION_REFUSED',
       // 主房间人员变动
       MAIN_ROOM_JOIN_CHANGE: 'MAIN_ROOM_JOIN_CHANGE',
-      // 进入与退出小组
+      // 主持人/助理进入与退出小组
       GROUP_MANAGER_ENTER: 'GROUP_MANAGER_ENTER',
-      // 从主房间进入小组
-      ENTER_GROUP_FROM_MAIN: 'ENTER_GROUP_FROM_MAIN'
+      //观众进出小组
+      GROUP_ENTER_OUT: 'GROUP_ENTER_OUT'
     };
 
     this.groupLeaderLeaveMap = new Map()
@@ -836,9 +836,15 @@ class StandardGroupServer extends BaseServer {
     this.state.groupInitData = data || {};
     if (this.state.groupInitData?.group_id) {
       this.state.groupInitData.isInGroup = true;
-      this.state.groupInitData.isBanned = false;
     } else {
       this.state.groupInitData.isInGroup = false;
+    }
+    if (!this.state.groupInitData.isInGroup) {
+      useRoomBaseServer().getInavToolStatus().then((res) => {
+        this.$emit('GROUP_ENTER_OUT', this.state.groupInitData.isInGroup)
+      })
+    } else {
+      this.$emit('GROUP_ENTER_OUT', this.state.groupInitData.isInGroup)
     }
   }
 
