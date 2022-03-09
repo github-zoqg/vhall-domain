@@ -221,21 +221,15 @@ class InteractiveServer extends BaseServer {
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
 
     let autoSpeak = null
-    if (useMediaCheckServer().state.deviceInfo.device_status === 1) {
+    if ((useMediaCheckServer().state.deviceInfo.device_status === 1)) {
       if (interactToolStatus.auto_speak == 1) {
-        if (groupInitData.isInGroup) {
-          autoSpeak =
-            !groupInitData.isBanned &&
-            !micServer.state.isSpeakOffToInit &&
-            watchInitData.join_info.role_name != 3
-        } else {
-          autoSpeak =
-            !chatServer.state.banned &&
-            !chatServer.state.allBanned &&
-            !micServer.state.isSpeakOffToInit &&
-            watchInitData.join_info.role_name != 3
-          console.log('[interactive server] auto_speak 1', autoSpeak)
-        }
+        autoSpeak =
+          !chatServer.state.banned &&
+          !chatServer.state.allBanned &&
+          !micServer.state.isSpeakOffToInit &&
+          watchInitData.join_info.role_name != 3
+
+        console.log('[interactive server] auto_speak 1', autoSpeak)
       } else {
         // 不自动上麦时，如果为组长，需要自动上麦
         autoSpeak =

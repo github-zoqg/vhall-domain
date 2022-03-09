@@ -55,16 +55,6 @@ class QuestionnaireServer extends BaseServer {
       this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, data);
       // console.log('问卷错误', data);
     });
-  }
-  initWatchEvent() {
-    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.SUBMIT, async data => {
-      const res = await this.submitQuestion(data);
-      this.$emit(VHall_Questionnaire_Const.EVENT.SUBMIT, res);
-    });
-    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
-      this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, data);
-      console.log('问卷错误', data);
-    });
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       console.log('问卷server监听', msg);
       switch (msg.data.event_type || msg.data.type) {
@@ -74,6 +64,16 @@ class QuestionnaireServer extends BaseServer {
           this.$emit(QUESTIONNAIRE_PUSH, msg.data);
           break;
       }
+    });
+  }
+  initWatchEvent() {
+    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.SUBMIT, async data => {
+      const res = await this.submitQuestion(data);
+      this.$emit(VHall_Questionnaire_Const.EVENT.SUBMIT, res);
+    });
+    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
+      this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, data);
+      console.log('问卷错误', data);
     });
   }
   /**
@@ -111,18 +111,7 @@ class QuestionnaireServer extends BaseServer {
       ...params
     });
   }
-  /**
-   * @description 复制问卷
-   */
-  copyQuestionnaire(surveyId) {
-    const { watchInitData } = this.useRoomBaseServer.state;
-    const { webinar, interact } = watchInitData;
-    return questionnaireApi.copyQuestionnaire({
-      webinar_id: webinar.id,
-      room_id: interact.room_id,
-      survey_id: surveyId
-    });
-  }
+
   // 推送问卷
   publishQuestionnaire(surveyId) {
     const { watchInitData } = this.useRoomBaseServer.state;
@@ -241,19 +230,20 @@ class QuestionnaireServer extends BaseServer {
   /**
    * @description 保存问卷(合并方法)
    */
-  async saveQuestionnaire(data, isShare = ture) {
+  async saveQuestionnaire(data, isShare = false) {
     const { watchInitData } = this.useRoomBaseServer.state;
-    const { interact, join_info } = watchInitData;
+    const { interact, join_info, webinar } = watchInitData;
     let relt = Promise.resolve(true);
     if (isShare) {
       if (join_info.role_name === 1) {
-        relt = await questionnaireApi.copyMainQuestion({
+        relt = await questionnaireApi.copyMainQuestionnaire({
           survey_id: data.id
         });
       } else {
-        relt = await this.copyQuestion({
-          survey_id: data.id,
-          room_id: interact.room_id
+        relt = await questionnaireApi.copyQuestionnaire({
+          webinar_id: webinar.id,
+          room_id: interact.room_id,
+          survey_id: data.id
         });
       }
     }
