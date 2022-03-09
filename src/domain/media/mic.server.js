@@ -124,11 +124,23 @@ class MicServer extends BaseServer {
     const { join_info } = roomBaseServer.state.watchInitData;
     // 分组直播speaker list
     const groupSpeakerList = useGroupServer().state.groupInitData?.speaker_list;
+    console.log('分组直播speaker list - - - - - - - - - - - - - groupSpeakerList', groupSpeakerList)
     if (groupSpeakerList && groupSpeakerList.length) {
       this.state.isSpeakOn = groupSpeakerList.some(
         item => item.account_id == join_info.third_party_user_id
       );
+      console.log('是否上麦---000---000---000----000', this.state.isSpeakOn)
       return this.state.isSpeakOn;
+      /**
+       *  const { speaker_list: groupSpeakerList, is_banned } = useGroupServer().state.groupInitData;
+    console.log('分组直播speaker', is_banned, groupSpeakerList)
+    let speakStatus = false;
+    if (groupSpeakerList && groupSpeakerList.length) {
+      speakStatus = groupSpeakerList.some(
+        item => item.account_id == join_info.third_party_user_id
+      );
+      this.state.isSpeakOn = speakStatus && is_banned === '0';
+       */
     }
     if (!speaker_list) return;
     if (speaker_list && speaker_list.length) {
