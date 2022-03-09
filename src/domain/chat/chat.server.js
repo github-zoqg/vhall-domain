@@ -7,6 +7,7 @@ import { im as iMRequest } from '@/request/index.js';
 import BaseServer from '@/domain/common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
+import useGroupServer from '../group/StandardGroupServer';
 import { debounce } from '@/utils';
 class ChatServer extends BaseServer {
   constructor() {
@@ -15,6 +16,7 @@ class ChatServer extends BaseServer {
     }
     super();
     const { interactToolStatus } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state;
     //消息sdk
     this.state = {
       //聊天记录
@@ -24,9 +26,9 @@ class ChatServer extends BaseServer {
       //预览图片地址
       imgUrls: [],
       //当前用户禁言状态
-      banned: interactToolStatus.is_banned == 1 ? true : false, //1禁言 0取消禁言
+      banned: groupInitData.isInGroup ? (groupInitData.is_banned == 1 ? true : false) : (interactToolStatus.is_banned == 1 ? true : false), //1禁言 0取消禁言
       //当前频道全部禁言状态
-      allBanned: interactToolStatus.all_banned == 1 ? true : false, //1禁言 0取消禁言
+      allBanned: groupInitData.isInGroup ? false : (interactToolStatus.all_banned == 1 ? true : false), //1禁言 0取消禁言
       limit: 10,
       curMsg: null,//当前正在编辑的消息
       prevTime: ''//用来记录每条消息的上一条消息发送的时间
@@ -44,16 +46,21 @@ class ChatServer extends BaseServer {
   //监听msgServer通知
   listenEvents() {
     const msgServer = useMsgServer();
-    const { role_name } = useRoomBaseServer().state.watchInitData.join_info
+    const groupServer = useGroupServer();
+    const { interactToolStatus } = useRoomBaseServer().state;
+    const { role_name } = useRoomBaseServer().state.watchInitData.join_info;
+    const { groupInitData } = groupServer.state
     msgServer.$onMsg('CHAT', rawMsg => {
       if (['text', 'image'].includes(rawMsg.data.type)) {
         //表情处理
         rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
         //格式化消息用于渲染并添加到消息列表
         //私聊我的消息，//自己发的消息不处理
-        if (rawMsg.data.target_id && this.isMyMsg(rawMsg)) {
-          this.state.privateChatList.push(Msg._handleGenerateMsg(rawMsg))
-          this.$emit('receivePrivateMsg', Msg._handleGenerateMsg(rawMsg));
+        if (rawMsg.data.target_id) {
+          if (this.isMyMsg(rawMsg)) {
+            this.state.privateChatList.push(Msg._handleGenerateMsg(rawMsg))
+            this.$emit('receivePrivateMsg', Msg._handleGenerateMsg(rawMsg));
+          }
           return
         }
         const msg = Msg._handleGenerateMsg(rawMsg)
@@ -81,18 +88,18 @@ class ChatServer extends BaseServer {
       }
       // 禁言当前用户
       if (rawMsg.data.type === 'disable' && this.isMyMsg(rawMsg)) {
-        this.state.banned = true;
+        this.setLocalBanned(true);
         this.$emit('banned', this.state.banned);
       }
       //取消禁言当前用户
       if (rawMsg.data.type === 'permit' && this.isMyMsg(rawMsg)) {
-        this.state.banned = false;
+        this.setLocalBanned(false);
         this.$emit('banned', this.state.banned);
       }
       // 开启全体禁言
       if (rawMsg.data.type === 'disable_all') {
         if (role_name == 2) {
-          this.state.allBanned = true;
+          this.setLocalAllBanned(true)
           this.$emit('allBanned', this.state.allBanned);
         }
 
@@ -100,7 +107,7 @@ class ChatServer extends BaseServer {
       // 关闭全体禁言
       if (rawMsg.data.type === 'permit_all') {
         if (role_name == 2) {
-          this.state.allBanned = false;
+          this.setLocalAllBanned(false)
           this.$emit('allBanned', this.state.allBanned);
         }
       }
@@ -123,6 +130,20 @@ class ChatServer extends BaseServer {
     msgServer.$on(msgServer.EVENT_TYPE.CHANNEL_CHANGE, () => {
       this.$emit('changeChannel');
     });
+    //监听进出消息
+    groupServer.$on('GROUP_ENTER_OUT', (isInGroup) => {
+      if (isInGroup) {
+        this.setLocalAllBanned(false);
+        this.setLocalBanned(groupInitData.is_banned == 1 ? true : false)
+        this.$emit('banned', this.state.banned);
+        this.$emit('allBanned', false);
+      } else {
+        this.setLocalAllBanned(interactToolStatus.all_banned == 1 ? true : false);
+        this.setLocalBanned(interactToolStatus.is_banned == 1 ? true : false)
+        this.$emit('allBanned', interactToolStatus.all_banned == 1 ? true : false);
+        this.$emit('banned', interactToolStatus.is_banned == 1 ? true : false);
+      }
+    })
   }
   // 判断是不是自己发的消息
   isSelfMsg(msg) {
@@ -307,7 +328,14 @@ class ChatServer extends BaseServer {
       });
     }
   }
-
+  //设置本地个人禁言状态
+  setLocalBanned(flag) {
+    this.state.banned = flag
+  }
+  //设置本地全员禁言状态
+  setLocalAllBanned(flag) {
+    this.state.allBanned = flag
+  }
   /**
    * 禁言/取消禁言
    * */
