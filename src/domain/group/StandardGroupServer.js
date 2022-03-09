@@ -80,6 +80,8 @@ class StandardGroupServer extends BaseServer {
       MAIN_ROOM_JOIN_CHANGE: 'MAIN_ROOM_JOIN_CHANGE',
       // 进入与退出小组
       GROUP_MANAGER_ENTER: 'GROUP_MANAGER_ENTER',
+      // 从主房间进入小组
+      ENTER_GROUP_FROM_MAIN: 'ENTER_GROUP_FROM_MAIN'
     };
 
     this.groupLeaderLeaveMap = new Map()
@@ -454,6 +456,7 @@ class StandardGroupServer extends BaseServer {
       // from 为 0 从主房间切换到子直播间
       console.log('[group]  主直播间 → 小组（从主直播间切换到小组）');
 
+      this.$emit(this.EVENT_TYPE.ENTER_GROUP_FROM_MAIN, msg)
       // 给主房间发消息通知当前人离开主房间进入子房间
       this.sendMainRoomJoinChangeMsg({
         isJoinMainRoom: false,
