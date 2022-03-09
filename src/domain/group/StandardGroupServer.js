@@ -976,50 +976,6 @@ class StandardGroupServer extends BaseServer {
     }
   }
 
-  // 收到切换小组消息,判断是否需要切换 channel
-  async getGroupJoinChangeInfo(group_ids) {
-    // 备份之前的小组信息
-    const oldGroupInitData = JSON.parse(JSON.stringify(this.state.groupInitData));
-    console.log('domain -------- oldGroupInitData', oldGroupInitData);
-    // 如果在主直播间，并且 group_ids 中包括主直播间
-    if (!oldGroupInitData.isInGroup && group_ids.indexOf(0) > -1) {
-      // 重新获取最新的 groupInitData
-      await this.init();
-      console.log('domain --------直播间->小组', this.state.groupInitData);
-      // 如果新的小组跟之前的小组不一样则需要关心,否则不需要关心
-      return {
-        isNeedCare: this.state.groupInitData.isInGroup,
-        from: 0,
-        to: this.state.groupInitData.group_id
-      };
-    }
-    // 如果是在小组中，并且 group_ids 中包括了该小组
-    if (oldGroupInitData.isInGroup && group_ids.indexOf(Number(oldGroupInitData.group_id)) > -1) {
-      await this.init();
-      console.log('domain --------小组->直播间', this.state.groupInitData);
-      // 如果现在变为不在小组了,则需要关心
-      if (!this.state.groupInitData.isInGroup) {
-        return {
-          isNeedCare: true,
-          from: oldGroupInitData.group_id,
-          to: 0
-        };
-      }
-      // 如果新的小组跟之前的小组不一样则需要关心,否则不需要关心
-      return {
-        isNeedCare: oldGroupInitData.group_id !== this.state.groupInitData.group_id,
-        from: oldGroupInitData.group_id,
-        to: groupInitData.group_id
-      };
-    }
-    // 如果不满足上述两个 if 则不需要关心
-    return {
-      isNeedCare: false,
-      from: oldGroupInitData.isInGroup ? oldGroupInitData.group_id : 0,
-      to: oldGroupInitData.isInGroup ? oldGroupInitData.group_id : 0
-    };
-  }
-
   // 分组直播，进出子房间需要在主房间发消息，维护主房间 online-list
   sendMainRoomJoinChangeMsg(options = { isJoinMainRoom: false, isBanned: false }) {
     const { watchInitData } = useRoomBaseServer().state;
