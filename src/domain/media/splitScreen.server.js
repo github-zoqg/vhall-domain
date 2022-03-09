@@ -16,7 +16,8 @@ class SplitScreenServer extends BaseServer {
     this.state = {
       isOpenSplitScreen: false,  // 是否开启分屏
       splitScreenPageUrl: '', // 分屏页面 url
-      role: '' // 当前角色，host 主页面， split 分屏页面
+      role: '', // 当前角色，host 主页面， split 分屏页面
+      isHostWaitingSplit: false // 主页面是否正在等待分屏重新连接
     };
     SplitScreenServer.instance = this;
 
@@ -110,6 +111,8 @@ class SplitScreenServer extends BaseServer {
           break
         // 分屏页面关闭前发的消息
         case 'shadow_close':
+          if (!this.state.isOpenSplitScreen) return
+          this.state.isHostWaitingSplit = true
           // 启动延时器，十秒钟之内分屏页面没有链接回来，自动关闭分屏
           this._waitSplitscreenReconnectTimer = setTimeout(() => {
             // 10s后自动断开链接，关闭分屏
@@ -126,8 +129,8 @@ class SplitScreenServer extends BaseServer {
         case 'split_screen_remote_streams_update':
           interactiveServer.state.remoteStreams = e.data.remoteStreams
           break
-        case 'cmd':
-          // this.$emit('SPLIT_SHADOW_MSG', e.data.data)
+        case 'custom_msg':
+          this.$emit('SPLIT_CUSTOM_MESSAGE', e)
           break
         default:
           break
@@ -160,12 +163,8 @@ class SplitScreenServer extends BaseServer {
         return false;
       }
       console.log('-----splitScreen--------分屏页面---postMessage----', e)
-      let type = e.data;
-      if (typeof e.data === 'object') {
-        type = e.data.type;
-      }
       const interactiveServer = useInteractiveServer()
-      switch (type) {
+      switch (e.data.type) {
         // 主页面链接成功
         case 'host_connect':
           // 主页面链接成功，给主页面发送live消息的计时器
@@ -219,18 +218,16 @@ class SplitScreenServer extends BaseServer {
           }, 10000)
 
           break;
-        case 'cmd':
-          // EventBus.$emit('INTERACT_HOST_MSG', e.data.data);
-          console.log('-----splitScreen----data', e.data.data);
-          if (e.data.data.type) {
-            // EventBus.$emit(`${e.data.data.type}-split`, e.data.data);
-            // EventBus.$emit(`${e.data.data.type}`, e.data.data);
-          }
+        case 'custom_msg':
+          this.$emit('SPLIT_CUSTOM_MESSAGE', e)
       }
     };
 
     // 分屏页面关闭事件
     this.shadowWin.onbeforeunload = () => {
+      if (!this.state.isOpenSplitScreen) {
+        return
+      }
       this.hostWin.postMessage({
         type: 'shadow_close',
         source_type: 'split_screen'
@@ -334,14 +331,21 @@ class SplitScreenServer extends BaseServer {
     }
     // 更改分屏开启状态
     this.state.isOpenSplitScreen = false
+    this.state.isHostWaitingSplit = false
     this.shadowWin = null
     this.$emit('SPLIT_SHADOW_DISCONNECT')
   }
 
   /**
-   * 结束直播
+   * 分屏发送给主页面 postMessage
    */
-  endLive() { }
+  splitSendPostMessage(body) {
+    this.hostWin.postMessage({
+      source_type: 'split_screen',
+      type: 'custom_msg',
+      body
+    })
+  }
 
 }
 export default function useSplitScreenServer() {
