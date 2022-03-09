@@ -321,7 +321,7 @@ class RoomBaseServer extends BaseServer {
   }
 
   //获取房间内各工具的状态
-  getInavToolStatus(data = {}) {
+  async getInavToolStatus(data = {}) {
     const defaultParams = {
       room_id: this.state.watchInitData.interact.room_id
     };

@@ -223,13 +223,19 @@ class InteractiveServer extends BaseServer {
     let autoSpeak = null
     if ((useMediaCheckServer().state.deviceInfo.device_status === 1)) {
       if (interactToolStatus.auto_speak == 1) {
-        autoSpeak =
-          !chatServer.state.banned &&
-          !chatServer.state.allBanned &&
-          !micServer.state.isSpeakOffToInit &&
-          watchInitData.join_info.role_name != 3
-
-        console.log('[interactive server] auto_speak 1', autoSpeak)
+        if (groupInitData.isInGroup) {
+          autoSpeak =
+            !groupInitData.isBanned &&
+            !micServer.state.isSpeakOffToInit &&
+            watchInitData.join_info.role_name != 3
+        } else {
+          autoSpeak =
+            !chatServer.state.banned &&
+            !chatServer.state.allBanned &&
+            !micServer.state.isSpeakOffToInit &&
+            watchInitData.join_info.role_name != 3
+          console.log('[interactive server] auto_speak 1', autoSpeak)
+        }
       } else {
         // 不自动上麦时，如果为组长，需要自动上麦
         autoSpeak =
@@ -237,7 +243,10 @@ class InteractiveServer extends BaseServer {
         console.log('[interactive server] auto_speak 0', autoSpeak)
       }
     }
-
+    // 主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题
+    if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup) {
+      autoSpeak = true
+    }
 
     if (autoSpeak) {
       // 调上麦接口判断当前人是否可以上麦
