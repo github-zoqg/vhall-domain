@@ -1,10 +1,12 @@
 import BaseServer from '@/domain/common/base.server.js';
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
+import useChatServer from '@/domain/chat/chat.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
 import redPacketApi from '../../request/redPacket';
 import chatApi from '../../request/im/chat/index'
-
-const RED_ENVELOPE_OK = 'red_envelope_ok'; // 支付成功消息
+const RED_ENVELOPE_OK = 'red_envelope_ok'; // 发红包
+const RED_ENVELOPE_OPEN_SUCCESS = 'red_envelope_open_success'; // 红包成功打开
+const RED_ENVELOPE_PUSH = 'red_envelope_push'; // 红包推送
 class RedPacketServer extends BaseServer {
   constructor(opts) {
     super(opts);
@@ -13,16 +15,35 @@ class RedPacketServer extends BaseServer {
       info: {},
       online: 0, // 在线人数
       amount: 0,
-      status: -1 // 红包状态: 0 抢光了
+      status: -1, // 红包状态: 0 抢光了
+      available: false // 当前红包是否可领取
     };
     this.listenMsg(opts);
   }
-
+  setUUid(uuid) {
+    this._uuid = uuid;
+  }
+  setAvailable(available) {
+    this.state.available = available;
+  }
   listenMsg(opts) {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       switch (msg.data.event_type || msg.data.type) {
         case RED_ENVELOPE_OK:
+          console.log('红包消息:RED_ENVELOPE_OK')
+          this.state.available = true
           this.$emit(RED_ENVELOPE_OK, msg.data);
+          if (opts?.mode === 'watch') {
+            useChatServer().addChatToList({
+              avatar: '//cnstatic01.e.vhall.com/static/images/watch/system.png',
+              content: {
+                text_content: '红包派发中'
+              },
+              type: msg.type,
+              interactStatus: true,
+              Show: true
+            });
+          }
           break;
       }
     });
@@ -37,7 +58,22 @@ class RedPacketServer extends BaseServer {
         if (this.state.online < 0) {
           this.state.online = 0
         }
-
+      });
+    }
+    if (opts?.mode === 'watch') {
+      useMsgServer().$onMsg('ROOM_MSG', msg => {
+        console.log('红包消息:', msg)
+        switch (msg.data.event_type || msg.data.type) {
+          case RED_ENVELOPE_PUSH: // 红包推送消息
+            console.log('红包消息:RED_ENVELOPE_PUSH')
+            this.state.available = true
+            break;
+          case RED_ENVELOPE_OPEN_SUCCESS: // 红包领取消息
+            console.log('红包消息:RED_ENVELOPE_OPEN_SUCCESS')
+            this.state.available = !(msg.data?.red_packet_status === 0);
+            console.log('available:' + this.state.available)
+            break;
+        }
       });
     }
   }
@@ -165,5 +201,8 @@ class RedPacketServer extends BaseServer {
 }
 
 export default function useRedPacketServer(opts) {
-  return new RedPacketServer(opts);
+  if (!RedPacketServer.instance) {
+    RedPacketServer.instance = new RedPacketServer(opts);
+  }
+  return RedPacketServer.instance;
 }

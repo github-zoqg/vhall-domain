@@ -3,6 +3,7 @@ import { merge, sleep } from '../../utils';
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
+import useMediaCheckServer from './mediaCheck.server';
 import useMsgServer from '../common/msg.server';
 import VhallPaasSDK from '@/sdk/index';
 import useMicServer from './mic.server';
@@ -35,7 +36,9 @@ class InteractiveServer extends BaseServer {
       showPlayIcon: false // 展示播放按钮
     };
     this.EVENT_TYPE = {
-      'INTERACTIVE_INSTANCE_INIT_SUCCESS': 'INTERACTIVE_INSTANCE_INIT_SUCCESS'
+      INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
+      INTERACTIVE_LOCAL_STREAM_UPDATE: 'INTERACTIVE_LOCAL_STREAM_UPDATE', // 本地流信息更新事件
+      INTERACTIVE_REMOTE_STREAMS_UPDATE: 'INTERACTIVE_REMOTE_STREAMS_UPDATE' // 本地流信息更新事件
     }
     InteractiveServer.instance = this;
     return this;
@@ -71,6 +74,8 @@ class InteractiveServer extends BaseServer {
         event => {
           // 互动实例
           this.interactiveInstance = event.vhallrtc;
+          console.log('[interactive server] 初始化互动实例完成')
+
           this._addListeners();
           this.state.remoteStreams = event.currentStreams.filter(stream => {
             try {
@@ -87,6 +92,9 @@ class InteractiveServer extends BaseServer {
             }
             return stream.streamType === 2;
           });
+
+          // 派发上麦流列表更新事件
+          this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
 
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
           resolve(event);
@@ -213,16 +221,21 @@ class InteractiveServer extends BaseServer {
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
 
     let autoSpeak = null
-    if (interactToolStatus.auto_speak == 1) {
-      autoSpeak =
-        !chatServer.state.banned &&
-        !chatServer.state.allBanned &&
-        !micServer.state.isSpeakOffToInit &&
-        watchInitData.join_info.role_name != 3
-    } else {
-      // 不自动上麦时，如果为组长，需要自动上麦
-      autoSpeak =
-        groupInitData.isInGroup && groupInitData.doc_permission == watchInitData.join_info.third_party_user_id
+    if ((useMediaCheckServer().state.deviceInfo.device_status === 1)) {
+      if (interactToolStatus.auto_speak == 1) {
+        autoSpeak =
+          !chatServer.state.banned &&
+          !chatServer.state.allBanned &&
+          !micServer.state.isSpeakOffToInit &&
+          watchInitData.join_info.role_name != 3
+
+        console.log('[interactive server] auto_speak 1', autoSpeak)
+      } else {
+        // 不自动上麦时，如果为组长，需要自动上麦
+        autoSpeak =
+          groupInitData.isInGroup && groupInitData.doc_permission == watchInitData.join_info.third_party_user_id
+        console.log('[interactive server] auto_speak 0', autoSpeak)
+      }
     }
 
 
@@ -267,11 +280,16 @@ class InteractiveServer extends BaseServer {
    * @returns {Promise}}
    */
   destroy() {
+    if (!this.interactiveInstance) {
+      return Promise.reject('互动实例不存在')
+    }
     return this.interactiveInstance
       .destroyInstance()
       .then(() => {
         this.interactiveInstance = null;
         this.state.remoteStreams = [];
+        // 派发上麦流列表更新事件
+        this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
         this._clearLocalStream()
       }).then(() => {
         console.log('互动sdk销毁成功');
@@ -312,6 +330,8 @@ class InteractiveServer extends BaseServer {
           videoMuted: e.data.stream.initMuted.video
         };
         this.state.remoteStreams.push(remoteStream);
+        // 派发上麦流列表更新事件
+        this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
       }
       console.log('----流加入事件----', e);
 
@@ -331,6 +351,8 @@ class InteractiveServer extends BaseServer {
         this.state.remoteStreams = this.state.remoteStreams.filter(
           stream => stream.streamId != e.data.streamId
         );
+        // 派发上麦流列表更新事件
+        this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
       }
       this.$emit('EVENT_REMOTESTREAM_REMOVED', e);
     });
@@ -347,6 +369,8 @@ class InteractiveServer extends BaseServer {
         // 本地流处理
         this.state.localStream.audioMuted = e.data.muteStream.audio;
         this.state.localStream.videoMuted = e.data.muteStream.video;
+        // 派发本地流更新事件
+        this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
         console.log('----本地流处理----', this.state.localStream);
       } else {
         // 远端流处理
@@ -354,6 +378,8 @@ class InteractiveServer extends BaseServer {
           if (e.data.streamId == stream.streamId) {
             stream.audioMuted = e.data.muteStream.audio;
             stream.videoMuted = e.data.muteStream.video;
+            // 派发上麦流列表更新事件
+            this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
             return true;
           }
         });
@@ -541,9 +567,11 @@ class InteractiveServer extends BaseServer {
     return this.createLocalStream(params).then(data => {
       this.state.localStream = {
         streamId: data.streamId,
-        audioMuted: options.mute?.audio || false,
-        videoMuted: options.mute?.video || false
+        audioMuted: defaultOptions.mute?.audio || false,
+        videoMuted: defaultOptions.mute?.video || false
       };
+      // 派发本地流更新事件
+      this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
       return data
     });
   }
@@ -649,6 +677,8 @@ class InteractiveServer extends BaseServer {
 
     const { groupInitData } = useGroupServer().state
 
+    const { interactToolStatus } = useRoomBaseServer().state;
+
     const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
 
     const roleName = isGroupLeader ? 20 : watchInitData.join_info.role_name
@@ -662,13 +692,28 @@ class InteractiveServer extends BaseServer {
         nickname: watchInitData.join_info.nickname
       }) //选填，自定义信息，支持字符串类型
     };
+
+    // 当前用户是否在上麦列表中
+    const isOnMicObj = interactToolStatus.speaker_list.find(
+      item => item.account_id == watchInitData.join_info.third_party_user_id
+    );
+
+    // 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
+    if (isOnMicObj) {
+      defaultOptions.mute = {
+        audio: !isOnMicObj.audio,
+        video: !isOnMicObj.video
+      };
+    }
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return this.createLocalStream(params).then(data => {
       this.state.localStream = {
         streamId: data.streamId,
-        audioMuted: options.mute?.audio || false,
-        videoMuted: options.mute?.video || false
+        audioMuted: defaultOptions.mute?.audio || false,
+        videoMuted: defaultOptions.mute?.video || false
       };
+      // 派发本地流更新事件
+      this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
       return data
     });
   }
@@ -710,8 +755,8 @@ class InteractiveServer extends BaseServer {
     return await this.createLocalStream(params).then(data => {
       this.state.localStream = {
         streamId: data.streamId,
-        audioMuted: options.mute?.audio || false,
-        videoMuted: options.mute?.video || false
+        audioMuted: defaultOptions.mute?.audio || false,
+        videoMuted: defaultOptions.mute?.video || false
       };
       return data
     });;
@@ -793,6 +838,8 @@ class InteractiveServer extends BaseServer {
       audioMuted: false,
       attributes: {}
     };
+    // 派发本地流更新事件
+    this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
   }
 
   /**
@@ -1033,6 +1080,7 @@ class InteractiveServer extends BaseServer {
 
   // 订阅流列表
   getRoomStreams() {
+    if (!this.interactiveInstance) return;
     return this.interactiveInstance.getRoomStreams();
   }
 
@@ -1073,11 +1121,15 @@ class InteractiveServer extends BaseServer {
       if (options.streamId == this.state.localStream.streamId) {
         // 更新本地流视频静默状态
         this.state.localStream.videoMuted = options.isMute;
+        // 派发本地流更新事件
+        this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
       } else {
         // 更新远端流视频静默状态
         this.state.remoteStreams.some(item => {
           if ((item.streamId = options.streamId)) {
             item.videoMuted = options.videoMuted;
+            // 派发上麦流列表更新事件
+            this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
             return true;
           }
         });
@@ -1096,11 +1148,15 @@ class InteractiveServer extends BaseServer {
       if (options.streamId == this.state.localStream.streamId) {
         // 更新本地流音频静默状态
         this.state.localStream.audioMuted = options.isMute;
+        // 派发本地流更新事件
+        this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
       } else {
         // 更新远端流音频默状态
         this.state.remoteStreams.some(item => {
           if ((item.streamId = options.streamId)) {
             item.audioMuted = options.isMute;
+            // 派发上麦流列表更新事件
+            this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
             return true;
           }
         });
