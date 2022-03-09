@@ -23,6 +23,9 @@ class RedPacketServer extends BaseServer {
   setUUid(uuid) {
     this._uuid = uuid;
   }
+  setAvailable(available) {
+    this.state.available = available;
+  }
   listenMsg(opts) {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       switch (msg.data.event_type || msg.data.type) {
