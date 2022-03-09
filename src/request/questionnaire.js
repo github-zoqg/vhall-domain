@@ -85,6 +85,14 @@ const checkAnswerStatus = params => {
     params
   });
 };
+// 获取最后一次问卷
+const getLastSurvey = params => {
+  return request({
+    url: '/v3/vss/survey/latest-publish-webinar-survey',
+    method: 'GET',
+    params
+  });
+};
 
 export default {
   queryQuestionnaireList,
@@ -96,5 +104,6 @@ export default {
   editQuestionnaire,
   submitQuestionnaire,
   checkAnswerStatus,
-  getVodQuestion
+  getVodQuestion,
+  getLastSurvey
 };
