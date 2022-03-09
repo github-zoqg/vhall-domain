@@ -35,7 +35,9 @@ class InteractiveServer extends BaseServer {
       showPlayIcon: false // 展示播放按钮
     };
     this.EVENT_TYPE = {
-      'INTERACTIVE_INSTANCE_INIT_SUCCESS': 'INTERACTIVE_INSTANCE_INIT_SUCCESS'
+      INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
+      INTERACTIVE_LOCAL_STREAM_UPDATE: 'INTERACTIVE_LOCAL_STREAM_UPDATE', // 本地流信息更新事件
+      INTERACTIVE_REMOTE_STREAMS_UPDATE: 'INTERACTIVE_REMOTE_STREAMS_UPDATE' // 本地流信息更新事件
     }
     InteractiveServer.instance = this;
     return this;
@@ -89,6 +91,9 @@ class InteractiveServer extends BaseServer {
             }
             return stream.streamType === 2;
           });
+
+          // 派发上麦流列表更新事件
+          this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
 
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
           resolve(event);
@@ -273,11 +278,16 @@ class InteractiveServer extends BaseServer {
    * @returns {Promise}}
    */
   destroy() {
+    if (!this.interactiveInstance) {
+      return Promise.reject('互动实例不存在')
+    }
     return this.interactiveInstance
       .destroyInstance()
       .then(() => {
         this.interactiveInstance = null;
         this.state.remoteStreams = [];
+        // 派发上麦流列表更新事件
+        this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
         this._clearLocalStream()
       }).then(() => {
         console.log('互动sdk销毁成功');
@@ -318,6 +328,8 @@ class InteractiveServer extends BaseServer {
           videoMuted: e.data.stream.initMuted.video
         };
         this.state.remoteStreams.push(remoteStream);
+        // 派发上麦流列表更新事件
+        this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
       }
       console.log('----流加入事件----', e);
 
@@ -337,6 +349,8 @@ class InteractiveServer extends BaseServer {
         this.state.remoteStreams = this.state.remoteStreams.filter(
           stream => stream.streamId != e.data.streamId
         );
+        // 派发上麦流列表更新事件
+        this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
       }
       this.$emit('EVENT_REMOTESTREAM_REMOVED', e);
     });
@@ -353,6 +367,8 @@ class InteractiveServer extends BaseServer {
         // 本地流处理
         this.state.localStream.audioMuted = e.data.muteStream.audio;
         this.state.localStream.videoMuted = e.data.muteStream.video;
+        // 派发本地流更新事件
+        this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
         console.log('----本地流处理----', this.state.localStream);
       } else {
         // 远端流处理
@@ -360,6 +376,8 @@ class InteractiveServer extends BaseServer {
           if (e.data.streamId == stream.streamId) {
             stream.audioMuted = e.data.muteStream.audio;
             stream.videoMuted = e.data.muteStream.video;
+            // 派发上麦流列表更新事件
+            this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
             return true;
           }
         });
@@ -550,6 +568,8 @@ class InteractiveServer extends BaseServer {
         audioMuted: options.mute?.audio || false,
         videoMuted: options.mute?.video || false
       };
+      // 派发本地流更新事件
+      this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
       return data
     });
   }
@@ -675,6 +695,8 @@ class InteractiveServer extends BaseServer {
         audioMuted: options.mute?.audio || false,
         videoMuted: options.mute?.video || false
       };
+      // 派发本地流更新事件
+      this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
       return data
     });
   }
@@ -799,6 +821,8 @@ class InteractiveServer extends BaseServer {
       audioMuted: false,
       attributes: {}
     };
+    // 派发本地流更新事件
+    this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
   }
 
   /**
@@ -1039,6 +1063,7 @@ class InteractiveServer extends BaseServer {
 
   // 订阅流列表
   getRoomStreams() {
+    if (!this.interactiveInstance) return;
     return this.interactiveInstance.getRoomStreams();
   }
 
@@ -1079,11 +1104,15 @@ class InteractiveServer extends BaseServer {
       if (options.streamId == this.state.localStream.streamId) {
         // 更新本地流视频静默状态
         this.state.localStream.videoMuted = options.isMute;
+        // 派发本地流更新事件
+        this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
       } else {
         // 更新远端流视频静默状态
         this.state.remoteStreams.some(item => {
           if ((item.streamId = options.streamId)) {
             item.videoMuted = options.videoMuted;
+            // 派发上麦流列表更新事件
+            this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
             return true;
           }
         });
@@ -1102,11 +1131,15 @@ class InteractiveServer extends BaseServer {
       if (options.streamId == this.state.localStream.streamId) {
         // 更新本地流音频静默状态
         this.state.localStream.audioMuted = options.isMute;
+        // 派发本地流更新事件
+        this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
       } else {
         // 更新远端流音频默状态
         this.state.remoteStreams.some(item => {
           if ((item.streamId = options.streamId)) {
             item.audioMuted = options.isMute;
+            // 派发上麦流列表更新事件
+            this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
             return true;
           }
         });
