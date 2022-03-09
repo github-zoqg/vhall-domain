@@ -3,6 +3,7 @@ import { uploadFile, isChrome88 } from '@/utils/index.js';
 import { im as iMRequest } from '@/request/index.js';
 import useRoomBaseServer from '../room/roombase.server';
 import BaseServer from '../common/base.server.js';
+import useMsgServer from '../common/msg.server'
 import useInteractiveServer from './interactive.server.js';
 
 class InsertFileServer extends BaseServer {
@@ -41,6 +42,7 @@ class InsertFileServer extends BaseServer {
   // 注册监听事件
   _addListeners() {
     const interactiveServer = useInteractiveServer();
+    const msgServer = useMsgServer()
     // 流加入
     interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
@@ -63,6 +65,18 @@ class InsertFileServer extends BaseServer {
         this.$emit('INSERT_FILE_STREAM_FAILED', e);
       }
     });
+    // msg消息监听
+    msgServer.$onMsg('ROOM_MSG', msg => {
+      switch (msg.data.type) {
+        // 开始直播
+        case 'live_start':
+          this.$emit('live_start', msg);
+          break;
+        // 结束直播
+        case 'live_over':
+          this.$emit('live_over', msg)
+      }
+    })
   }
 
 
