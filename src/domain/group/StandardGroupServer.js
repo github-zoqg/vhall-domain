@@ -72,6 +72,8 @@ class StandardGroupServer extends BaseServer {
       GROUP_MSG_CREATED: 'GROUP_MSG_CREATED',
       // 切换主屏
       VRTC_BIG_SCREEN_SET: 'VRTC_BIG_SCREEN_SET',
+      // 演示者变更
+      VRTC_PRESENTATION_SCREEN_SET: 'VRTC_PRESENTATION_SCREEN_SET',
       // 结束演示
       VRTC_DISCONNECT_PRESENTATION_SUCCESS: 'VRTC_DISCONNECT_PRESENTATION_SUCCESS',
       // 拒绝演示
@@ -286,7 +288,7 @@ class StandardGroupServer extends BaseServer {
       useMsgServer().destroyGroupMsg();
 
       // 退出小组重新初始化互动
-      await useInteractiveServer().groupReInitInteractProcess()
+      await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupDisband')
 
       // 处理文档channel切换逻辑
       await useDocServer().groupReInitDocProcess();
@@ -341,7 +343,7 @@ class StandardGroupServer extends BaseServer {
       this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
       // 处理分组下互动sdk切换channel
-      await useInteractiveServer().groupReInitInteractProcess()
+      await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupSwitchStart')
 
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
@@ -396,7 +398,7 @@ class StandardGroupServer extends BaseServer {
     useMsgServer().destroyGroupMsg();
 
     // 处理分组下互动sdk切换channel
-    await useInteractiveServer().groupReInitInteractProcess();
+    await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupSwitchEnd');
 
     // 处理文档channel切换逻辑
     await useDocServer().groupReInitDocProcess();
@@ -454,7 +456,7 @@ class StandardGroupServer extends BaseServer {
       useMsgServer().destroyGroupMsg();
       // 处理分组下互动sdk切换channel
 
-      await useInteractiveServer().groupReInitInteractProcess();
+      await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupJoinChange groupJoinChangeInfo.to === 0');
 
       // 处理文档channel切换逻辑
       await useDocServer().groupReInitDocProcess();
@@ -484,7 +486,7 @@ class StandardGroupServer extends BaseServer {
         this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
         // 处理分组下互动sdk切换channel
-        await useInteractiveServer().groupReInitInteractProcess();
+        await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupJoinChange is_open_switch === 1 && isInGroup');
 
         // 处理文档channel切换逻辑
         await useDocServer().groupReInitDocProcess();
@@ -509,7 +511,7 @@ class StandardGroupServer extends BaseServer {
         this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
         // 处理分组下互动sdk切换channel
-        await useInteractiveServer().groupReInitInteractProcess();
+        await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupJoinChange else');
 
         // 处理文档channel切换逻辑
         await useDocServer().groupReInitDocProcess();
@@ -585,7 +587,7 @@ class StandardGroupServer extends BaseServer {
       useMsgServer().destroyGroupMsg();
 
       // 处理分组下互动sdk切换channel
-      await useInteractiveServer().groupReInitInteractProcess();
+      await useInteractiveServer().groupReInitInteractProcess('msgdoForRoomGroupKickout');
 
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
@@ -603,6 +605,8 @@ class StandardGroupServer extends BaseServer {
       await useRoomBaseServer().getInavToolStatus();
     }
     useDocServer()._setDocPermisson();
+
+    this.$emit(this.EVENT_TYPE.VRTC_PRESENTATION_SCREEN_SET, msg);
   }
 
   // 同意邀请演示成功消息

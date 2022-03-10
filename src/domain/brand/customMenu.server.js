@@ -22,7 +22,7 @@ class CustomMenuServer {
   }
 
   // 获取推广列表
-  getPromoteList() {}
+  getPromoteList() { }
 
   // 获取活动直播列表
   getActiveList(params = {}) {
@@ -37,6 +37,20 @@ class CustomMenuServer {
   // 获取自定义菜单详细内容
   getCustomMenuDetail(params = {}) {
     return customMenuRequest.getCustomMenuDetail(params);
+  }
+
+  // 自定义菜单排行榜
+  getInviteTopList(params = {}) {
+    return customMenuRequest.getInviteTopList(params)
+  }
+
+  // 自定义菜单的邀请信息
+  getInviteInfo(params = {}) {
+    return customMenuRequest.getInviteInfo(params)
+  }
+
+  getAwardList(params = {}) {
+    return customMenuRequest.getAwardList(params)
   }
 }
 
