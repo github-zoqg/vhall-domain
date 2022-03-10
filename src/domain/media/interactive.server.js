@@ -135,8 +135,9 @@ class InteractiveServer extends BaseServer {
   /*
   * 分组进入，退出重新初始化操作
   */
-  async groupReInitInteractProcess() {
+  async groupReInitInteractProcess(source) {
 
+    console.log('%c分组重新初始化互动source', 'color:#7cb305', source);
     if (useMicServer().getSpeakerStatus()) {
       await useMicServer().speakOff()
     }
