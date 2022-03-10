@@ -5,6 +5,7 @@ import useMsgServer from '../common/msg.server';
 import useDocServer from '../doc/doc.server';
 import { group as groupApi } from '../../request/index.js';
 import { isPc, sleep } from '@/utils/index.js';
+import useMicServer from '../media/mic.server';
 
 /**
  * 标准分组直播场景下的分组相关服务
@@ -318,6 +319,9 @@ class StandardGroupServer extends BaseServer {
     useRoomBaseServer().setInavToolStatus('is_open_switch', 1);
     // 任何关于分组的操作都需要重新获取主持端的互动工具状态 - 业务侧获取主持人状态
     await useRoomBaseServer().getInavToolStatus();
+
+
+
     if (useRoomBaseServer().state.watchInitData.join_info.role_name == 2) {
       // 观看端
       // 更新个人所在小组信息
@@ -431,7 +435,11 @@ class StandardGroupServer extends BaseServer {
     }
 
     const groupJoinChangeInfo = await this.getGroupJoinChangeInfo(msg.data.group_ids);
+
     console.log('[group] groupJoinChangeInfo:', groupJoinChangeInfo);
+
+
+
     // 如果不需要关心这条切换的小组消息,直接 return
     if (!groupJoinChangeInfo.isNeedCare) {
       console.log('[group] 当前用户不需要关心这条切换的小组消息');
@@ -849,6 +857,9 @@ class StandardGroupServer extends BaseServer {
     } else {
       this.$emit('GROUP_ENTER_OUT', this.state.groupInitData.isInGroup)
     }
+
+    // 更新主房间speakerList
+    useMicServer().updateSpeakerList()
   }
 
   /**
