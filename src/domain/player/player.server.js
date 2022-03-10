@@ -198,6 +198,7 @@ class PlayerServer extends BaseServer {
   // 播放器注册事件监听
   _addPlayerListeners() {
     const msgServer = useMsgServer();
+    const roomBaseServer = useRoomBaseServer()
     // 弹幕
     msgServer.$onMsg('CHAT', msg => {
       if (!msg.data.barrageTxt.includes('<img')) {
@@ -227,6 +228,14 @@ class PlayerServer extends BaseServer {
         this.$emit('pay_success', msg.data);
       }
     });
+
+    // 单点登录逻辑
+    roomBaseServer.$on('ROOM_SIGNLE_LOGIN', () => {
+      setTimeout(() => {
+        // 播放器销毁
+        this.destroy()
+      }, 2000)
+    })
 
     // 视频加载完成
     this.playerInstance.on(VhallPlayer.LOADED, e => {
