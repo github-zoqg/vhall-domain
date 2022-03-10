@@ -371,6 +371,17 @@ class RoomBaseServer extends BaseServer {
     });
   }
 
+  // 打开观看端是微信分享
+  bindShare(data = {}) {
+    const defaultParams = {
+      room_id: this.state.watchInitData.interact.room_id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return meeting.bindShare(retParams).then(res => {
+      return res;
+    })
+  }
+
   // 设置互动
   setInavToolStatus(props, val) {
     if (!props || typeof props !== 'string') return;
