@@ -152,10 +152,14 @@ export default class StandardDocServer extends AbstractDocServer {
       switch (msg.data.event_type || msg.data.type) {
         // 直播结束
         case 'live_over':
+          console.log('[doc] 直播结束，删除所有容器');
+          // 观众不可见
+          this.switchOffContainer()
+          // 删除所有容器
           for (const item of this.state.containerList) {
-            // 删除所有容器
             await this.destroyContainer(item.cid);
           }
+
           // 还原
           this.state.currentCid = ''; //当前正在展示的容器id
           this.state.docCid = ''; // 当前文档容器Id
@@ -398,10 +402,9 @@ export default class StandardDocServer extends AbstractDocServer {
    * 退出重进或刷新恢复数据
    * @param {Number} width 容器宽，必填
    * @param {height} height 容器高，必填
-   * @param {Function} bindCidFun 等待cid绑定的处理函数
    * @returns
    */
-  async recover({ width, height, bindCidFun }) {
+  async recover({ width, height }) {
     console.log('[doc] recover start：');
     if (!width || !height) {
       console.error('容器宽高错误', width, height);
@@ -433,8 +436,7 @@ export default class StandardDocServer extends AbstractDocServer {
         height,
         fileType,
         cid: item.cid,
-        docId: item.docId,
-        bindCidFun
+        docId: item.docId
       });
       if (fileType == 'document') {
         this.state.docCid = item.cid;
@@ -464,17 +466,15 @@ export default class StandardDocServer extends AbstractDocServer {
    * @param {String} cid 容器id，非必填，如果不存在需要调用 createUUID 新建
    * @param {String} docId 具体演示文件id,演示文档时必填，白板为空
    * @param {String} docType 具体演示文件类型,非必填，1:动态文档，即ppt；2:静态文档,即JPG
-   * @param {Function} bindCidFun 等待cid绑定的处理函数
    */
-  async addNewDocumentOrBorad({ width, height, fileType, cid, docId, docType, bindCidFun }) {
+  async addNewDocumentOrBorad({ width, height, fileType, cid, docId, docType }) {
     const elId = await this.initDocumentOrBoardContainer({
       width,
       height,
       fileType,
       cid,
       docId,
-      docType,
-      bindCidFun
+      docType
     });
     await this.activeContainer(elId);
     if (fileType === 'document') {
@@ -502,27 +502,17 @@ export default class StandardDocServer extends AbstractDocServer {
    * @param {String} cid 容器id，非必填，如果不存在需要调用 createUUID 新建
    * @param {String} docId 具体演示文件id,演示文档时必填，白板为空
    * @param {String} docType 具体演示文件类型,非必填，1:动态文档，即ppt；2:静态文档,即JPG
-   * @param {Function} bindCidFun 等待cid绑定的处理函数
    */
   async initDocumentOrBoardContainer({
     width,
     height,
     fileType = 'document',
     cid,
-    docId = '',
-    bindCidFun
+    docId = ''
   }) {
     if (fileType === 'document' && !docId) {
       throw new Error('required docment param docId');
     }
-    // console.log('[doc] initDocumentOrBoardContainer:', {
-    //   width,
-    //   height,
-    //   fileType,
-    //   cid,
-    //   docId,
-    //   bindCidFun
-    // });
     if (!cid) {
       cid = this.createUUID(fileType);
     }
