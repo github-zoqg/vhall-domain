@@ -824,18 +824,20 @@ class InteractiveServer extends BaseServer {
     }
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return await this.createLocalStream(params).then(data => {
-
       let params = {
         streamId: data.streamId,
         audioMuted: defaultOptions.mute?.audio || false,
         videoMuted: defaultOptions.mute?.video || false
       }
-      useMicServer().updateSpeakerByAccountId(speaker.accountId, params)
+
+      if (speaker) {
+        useMicServer().updateSpeakerByAccountId(speaker.accountId, params)
+      }
       this.state.localStream = {
         streamId: data.streamId,
       };
       return data
-    });;
+    });
   }
 
   // 销毁本地流
@@ -873,6 +875,7 @@ class InteractiveServer extends BaseServer {
 
   // 推送本地流到远端
   publishStream(options = {}) {
+    console.warn('查看推流信息----', options.streamId || this.state.localStream.streamId)
     const { state: roomBaseServerState } = useRoomBaseServer();
     return this.interactiveInstance
       .publish({
