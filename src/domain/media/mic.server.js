@@ -54,7 +54,6 @@ class MicServer extends BaseServer {
   // 获取是否上麦状态
   getSpeakerStatus() {
     const { join_info } = useRoomBaseServer().state.watchInitData;
-    console.warn('获取上麦状态', join_info, this.state.speakerList, useGroupServer().state.groupInitData)
     this.state.isSpeakOn = this.state.speakerList.some(speaker => speaker.accountId == join_info.third_party_user_id)
     return this.state.isSpeakOn
 
