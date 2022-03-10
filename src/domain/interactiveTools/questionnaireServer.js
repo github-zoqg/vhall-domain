@@ -24,6 +24,7 @@ class QuestionnaireServer extends BaseServer {
       dotVisible: false, // 小红点是否显示
       lastQuestionnaireId: ''
     }
+    this._mode = opts?.mode || 'watch'
     if (opts.mode === 'watch') {
       this.checkIconStatus()
     }
@@ -49,16 +50,25 @@ class QuestionnaireServer extends BaseServer {
     } else {
       this.initLiveEvent();
     }
-    useMsgServer().$onMsg('ROOM_MSG', msg => {
+    useMsgServer().$onMsg('ROOM_MSG', async msg => {
       console.log('问卷server监听', msg);
       switch (msg.data.event_type || msg.data.type) {
         //【分组创建/新增完成】
         case QUESTIONNAIRE_PUSH:
           console.log('问卷消息', msg);
-          this.state.dotVisible = true
-          this.state.iconVisible = true
-          this.state.lastQuestionnaireId = msg.data.questionnaire_id
-          this.$emit(QUESTIONNAIRE_PUSH, msg.data);
+          if (this._mode === 'watch') {
+            const questionnaireId = msg.data.questionnaire_id
+            await this.checkAnswerStatus(questionnaireId).then(res => {
+              if (res?.data === true) {
+                this.state.lastQuestionnaireId = questionnaireId
+                this.state.dotVisible = true
+                this.state.iconVisible = true
+                this.$emit(QUESTIONNAIRE_PUSH, msg.data);
+              }
+            })
+          } else {
+            this.$emit(QUESTIONNAIRE_PUSH, msg.data);
+          }
           break;
       }
     });
@@ -80,6 +90,10 @@ class QuestionnaireServer extends BaseServer {
   initWatchEvent() {
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.SUBMIT, async data => {
       const res = await this.submitQuestion(data);
+      // 最后小红点以最后一个问卷的提交情况为准
+      if (data.naire_id == this.state.lastQuestionnaireId) {
+        this.state.dotVisible = false
+      }
       this.$emit(VHall_Questionnaire_Const.EVENT.SUBMIT, res);
     });
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {

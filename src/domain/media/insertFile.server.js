@@ -123,22 +123,6 @@ class InsertFileServer extends BaseServer {
     return stream;
   }
 
-  // 注册插播流删除事件
-  // onInsertFileStreamDelete(cb) {
-  //   const interactiveServer = useInteractiveServer();
-  //   interactiveServer.on('interactive_REMOTESTREAM_REMOVED', e => {
-  //     cb(e);
-  //   });
-  // }
-
-  // 插播流订阅失败
-  // onInsertFileStreamFaild(cb) {
-  //   const interactiveServer = useInteractiveServer();
-  //   interactiveServer.on('interactive_REMOTESTREAM_FAILED', e => {
-  //     cb(e);
-  //   });
-  // }
-
   // 获取插播列表
   getInsertFileList(params = {}) {
     return insertFile.getInsertFileList(params);
