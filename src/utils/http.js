@@ -52,7 +52,7 @@ service.interceptors.request.use(
     };
 
     // 如果有 live_token 就不需要传 token
-    if (Object.hasOwnProperty.call(config.data, 'live_token')) {
+    if (config.data.live_token) {
       delete config.headers.token;
     }
 
