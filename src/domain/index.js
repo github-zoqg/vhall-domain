@@ -35,7 +35,7 @@ import useZIndexServer from '@/domain/interactiveTools/ZIndexServer.js';
 // 问答关联
 import useQaAdminServer from '@/domain/interactiveTools/qaadmin.server.js';
 import useQaServer from '@/domain/interactiveTools/qa.server.js';
-import { setToken, setRequestHeaders } from '@/utils/http.js';
+import { setRequestBody, setRequestHeaders } from '@/utils/http.js';
 import VhallPaasSDK from '../sdk';
 import { Dep } from '@/domain/common/base.server';
 import { INIT_DOMAIN } from '@/domain/common/dep.const';
@@ -70,7 +70,10 @@ import useRecommendServer from '@/domain/brand/recommend.server'
 class Domain {
   constructor(options) {
     if (options.requestHeaders) {
-      this.setRequestConfig(options.requestHeaders);
+      setRequestHeaders(options.requestHeaders);
+    }
+    if (options.requestBody) {
+      setRequestBody(options.requestBody);
     }
     let taskList = [];
     // 是否在创建domain实例的时候初始化房间
@@ -96,16 +99,6 @@ class Domain {
         resolve();
       });
     });
-  }
-
-  //设置请求相关配置
-  setRequestConfig(options) {
-    const { token, liveToken } = options;
-    setToken(token, liveToken);
-
-    token && delete options.token;
-    liveToken && delete options.liveToken;
-    setRequestHeaders(options || {});
   }
 
   //初始化房间信息

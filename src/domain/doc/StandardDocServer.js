@@ -65,7 +65,9 @@ export default class StandardDocServer extends AbstractDocServer {
         this._initEvent();
 
         const { watchInitData } = useRoomBaseServer().state;
-
+        if (watchInitData.join_info.role_name == 3) {
+          this.setRole(VHDocSDK.RoleType.ASSISTANT);
+        }
         // 无延迟
         if (watchInitData.webinar.no_delay_webinar) {
           this.setPlayMode(VHDocSDK.PlayMode.INTERACT);
