@@ -72,6 +72,8 @@ class StandardGroupServer extends BaseServer {
       GROUP_MSG_CREATED: 'GROUP_MSG_CREATED',
       // 切换主屏
       VRTC_BIG_SCREEN_SET: 'VRTC_BIG_SCREEN_SET',
+      // 演示者变更
+      VRTC_PRESENTATION_SCREEN_SET: 'VRTC_PRESENTATION_SCREEN_SET',
       // 结束演示
       VRTC_DISCONNECT_PRESENTATION_SUCCESS: 'VRTC_DISCONNECT_PRESENTATION_SUCCESS',
       // 拒绝演示
@@ -604,6 +606,8 @@ class StandardGroupServer extends BaseServer {
       await useRoomBaseServer().getInavToolStatus();
     }
     useDocServer()._setDocPermisson();
+
+    this.$emit(this.EVENT_TYPE.VRTC_PRESENTATION_SCREEN_SET, msg);
   }
 
   // 同意邀请演示成功消息
