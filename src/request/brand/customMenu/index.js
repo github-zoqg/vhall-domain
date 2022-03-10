@@ -52,8 +52,59 @@ function getProjectList(data = {}) {
   });
 }
 
+/**
+ * 获取排行榜内容
+ * @param {*} data 
+ * @returns 
+ */
+function getInviteTopList(data = {}) {
+  const v3 = '/v3/interacts/invite-card/get-top-list'
+  const url = v3;
+
+  return request({
+    url,
+    method: 'POST',
+    data
+  })
+}
+
+/**
+ * 获取自定义菜单的邀请信息
+ * @param {*} data 
+ * @returns 
+ */
+function getInviteInfo(data = {}) {
+  const v3 = '/v3/interacts/invite-card/watch-get-info'
+
+  return request({
+    url,
+    method: 'POST',
+    data
+  })
+}
+
+/**
+ * 获取打赏榜
+ * @param {*} data 
+ * @returns 
+ */
+function getAwardList(data = {}) {
+  const v3 = '/v3/interacts/reward/get-reward-top-list'
+
+  const url = v3
+
+  return request({
+    url,
+    method: 'POST',
+    data
+  })
+}
+
 export default {
   getCustomMenuDetail,
   getActiveList,
-  getProjectList
+  getProjectList,
+  getInviteTopList,
+  getInviteInfo,
+  getAwardList
 };
