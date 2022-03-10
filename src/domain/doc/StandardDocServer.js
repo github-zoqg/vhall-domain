@@ -348,7 +348,7 @@ export default class StandardDocServer extends AbstractDocServer {
     // 观看端(
     console.log('getContainerList=>switchStatus:', this.state.switchStatus);
     // 通知观众可见状态
-    this.$emit('dispatch_doc_switch_change', this.state.switchStatus);
+    this.$emit('dispatch_doc_switch_status', this.state.switchStatus);
 
     const roomBaseServer = useRoomBaseServer();
     if (roomBaseServer.state.clientType != 'send') {
