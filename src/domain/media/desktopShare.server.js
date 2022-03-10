@@ -11,14 +11,18 @@ class DesktopShareServer extends BaseServer {
     }
     this.state = {
       localDesktopStreamId: '',
-      isShareScreen: false, // 是否桌面共享
-
+      desktopShareInfo: {
+        accountId: '',
+        nickname: '',
+        role: ''
+      }
     };
     DesktopShareServer.instance = this;
 
     return this;
   }
   init() {
+    this.initDesktopShareStatus()
     this._addListeners();
   }
   _addListeners() {
@@ -27,36 +31,39 @@ class DesktopShareServer extends BaseServer {
     // 远端流加入事件
     interactiveServer.$on('INTERACTIVE_INSTANCE_INIT_SUCCESS', () => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-
-      let stream = interactiveServer.getDesktopAndIntercutInfo();
-      if (stream?.streamType === 3 || stream?.streamType === 4) {
-        this.$emit('screen_stream_add', stream.streamId);
-      }
+      this.initDesktopShareStatus()
     });
 
     // 远端流加入事件
     interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      if (e.data.streamType === 3 || e.data.streamType === 4) {
+      if (e.data.streamType === 3) {
+        this.state.desktopShareInfo = e.data.attributes
+        this.state.localDesktopStreamId = e.data.streamId
         this.$emit('screen_stream_add', e.data.streamId);
       }
     });
     // 远端流离开事件
     interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      if (e.data.streamType === 3 || e.data.streamType === 4) {
-
+      if (e.data.streamType === 3) {
         const miniElement = useGroupServer().state.groupInitData.isInGroup ? 'stream-list' : ''
         useRoomBaseServer().setChangeElement(miniElement);
-        this.setShareScreenStatus(false);
 
         this.$emit('screen_stream_remove', e);
       }
     });
   }
-  // 设置isShareScreen的值
-  setShareScreenStatus(val) {
-    this.state.isShareScreen = val;
+
+  // 初始化桌面共享状态
+  initDesktopShareStatus() {
+    const interactiveServer = useInteractiveServer();
+    let stream = interactiveServer.getDesktopAndIntercutInfo();
+    if (stream?.streamType === 3) {
+      this.state.localDesktopStreamId = stream.streamId
+      this.state.desktopShareInfo = stream.attributes
+      this.$emit('screen_stream_add', stream.streamId);
+    }
   }
 
   //检测浏览器是否支持桌面共享
@@ -119,23 +126,31 @@ class DesktopShareServer extends BaseServer {
     const addConfig = {
       videoDevice: 'desktopScreen',
       attributes: JSON.stringify({
+        accountId: roomBaseServerState.watchInitData.join_info.third_party_user_id,
         nickname: roomBaseServerState.watchInitData.join_info.nickname,
         role: roomBaseServerState.watchInitData.join_info.role_name
       })
     };
 
-    return interactiveServer.createLocaldesktopStream(retOptions, addConfig);
+    return interactiveServer.createLocaldesktopStream(retOptions, addConfig).then(data => {
+      this.state.localDesktopStreamId = data.streamId
+      this.state.desktopShareInfo = {
+        accountId: roomBaseServerState.watchInitData.join_info.third_party_user_id,
+        nickname: roomBaseServerState.watchInitData.join_info.nickname,
+        role: roomBaseServerState.watchInitData.join_info.role_name
+      }
+      return data
+    });
   }
 
   // 推桌面共享流
-  publishDesktopShareStream(streamId) {
+  publishDesktopShareStream() {
     const interactiveServer = useInteractiveServer();
 
     return new Promise((resolve, reject) => {
       interactiveServer
-        .publishStream({ streamId })
+        .publishStream({ streamId: this.state.localDesktopStreamId })
         .then(res => {
-          this.state.localDesktopStreamId = streamId;
           resolve(res);
         })
         .catch(reject);
@@ -145,22 +160,30 @@ class DesktopShareServer extends BaseServer {
   subscribeDesktopShareStream(options) {
     const interactiveServer = useInteractiveServer();
 
-    return new Promise((resolve, reject) => {
-      interactiveServer
-        .subscribe(options)
-        .then(res => {
-          this.state.localDesktopStreamId = options.streamId;
-          resolve(res);
-        })
-        .catch(reject);
-    });
+    return interactiveServer.subscribe({
+      streamId: this.state.localDesktopStreamId,
+      ...options
+    })
+  }
+
+  // 取消订阅桌面共享流
+  unSubscribeDesktopShareStream() {
+    const interactiveServer = useInteractiveServer();
+
+    return interactiveServer.unSubscribeStream(this.state.localDesktopStreamId).then(res => {
+      this.state.localDesktopStreamId = ''
+      return res
+    })
   }
 
   /**
    * 停止桌面共享
    * */
-  stopShareScreen(streamId) {
-    return interactiveServer.unpublishStream({ streamId: streamId || this.state.localDesktopStreamId });
+  stopShareScreen() {
+    return interactiveServer.unpublishStream({ streamId: this.state.localDesktopStreamId }).then(res => {
+      this.state.localDesktopStreamId = ''
+      return res
+    });
   }
 }
 export default function useDesktopShareServer() {

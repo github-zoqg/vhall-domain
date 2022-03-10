@@ -561,6 +561,8 @@ class StandardGroupServer extends BaseServer {
       this.getGroupedUserList();
       this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT, msg);
     }
+    // 如果需要关心这条消息,并且是从小组中进入到主直播间
+    await useRoomBaseServer().getInavToolStatus();
     if (!this.state.groupInitData.isInGroup) return;
     await this.updateGroupInitData();
     if (
@@ -568,9 +570,6 @@ class StandardGroupServer extends BaseServer {
     ) {
       // 如果是当前用户被踢出
 
-      // 获取最新的互动房间状态
-      // await this.handleGetCommonConfigInfo();
-      await useRoomBaseServer().getInavToolStatus();
 
       // 给主房间发消息通知当前人离开子房间进入主房间
       this.sendMainRoomJoinChangeMsg({
