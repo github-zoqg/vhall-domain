@@ -21,14 +21,14 @@ class InteractiveServer extends BaseServer {
     this.state = {
       localStream: {
         streamId: null, // 本地流id
-        videoMuted: false,
-        audioMuted: false,
-        attributes: {}
+        // videoMuted: false,
+        // audioMuted: false,
+        // attributes: {}
       },
       screenStream: {
         streamId: null
       },
-      remoteStreams: [], // 远端流数组
+      // remoteStreams: [], // 远端流数组
       streamListHeightInWatch: 0, // PC观看端流列表高度
       fullScreenType: false, // wap 全屏状态
       defaultStreamBg: false, //开始推流到成功期间展示默认图
@@ -54,11 +54,15 @@ class InteractiveServer extends BaseServer {
    * @returns {Promise}
    */
   async init(customOptions = {}) {
+
+    // 是否需要初始化互动
     if (!this._isNeedInteractive()) return;
 
+    // 这里判断上麦角色以及是否自动上麦
     const defaultOptions = await this._getDefaultOptions();
     const options = merge.recursive({}, defaultOptions, customOptions);
 
+    // 根据roomId和role判断是否需要销毁实例重新初始化
     const result = await this._isNeedReInit(options);
     if (!result) return;
 
@@ -71,12 +75,29 @@ class InteractiveServer extends BaseServer {
       VhallPaasSDK.modules.VhallRTC.createInstance(
         options,
         event => {
+
+
           // 互动实例
           this.interactiveInstance = event.vhallrtc;
           console.log('[interactive server] 初始化互动实例完成')
 
           this._addListeners();
-          this.state.remoteStreams = event.currentStreams.filter(stream => {
+          // this.state.remoteStreams = event.currentStreams.filter(stream => {
+          //   try {
+          //     if (stream.attributes && typeof stream.attributes == 'string') {
+          //       stream.attributes = JSON.parse(stream.attributes);
+          //     }
+          //   } catch (error) {
+          //   }
+          //   // 不直接使用vhallrtc.getRoomStreams()是因为有时候初始化完(非刷新页面下)此值取值有问题
+          //   let _muteObj = event.vhallrtc.getRoomStreams().find(s => s.streamId == stream.streamId)
+          //   if (_muteObj) {
+          //     stream.audioMuted = _muteObj.audioMuted
+          //     stream.videoMuted = _muteObj.videoMuted
+          //   }
+          //   return stream.streamType === 2;
+          // });
+          let streams = event.currentStreams.filter(stream => {
             try {
               if (stream.attributes && typeof stream.attributes == 'string') {
                 stream.attributes = JSON.parse(stream.attributes);
@@ -92,8 +113,13 @@ class InteractiveServer extends BaseServer {
             return stream.streamType === 2;
           });
 
+          streams.forEach(stream => {
+
+            useMicServer().updateSpeakerByAccountId(stream.accountId, stream)
+          })
           // 派发上麦流列表更新事件
           this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
+
 
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
           resolve(event);
@@ -109,6 +135,11 @@ class InteractiveServer extends BaseServer {
   * 分组进入，退出重新初始化操作
   */
   async groupReInitInteractProcess() {
+
+    if (useMicServer().getSpeakerStatus()) {
+      await useMicServer().speakOff()
+    }
+    useMicServer().updateSpeakerList()
     return await this.init()
   }
 
@@ -119,10 +150,9 @@ class InteractiveServer extends BaseServer {
     const { watchInitData } = useRoomBaseServer().state;
     const { isSpeakOn } = useMicServer().state;
 
-    // 1. 如果不是观众需要初始化互动
-    // 2. 如果是观众、并且是无延迟直播，需要初始化互动
-    // 3. 如果是观众、不是无延迟直播、在麦上，需要初始化互动
-    // 4. 如果是观众、不是无延迟直播、不在麦上，不需要初始化互动
+    // 1. 非观众需要初始化互动
+    // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
+    // 3. 普通互动上麦需要初始化互动
     return (
       watchInitData.join_info.role_name != 2 ||
       watchInitData.webinar.no_delay_webinar == 1 ||
@@ -193,19 +223,8 @@ class InteractiveServer extends BaseServer {
     const { groupInitData } = useGroupServer().state
 
 
-    let speaker_list = interactToolStatus.speaker_list
-    if (groupInitData.isInGroup) {
-      speaker_list = groupInitData.speaker_list
-    }
-
     // 如果在麦上，设为 HOST
-    if (
-      speaker_list &&
-      speaker_list.length &&
-      speaker_list.some(
-        item => item.account_id == watchInitData.join_info.third_party_user_id
-      )
-    ) {
+    if (useMicServer().getSpeakerStatus()) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
@@ -285,7 +304,8 @@ class InteractiveServer extends BaseServer {
       .destroyInstance()
       .then(() => {
         this.interactiveInstance = null;
-        this.state.remoteStreams = [];
+        // this.state.remoteStreams = [];
+        useMicServer().removeAllApeakerStreamId()
         // 派发上麦流列表更新事件
         this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
         this._clearLocalStream()
@@ -318,16 +338,26 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
       e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
-      if (this.state.remoteStreams.find(s => s.streamId == e.data.streamId)) {
-        return
-      }
+
+      // if (this.state.remoteStreams.find(s => s.streamId == e.data.streamId)) {
+      //   return
+      // }
+
       if (e.data.streamType === 2) {
-        const remoteStream = {
-          ...e.data,
+        let params = {
+          streamId: e.data.streamId,
           audioMuted: e.data.stream.initMuted.audio,
-          videoMuted: e.data.stream.initMuted.video
-        };
-        this.state.remoteStreams.push(remoteStream);
+          videoMuted: e.data.stream.initMuted.video,
+          attributes: e.data.attributes
+        }
+        useMicServer().updateSpeakerByAccountId(e.data.accountId, params)
+
+        // const remoteStream = {
+        //   ...e.data,
+        //   audioMuted: e.data.stream.initMuted.audio,
+        //   videoMuted: e.data.stream.initMuted.video
+        // };
+        // this.state.remoteStreams.push(remoteStream);
         // 派发上麦流列表更新事件
         this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
       }
@@ -345,13 +375,15 @@ class InteractiveServer extends BaseServer {
         useDesktopShareServer().setShareScreenStatus(false);
         useRoomBaseServer().setChangeElement('stream-list');
       } else {
-        // 从流列表中删除
-        this.state.remoteStreams = this.state.remoteStreams.filter(
-          stream => stream.streamId != e.data.streamId
-        );
+        // // 从流列表中删除
+        // this.state.remoteStreams = this.state.remoteStreams.filter(
+        //   stream => stream.streamId != e.data.streamId
+        // );
         // 派发上麦流列表更新事件
         this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
       }
+
+      this.unSubscribeStream(e.data.streamId)
       this.$emit('EVENT_REMOTESTREAM_REMOVED', e);
     });
 
@@ -363,25 +395,32 @@ class InteractiveServer extends BaseServer {
     // 远端流音视频状态改变事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_MUTE, e => {
       console.log('---远端流音视频状态改变事件----', e);
-      if (e.data.streamId == this.state.localStream.streamId) {
-        // 本地流处理
-        this.state.localStream.audioMuted = e.data.muteStream.audio;
-        this.state.localStream.videoMuted = e.data.muteStream.video;
-        // 派发本地流更新事件
-        this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
-        console.log('----本地流处理----', this.state.localStream);
-      } else {
-        // 远端流处理
-        this.state.remoteStreams.some(stream => {
-          if (e.data.streamId == stream.streamId) {
-            stream.audioMuted = e.data.muteStream.audio;
-            stream.videoMuted = e.data.muteStream.video;
-            // 派发上麦流列表更新事件
-            this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
-            return true;
-          }
-        });
+      let params = {
+        audioMuted: e.data.muteStream.audio,
+        videoMuted: e.data.muteStream.video
       }
+      useMicServer().updateSpeakerByStreamId(e.data.streamId, params)
+
+
+      // if (e.data.streamId == this.state.localStream.streamId) {
+      //   // 本地流处理
+      //   this.state.localStream.audioMuted = e.data.muteStream.audio;
+      //   this.state.localStream.videoMuted = e.data.muteStream.video;
+      //   // 派发本地流更新事件
+      //   this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
+      //   console.log('----本地流处理----', this.state.localStream);
+      // } else {
+      //   // 远端流处理
+      //   this.state.remoteStreams.some(stream => {
+      //     if (e.data.streamId == stream.streamId) {
+      //       stream.audioMuted = e.data.muteStream.audio;
+      //       stream.videoMuted = e.data.muteStream.video;
+      //       // 派发上麦流列表更新事件
+      //       this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
+      //       return true;
+      //     }
+      //   });
+      // }
       this.$emit('EVENT_REMOTESTREAM_MUTE', e);
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
@@ -428,45 +467,48 @@ class InteractiveServer extends BaseServer {
     // -------------------------房间业务消息--------------------------------------------
     const msgServer = useMsgServer();
     const { watchInitData } = useRoomBaseServer().state;
+    const { speakerList } = useMicServer().state
+    const localSpeaker = speakerList.find(speaker => speaker.accountId == watchInitData.join_info.third_party_user_id)
+
     msgServer.$onMsg('ROOM_MSG', msg => {
       if (
         msg.data.type == 'vrtc_frames_forbid' && // 业务关闭摄像头消息
-        msg.data.target_id == watchInitData.join_info.third_party_user_id
+        msg.data.target_id == localSpeaker.accountId
       ) {
         // 本地流关闭视频
         this.muteVideo({
-          streamId: this.state.localStream.streamId,
+          streamId: localSpeaker.streamId,
           isMute: true
         });
         // 业务消息不需要透传到ui层,ui层通过远端流音视频状态改变事件更新ui状态
         this.$emit('vrtc_frames_forbid', msg)
       } else if (
         msg.data.type == 'vrtc_frames_display' && // 业务开启摄像头消息
-        msg.data.target_id == watchInitData.join_info.third_party_user_id
+        msg.data.target_id == localSpeaker.accountId
       ) {
         // 本地流开启视频
         this.muteVideo({
-          streamId: this.state.localStream.streamId,
+          streamId: localSpeaker.streamId,
           isMute: false
         });
         this.$emit('vrtc_frames_display', msg);
       } else if (
         msg.data.type == 'vrtc_mute' && // 业务关闭麦克风消息
-        msg.data.target_id == watchInitData.join_info.third_party_user_id
+        msg.data.target_id == localSpeaker.accountId
       ) {
         // 本地流关闭音频
         this.muteAudio({
-          streamId: this.state.localStream.streamId,
+          streamId: localSpeaker.streamId,
           isMute: true
         });
         this.$emit('vrtc_mute', msg);
       } else if (
         msg.data.type == 'vrtc_mute_cancel' && // 业务开启麦克风消息
-        msg.data.target_id == watchInitData.join_info.third_party_user_id
+        msg.data.target_id == localSpeaker.accountId
       ) {
         // 本地流开启音频
         this.muteAudio({
-          streamId: this.state.localStream.streamId,
+          streamId: localSpeaker.streamId,
           isMute: false
         });
         this.$emit('vrtc_mute_cancel', msg);
@@ -542,15 +584,12 @@ class InteractiveServer extends BaseServer {
     };
 
     // 当前用户是否在上麦列表中
-    const isOnMicObj = interactToolStatus.speaker_list.find(
-      item => item.account_id == watchInitData.join_info.third_party_user_id
-    );
-
+    const speaker = useMicServer().getSpeakerByAccountId(watchInitData.join_info.third_party_user_id)
     // 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
-    if (isOnMicObj) {
+    if (speaker) {
       defaultOptions.mute = {
-        audio: !isOnMicObj.audio,
-        video: !isOnMicObj.video
+        audio: speaker.audioMuted,
+        video: speaker.videoMuted
       };
     }
 
@@ -563,14 +602,27 @@ class InteractiveServer extends BaseServer {
     const params = merge.recursive({}, defaultOptions, options);
 
     return this.createLocalStream(params).then(data => {
-      this.state.localStream = {
-        streamId: data.streamId,
-        audioMuted: options.mute?.audio || false,
-        videoMuted: options.mute?.video || false
-      };
-      // 派发本地流更新事件
-      this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
-      return data
+
+      try {
+        let params = {
+          streamId: data.streamId,
+          audioMuted: options.mute?.audio || false,
+          videoMuted: options.mute?.video || false
+        }
+        useMicServer().updateSpeakerByAccountId(watchInitData.join_info.third_party_user_id, params)
+
+        this.state.localStream = {
+          streamId: data.streamId,
+          // audioMuted: options.mute?.audio || false,
+          // videoMuted: options.mute?.video || false
+        };
+        // 派发本地流更新事件
+        this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
+        return data
+      } catch (e) {
+        console.error('1', e)
+      }
+
     });
   }
 
@@ -690,10 +742,14 @@ class InteractiveServer extends BaseServer {
     };
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return this.createLocalStream(params).then(data => {
+
+      useMicServer().updateSpeakerByAccountId(watchInitData.join_info.third_party_user_id, params)
+
+      console.error('sss', data)
       this.state.localStream = {
         streamId: data.streamId,
-        audioMuted: options.mute?.audio || false,
-        videoMuted: options.mute?.video || false
+        // audioMuted: options.mute?.audio || false,
+        // videoMuted: options.mute?.video || false
       };
       // 派发本地流更新事件
       this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
@@ -723,23 +779,24 @@ class InteractiveServer extends BaseServer {
       })
     };
     // 当前用户是否在上麦列表中
-    const isOnMicObj = interactToolStatus.speaker_list.find(
-      item => item.account_id == watchInitData.join_info.third_party_user_id
-    );
+    const speaker = useMicServer().getSpeakerByAccountId(watchInitData.join_info.third_party_user_id)
+
 
     // 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
-    if (isOnMicObj) {
+    if (speaker) {
       defaultOptions.mute = {
-        audio: !isOnMicObj.audio,
-        video: !isOnMicObj.video
+        audio: speaker.audioMuted,
+        video: speaker.videoMuted
       };
     }
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return await this.createLocalStream(params).then(data => {
+
+      useMicServer().updateSpeakerByAccountId(speaker.accountId, { streamId: data.streamId })
       this.state.localStream = {
         streamId: data.streamId,
-        audioMuted: options.mute?.audio || false,
-        videoMuted: options.mute?.video || false
+        // audioMuted: options.mute?.audio || false,
+        // videoMuted: options.mute?.video || false
       };
       return data
     });;
@@ -852,7 +909,7 @@ class InteractiveServer extends BaseServer {
 
   // 取消订阅远端流
   unSubscribeStream(streamId) {
-    return this.interactiveInstance.unSubscribeStream(streamId);
+    return this.interactiveInstance.unsubscribe(streamId);
   }
 
   /**
