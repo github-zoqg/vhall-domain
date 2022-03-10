@@ -15,7 +15,6 @@ class QuestionnaireServer extends BaseServer {
     this._uploadUrl = opts.uploadUrl;
     this._creatSelector = opts.creatSelector;
     // this._prevSelector = opts.prevSelector;
-    this._mode = opts?.mode || null; // watch观看端 or live发起端
     this._paasSDKInstance = null;
     this.useRoomBaseServer = useRoomBaseServer();
     this.intiPaasQuestionnaireServerSDK(opts);
@@ -24,7 +23,6 @@ class QuestionnaireServer extends BaseServer {
       dotVisible: false, // 小红点是否显示
       lastQuestionnaireId: ''
     }
-    this._mode = opts?.mode || 'watch'
     if (opts.mode === 'watch') {
       this.checkIconStatus()
     }
@@ -56,19 +54,10 @@ class QuestionnaireServer extends BaseServer {
         //【分组创建/新增完成】
         case QUESTIONNAIRE_PUSH:
           console.log('问卷消息', msg);
-          if (this._mode === 'watch') {
-            const questionnaireId = msg.data.questionnaire_id
-            await this.checkAnswerStatus(questionnaireId).then(res => {
-              if (res?.data === true) {
-                this.state.lastQuestionnaireId = questionnaireId
-                this.state.dotVisible = true
-                this.state.iconVisible = true
-                this.$emit(QUESTIONNAIRE_PUSH, msg.data);
-              }
-            })
-          } else {
-            this.$emit(QUESTIONNAIRE_PUSH, msg.data);
-          }
+          const questionnaireId = msg.data.questionnaire_id
+          this.state.lastQuestionnaireId = questionnaireId
+          this.state.iconVisible = true
+          this.$emit(QUESTIONNAIRE_PUSH, msg.data);
           break;
       }
     });
