@@ -177,19 +177,16 @@ export default class StandardDocServer extends AbstractDocServer {
       }
     })
 
-    // 设置主讲人，消息只发起端能收到
+    // 设置主讲人，消息只 发起端 能收到
     // 1、互动直播 - 主持人设置嘉宾为主讲人
     // 2、互动直播 - 嘉宾主讲人下麦，把主讲人还给主持人
     useRoomBaseServer().$on('VRTC_SPEAKER_SWITCH', async (msg) => {
       console.log('[doc] VRTC_SPEAKER_SWITCH', msg);
-      if (useGroupServer().state.groupInitData.isInGroup) {
-        // 如果在小组内（分组直播里面没有，这个条件应该不会执行）
-        await useGroupServer().updateGroupInitData();
-      } else {
+      if (!useGroupServer().state.groupInitData.isInGroup) {
         // 在直播间内
         await useRoomBaseServer().getInavToolStatus();
+        this._setDocPermisson();
       }
-      this._setDocPermisson();
     })
 
     // 所有文档加载完成事件
@@ -831,9 +828,14 @@ export default class StandardDocServer extends AbstractDocServer {
       // 设置文档操作权限为主人
       this.setRole(VHDocSDK.RoleType.HOST);
     } else {
-      // 设置文档操作权限为观众
-      this.setRole(VHDocSDK.RoleType.SPECTATOR);
+      if (watchInitData.join_info.role_name == 3) {
+        this.setRole(VHDocSDK.RoleType.ASSISTANT);
+      } else {
+        // 设置文档操作权限为观众
+        this.setRole(VHDocSDK.RoleType.SPECTATOR);
+      }
     }
+
 
   }
 }

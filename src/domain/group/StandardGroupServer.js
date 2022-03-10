@@ -552,14 +552,16 @@ class StandardGroupServer extends BaseServer {
   async msgdoForGroupLeaderChange(msg) {
     if (msg.data.group_id == this.state.groupInitData.group_id) {
       // 在一个组里面，需要更新小组数据
-      await this.updateGroupInitData();
-
+      if (this.state.groupInitData.doc_permission != msg.data.account_id) {
+        await this.updateGroupInitData();
+      }
       useDocServer()._setDocPermisson();
+
+      if (useRoomBaseServer().state.watchInitData.join_info.role_name != 2) {
+        this.getGroupedUserList();
+      }
     }
-    if (useRoomBaseServer().state.watchInitData.join_info.role_name != 2) {
-      this.state.groupInitData.doc_permission = msg.data.account_id;
-      this.getGroupedUserList();
-    }
+
     this.$emit(this.EVENT_TYPE.GROUP_LEADER_CHANGE, msg);
   }
 
@@ -605,16 +607,29 @@ class StandardGroupServer extends BaseServer {
 
   // 演示者变更
   async msgdoForVrtcConnectPresentationSet(msg) {
+    let isOldPresenter = false; //变更之前本人是否是演示者
+    let isOldLeader = false; //变更之前本人是否是组长
+
     if (this.state.groupInitData.isInGroup) {
       // 如果在小组内
-      await this.updateGroupInitData();
+      if (this.state.groupInitData.presentation_screen == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id) {
+        isOldPresenter = true;
+      }
+      if (this.state.groupInitData.doc_permission == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id) {
+        isOldLeader = true;
+      }
+      this.state.groupInitData.presentation_screen = msg.data.target_id;
     } else {
       // 在直播间内
+      if (useRoomBaseServer().state.interactToolStatus.presentation_screen
+        == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id) {
+        isOldPresenter = true;
+      }
       await useRoomBaseServer().getInavToolStatus();
     }
     useDocServer()._setDocPermisson();
 
-    this.$emit(this.EVENT_TYPE.VRTC_PRESENTATION_SCREEN_SET, msg);
+    this.$emit(this.EVENT_TYPE.VRTC_PRESENTATION_SCREEN_SET, msg, { isOldPresenter, isOldLeader });
   }
 
   // 同意邀请演示成功消息
