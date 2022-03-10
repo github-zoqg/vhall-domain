@@ -233,6 +233,17 @@ function tipOffInfo(params) {
   });
 }
 
+// 观看端绑定微信分享
+
+function bindShare(params) {
+  const url = env.meeting === 'v3' ? '/v3/interacts/share/create-share-relation' : '';
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
+
 // 开始暂停结束打点录制api
 function recordApi(data) {
   console.log('录制接口', data);
@@ -300,7 +311,8 @@ const meeting = {
   initRecordVideo,
   startRecord,
   endRecord,
-  createRecordInRecord
+  createRecordInRecord,
+  bindShare
 };
 
 export default meeting;
