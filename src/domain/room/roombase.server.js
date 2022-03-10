@@ -151,7 +151,7 @@ class RoomBaseServer extends BaseServer {
             this.$emit('ROOM_SIGNLE_LOGIN');
             setTimeout(() => {
               useMsgServer().destroy()
-            }, 5000)
+            }, 2000)
           }
         }
       }
