@@ -101,30 +101,30 @@ class InsertFileServer extends BaseServer {
     if (!interactiveServer.interactiveInstance) return
     const streamList = interactiveServer.getRoomStreams();
     const stream = streamList.find(stream => {
-      if (stream.streamType === 4) {
+      return stream.streamType === 4
 
-        const retStream = {
-          ...stream,
-          attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
-        }
-
-        this.state.insertStreamInfo.streamId = stream.streamId
-        this.state.insertStreamInfo.userInfo = {
-          accountId: retStream.accountId,
-          role: retStream.role,
-          nickname: retStream.nickname,
-
-        }
-        this.state.isInsertFilePushing = true
-        this.state.insertStreamInfo.has_video = retStream.has_video // 是否音频插播
-
-        return retStream
-      }
     });
-    if (!stream) {
+    let retStream = null
+    if (stream) {
+      retStream = {
+        ...stream,
+        attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
+      }
+      this.state.insertStreamInfo.streamId = stream.streamId
+      this.state.insertStreamInfo.userInfo = {
+        accountId: retStream.attributes.accountId,
+        role: retStream.attributes.role,
+        nickname: retStream.attributes.nickname,
+
+      }
+      this.state.isInsertFilePushing = true
+      this.state.insertStreamInfo.has_video = retStream.attributes.has_video // 是否音频插播
+    }
+
+    if (!retStream) {
       this.clearInsertFileInfo()
     }
-    return stream;
+    return retStream;
   }
 
   // 获取插播列表
