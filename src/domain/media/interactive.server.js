@@ -80,7 +80,7 @@ class InteractiveServer extends BaseServer {
 
           // 互动实例
           this.interactiveInstance = event.vhallrtc;
-          console.log('%c[interactive server] 初始化互动实例完成', 'color:green', event)
+          console.log('%c[interactive server] 初始化互动实例完成', 'color:#0000FF', event)
 
           this._addListeners();
           // this.state.remoteStreams = event.currentStreams.filter(stream => {
@@ -829,9 +829,12 @@ class InteractiveServer extends BaseServer {
         audioMuted: defaultOptions.mute?.audio || false,
         videoMuted: defaultOptions.mute?.video || false
       }
-
-      if (speaker) {
-        useMicServer().updateSpeakerByAccountId(speaker.accountId, params)
+      try {
+        if (speaker) {
+          useMicServer().updateSpeakerByAccountId(speaker.accountId, params)
+        }
+      } catch (error) {
+        console.warn('出现异常----', error)
       }
       this.state.localStream = {
         streamId: data.streamId,
@@ -948,7 +951,7 @@ class InteractiveServer extends BaseServer {
 
   // 取消订阅远端流
   unSubscribeStream(streamId) {
-    return this.interactiveInstance.unsubscribe(streamId);
+    return this.interactiveInstance.unsubscribe({ streamId });
   }
 
   /**

@@ -30,6 +30,7 @@ import useKeyLoginServer from '@/domain/keyLogin/keyLogin.server.js';
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
 import useRebroadcastServer from '@/domain/interactiveTools/rebroadcast.server';
+import useZIndexServer from '@/domain/interactiveTools/ZIndexServer.js';
 
 // 问答关联
 import useQaAdminServer from '@/domain/interactiveTools/qaadmin.server.js';
@@ -160,5 +161,6 @@ export {
   useKeyLoginServer,
   useSplitScreenServer,
   useHomepageServer,
-  useRecommendServer
+  useRecommendServer,
+  useZIndexServer
 };
