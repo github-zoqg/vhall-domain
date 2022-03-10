@@ -24,11 +24,11 @@ class MicServer extends BaseServer {
     return this;
   }
   init() {
-    this.updateSpeakerList()
+    // this.updateSpeakerList()
     this.getSpeakerStatus();
     this._initEventListeners();
   }
-  // 更新上麦列表
+  // 更新上麦列表,接口更新时调用
   updateSpeakerList() {
 
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
@@ -39,7 +39,15 @@ class MicServer extends BaseServer {
       speakerList = groupInitData.speaker_list || []
     }
 
-    this.state.speakerList = speakerList.map(item => new Speaker(item))
+    // 接口数据更新时，将接口返回的speakerList和本地比对，只保留接口返回的用户
+    this.state.speakerList = speakerList.map(sourceSpeaker => {
+      let speaker = this.state.speakerList.find(item => item.accountId == sourceSpeaker.account_id)
+      if (speaker) {
+        return speaker
+      } else {
+        return new Speaker(sourceSpeaker)
+      }
+    })
 
   }
 
@@ -108,6 +116,10 @@ class MicServer extends BaseServer {
         join_info.third_party_user_id
       );
       switch (msg.data.type) {
+        // 开启允许举手
+        case 'live_over':
+          this.state.speakerList = []
+          break;
         // 开启允许举手
         case 'vrtc_connect_open':
           useRoomBaseServer().setInavToolStatus('is_handsup', true);

@@ -2,15 +2,14 @@ import { im as imRequest } from '@/request/index.js';
 import BaseServer from '@/domain/common/base.server';
 import useRoomBaseServer from "../room/roombase.server";
 //基础服务
-const roomServer = useRoomBaseServer();
 class MemberServer extends BaseServer {
   constructor() {
     if (typeof MemberServer.instance === 'object') {
       return MemberServer.instance;
     }
     super();
-    const { roomId = '', roleName, avatar = '' } = roomServer.state.watchInitData;
-    const { groupInitData = {} } = roomServer.state;
+    const { roomId = '', roleName, avatar = '' } = useRoomBaseServer().state.watchInitData;
+    const { groupInitData = {} } = useRoomBaseServer().state;
 
     this.state = {
       //在线的成员
