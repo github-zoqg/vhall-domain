@@ -35,12 +35,17 @@ class InsertFileServer extends BaseServer {
   }
 
   init() {
+    this.getInsertFileStream()
     this._addListeners()
   }
 
   // 注册监听事件
   _addListeners() {
     const interactiveServer = useInteractiveServer();
+    // 互动初始化完成
+    interactiveServer.$on('INTERACTIVE_INSTANCE_INIT_SUCCESS', () => {
+      this.getInsertFileStream()
+    });
     // 流加入
     interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
@@ -64,7 +69,6 @@ class InsertFileServer extends BaseServer {
       }
     });
   }
-
 
   // 设置当前本地插播文件
   setLocalInsertFile(file) {
@@ -322,6 +326,9 @@ class InsertFileServer extends BaseServer {
     return interactiveServer
       .unpublishStream({
         streamId: streamId || this.state.insertStreamInfo.streamId
+      }).then(res => {
+        this.clearInsertFileInfo()
+        return res
       })
   }
 
@@ -353,13 +360,19 @@ class InsertFileServer extends BaseServer {
   // 订阅插播流
   subscribeInsertStream(options = {}) {
     const interactiveServer = useInteractiveServer();
-    return interactiveServer.subscribeStream(options);
+    return interactiveServer.subscribe({
+      streamId: this.state.insertStreamInfo.streamId,
+      ...options
+    });
   }
 
   // 取消订阅流
-  unsubscribeInsertStream(options = {}) {
+  unsubscribeInsertStream() {
     const interactiveServer = useInteractiveServer();
-    return interactiveServer.unSubscribeStream(options);
+    return interactiveServer.unSubscribeStream(this.state.insertStreamInfo.streamId).then(res => {
+      this.clearInsertFileInfo()
+      return res
+    });
   }
 }
 
