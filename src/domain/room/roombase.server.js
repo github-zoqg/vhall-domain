@@ -3,7 +3,6 @@ import { merge } from '@/utils/index.js';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import { configMap } from './js/configMap'
-import useMicServer from '../media/mic.server';
 
 /**
  * send:发起端
@@ -114,7 +113,8 @@ class RoomBaseServer extends BaseServer {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
 
       if (msg.data.type == 'live_start') {
-        this.state.watchInitData.webinar.type = 1;
+        // 观看端如果在看回放，直播时没刷新，不能显示直播的页面，故type不能改成1
+        // this.state.watchInitData.webinar.type = 1;
         // 消息中未提供开播时间字段 start_time
         this.state.watchInitData.switch.switch_id = msg.data.switch_id;
         this.state.watchInitData.switch.switch_type = msg.data.switch_type;
@@ -335,7 +335,6 @@ class RoomBaseServer extends BaseServer {
           this.state.interactToolStatus.presentation_screen =
             this.state.interactToolStatus.doc_permission;
         }
-
       }
       return res;
     });

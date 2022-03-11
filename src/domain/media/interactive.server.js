@@ -26,9 +26,6 @@ class InteractiveServer extends BaseServer {
         // audioMuted: false,
         // attributes: {}
       },
-      screenStream: {
-        streamId: null
-      },
       // remoteStreams: [], // 远端流数组
       streamListHeightInWatch: 0, // PC观看端流列表高度
       fullScreenType: false, // wap 全屏状态
@@ -61,6 +58,7 @@ class InteractiveServer extends BaseServer {
 
     // 这里判断上麦角色以及是否自动上麦
     const defaultOptions = await this._getDefaultOptions();
+    console.warn('查看 --- 初始化是否调用默认角色等相关信息')
     const options = merge.recursive({}, defaultOptions, customOptions);
 
     // 根据roomId和role判断是否需要销毁实例重新初始化
@@ -212,7 +210,7 @@ class InteractiveServer extends BaseServer {
           : {}, // 自动旁路   开启旁路直播方法所需参数
       otherOption: watchInitData.report_data
     };
-
+    console.warn('查看 最新的group Data数据----', defaultOptions)
     return defaultOptions;
   }
 
@@ -225,6 +223,7 @@ class InteractiveServer extends BaseServer {
     const { groupInitData } = useGroupServer().state
 
 
+    console.warn('查看 ---_getInteractiveRole', useMicServer().getSpeakerStatus())
     // 如果在麦上，设为 HOST
     if (useMicServer().getSpeakerStatus()) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
@@ -244,7 +243,9 @@ class InteractiveServer extends BaseServer {
     { name: 'isInGroup', val: groupInitData.isInGroup },
     { name: 'is_banned', val: parseInt(groupInitData.is_banned) },
     { name: 'isSpeakOffToInit', val: micServer.state.isSpeakOffToInit },
-    { name: 'role_name', val: watchInitData.join_info.role_name }])
+    { name: 'role_name', val: watchInitData.join_info.role_name },
+    { name: 'chatServer_banned', val: chatServer.state.banned },
+    { name: 'chatServer_allBanned', val: chatServer.state.allBanned }])
 
     let autoSpeak = false
 
@@ -282,6 +283,7 @@ class InteractiveServer extends BaseServer {
     if (autoSpeak) {
       // 调上麦接口判断当前人是否可以上麦
       const res = await micServer.userSpeakOn();
+      console.error('查看互动服务内，调用上麦接口，其返回值', res)
       // 如果上麦成功，设为 HOST
       if (res.code == 200) {
 
@@ -289,6 +291,11 @@ class InteractiveServer extends BaseServer {
         this.state.autoSpeak = true
 
         return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
+      } else if (res.code == '513025') {
+        // 由于调用上麦是在互动服务内，异常时，无法提示，  直接派发的话，业务未初始化，故延迟500
+        setTimeout(() => {
+          this.$emit('speakOnFailed', res)
+        }, 500);
       }
     } else {
       micServer.setSpeakOffToInit(false)
@@ -397,17 +404,6 @@ class InteractiveServer extends BaseServer {
 
     // 远端流离开事件,自己的流删除事件收不到
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
-      console.log('---流删除事件---', e);
-
-      if (e.data.streamId == this.state.screenStream.streamId) {
-        this.state.screenStream.streamId = '';
-        useDesktopShareServer().setShareScreenStatus(false);
-        useRoomBaseServer().setChangeElement('stream-list');
-      } else {
-
-      }
-
-      // this.unSubscribeStream(e.data.streamId)
       this.$emit('EVENT_REMOTESTREAM_REMOVED', e);
     });
 
@@ -435,15 +431,6 @@ class InteractiveServer extends BaseServer {
 
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
-      // if(this.roleName == 1){
-      //   this.resetLayout()
-      // }
-      if (e.data.streamId == this.state.screenStream.streamId) {
-        this.state.screenStream.streamId = '';
-        useDesktopShareServer().setShareScreenStatus(false);
-        useRoomBaseServer().setChangeElement('stream-list');
-      }
-
       this.$emit('EVENT_STREAM_END', e);
     });
 
@@ -704,14 +691,6 @@ class InteractiveServer extends BaseServer {
     return profile;
   }
 
-  // 创建桌面共享流
-  createLocaldesktopStream(options = {}, addConfig = {}) {
-    const params = merge.recursive({ streamType: 3 }, options, addConfig);
-    return this.createLocalStream(params).then(data => {
-      this.state.screenStream.streamId = data.streamId
-      return data
-    });
-  }
   // 创建本地音频流
   createLocalAudioStream(options = {}, addConfig = {}) {
     return this.interactiveInstance.createLocalAudioStream(options, addConfig);
@@ -802,6 +781,7 @@ class InteractiveServer extends BaseServer {
         video: speaker.videoMuted
       };
     }
+    console.warn('defaultOptions-------------', speaker, defaultOptions)
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return await this.createLocalStream(params).then(data => {
       let params = {
