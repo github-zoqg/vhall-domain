@@ -239,13 +239,15 @@ class InteractiveServer extends BaseServer {
     // 自动上麦 + 未开启禁言 + 未开启全体禁言 + 不是因为被下麦或者手动下麦去初始化互动
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
     console.log('初始化连麦----2-2-2-2-2-2-2--2-', groupInitData)
-    console.table([{ name: 'auto_speak', val: interactToolStatus.auto_speak },
-    { name: 'isInGroup', val: groupInitData.isInGroup },
-    { name: 'is_banned', val: parseInt(groupInitData.is_banned) },
-    { name: 'isSpeakOffToInit', val: micServer.state.isSpeakOffToInit },
-    { name: 'role_name', val: watchInitData.join_info.role_name },
-    { name: 'chatServer_banned', val: chatServer.state.banned },
-    { name: 'chatServer_allBanned', val: chatServer.state.allBanned }])
+    console.table([
+      { name: 'device_status', val: useMediaCheckServer().state.deviceInfo.device_status },
+      { name: 'auto_speak', val: interactToolStatus.auto_speak },
+      { name: 'isInGroup', val: groupInitData.isInGroup },
+      { name: 'is_banned', val: parseInt(groupInitData.is_banned) },
+      { name: 'isSpeakOffToInit', val: micServer.state.isSpeakOffToInit },
+      { name: 'role_name', val: watchInitData.join_info.role_name },
+      { name: 'chatServer_banned', val: chatServer.state.banned },
+      { name: 'chatServer_allBanned', val: chatServer.state.allBanned }])
 
     let autoSpeak = false
 
