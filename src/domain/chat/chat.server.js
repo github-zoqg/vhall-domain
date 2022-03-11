@@ -96,18 +96,14 @@ class ChatServer extends BaseServer {
       }
       // 开启全体禁言
       if (rawMsg.data.type === 'disable_all') {
-        if (role_name == 2) {
-          this.setLocalAllBanned(true)
-          this.$emit('allBanned', this.state.allBanned);
-        }
+        this.setLocalAllBanned(true)
+        this.$emit('allBanned', this.state.allBanned);
 
       }
       // 关闭全体禁言
       if (rawMsg.data.type === 'permit_all') {
-        if (role_name == 2) {
-          this.setLocalAllBanned(false)
-          this.$emit('allBanned', this.state.allBanned);
-        }
+        this.setLocalAllBanned(false)
+        this.$emit('allBanned', this.state.allBanned);
       }
     });
     msgServer.$onMsg('ROOM_MSG', rawMsg => {
