@@ -342,7 +342,7 @@ class RoomBaseServer extends BaseServer {
   }
 
   // 观看端获取公众号、广告推荐、邀请卡等信息
-  getCommonConfig(data = {}) {
+  getCommonConfig(data) {
     // 第一次调用的时候存储一下入参，后续如果不传 data 就用第一次保存的参数
     if (!this._isNotFirstGetCommonConfig) {
       this._getCommonConfigData = data
@@ -351,7 +351,7 @@ class RoomBaseServer extends BaseServer {
     const defaultParams = {
       webinar_id: this.state.watchInitData.webinar.id
     };
-    const retParams = merge.recursive({}, defaultParams, data || this._getCommonConfigData);
+    const retParams = merge.recursive({}, defaultParams, data || this._getCommonConfigData || {});
     return meeting.getCommonConfig(retParams).then(res => {
       if (res.code == 200) {
         this.state.skinInfo = res.data['skin'] ? res.data['skin'].data : {}; // 皮肤信息

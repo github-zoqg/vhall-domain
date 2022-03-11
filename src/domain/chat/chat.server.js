@@ -100,7 +100,7 @@ class ChatServer extends BaseServer {
       // 开启全体禁言
       if (rawMsg.data.type === 'disable_all') {
         this.setLocalAllBanned(true)
-        if (role_name == 2{
+        if (role_name == 2) {
           useMicServer().speakOff();
         }
         this.$emit('allBanned', this.state.allBanned);

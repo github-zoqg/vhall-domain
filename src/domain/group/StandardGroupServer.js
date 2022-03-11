@@ -862,7 +862,6 @@ class StandardGroupServer extends BaseServer {
       } else {
         await roomBaseServer.getCommonConfig();
       }
-
       // 派发小组变更的事件
       this.$emit('GROUP_IS_IN_GROUP_CHANGE', this.state.groupInitData)
 

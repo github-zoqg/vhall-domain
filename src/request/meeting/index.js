@@ -282,7 +282,18 @@ function createRecordInRecord(data) {
     data
   });
 }
-
+/**
+ * @function attention 获取自定义角色名称
+ * @params webinar_id: 活动id
+*/
+const queryCustomRoleName = (data) => {
+  const url = env.meeting === 'v3' ? '/v3/webinars/privilege/get-role-name' : '';
+  return request({
+    url,
+    method: 'POST',
+    data
+  });
+};
 const meeting = {
   initSendLive,
   initStandardReceiveLive,
@@ -311,7 +322,8 @@ const meeting = {
   startRecord,
   endRecord,
   createRecordInRecord,
-  bindShare
+  bindShare,
+  queryCustomRoleName
 };
 
 export default meeting;

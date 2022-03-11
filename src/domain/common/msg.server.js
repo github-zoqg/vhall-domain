@@ -362,7 +362,7 @@ class MsgServer extends BaseServer {
     if (!this.msgInstance) return;
     this.msgInstance.destroy();
     this.msgInstance = null;
-    this.changeChannel(this.groupMsgInstance);
+    // this.changeChannel(this.groupMsgInstance);
   }
 
   // 获取当前主房间初始化参数
