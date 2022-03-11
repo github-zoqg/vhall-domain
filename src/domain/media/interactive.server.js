@@ -901,6 +901,7 @@ class InteractiveServer extends BaseServer {
         this.retrySubScribeNum = 0
         resolve(res)
       }).catch((e) => {
+        console.log('[interactiveServer]   订阅失败-----> ', e)
         if (this.retrySubScribeNum > 3) {
           this.retrySubScribeNum = 0
           reject(e)
