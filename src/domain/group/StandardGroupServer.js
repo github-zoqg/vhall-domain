@@ -268,14 +268,12 @@ class StandardGroupServer extends BaseServer {
    */
   async msgdoForGroupDisband(msg) {
     console.log('[group] domain group_disband');
-    // 任何关于分组的操作都需要重新获取主持端的互动工具状态 - 业务侧获取主持人状态
-    await useRoomBaseServer().getInavToolStatus();
+
     if (this.state.groupInitData.isInGroup &&
       msg.data.group_id == this.state.groupInitData.group_id) {
       // 如果在小组中，小组要解散，
       await this.updateGroupInitData(); // 更新数据
-      // 获取最新的互动房间状态
-      // await this.handleGetCommonConfigInfo();
+
       // 给主房间发消息通知当前人离开子房间进入主房间
       this.sendMainRoomJoinChangeMsg({
         isJoinMainRoom: true,
@@ -317,10 +315,6 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] domain group_switch_start', msg);
     // 设置开始为开始讨论状态
     useRoomBaseServer().setInavToolStatus('is_open_switch', 1);
-    // 任何关于分组的操作都需要重新获取主持端的互动工具状态 - 业务侧获取主持人状态
-    await useRoomBaseServer().getInavToolStatus();
-
-
 
     if (useRoomBaseServer().state.watchInitData.join_info.role_name == 2) {
       // 观看端
@@ -360,20 +354,20 @@ class StandardGroupServer extends BaseServer {
 
   //【结束讨论】
   async msgdoForGroupSwitchEnd(msg) {
+    const roomBaseServer = useRoomBaseServer()
     console.log('[group] domain group_switch_end', msg);
     // 设置开始为未讨论状态
-    useRoomBaseServer().setInavToolStatus('is_open_switch', 0);
+    roomBaseServer.setInavToolStatus('is_open_switch', 0);
     // 重置分配人员列表
     this.state.waitingUserList = [];
     this.state.groupedUserList = [];
 
     // TODO: 演示权限交还主持人
-    if (useRoomBaseServer().state.clientType === 'send') {
+    if (roomBaseServer.state.clientType === 'send') {
       //主持端
       this.state.panelShow = false;
     }
-    // 任何关于分组的操作都需要重新获取主持端的互动工具状态 - 业务侧获取主持人状态
-    await useRoomBaseServer().getInavToolStatus();
+
     // 结束讨论但不在分组中，不需要发消息，直接 return
     if (!this.state.groupInitData.isInGroup) {
       // 通知需要更新在线人员列表
@@ -384,13 +378,11 @@ class StandardGroupServer extends BaseServer {
     // 更新个人所在小组信息
     await this.updateGroupInitData();
 
-    // 聚合接口，各种互动工具的状态拉取
-    // await this.handleGetCommonConfigInfo();
 
     // 给主房间发消息通知当前人离开子房间进入主房间
     this.sendMainRoomJoinChangeMsg({
       isJoinMainRoom: true,
-      isBanned: useRoomBaseServer().state.interactToolStatus.is_banned
+      isBanned: roomBaseServer.state.interactToolStatus.is_banned
     });
 
     // 自定义菜单切换逻辑处理(观看端有)
@@ -423,9 +415,6 @@ class StandardGroupServer extends BaseServer {
       ]);
     }
 
-    // 任何关于分组的操作都需要重新获取主持端的互动工具状态 - 业务侧获取主持人状态
-    await useRoomBaseServer().getInavToolStatus();
-
     if (useRoomBaseServer().state.interactToolStatus.is_open_switch != 1) {
       console.log('[group] 未开启讨论，不处理分组切换逻辑。');
       if (clientType === 'send') {
@@ -452,7 +441,7 @@ class StandardGroupServer extends BaseServer {
     if (groupJoinChangeInfo.to === 0) {
       // to 为 0 从子直播间切换到主房间
       console.log('[group] 小组 → 主直播间 （从小组切换到主直播间）');
-      // await this.handleGetCommonConfigInfo();
+
       // 给主房间发消息通知当前人离开子房间进入主房间
       this.sendMainRoomJoinChangeMsg({
         isJoinMainRoom: true,
@@ -571,15 +560,13 @@ class StandardGroupServer extends BaseServer {
       this.getGroupedUserList();
       this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT, msg);
     }
-    // 如果需要关心这条消息,并且是从小组中进入到主直播间
-    await useRoomBaseServer().getInavToolStatus();
     if (!this.state.groupInitData.isInGroup) return;
-    await this.updateGroupInitData();
+
     if (
       msg.data.target_id === useRoomBaseServer().state.watchInitData.join_info.third_party_user_id
     ) {
       // 如果是当前用户被踢出
-
+      await this.updateGroupInitData();
 
       // 给主房间发消息通知当前人离开子房间进入主房间
       this.sendMainRoomJoinChangeMsg({
@@ -843,19 +830,30 @@ class StandardGroupServer extends BaseServer {
     await this.init();
   }
 
-  setGroupInitData(data) {
+  async setGroupInitData(data) {
+    const oldIsInGroup = this.state.groupInitData.isInGroup
     this.state.groupInitData = data || {};
     if (this.state.groupInitData?.group_id) {
       this.state.groupInitData.isInGroup = true;
     } else {
       this.state.groupInitData.isInGroup = false;
     }
-    if (!this.state.groupInitData.isInGroup) {
-      useRoomBaseServer().getInavToolStatus().then((res) => {
-        this.$emit('GROUP_ENTER_OUT', this.state.groupInitData.isInGroup)
-      })
-    } else {
-      this.$emit('GROUP_ENTER_OUT', this.state.groupInitData.isInGroup)
+    // 如果是从小组进入主房间
+    if (oldIsInGroup && !this.state.groupInitData.isInGroup) {
+
+      // 更新主房间互动工具的状态
+      if (roomBaseServer.state.watchInitData.join_info.role_name != 2) {
+        await roomBaseServer.getInavToolStatus();
+      } else {
+        await roomBaseServer.getCommonConfig();
+      }
+
+      // 派发小组变更的事件
+      this.$emit('GROUP_IS_IN_GROUP_CHANGE', this.state.groupInitData)
+
+    } else if (!oldIsInGroup && this.state.groupInitData.isInGroup) {
+      // 派发小组变更的事件
+      this.$emit('GROUP_IS_IN_GROUP_CHANGE', this.state.groupInitData)
     }
 
     // 更新主房间speakerList
