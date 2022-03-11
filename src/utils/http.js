@@ -36,25 +36,11 @@ service.interceptors.request.use(
       config.baseURL = config.url.startsWith('/v3') ? V3_BASE_URL : MIDDLE_BASE_URL;
     }
 
-    if (typeof config.data === 'string') {
-      config.data = (config.data && JSON.parse(config.data)) || {};
-    }
-
-    config.data = {
-      ...COMMON_BODY,
-      ...config.data
-    };
-
     config.headers = {
       'interact-token': sessionStorage.getItem('interact_token') || '',
       ...HEADERS,
       ...config.headers
     };
-
-    // 如果有 live_token 就不需要传 token
-    if (config.data.live_token) {
-      delete config.headers.token;
-    }
 
     if (config.headers['Content-Type'] === 'multipart/form-data') {
       if (config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
@@ -66,9 +52,25 @@ service.interceptors.request.use(
         config.data = formData;
       }
     } else {
+
+      if (typeof config.data === 'string') {
+        config.data = (config.data && JSON.parse(config.data)) || {};
+      }
+
+      config.data = {
+        ...COMMON_BODY,
+        ...config.data
+      };
+
+      // 如果有 live_token 就不需要传 token
+      if (config.data.live_token) {
+        delete config.headers.token;
+      }
+
       if (config.data && typeof config.data === 'object') {
         config.data = qs.stringify(config.data);
       }
+
     }
 
     // console.log('---请求拦截----', config);
