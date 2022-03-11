@@ -854,6 +854,7 @@ class StandardGroupServer extends BaseServer {
     if (roomBaseServer.state.watchInitData.join_info.role_name != 2) {
       await roomBaseServer.getInavToolStatus();
     } else {
+      await roomBaseServer.getConfigList();
       await roomBaseServer.getCommonConfig();
     }
     useMicServer().updateSpeakerList()
