@@ -21,6 +21,7 @@ class MicServer extends BaseServer {
       speakerList: [] // 上麦人员列表
     };
     MicServer.instance = this;
+    window.micServer = this
     return this;
   }
   init() {
@@ -170,7 +171,11 @@ class MicServer extends BaseServer {
               params.streamId = stream.streamId
             }
           }
-          this.state.speakerList.push(new Speaker(params));
+
+
+          if (!this.state.speakerList.find(speaker => speaker.accountId === params.account_id)) {
+            this.state.speakerList.push(new Speaker(params));
+          }
 
           if (join_info.third_party_user_id == msg.data.room_join_id) {
             this.state.isSpeakOn = true;
