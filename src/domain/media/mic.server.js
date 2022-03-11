@@ -203,6 +203,7 @@ class MicServer extends BaseServer {
           break;
         // 设置主画面
         case 'vrtc_big_screen_set':
+          console.warn('？？？？ 为何没有监听到', useGroupServer().state.groupInitData.isInGroup)
           if (useGroupServer().state.groupInitData.isInGroup) return;
           const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
           // if(useGroupServer().state.groupInitData.isInGroup)
@@ -243,7 +244,9 @@ class MicServer extends BaseServer {
     const retParams = merge.recursive({}, defaultParams, data);
 
     const methodName = data.receive_account_id ? 'speakOffUser' : 'speakOffSelf';
-    return im.signaling[methodName](retParams);
+    let res = im.signaling[methodName](retParams);
+    console.warn('下麦结果----- ', res)
+    return res
   }
   // 允许举手
   setHandsUp(data = {}) {
