@@ -131,10 +131,10 @@ class ChatServer extends BaseServer {
       this.$emit('changeChannel');
     });
     //监听进出子房间消息
-    groupServer.$on('GROUP_ENTER_OUT', (isInGroup) => {
+    groupServer.$on('GROUP_IS_IN_GROUP_CHANGE', (group) => {
       const { groupInitData } = groupServer.state
       const { interactToolStatus } = useRoomBaseServer().state;
-      if (isInGroup) {
+      if (group.isInGroup) {
         this.setLocalAllBanned(false);
         this.setLocalBanned(groupInitData.is_banned == 1 ? true : false)
         this.$emit('banned', this.state.banned);

@@ -84,7 +84,7 @@ class StandardGroupServer extends BaseServer {
       // 主持人/助理进入与退出小组
       GROUP_MANAGER_ENTER: 'GROUP_MANAGER_ENTER',
       //观众进出小组
-      GROUP_ENTER_OUT: 'GROUP_ENTER_OUT'
+      GROUP_IS_IN_GROUP_CHANGE: 'GROUP_IS_IN_GROUP_CHANGE'
     };
 
     this.groupLeaderLeaveMap = new Map()
