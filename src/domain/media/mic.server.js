@@ -60,13 +60,7 @@ class MicServer extends BaseServer {
 
   // 通过accountId来更新speaker
   updateSpeakerByAccountId(accountId, params) {
-    console.log('---speaker根据accountId更新----', accountId, this.state.speakerList)
-    // let speaker = this.state.speakerList.find(speaker => speaker.accountId == accountId)
 
-    // if (!speaker) {
-    //   console.warn('上麦用户不存在')
-    //   return
-    // }
     this.state.speakerList = this.state.speakerList.map(speaker => {
       if (speaker.accountId == accountId) {
         return Object.assign(speaker, params)
