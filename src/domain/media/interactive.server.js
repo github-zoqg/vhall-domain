@@ -223,7 +223,7 @@ class InteractiveServer extends BaseServer {
     const { groupInitData } = useGroupServer().state
 
 
-    console.warn('查看 ---_getInteractiveRole', useMicServer().getSpeakerStatus())
+    console.warn('查看 ---_getInteractiveRole', useMicServer().state.speakerList)
     // 如果在麦上，设为 HOST
     if (useMicServer().getSpeakerStatus()) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;

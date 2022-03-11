@@ -109,8 +109,7 @@ class StandardGroupServer extends BaseServer {
   async init() {
     const result = await this.getGroupInfo();
     console.log('[group] groupInit result:', result);
-    this.setGroupInitData(result.data);
-    return result;
+    await this.setGroupInitData(result.data);
   }
 
   async getGroupInfo() {
@@ -877,8 +876,9 @@ class StandardGroupServer extends BaseServer {
     if (roomBaseServer.state.watchInitData.join_info.role_name != 2) {
       await roomBaseServer.getInavToolStatus();
     } else {
-      await roomBaseServer.getConfigList();
-      await roomBaseServer.getCommonConfig();
+
+      await Promise.all([roomBaseServer.getConfigList(), roomBaseServer.getCommonConfig()])
+
     }
     useMicServer().updateSpeakerList()
   }
