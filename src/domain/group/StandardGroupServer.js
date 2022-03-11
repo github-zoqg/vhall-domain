@@ -84,7 +84,7 @@ class StandardGroupServer extends BaseServer {
       // 主持人/助理进入与退出小组
       GROUP_MANAGER_ENTER: 'GROUP_MANAGER_ENTER',
       //观众进出小组
-      GROUP_ENTER_OUT: 'GROUP_ENTER_OUT'
+      GROUP_IS_IN_GROUP_CHANGE: 'GROUP_IS_IN_GROUP_CHANGE'
     };
 
     this.groupLeaderLeaveMap = new Map()
@@ -109,8 +109,7 @@ class StandardGroupServer extends BaseServer {
   async init() {
     const result = await this.getGroupInfo();
     console.log('[group] groupInit result:', result);
-    this.setGroupInitData(result.data);
-    return result;
+    await this.setGroupInitData(result.data);
   }
 
   async getGroupInfo() {
@@ -157,10 +156,6 @@ class StandardGroupServer extends BaseServer {
         case 'group_leader_change':
           this.msgdoForGroupLeaderChange(msg);
           break;
-        // // 主讲人--设置主屏
-        // case 'vrtc_speaker_switch':
-        //   this.msgdoForVrtcSpeakerSwitch(msg);
-        //   break;
         // 主讲人--设置主屏
         case 'vrtc_big_screen_set':
           this.msgdoForVrtcSpeakerSwitch(msg);
@@ -201,6 +196,10 @@ class StandardGroupServer extends BaseServer {
         case 'vrtc_connect_presentation_refused':
           this.$emit(this.EVENT_TYPE.VRTC_CONNECT_PRESENTATION_REFUSED, msg);
           break;
+        // 进出主房间
+        case 'main_room_join_change': {
+          this.msgdoForMainRoomJoinChange(msg);
+        }
       }
     });
 
@@ -292,6 +291,7 @@ class StandardGroupServer extends BaseServer {
       // 处理文档channel切换逻辑
       await useDocServer().groupReInitDocProcess();
     }
+
     if (useRoomBaseServer().state.clientType === 'send') {
       // 如果是发起端，还需要更新分组讨论列表数据
       this.getWaitingUserList();
@@ -354,6 +354,9 @@ class StandardGroupServer extends BaseServer {
 
   //【结束讨论】
   async msgdoForGroupSwitchEnd(msg) {
+    // 如果没有结束讨论，直接结束了直播，就return;
+    if (msg.data.over_live) return;
+
     const roomBaseServer = useRoomBaseServer()
     console.log('[group] domain group_switch_end', msg);
     // 设置开始为未讨论状态
@@ -538,6 +541,7 @@ class StandardGroupServer extends BaseServer {
       //   this.$refs.desktopRef.stopDesktopShare();
       // }
     }
+    this.$emit(this.EVENT_TYPE.VRTC_BIG_SCREEN_SET, msg)
   }
 
   //【组长变更/组长更改】消息处理
@@ -565,10 +569,9 @@ class StandardGroupServer extends BaseServer {
       this.getGroupedUserList();
       this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT, msg);
     }
-    if (!this.state.groupInitData.isInGroup) return;
-
     if (
-      msg.data.target_id === useRoomBaseServer().state.watchInitData.join_info.third_party_user_id
+      this.state.groupInitData.isInGroup &&
+      msg.data.target_id == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id
     ) {
       // 如果是当前用户被踢出
       await this.updateGroupInitData();
@@ -638,6 +641,26 @@ class StandardGroupServer extends BaseServer {
     }
     useDocServer()._setDocPermisson();
     this.$emit(this.EVENT_TYPE.VRTC_DISCONNECT_PRESENTATION_SUCCESS, msg);
+  }
+
+  // 进出主房间
+  async msgdoForMainRoomJoinChange(msg) {
+    console.log('[group] msgdoForMainRoomJoinChange:', msg)
+    // data: {
+    //   accountId: "16423152"
+    //   device_type: "2"
+    //   isBanned: 0
+    //   isJoinMainRoom: false
+    //   nickname: "很长de昵称很长d昵称很长de昵称很长de昵称很长de昵称"
+    //   role_name: 2
+    //   type: "main_room_join_change"
+    // }
+    if (msg.data.accountId ==
+      useRoomBaseServer().state.watchInitData.webinar.userinfo.user_id) {
+      // 如果是主持人,更新主持人是否在小组中的状态
+      useRoomBaseServer().state.interactToolStatus.is_host_in_group =
+        msg.data.isJoinMainRoom ? 0 : 1;
+    }
   }
 
   /**
@@ -853,7 +876,9 @@ class StandardGroupServer extends BaseServer {
     if (roomBaseServer.state.watchInitData.join_info.role_name != 2) {
       await roomBaseServer.getInavToolStatus();
     } else {
-      await roomBaseServer.getCommonConfig();
+
+      await Promise.all([roomBaseServer.getConfigList(), roomBaseServer.getCommonConfig()])
+
     }
     useMicServer().updateSpeakerList()
   }
@@ -869,6 +894,7 @@ class StandardGroupServer extends BaseServer {
     // 如果是从小组进入主房间
     if (oldIsInGroup && !this.state.groupInitData.isInGroup) {
 
+      // 更新主房间互动工具的状态
       await this.getMainRoomInavToolStatus()
 
       // 派发小组变更的事件

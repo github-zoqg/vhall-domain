@@ -58,6 +58,7 @@ class InteractiveServer extends BaseServer {
 
     // 这里判断上麦角色以及是否自动上麦
     const defaultOptions = await this._getDefaultOptions();
+    console.warn('查看 --- 初始化是否调用默认角色等相关信息')
     const options = merge.recursive({}, defaultOptions, customOptions);
 
     // 根据roomId和role判断是否需要销毁实例重新初始化
@@ -95,6 +96,7 @@ class InteractiveServer extends BaseServer {
           //   }
           //   return stream.streamType === 2;
           // });
+
           let streams = event.currentStreams.filter(stream => {
             try {
               if (stream.attributes && typeof stream.attributes == 'string') {
@@ -110,7 +112,7 @@ class InteractiveServer extends BaseServer {
             }
             return stream.streamType === 2;
           });
-
+          console.warn('streams----', streams)
           streams.forEach(stream => {
 
             useMicServer().updateSpeakerByAccountId(stream.accountId, stream)
@@ -209,7 +211,7 @@ class InteractiveServer extends BaseServer {
           : {}, // 自动旁路   开启旁路直播方法所需参数
       otherOption: watchInitData.report_data
     };
-
+    console.warn('查看 最新的group Data数据----', defaultOptions)
     return defaultOptions;
   }
 
@@ -222,6 +224,7 @@ class InteractiveServer extends BaseServer {
     const { groupInitData } = useGroupServer().state
 
 
+    console.warn('查看 ---_getInteractiveRole', useMicServer().state.speakerList)
     // 如果在麦上，设为 HOST
     if (useMicServer().getSpeakerStatus()) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
@@ -237,13 +240,15 @@ class InteractiveServer extends BaseServer {
     // 自动上麦 + 未开启禁言 + 未开启全体禁言 + 不是因为被下麦或者手动下麦去初始化互动
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
     console.log('初始化连麦----2-2-2-2-2-2-2--2-', groupInitData)
-    console.table([{ name: 'auto_speak', val: interactToolStatus.auto_speak },
-    { name: 'isInGroup', val: groupInitData.isInGroup },
-    { name: 'is_banned', val: parseInt(groupInitData.is_banned) },
-    { name: 'isSpeakOffToInit', val: micServer.state.isSpeakOffToInit },
-    { name: 'role_name', val: watchInitData.join_info.role_name },
-    { name: 'chatServer_banned', val: chatServer.state.banned },
-    { name: 'chatServer_allBanned', val: chatServer.state.allBanned }])
+    console.table([
+      { name: 'device_status', val: useMediaCheckServer().state.deviceInfo.device_status },
+      { name: 'auto_speak', val: interactToolStatus.auto_speak },
+      { name: 'isInGroup', val: groupInitData.isInGroup },
+      { name: 'is_banned', val: parseInt(groupInitData.is_banned) },
+      { name: 'isSpeakOffToInit', val: micServer.state.isSpeakOffToInit },
+      { name: 'role_name', val: watchInitData.join_info.role_name },
+      { name: 'chatServer_banned', val: chatServer.state.banned },
+      { name: 'chatServer_allBanned', val: chatServer.state.allBanned }])
 
     let autoSpeak = false
 
@@ -281,6 +286,7 @@ class InteractiveServer extends BaseServer {
     if (autoSpeak) {
       // 调上麦接口判断当前人是否可以上麦
       const res = await micServer.userSpeakOn();
+      console.error('查看互动服务内，调用上麦接口，其返回值', res)
       // 如果上麦成功，设为 HOST
       if (res.code == 200) {
 
@@ -288,6 +294,11 @@ class InteractiveServer extends BaseServer {
         this.state.autoSpeak = true
 
         return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
+      } else if (res.code == '513025') {
+        // 由于调用上麦是在互动服务内，异常时，无法提示，  直接派发的话，业务未初始化，故延迟500
+        setTimeout(() => {
+          this.$emit('speakOnFailed', res)
+        }, 500);
       }
     } else {
       micServer.setSpeakOffToInit(false)

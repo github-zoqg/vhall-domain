@@ -21,6 +21,7 @@ class MicServer extends BaseServer {
       speakerList: [] // 上麦人员列表
     };
     MicServer.instance = this;
+    window.micServer = this
     return this;
   }
   init() {
@@ -30,7 +31,6 @@ class MicServer extends BaseServer {
   }
   // 更新上麦列表,接口更新时调用
   updateSpeakerList() {
-
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state
 
@@ -48,7 +48,6 @@ class MicServer extends BaseServer {
         return new Speaker(sourceSpeaker)
       }
     })
-
   }
 
   // 获取是否上麦状态
@@ -61,14 +60,13 @@ class MicServer extends BaseServer {
 
   // 通过accountId来更新speaker
   updateSpeakerByAccountId(accountId, params) {
-    console.log('---speaker根据accountId更新----', accountId)
+    console.log('---speaker根据accountId更新----', accountId, this.state.speakerList)
     // let speaker = this.state.speakerList.find(speaker => speaker.accountId == accountId)
 
     // if (!speaker) {
     //   console.warn('上麦用户不存在')
     //   return
     // }
-
     this.state.speakerList = this.state.speakerList.map(speaker => {
       if (speaker.accountId == accountId) {
         return Object.assign(speaker, params)
@@ -173,7 +171,11 @@ class MicServer extends BaseServer {
               params.streamId = stream.streamId
             }
           }
-          this.state.speakerList.push(new Speaker(params));
+
+
+          if (!this.state.speakerList.find(speaker => speaker.accountId === params.account_id)) {
+            this.state.speakerList.push(new Speaker(params));
+          }
 
           if (join_info.third_party_user_id == msg.data.room_join_id) {
             this.state.isSpeakOn = true;
@@ -203,6 +205,7 @@ class MicServer extends BaseServer {
           break;
         // 设置主画面
         case 'vrtc_big_screen_set':
+          console.warn('？？？？ 为何没有监听到', useGroupServer().state.groupInitData.isInGroup)
           if (useGroupServer().state.groupInitData.isInGroup) return;
           const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
           // if(useGroupServer().state.groupInitData.isInGroup)

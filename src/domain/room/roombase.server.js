@@ -114,7 +114,10 @@ class RoomBaseServer extends BaseServer {
 
       if (msg.data.type == 'live_start') {
         // 观看端如果在看回放，直播时没刷新，不能显示直播的页面，故type不能改成1
-        // this.state.watchInitData.webinar.type = 1;
+        if (['send', 'sdk', 'record', 'clientEmbed'].includes(this.state.clientType)) {
+          this.state.watchInitData.webinar.type = 1;
+        }
+
         // 消息中未提供开播时间字段 start_time
         this.state.watchInitData.switch.switch_id = msg.data.switch_id;
         this.state.watchInitData.switch.switch_type = msg.data.switch_type;
@@ -341,7 +344,7 @@ class RoomBaseServer extends BaseServer {
   }
 
   // 观看端获取公众号、广告推荐、邀请卡等信息
-  getCommonConfig(data = {}) {
+  getCommonConfig(data) {
     // 第一次调用的时候存储一下入参，后续如果不传 data 就用第一次保存的参数
     if (!this._isNotFirstGetCommonConfig) {
       this._getCommonConfigData = data
@@ -350,7 +353,7 @@ class RoomBaseServer extends BaseServer {
     const defaultParams = {
       webinar_id: this.state.watchInitData.webinar.id
     };
-    const retParams = merge.recursive({}, defaultParams, data || this._getCommonConfigData);
+    const retParams = merge.recursive({}, defaultParams, data || this._getCommonConfigData || {});
     return meeting.getCommonConfig(retParams).then(res => {
       if (res.code == 200) {
         this.state.skinInfo = res.data['skin'] ? res.data['skin'].data : {}; // 皮肤信息
