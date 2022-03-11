@@ -354,6 +354,9 @@ class StandardGroupServer extends BaseServer {
 
   //【结束讨论】
   async msgdoForGroupSwitchEnd(msg) {
+    // 如果没有结束讨论，直接结束了直播，就return;
+    if (msg.data.over_live) return;
+
     const roomBaseServer = useRoomBaseServer()
     console.log('[group] domain group_switch_end', msg);
     // 设置开始为未讨论状态
