@@ -30,7 +30,6 @@ class MicServer extends BaseServer {
   }
   // 更新上麦列表,接口更新时调用
   updateSpeakerList() {
-
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state
 
@@ -48,8 +47,6 @@ class MicServer extends BaseServer {
         return new Speaker(sourceSpeaker)
       }
     })
-
-
   }
 
   // 获取是否上麦状态
@@ -62,14 +59,13 @@ class MicServer extends BaseServer {
 
   // 通过accountId来更新speaker
   updateSpeakerByAccountId(accountId, params) {
-    console.log('---speaker根据accountId更新----', accountId)
+    console.log('---speaker根据accountId更新----', accountId, this.state.speakerList)
     // let speaker = this.state.speakerList.find(speaker => speaker.accountId == accountId)
 
     // if (!speaker) {
     //   console.warn('上麦用户不存在')
     //   return
     // }
-
     this.state.speakerList = this.state.speakerList.map(speaker => {
       if (speaker.accountId == accountId) {
         return Object.assign(speaker, params)

@@ -96,6 +96,7 @@ class InteractiveServer extends BaseServer {
           //   }
           //   return stream.streamType === 2;
           // });
+
           let streams = event.currentStreams.filter(stream => {
             try {
               if (stream.attributes && typeof stream.attributes == 'string') {
@@ -111,7 +112,7 @@ class InteractiveServer extends BaseServer {
             }
             return stream.streamType === 2;
           });
-
+          console.warn('streams----', streams)
           streams.forEach(stream => {
 
             useMicServer().updateSpeakerByAccountId(stream.accountId, stream)
