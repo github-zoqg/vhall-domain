@@ -870,9 +870,6 @@ class StandardGroupServer extends BaseServer {
       // 派发小组变更的事件
       this.$emit('GROUP_IS_IN_GROUP_CHANGE', this.state.groupInitData)
     }
-
-    // 更新主房间speakerList
-    useMicServer().updateSpeakerList()
   }
 
   /**

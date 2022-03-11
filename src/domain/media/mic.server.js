@@ -24,7 +24,7 @@ class MicServer extends BaseServer {
     return this;
   }
   init() {
-    // this.updateSpeakerList()
+    this.updateSpeakerList()
     this.getSpeakerStatus();
     this._initEventListeners();
   }
@@ -212,6 +212,10 @@ class MicServer extends BaseServer {
           break;
       }
     });
+    const groupServer = useGroupServer()
+    groupServer.$on('GROUP_IS_IN_GROUP_CHANGE', () => {
+      this.updateSpeakerList()
+    })
   }
 
   setSpeakOffToInit(val) {
