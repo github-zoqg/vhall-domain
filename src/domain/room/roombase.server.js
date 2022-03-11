@@ -3,7 +3,6 @@ import { merge } from '@/utils/index.js';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import { configMap } from './js/configMap'
-import useMicServer from '../media/mic.server';
 
 /**
  * send:发起端

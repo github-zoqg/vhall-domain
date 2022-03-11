@@ -427,8 +427,6 @@ class StandardGroupServer extends BaseServer {
 
     console.log('[group] groupJoinChangeInfo:', groupJoinChangeInfo);
 
-
-
     // 如果不需要关心这条切换的小组消息,直接 return
     if (!groupJoinChangeInfo.isNeedCare) {
       console.log('[group] 当前用户不需要关心这条切换的小组消息');
