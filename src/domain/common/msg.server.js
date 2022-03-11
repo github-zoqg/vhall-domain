@@ -72,11 +72,8 @@ class MsgServer extends BaseServer {
     const vhallchat = await VhallPaasSDK.modules.VhallChat.createInstance(options);
     this.msgInstance = vhallchat.message;
     console.log('主房间消息实例', this.msgInstance);
-    const { groupInitData } = useGroupServer().state;
-    if (!groupInitData.isInGroup) {
-      this.changeChannel(this.msgInstance);
-      this._addListeners(this.msgInstance);
-    }
+    this.changeChannel(this.msgInstance);
+    this._addListeners(this.msgInstance);
   }
   async initGroupMsg(customOptions = {}) {
     //如果已存在子房间先销毁
