@@ -65,7 +65,9 @@ export default class StandardDocServer extends AbstractDocServer {
         this._initEvent();
 
         const { watchInitData } = useRoomBaseServer().state;
-
+        if (watchInitData.join_info.role_name == 3) {
+          this.setRole(VHDocSDK.RoleType.ASSISTANT);
+        }
         // 无延迟
         if (watchInitData.webinar.no_delay_webinar) {
           this.setPlayMode(VHDocSDK.PlayMode.INTERACT);
@@ -152,10 +154,14 @@ export default class StandardDocServer extends AbstractDocServer {
       switch (msg.data.event_type || msg.data.type) {
         // 直播结束
         case 'live_over':
+          console.log('[doc] 直播结束，删除所有容器');
+          // 观众不可见
+          this.switchOffContainer()
+          // 删除所有容器
           for (const item of this.state.containerList) {
-            // 删除所有容器
             await this.destroyContainer(item.cid);
           }
+
           // 还原
           this.state.currentCid = ''; //当前正在展示的容器id
           this.state.docCid = ''; // 当前文档容器Id
@@ -171,19 +177,16 @@ export default class StandardDocServer extends AbstractDocServer {
       }
     })
 
-    // 设置主讲人，消息只发起端能收到
+    // 设置主讲人，消息只 发起端 能收到
     // 1、互动直播 - 主持人设置嘉宾为主讲人
     // 2、互动直播 - 嘉宾主讲人下麦，把主讲人还给主持人
     useRoomBaseServer().$on('VRTC_SPEAKER_SWITCH', async (msg) => {
       console.log('[doc] VRTC_SPEAKER_SWITCH', msg);
-      if (useGroupServer().state.groupInitData.isInGroup) {
-        // 如果在小组内（分组直播里面没有，这个条件应该不会执行）
-        await useGroupServer().updateGroupInitData();
-      } else {
+      if (!useGroupServer().state.groupInitData.isInGroup) {
         // 在直播间内
         await useRoomBaseServer().getInavToolStatus();
+        this._setDocPermisson();
       }
-      this._setDocPermisson();
     })
 
     // 所有文档加载完成事件
@@ -248,8 +251,17 @@ export default class StandardDocServer extends AbstractDocServer {
       console.log('doc] =========删除容器=============', data);
       if (data && data.id) {
         this.destroyContainer(data.id);
+        const idx = this.state.containerList.findIndex((item) => item.cid == data.id);
+        if (idx > -1) {
+          this.state.containerList.splice(idx, 1);
+        }
       }
       this.$emit('dispatch_doc_delete_container', data);
+    });
+
+    // 选中容器
+    this.on(VHDocSDK.Event.SELECT_CONTAINER, data => {
+      this.$emit('dispatch_doc_select_container', data);
     });
 
     this.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT, ({ cid, docId }) => {
@@ -259,7 +271,7 @@ export default class StandardDocServer extends AbstractDocServer {
           const index = this.containerList.findIndex(item => item.cid == cid);
           this.containerList.splice(index, 1);
           this.docServer.destroyContainer(cid);
-          this.docCid = '';
+          this.state.docCid = '';
           this.currentCid = '';
         }, 3000); // 其他地方调用回将值重新传入
         this.$emit('dispatch_doc_not_exit', { cid, docId });
@@ -337,7 +349,9 @@ export default class StandardDocServer extends AbstractDocServer {
       this.state.switchStatus = false;
     }
     // 观看端(
-    console.log('this.state.switchStatus:', this.state.switchStatus);
+    console.log('getContainerList=>switchStatus:', this.state.switchStatus);
+    // 通知观众可见状态
+    this.$emit('dispatch_doc_switch_status', this.state.switchStatus);
 
     const roomBaseServer = useRoomBaseServer();
     if (roomBaseServer.state.clientType != 'send') {
@@ -387,29 +401,33 @@ export default class StandardDocServer extends AbstractDocServer {
    * 退出重进或刷新恢复数据
    * @param {Number} width 容器宽，必填
    * @param {height} height 容器高，必填
-   * @param {Function} bindCidFun 等待cid绑定的处理函数
    * @returns
    */
-  async recover({ width, height, bindCidFun }) {
+  async recover({ width, height }) {
     console.log('[doc] recover start：');
     if (!width || !height) {
       console.error('容器宽高错误', width, height);
       this.setDocLoadComplete();
     }
     this.setDocLoadComplete(false);
+
     for (const item of this.state.containerList) {
       const fileType = item.is_board === 1 ? 'document' : 'board';
       if (
         fileType == 'document' &&
         this.state.docCid == item.cid &&
-        document.getElementById(item.cid)
+        document.getElementById(item.cid) &&
+        document.getElementById(item.cid).childNodes.length
       ) {
+        // 该文档元素已经初始化过，跳过
         continue;
       } else if (
         fileType == 'board' &&
         this.state.boardCid == item.cid &&
-        document.getElementById(item.cid)
+        document.getElementById(item.cid) &&
+        document.getElementById(item.cid).childNodes.length
       ) {
+        // 该白板元素已经初始化过，跳过
         continue;
       }
       await this.initDocumentOrBoardContainer({
@@ -417,8 +435,7 @@ export default class StandardDocServer extends AbstractDocServer {
         height,
         fileType,
         cid: item.cid,
-        docId: item.docId,
-        bindCidFun
+        docId: item.docId
       });
       if (fileType == 'document') {
         this.state.docCid = item.cid;
@@ -428,6 +445,7 @@ export default class StandardDocServer extends AbstractDocServer {
       this.setRemoteData(item);
     }
     this.setDocLoadComplete(true);
+
     const activeItem = this.state.containerList.find(item => item.active === 1);
     if (activeItem) {
       if (activeItem.is_board === 1) {
@@ -447,17 +465,15 @@ export default class StandardDocServer extends AbstractDocServer {
    * @param {String} cid 容器id，非必填，如果不存在需要调用 createUUID 新建
    * @param {String} docId 具体演示文件id,演示文档时必填，白板为空
    * @param {String} docType 具体演示文件类型,非必填，1:动态文档，即ppt；2:静态文档,即JPG
-   * @param {Function} bindCidFun 等待cid绑定的处理函数
    */
-  async addNewDocumentOrBorad({ width, height, fileType, cid, docId, docType, bindCidFun }) {
+  async addNewDocumentOrBorad({ width, height, fileType, cid, docId, docType }) {
     const elId = await this.initDocumentOrBoardContainer({
       width,
       height,
       fileType,
       cid,
       docId,
-      docType,
-      bindCidFun
+      docType
     });
     await this.activeContainer(elId);
     if (fileType === 'document') {
@@ -485,27 +501,17 @@ export default class StandardDocServer extends AbstractDocServer {
    * @param {String} cid 容器id，非必填，如果不存在需要调用 createUUID 新建
    * @param {String} docId 具体演示文件id,演示文档时必填，白板为空
    * @param {String} docType 具体演示文件类型,非必填，1:动态文档，即ppt；2:静态文档,即JPG
-   * @param {Function} bindCidFun 等待cid绑定的处理函数
    */
   async initDocumentOrBoardContainer({
     width,
     height,
     fileType = 'document',
     cid,
-    docId = '',
-    bindCidFun
+    docId = ''
   }) {
     if (fileType === 'document' && !docId) {
       throw new Error('required docment param docId');
     }
-    // console.log('[doc] initDocumentOrBoardContainer:', {
-    //   width,
-    //   height,
-    //   fileType,
-    //   cid,
-    //   docId,
-    //   bindCidFun
-    // });
     if (!cid) {
       cid = this.createUUID(fileType);
     }
@@ -525,10 +531,8 @@ export default class StandardDocServer extends AbstractDocServer {
       // 说明容器不在列表中，主动添加
       console.log('[doc] --------向列表中添加容器------');
       this.state.containerList.push({ cid, docId });
-
-      if (typeof bindCidFun === 'function') {
-        await bindCidFun(cid);
-      }
+      // 确保dom渲染
+      await this.domNextTick();
     }
     try {
       if (fileType === 'document') {
@@ -574,7 +578,7 @@ export default class StandardDocServer extends AbstractDocServer {
       }
       let noDispatch = !this.hasDocPermission();
       if (fileType === 'board') {
-        this.boardCid = cid;
+        this.state.boardCid = cid;
         const opts = {
           id: cid,
           elId: cid,
@@ -585,6 +589,7 @@ export default class StandardDocServer extends AbstractDocServer {
         };
         await this.createBoard(opts);
       } else {
+        this.state.docCid = cid;
         const opts = {
           id: cid,
           docId: docId,
@@ -802,7 +807,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
   async domNextTick() {
     if (window.Vue) {
-      await Vue.$nextTick();
+      await window.Vue.nextTick();
     } else {
       await sleep(0);
     }
@@ -823,9 +828,14 @@ export default class StandardDocServer extends AbstractDocServer {
       // 设置文档操作权限为主人
       this.setRole(VHDocSDK.RoleType.HOST);
     } else {
-      // 设置文档操作权限为观众
-      this.setRole(VHDocSDK.RoleType.SPECTATOR);
+      if (watchInitData.join_info.role_name == 3) {
+        this.setRole(VHDocSDK.RoleType.ASSISTANT);
+      } else {
+        // 设置文档操作权限为观众
+        this.setRole(VHDocSDK.RoleType.SPECTATOR);
+      }
     }
+
 
   }
 }

@@ -8,6 +8,8 @@ import BaseServer from '@/domain/common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
+import useMicServer from '../media/mic.server'
+
 import { debounce } from '@/utils';
 class ChatServer extends BaseServer {
   constructor() {
@@ -87,6 +89,7 @@ class ChatServer extends BaseServer {
       // 禁言当前用户
       if (rawMsg.data.type === 'disable' && this.isMyMsg(rawMsg)) {
         this.setLocalBanned(true);
+        useMicServer().speakOff();
         this.$emit('banned', this.state.banned);
       }
       //取消禁言当前用户
@@ -97,6 +100,9 @@ class ChatServer extends BaseServer {
       // 开启全体禁言
       if (rawMsg.data.type === 'disable_all') {
         this.setLocalAllBanned(true)
+        if (role_name == 2{
+          useMicServer().speakOff();
+        }
         this.$emit('allBanned', this.state.allBanned);
 
       }

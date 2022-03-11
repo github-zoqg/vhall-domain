@@ -5,6 +5,7 @@ import useMsgServer from '../common/msg.server';
 import useDocServer from '../doc/doc.server';
 import { group as groupApi } from '../../request/index.js';
 import { isPc, sleep } from '@/utils/index.js';
+import useMicServer from '../media/mic.server';
 
 /**
  * 标准分组直播场景下的分组相关服务
@@ -72,6 +73,8 @@ class StandardGroupServer extends BaseServer {
       GROUP_MSG_CREATED: 'GROUP_MSG_CREATED',
       // 切换主屏
       VRTC_BIG_SCREEN_SET: 'VRTC_BIG_SCREEN_SET',
+      // 演示者变更
+      VRTC_PRESENTATION_SCREEN_SET: 'VRTC_PRESENTATION_SCREEN_SET',
       // 结束演示
       VRTC_DISCONNECT_PRESENTATION_SUCCESS: 'VRTC_DISCONNECT_PRESENTATION_SUCCESS',
       // 拒绝演示
@@ -265,6 +268,8 @@ class StandardGroupServer extends BaseServer {
    */
   async msgdoForGroupDisband(msg) {
     console.log('[group] domain group_disband');
+    // 任何关于分组的操作都需要重新获取主持端的互动工具状态 - 业务侧获取主持人状态
+    await useRoomBaseServer().getInavToolStatus();
     if (this.state.groupInitData.isInGroup &&
       msg.data.group_id == this.state.groupInitData.group_id) {
       // 如果在小组中，小组要解散，
@@ -284,7 +289,7 @@ class StandardGroupServer extends BaseServer {
       useMsgServer().destroyGroupMsg();
 
       // 退出小组重新初始化互动
-      await useInteractiveServer().groupReInitInteractProcess()
+      await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupDisband')
 
       // 处理文档channel切换逻辑
       await useDocServer().groupReInitDocProcess();
@@ -312,6 +317,11 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] domain group_switch_start', msg);
     // 设置开始为开始讨论状态
     useRoomBaseServer().setInavToolStatus('is_open_switch', 1);
+    // 任何关于分组的操作都需要重新获取主持端的互动工具状态 - 业务侧获取主持人状态
+    await useRoomBaseServer().getInavToolStatus();
+
+
+
     if (useRoomBaseServer().state.watchInitData.join_info.role_name == 2) {
       // 观看端
       // 更新个人所在小组信息
@@ -320,7 +330,6 @@ class StandardGroupServer extends BaseServer {
       if (!this.state.groupInitData.isInGroup) return;
       //----------------------------------
       // this.handleResetInteractiveTools();
-      await useRoomBaseServer().getInavToolStatus();
       // 自定义菜单切换逻辑处理
       // this.handleGroupSelectMenuInfoChange({ isEntryGroup: true });
       // 如果是分组直播并且正在讨论中并且在分组中，初始化子房间聊天
@@ -338,7 +347,7 @@ class StandardGroupServer extends BaseServer {
       this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
       // 处理分组下互动sdk切换channel
-      await useInteractiveServer().groupReInitInteractProcess()
+      await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupSwitchStart')
 
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
@@ -363,6 +372,8 @@ class StandardGroupServer extends BaseServer {
       //主持端
       this.state.panelShow = false;
     }
+    // 任何关于分组的操作都需要重新获取主持端的互动工具状态 - 业务侧获取主持人状态
+    await useRoomBaseServer().getInavToolStatus();
     // 结束讨论但不在分组中，不需要发消息，直接 return
     if (!this.state.groupInitData.isInGroup) {
       // 通知需要更新在线人员列表
@@ -375,7 +386,6 @@ class StandardGroupServer extends BaseServer {
 
     // 聚合接口，各种互动工具的状态拉取
     // await this.handleGetCommonConfigInfo();
-    await useRoomBaseServer().getInavToolStatus();
 
     // 给主房间发消息通知当前人离开子房间进入主房间
     this.sendMainRoomJoinChangeMsg({
@@ -392,7 +402,7 @@ class StandardGroupServer extends BaseServer {
     useMsgServer().destroyGroupMsg();
 
     // 处理分组下互动sdk切换channel
-    await useInteractiveServer().groupReInitInteractProcess();
+    await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupSwitchEnd');
 
     // 处理文档channel切换逻辑
     await useDocServer().groupReInitDocProcess();
@@ -412,6 +422,10 @@ class StandardGroupServer extends BaseServer {
         this.getGroupedUserList()
       ]);
     }
+
+    // 任何关于分组的操作都需要重新获取主持端的互动工具状态 - 业务侧获取主持人状态
+    await useRoomBaseServer().getInavToolStatus();
+
     if (useRoomBaseServer().state.interactToolStatus.is_open_switch != 1) {
       console.log('[group] 未开启讨论，不处理分组切换逻辑。');
       if (clientType === 'send') {
@@ -421,7 +435,11 @@ class StandardGroupServer extends BaseServer {
     }
 
     const groupJoinChangeInfo = await this.getGroupJoinChangeInfo(msg.data.group_ids);
+
     console.log('[group] groupJoinChangeInfo:', groupJoinChangeInfo);
+
+
+
     // 如果不需要关心这条切换的小组消息,直接 return
     if (!groupJoinChangeInfo.isNeedCare) {
       console.log('[group] 当前用户不需要关心这条切换的小组消息');
@@ -435,7 +453,6 @@ class StandardGroupServer extends BaseServer {
       // to 为 0 从子直播间切换到主房间
       console.log('[group] 小组 → 主直播间 （从小组切换到主直播间）');
       // await this.handleGetCommonConfigInfo();
-      await useRoomBaseServer().getInavToolStatus();
       // 给主房间发消息通知当前人离开子房间进入主房间
       this.sendMainRoomJoinChangeMsg({
         isJoinMainRoom: true,
@@ -447,7 +464,7 @@ class StandardGroupServer extends BaseServer {
       useMsgServer().destroyGroupMsg();
       // 处理分组下互动sdk切换channel
 
-      await useInteractiveServer().groupReInitInteractProcess();
+      await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupJoinChange groupJoinChangeInfo.to === 0');
 
       // 处理文档channel切换逻辑
       await useDocServer().groupReInitDocProcess();
@@ -455,6 +472,7 @@ class StandardGroupServer extends BaseServer {
       // from 为 0 从主房间切换到子直播间
       console.log('[group]  主直播间 → 小组（从主直播间切换到小组）');
 
+      this.$emit(this.EVENT_TYPE.ENTER_GROUP_FROM_MAIN, msg)
       // 给主房间发消息通知当前人离开主房间进入子房间
       this.sendMainRoomJoinChangeMsg({
         isJoinMainRoom: false,
@@ -476,7 +494,7 @@ class StandardGroupServer extends BaseServer {
         this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
         // 处理分组下互动sdk切换channel
-        await useInteractiveServer().groupReInitInteractProcess();
+        await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupJoinChange is_open_switch === 1 && isInGroup');
 
         // 处理文档channel切换逻辑
         await useDocServer().groupReInitDocProcess();
@@ -501,7 +519,7 @@ class StandardGroupServer extends BaseServer {
         this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
         // 处理分组下互动sdk切换channel
-        await useInteractiveServer().groupReInitInteractProcess();
+        await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupJoinChange else');
 
         // 处理文档channel切换逻辑
         await useDocServer().groupReInitDocProcess();
@@ -534,14 +552,16 @@ class StandardGroupServer extends BaseServer {
   async msgdoForGroupLeaderChange(msg) {
     if (msg.data.group_id == this.state.groupInitData.group_id) {
       // 在一个组里面，需要更新小组数据
-      await this.updateGroupInitData();
-
+      if (this.state.groupInitData.doc_permission != msg.data.account_id) {
+        await this.updateGroupInitData();
+      }
       useDocServer()._setDocPermisson();
+
+      if (useRoomBaseServer().state.watchInitData.join_info.role_name != 2) {
+        this.getGroupedUserList();
+      }
     }
-    if (useRoomBaseServer().state.watchInitData.join_info.role_name != 2) {
-      this.state.groupInitData.doc_permission = msg.data.account_id;
-      this.getGroupedUserList();
-    }
+
     this.$emit(this.EVENT_TYPE.GROUP_LEADER_CHANGE, msg);
   }
 
@@ -553,6 +573,8 @@ class StandardGroupServer extends BaseServer {
       this.getGroupedUserList();
       this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT, msg);
     }
+    // 如果需要关心这条消息,并且是从小组中进入到主直播间
+    await useRoomBaseServer().getInavToolStatus();
     if (!this.state.groupInitData.isInGroup) return;
     await this.updateGroupInitData();
     if (
@@ -560,9 +582,6 @@ class StandardGroupServer extends BaseServer {
     ) {
       // 如果是当前用户被踢出
 
-      // 获取最新的互动房间状态
-      // await this.handleGetCommonConfigInfo();
-      await useRoomBaseServer().getInavToolStatus();
 
       // 给主房间发消息通知当前人离开子房间进入主房间
       this.sendMainRoomJoinChangeMsg({
@@ -578,7 +597,7 @@ class StandardGroupServer extends BaseServer {
       useMsgServer().destroyGroupMsg();
 
       // 处理分组下互动sdk切换channel
-      await useInteractiveServer().groupReInitInteractProcess();
+      await useInteractiveServer().groupReInitInteractProcess('msgdoForRoomGroupKickout');
 
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
@@ -588,14 +607,29 @@ class StandardGroupServer extends BaseServer {
 
   // 演示者变更
   async msgdoForVrtcConnectPresentationSet(msg) {
+    let isOldPresenter = false; //变更之前本人是否是演示者
+    let isOldLeader = false; //变更之前本人是否是组长
+
     if (this.state.groupInitData.isInGroup) {
       // 如果在小组内
-      await this.updateGroupInitData();
+      if (this.state.groupInitData.presentation_screen == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id) {
+        isOldPresenter = true;
+      }
+      if (this.state.groupInitData.doc_permission == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id) {
+        isOldLeader = true;
+      }
+      this.state.groupInitData.presentation_screen = msg.data.target_id;
     } else {
       // 在直播间内
+      if (useRoomBaseServer().state.interactToolStatus.presentation_screen
+        == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id) {
+        isOldPresenter = true;
+      }
       await useRoomBaseServer().getInavToolStatus();
     }
     useDocServer()._setDocPermisson();
+
+    this.$emit(this.EVENT_TYPE.VRTC_PRESENTATION_SCREEN_SET, msg, { isOldPresenter, isOldLeader });
   }
 
   // 同意邀请演示成功消息
@@ -838,6 +872,9 @@ class StandardGroupServer extends BaseServer {
     } else {
       this.$emit('GROUP_ENTER_OUT', this.state.groupInitData.isInGroup)
     }
+
+    // 更新主房间speakerList
+    useMicServer().updateSpeakerList()
   }
 
   /**
@@ -966,6 +1003,23 @@ class StandardGroupServer extends BaseServer {
       clearTimeout(timer)
       this.groupLeaderLeaveMap.delete(msg.sender_id)
     }
+  }
+
+  // 分组直播，进出子房间需要在主房间发消息，维护主房间 online-list
+  sendMainRoomJoinChangeMsg(options = { isJoinMainRoom: false, isBanned: false }) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const msgServer = useMsgServer();
+    var isPcClient = isPc();
+    const body = {
+      type: 'main_room_join_change',
+      nickname: watchInitData.join_info.nickname,
+      accountId: watchInitData.join_info.third_party_user_id,
+      isJoinMainRoom: options.isJoinMainRoom,
+      role_name: watchInitData.join_info.role_name,
+      device_type: isPcClient ? '2' : '1',
+      isBanned: options.isBanned
+    };
+    msgServer.sendRoomMsg(JSON.stringify(body));
   }
 }
 

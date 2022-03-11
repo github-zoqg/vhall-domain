@@ -35,12 +35,17 @@ class InsertFileServer extends BaseServer {
   }
 
   init() {
+    this.getInsertFileStream()
     this._addListeners()
   }
 
   // 注册监听事件
   _addListeners() {
     const interactiveServer = useInteractiveServer();
+    // 互动初始化完成
+    interactiveServer.$on('INTERACTIVE_INSTANCE_INIT_SUCCESS', () => {
+      this.getInsertFileStream()
+    });
     // 流加入
     interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
@@ -64,7 +69,6 @@ class InsertFileServer extends BaseServer {
       }
     });
   }
-
 
   // 设置当前本地插播文件
   setLocalInsertFile(file) {
@@ -97,47 +101,31 @@ class InsertFileServer extends BaseServer {
     if (!interactiveServer.interactiveInstance) return
     const streamList = interactiveServer.getRoomStreams();
     const stream = streamList.find(stream => {
-      if (stream.streamType === 4) {
+      return stream.streamType === 4
 
-        const retStream = {
-          ...stream,
-          attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
-        }
-
-        this.state.insertStreamInfo.streamId = stream.streamId
-        this.state.insertStreamInfo.userInfo = {
-          accountId: retStream.accountId,
-          role: retStream.role,
-          nickname: retStream.nickname,
-
-        }
-        this.state.isInsertFilePushing = true
-        this.state.insertStreamInfo.has_video = retStream.has_video // 是否音频插播
-
-        return retStream
-      }
     });
-    if (!stream) {
+    let retStream = null
+    if (stream) {
+      retStream = {
+        ...stream,
+        attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
+      }
+      this.state.insertStreamInfo.streamId = stream.streamId
+      this.state.insertStreamInfo.userInfo = {
+        accountId: retStream.attributes.accountId,
+        role: retStream.attributes.role,
+        nickname: retStream.attributes.nickname,
+
+      }
+      this.state.isInsertFilePushing = true
+      this.state.insertStreamInfo.has_video = retStream.attributes.has_video // 是否音频插播
+    }
+
+    if (!retStream) {
       this.clearInsertFileInfo()
     }
-    return stream;
+    return retStream;
   }
-
-  // 注册插播流删除事件
-  // onInsertFileStreamDelete(cb) {
-  //   const interactiveServer = useInteractiveServer();
-  //   interactiveServer.on('interactive_REMOTESTREAM_REMOVED', e => {
-  //     cb(e);
-  //   });
-  // }
-
-  // 插播流订阅失败
-  // onInsertFileStreamFaild(cb) {
-  //   const interactiveServer = useInteractiveServer();
-  //   interactiveServer.on('interactive_REMOTESTREAM_FAILED', e => {
-  //     cb(e);
-  //   });
-  // }
 
   // 获取插播列表
   getInsertFileList(params = {}) {
@@ -338,6 +326,9 @@ class InsertFileServer extends BaseServer {
     return interactiveServer
       .unpublishStream({
         streamId: streamId || this.state.insertStreamInfo.streamId
+      }).then(res => {
+        this.clearInsertFileInfo()
+        return res
       })
   }
 
@@ -369,13 +360,19 @@ class InsertFileServer extends BaseServer {
   // 订阅插播流
   subscribeInsertStream(options = {}) {
     const interactiveServer = useInteractiveServer();
-    return interactiveServer.subscribeStream(options);
+    return interactiveServer.subscribe({
+      streamId: this.state.insertStreamInfo.streamId,
+      ...options
+    });
   }
 
   // 取消订阅流
-  unsubscribeInsertStream(options = {}) {
+  unsubscribeInsertStream() {
     const interactiveServer = useInteractiveServer();
-    return interactiveServer.unSubscribeStream(options);
+    return interactiveServer.unSubscribeStream(this.state.insertStreamInfo.streamId).then(res => {
+      this.clearInsertFileInfo()
+      return res
+    });
   }
 }
 

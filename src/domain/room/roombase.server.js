@@ -3,6 +3,7 @@ import { merge } from '@/utils/index.js';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import { configMap } from './js/configMap'
+import useMicServer from '../media/mic.server';
 
 /**
  * send:发起端
@@ -151,7 +152,7 @@ class RoomBaseServer extends BaseServer {
             this.$emit('ROOM_SIGNLE_LOGIN');
             setTimeout(() => {
               useMsgServer().destroy()
-            }, 5000)
+            }, 2000)
           }
         }
       }
@@ -321,7 +322,7 @@ class RoomBaseServer extends BaseServer {
   }
 
   //获取房间内各工具的状态
-  getInavToolStatus(data = {}) {
+  async getInavToolStatus(data = {}) {
     const defaultParams = {
       room_id: this.state.watchInitData.interact.room_id
     };
@@ -334,6 +335,8 @@ class RoomBaseServer extends BaseServer {
           this.state.interactToolStatus.presentation_screen =
             this.state.interactToolStatus.doc_permission;
         }
+
+        useMicServer().updateSpeakerList()
       }
       return res;
     });
@@ -341,10 +344,15 @@ class RoomBaseServer extends BaseServer {
 
   // 观看端获取公众号、广告推荐、邀请卡等信息
   getCommonConfig(data = {}) {
+    // 第一次调用的时候存储一下入参，后续如果不传 data 就用第一次保存的参数
+    if (!this._isNotFirstGetCommonConfig) {
+      this._getCommonConfigData = data
+      this._isNotFirstGetCommonConfig = true
+    }
     const defaultParams = {
       webinar_id: this.state.watchInitData.webinar.id
     };
-    const retParams = merge.recursive({}, defaultParams, data);
+    const retParams = merge.recursive({}, defaultParams, data || this._getCommonConfigData);
     return meeting.getCommonConfig(retParams).then(res => {
       if (res.code == 200) {
         this.state.skinInfo = res.data['skin'] ? res.data['skin'].data : {}; // 皮肤信息
@@ -369,6 +377,17 @@ class RoomBaseServer extends BaseServer {
       }
       return res;
     });
+  }
+
+  // 打开观看端是微信分享
+  bindShare(data = {}) {
+    const defaultParams = {
+      room_id: this.state.watchInitData.interact.room_id
+    };
+    const retParams = merge.recursive({}, defaultParams, data);
+    return meeting.bindShare(retParams).then(res => {
+      return res;
+    })
   }
 
   // 设置互动

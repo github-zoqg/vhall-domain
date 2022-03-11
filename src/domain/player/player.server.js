@@ -13,6 +13,7 @@ class PlayerServer extends BaseServer {
       this.state = {
         isPlaying: false,
         markPoints: [],
+        isBarrage: false,
         type: 'live', // live or vod
         voice: 60
       };
@@ -27,6 +28,7 @@ class PlayerServer extends BaseServer {
     this.state = {
       isPlaying: false,
       markPoints: [],
+      isBarrage: false,
       type: 'live', // live or vod
       voice: 60
     };
@@ -153,11 +155,13 @@ class PlayerServer extends BaseServer {
 
   //开启弹幕显示
   openBarrage() {
+    this.state.isBarrage = true;
     return this.playerInstance.openBarrage();
   }
 
   //关闭弹幕显示
   closeBarrage() {
+    this.state.isBarrage = true;
     return this.playerInstance.closeBarrage();
   }
 
@@ -194,10 +198,13 @@ class PlayerServer extends BaseServer {
   // 播放器注册事件监听
   _addPlayerListeners() {
     const msgServer = useMsgServer();
+    const roomBaseServer = useRoomBaseServer()
     // 弹幕
     msgServer.$onMsg('CHAT', msg => {
       if (!msg.data.barrageTxt.includes('<img')) {
-        this.$emit('push_barrage', msg.data.barrageTxt);
+        if (this.state.isBarrage) {
+          this.addBarrage(msg.data.barrageTxt)
+        }
       }
     });
     // 结束直播
@@ -222,6 +229,14 @@ class PlayerServer extends BaseServer {
       }
     });
 
+    // 单点登录逻辑
+    roomBaseServer.$on('ROOM_SIGNLE_LOGIN', () => {
+      setTimeout(() => {
+        // 播放器销毁
+        this.destroy()
+      }, 2000)
+    })
+
     // 视频加载完成
     this.playerInstance.on(VhallPlayer.LOADED, e => {
       this.$emit(VhallPlayer.LOADED, e);
@@ -242,6 +257,11 @@ class PlayerServer extends BaseServer {
       this.$emit(VhallPlayer.PAUSE, e);
     });
 
+    // 播放器出错
+    this.playerInstance.on(VhallPlayer.ERROR, e => {
+      this.$emit(VhallPlayer.ERROR, e);
+    });
+
     // 视频播放完毕
     this.playerInstance.on(VhallPlayer.ENDED, e => {
       this.$emit(VhallPlayer.ENDED, e);
@@ -255,6 +275,11 @@ class PlayerServer extends BaseServer {
     // 视频卡顿恢复时触发
     this.playerInstance.on(VhallPlayer.LAG_RECOVER, e => {
       this.$emit(VhallPlayer.LAG_RECOVER, e);
+    });
+
+    // 当前清晰度改变时触发
+    this.playerInstance.on(VhallPlayer.DEFINITION_CHANGE, e => {
+      this.$emit(VhallPlayer.DEFINITION_CHANGE, e);
     });
   }
 

@@ -6,7 +6,8 @@ import useRoomBaseServer from '../room/roombase.server';
 // import useInteractiveServer from './interactive.server';
 import userMemberServer from '../member/member.server';
 import useGroupServer from '../group/StandardGroupServer';
-
+import Speaker from './speaker-class';
+import useInteractiveServer from './interactive.server';
 class MicServer extends BaseServer {
   constructor() {
     super();
@@ -16,15 +17,94 @@ class MicServer extends BaseServer {
     this.state = {
       // isAllowhandup: false, // 是否开始允许举手
       isSpeakOn: false, // 是否在麦上
-      isSpeakOffToInit: false // 是否下麦后自动初始化互动
+      isSpeakOffToInit: false, // 是否下麦后去初始化互动
+      speakerList: [] // 上麦人员列表
     };
     MicServer.instance = this;
     return this;
   }
   init() {
-    this.initMicState();
+    // this.updateSpeakerList()
+    this.getSpeakerStatus();
     this._initEventListeners();
   }
+  // 更新上麦列表,接口更新时调用
+  updateSpeakerList() {
+
+    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state
+
+    let speakerList = interactToolStatus.speaker_list || []
+    if (groupInitData.isInGroup) {
+      speakerList = groupInitData.speaker_list || []
+    }
+
+    // 接口数据更新时，将接口返回的speakerList和本地比对，只保留接口返回的用户
+    this.state.speakerList = speakerList.map(sourceSpeaker => {
+      let speaker = this.state.speakerList.find(item => item.accountId == sourceSpeaker.account_id)
+      if (speaker) {
+        return speaker
+      } else {
+        return new Speaker(sourceSpeaker)
+      }
+    })
+
+  }
+
+  // 获取是否上麦状态
+  getSpeakerStatus() {
+    const { join_info } = useRoomBaseServer().state.watchInitData;
+    this.state.isSpeakOn = this.state.speakerList.some(speaker => speaker.accountId == join_info.third_party_user_id)
+    return this.state.isSpeakOn
+
+  }
+
+  // 通过accountId来更新speaker
+  updateSpeakerByAccountId(accountId, params) {
+    console.log('---speaker根据accountId更新----', accountId)
+    // let speaker = this.state.speakerList.find(speaker => speaker.accountId == accountId)
+
+    // if (!speaker) {
+    //   console.warn('上麦用户不存在')
+    //   return
+    // }
+
+    this.state.speakerList = this.state.speakerList.map(speaker => {
+      if (speaker.accountId == accountId) {
+        return Object.assign(speaker, params)
+      } else {
+        return speaker
+      }
+    })
+  }
+
+  // 通过streamId来更新speaker
+  updateSpeakerByStreamId(streamId, params) {
+    // let index = this.state.speakerList.findIndex(speaker => speaker.streamId == streamId)
+    // if (index < 0) {
+    //   console.error('上麦用户不存在streamId')
+    //   return
+    // }
+    this.state.speakerList = this.state.speakerList.map(speaker => {
+      if (speaker.streamId == streamId) {
+        return Object.assign(speaker, params)
+      } else {
+        return speaker
+      }
+    })
+  }
+
+  getSpeakerByAccountId(accountId) {
+    return this.state.speakerList.find(speaker => speaker.accountId == accountId)
+  }
+
+  removeAllApeakerStreamId() {
+    this.state.speakerList.forEach(item => {
+      item.streamId = ''
+    })
+  }
+
+
   _initEventListeners() {
     const msgServer = useMsgServer();
     msgServer.$onMsg('ROOM_MSG', msg => {
@@ -36,6 +116,10 @@ class MicServer extends BaseServer {
         join_info.third_party_user_id
       );
       switch (msg.data.type) {
+        // 开启允许举手
+        case 'live_over':
+          this.state.speakerList = []
+          break;
         // 开启允许举手
         case 'vrtc_connect_open':
           useRoomBaseServer().setInavToolStatus('is_handsup', true);
@@ -74,6 +158,23 @@ class MicServer extends BaseServer {
           break;
         // 用户成功上麦
         case 'vrtc_connect_success':
+          let params = {
+            account_id: msg.data.room_join_id,
+            audio: msg.data.vrtc_audio_status == 'on' ? 1 : 0,
+            nick_name: msg.data.nick_name,
+            role_name: Number(msg.data.room_role),
+            video: msg.data.vrtc_video_status == 'on' ? 1 : 0
+          }
+
+          if (useInteractiveServer().interactiveInstance) {
+            const streams = useInteractiveServer().getRoomStreams()
+            const stream = streams.find(item => item.accountId == msg.data.room_join_id)
+            if (stream) {
+              params.streamId = stream.streamId
+            }
+          }
+          this.state.speakerList.push(new Speaker(params));
+
           if (join_info.third_party_user_id == msg.data.room_join_id) {
             this.state.isSpeakOn = true;
           }
@@ -81,6 +182,7 @@ class MicServer extends BaseServer {
           break;
         // 用户成功下麦
         case 'vrtc_disconnect_success':
+          this.state.speakerList = this.state.speakerList.filter(speaker => speaker.accountId != msg.data.target_id)
           if (join_info.third_party_user_id == msg.data.target_id) {
             this.state.isSpeakOffToInit = true
             this.state.isSpeakOn = false;
@@ -107,7 +209,6 @@ class MicServer extends BaseServer {
           interactToolStatus.main_screen = msg.data.room_join_id;
           this.$emit('vrtc_big_screen_set', msg);
           // const str = watchInitData.webinar.mode == 6 ? '主画面' : '主讲人';
-          // this.$message.warning(`${msg.nick_name}设成为${str}`);
           break;
       }
     });
@@ -117,27 +218,6 @@ class MicServer extends BaseServer {
     this.state.isSpeakOffToInit = val
   }
 
-  // 初始化用户上麦状态
-  async initMicState() {
-    const roomBaseServer = useRoomBaseServer();
-    const { speaker_list } = roomBaseServer.state.interactToolStatus;
-    const { join_info } = roomBaseServer.state.watchInitData;
-    // 分组直播speaker list
-    const groupSpeakerList = useGroupServer().state.groupInitData?.speaker_list;
-    if (groupSpeakerList && groupSpeakerList.length) {
-      this.state.isSpeakOn = groupSpeakerList.some(
-        item => item.account_id == join_info.third_party_user_id
-      );
-      return this.state.isSpeakOn;
-    }
-    if (!speaker_list) return;
-    if (speaker_list && speaker_list.length) {
-      this.state.isSpeakOn = speaker_list.some(
-        item => item.account_id == join_info.third_party_user_id
-      );
-      return this.state.isSpeakOn;
-    }
-  }
 
   // 用户上麦
   userSpeakOn(data = {}) {
