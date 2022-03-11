@@ -157,10 +157,6 @@ class StandardGroupServer extends BaseServer {
         case 'group_leader_change':
           this.msgdoForGroupLeaderChange(msg);
           break;
-        // // 主讲人--设置主屏
-        // case 'vrtc_speaker_switch':
-        //   this.msgdoForVrtcSpeakerSwitch(msg);
-        //   break;
         // 主讲人--设置主屏
         case 'vrtc_big_screen_set':
           this.msgdoForVrtcSpeakerSwitch(msg);
@@ -201,6 +197,10 @@ class StandardGroupServer extends BaseServer {
         case 'vrtc_connect_presentation_refused':
           this.$emit(this.EVENT_TYPE.VRTC_CONNECT_PRESENTATION_REFUSED, msg);
           break;
+        // 进出主房间
+        case 'main_room_join_change': {
+          this.msgdoForMainRoomJoinChange(msg);
+        }
       }
     });
 
@@ -292,6 +292,7 @@ class StandardGroupServer extends BaseServer {
       // 处理文档channel切换逻辑
       await useDocServer().groupReInitDocProcess();
     }
+
     if (useRoomBaseServer().state.clientType === 'send') {
       // 如果是发起端，还需要更新分组讨论列表数据
       this.getWaitingUserList();
@@ -562,10 +563,9 @@ class StandardGroupServer extends BaseServer {
       this.getGroupedUserList();
       this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT, msg);
     }
-    if (!this.state.groupInitData.isInGroup) return;
-
     if (
-      msg.data.target_id === useRoomBaseServer().state.watchInitData.join_info.third_party_user_id
+      this.state.groupInitData.isInGroup &&
+      msg.data.target_id == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id
     ) {
       // 如果是当前用户被踢出
       await this.updateGroupInitData();
@@ -635,6 +635,26 @@ class StandardGroupServer extends BaseServer {
     }
     useDocServer()._setDocPermisson();
     this.$emit(this.EVENT_TYPE.VRTC_DISCONNECT_PRESENTATION_SUCCESS, msg);
+  }
+
+  // 进出主房间
+  async msgdoForMainRoomJoinChange(msg) {
+    console.log('[group] msgdoForMainRoomJoinChange:', msg)
+    // data: {
+    //   accountId: "16423152"
+    //   device_type: "2"
+    //   isBanned: 0
+    //   isJoinMainRoom: false
+    //   nickname: "很长de昵称很长d昵称很长de昵称很长de昵称很长de昵称"
+    //   role_name: 2
+    //   type: "main_room_join_change"
+    // }
+    if (msg.data.accountId ==
+      useRoomBaseServer().state.watchInitData.webinar.userinfo.user_id) {
+      // 如果是主持人,更新主持人是否在小组中的状态
+      useRoomBaseServer().state.interactToolStatus.is_host_in_group =
+        msg.data.isJoinMainRoom ? 0 : 1;
+    }
   }
 
   /**
