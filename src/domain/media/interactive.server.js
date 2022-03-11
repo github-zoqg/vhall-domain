@@ -245,7 +245,11 @@ class InteractiveServer extends BaseServer {
     { name: 'is_banned', val: parseInt(groupInitData.is_banned) },
     { name: 'isSpeakOffToInit', val: micServer.state.isSpeakOffToInit },
     { name: 'role_name', val: watchInitData.join_info.role_name }])
-    let autoSpeak = null
+
+    let autoSpeak = false
+
+    // 记录状态，初始化互动时为false,调用speakOn成功后 设置为true
+    this.state.autoSpeak = false
     if ((useMediaCheckServer().state.deviceInfo.device_status === 1)) {
       if (interactToolStatus.auto_speak == 1) {
         if (groupInitData.isInGroup) {
@@ -273,11 +277,19 @@ class InteractiveServer extends BaseServer {
       autoSpeak = true
     }
 
+
+
     if (autoSpeak) {
       // 调上麦接口判断当前人是否可以上麦
       const res = await micServer.userSpeakOn();
       // 如果上麦成功，设为 HOST
-      if (res.code == 200) return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
+      if (res.code == 200) {
+
+        // 记录状态，在收到 vrtc_connect_success 消息后不再次初始化互动
+        this.state.autoSpeak = true
+
+        return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
+      }
     } else {
       micServer.setSpeakOffToInit(false)
     }
@@ -392,15 +404,10 @@ class InteractiveServer extends BaseServer {
         useDesktopShareServer().setShareScreenStatus(false);
         useRoomBaseServer().setChangeElement('stream-list');
       } else {
-        // // 从流列表中删除
-        // this.state.remoteStreams = this.state.remoteStreams.filter(
-        //   stream => stream.streamId != e.data.streamId
-        // );
-        // 派发上麦流列表更新事件
-        this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
+
       }
 
-      this.unSubscribeStream(e.data.streamId)
+      // this.unSubscribeStream(e.data.streamId)
       this.$emit('EVENT_REMOTESTREAM_REMOVED', e);
     });
 
@@ -419,25 +426,6 @@ class InteractiveServer extends BaseServer {
       useMicServer().updateSpeakerByStreamId(e.data.streamId, params)
 
 
-      // if (e.data.streamId == this.state.localStream.streamId) {
-      //   // 本地流处理
-      //   this.state.localStream.audioMuted = e.data.muteStream.audio;
-      //   this.state.localStream.videoMuted = e.data.muteStream.video;
-      //   // 派发本地流更新事件
-      //   this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
-      //   console.log('----本地流处理----', this.state.localStream);
-      // } else {
-      //   // 远端流处理
-      //   this.state.remoteStreams.some(stream => {
-      //     if (e.data.streamId == stream.streamId) {
-      //       stream.audioMuted = e.data.muteStream.audio;
-      //       stream.videoMuted = e.data.muteStream.video;
-      //       // 派发上麦流列表更新事件
-      //       this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
-      //       return true;
-      //     }
-      //   });
-      // }
       this.$emit('EVENT_REMOTESTREAM_MUTE', e);
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
@@ -456,14 +444,6 @@ class InteractiveServer extends BaseServer {
         useRoomBaseServer().setChangeElement('stream-list');
       }
 
-      // if (e.data.streamId == this.state.localStream.streamId) {
-
-      //   if (this.splited) return; // 解决17565 【H5】主持人结束“分屏”，主持人自动下麦
-      //   EventBus.$emit('EVENT_STREAM_END_ERROR');
-      //   if (this.$localStreamId == e.data.streamId) {
-      //     this.speakOff();
-      //   }
-      // }
       this.$emit('EVENT_STREAM_END', e);
     });
 
@@ -636,7 +616,7 @@ class InteractiveServer extends BaseServer {
         this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
         return data
       } catch (e) {
-        console.error('1', e)
+        console.error('createLocalVideoStream', e)
       }
 
     });
@@ -837,7 +817,7 @@ class InteractiveServer extends BaseServer {
         console.warn('出现异常----', error)
       }
       this.state.localStream = {
-        streamId: data.streamId,
+        streamId: data.streamId
       };
       return data
     });
@@ -916,9 +896,9 @@ class InteractiveServer extends BaseServer {
   _clearLocalStream() {
     this.state.localStream = {
       streamId: null, // 本地流id
-      videoMuted: false,
-      audioMuted: false,
-      attributes: {}
+      // videoMuted: false,
+      // audioMuted: false,
+      // attributes: {}
     };
     // 派发本地流更新事件
     this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
@@ -1200,22 +1180,6 @@ class InteractiveServer extends BaseServer {
    */
   muteVideo(options = {}) {
     return this.interactiveInstance.muteVideo(options).then(data => {
-      if (options.streamId == this.state.localStream.streamId) {
-        // 更新本地流视频静默状态
-        this.state.localStream.videoMuted = options.isMute;
-        // 派发本地流更新事件
-        this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
-      } else {
-        // 更新远端流视频静默状态
-        this.state.remoteStreams.some(item => {
-          if ((item.streamId = options.streamId)) {
-            item.videoMuted = options.videoMuted;
-            // 派发上麦流列表更新事件
-            this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
-            return true;
-          }
-        });
-      }
       return data;
     });
   }
@@ -1227,22 +1191,6 @@ class InteractiveServer extends BaseServer {
    */
   muteAudio(options = {}) {
     return this.interactiveInstance.muteAudio(options).then(data => {
-      if (options.streamId == this.state.localStream.streamId) {
-        // 更新本地流音频静默状态
-        this.state.localStream.audioMuted = options.isMute;
-        // 派发本地流更新事件
-        this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
-      } else {
-        // 更新远端流音频默状态
-        this.state.remoteStreams.some(item => {
-          if ((item.streamId = options.streamId)) {
-            item.audioMuted = options.isMute;
-            // 派发上麦流列表更新事件
-            this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
-            return true;
-          }
-        });
-      }
       return data;
     });
   }
