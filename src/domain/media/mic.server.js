@@ -203,6 +203,7 @@ class MicServer extends BaseServer {
           break;
         // 设置主画面
         case 'vrtc_big_screen_set':
+          console.warn('？？？？ 为何没有监听到', useGroupServer().state.groupInitData.isInGroup)
           if (useGroupServer().state.groupInitData.isInGroup) return;
           const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
           // if(useGroupServer().state.groupInitData.isInGroup)

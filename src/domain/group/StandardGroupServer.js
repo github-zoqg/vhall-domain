@@ -538,6 +538,7 @@ class StandardGroupServer extends BaseServer {
       //   this.$refs.desktopRef.stopDesktopShare();
       // }
     }
+    this.$emit(this.EVENT_TYPE.VRTC_BIG_SCREEN_SET, msg)
   }
 
   //【组长变更/组长更改】消息处理
