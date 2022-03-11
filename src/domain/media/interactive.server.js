@@ -802,6 +802,7 @@ class InteractiveServer extends BaseServer {
         video: speaker.videoMuted
       };
     }
+    console.warn('defaultOptions-------------', speaker, defaultOptions)
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return await this.createLocalStream(params).then(data => {
       let params = {
