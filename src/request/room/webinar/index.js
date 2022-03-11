@@ -13,8 +13,23 @@ function webinarInitBefore(params) {
   });
 }
 
+/**
+ * 通过中台接口走灰度
+ * @param {*} data
+ * @returns
+ */
+ function webinarInitBeforeByMiddle(params) {
+  const url = roomApiList['webinarInitBefore']['middle'];
+  return request({
+    url: url,
+    method: 'POST',
+    data: params
+  });
+};
+
 export default {
 
-  webinarInitBefore
+  webinarInitBefore,
+  webinarInitBeforeByMiddle
 
 };
