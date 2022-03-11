@@ -26,9 +26,6 @@ class InteractiveServer extends BaseServer {
         // audioMuted: false,
         // attributes: {}
       },
-      screenStream: {
-        streamId: null
-      },
       // remoteStreams: [], // 远端流数组
       streamListHeightInWatch: 0, // PC观看端流列表高度
       fullScreenType: false, // wap 全屏状态
@@ -399,17 +396,6 @@ class InteractiveServer extends BaseServer {
 
     // 远端流离开事件,自己的流删除事件收不到
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
-      console.log('---流删除事件---', e);
-
-      if (e.data.streamId == this.state.screenStream.streamId) {
-        this.state.screenStream.streamId = '';
-        useDesktopShareServer().setShareScreenStatus(false);
-        useRoomBaseServer().setChangeElement('stream-list');
-      } else {
-
-      }
-
-      // this.unSubscribeStream(e.data.streamId)
       this.$emit('EVENT_REMOTESTREAM_REMOVED', e);
     });
 
@@ -437,15 +423,6 @@ class InteractiveServer extends BaseServer {
 
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
-      // if(this.roleName == 1){
-      //   this.resetLayout()
-      // }
-      if (e.data.streamId == this.state.screenStream.streamId) {
-        this.state.screenStream.streamId = '';
-        useDesktopShareServer().setShareScreenStatus(false);
-        useRoomBaseServer().setChangeElement('stream-list');
-      }
-
       this.$emit('EVENT_STREAM_END', e);
     });
 
@@ -706,14 +683,6 @@ class InteractiveServer extends BaseServer {
     return profile;
   }
 
-  // 创建桌面共享流
-  createLocaldesktopStream(options = {}, addConfig = {}) {
-    const params = merge.recursive({ streamType: 3 }, options, addConfig);
-    return this.createLocalStream(params).then(data => {
-      this.state.screenStream.streamId = data.streamId
-      return data
-    });
-  }
   // 创建本地音频流
   createLocalAudioStream(options = {}, addConfig = {}) {
     return this.interactiveInstance.createLocalAudioStream(options, addConfig);
