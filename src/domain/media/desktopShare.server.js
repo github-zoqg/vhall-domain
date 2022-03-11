@@ -3,6 +3,8 @@ import useRoomBaseServer from '../room/roombase.server';
 import BaseServer from '../common/base.server';
 import VhallPaasSDK from '@/sdk/index';
 import useGroupServer from '../group/StandardGroupServer';
+import { merge, sleep } from '../../utils';
+
 class DesktopShareServer extends BaseServer {
   constructor() {
     super();
@@ -54,12 +56,11 @@ class DesktopShareServer extends BaseServer {
       }
     })
 
-    // 桌面共享停止事件
+    // 桌面共享停止事件,只有自己能收到本地流断开
     interactiveServer.$on('EVENT_STREAM_END', e => {
       if (e.data.streamId == this.state.localDesktopStreamId) {
         this.state.localDesktopStreamId = '';
-        const miniElement = useGroupServer().state.groupInitData.isInGroup ? 'stream-list' : ''
-        useRoomBaseServer().setChangeElement(miniElement);
+        useRoomBaseServer().setChangeElement('stream-list');
         this.$emit('screen_stream_remove', e);
       }
     })
