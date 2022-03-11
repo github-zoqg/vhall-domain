@@ -43,16 +43,26 @@ class DesktopShareServer extends BaseServer {
         this.$emit('screen_stream_add', e.data.streamId);
       }
     });
-    // 远端流离开事件
-    interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
-      // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      if (e.data.streamType === 3) {
+
+    // 桌面共享停止事件
+    interactiveServer.$on('EVENT_REMOTESTREAM_REMOVED', e => {
+      if (e.data.streamId == this.state.localDesktopStreamId) {
+        this.state.localDesktopStreamId = '';
         const miniElement = useGroupServer().state.groupInitData.isInGroup ? 'stream-list' : ''
         useRoomBaseServer().setChangeElement(miniElement);
-
         this.$emit('screen_stream_remove', e);
       }
-    });
+    })
+
+    // 桌面共享停止事件
+    interactiveServer.$on('EVENT_STREAM_END', e => {
+      if (e.data.streamId == this.state.localDesktopStreamId) {
+        this.state.localDesktopStreamId = '';
+        const miniElement = useGroupServer().state.groupInitData.isInGroup ? 'stream-list' : ''
+        useRoomBaseServer().setChangeElement(miniElement);
+        this.$emit('screen_stream_remove', e);
+      }
+    })
   }
 
   // 初始化桌面共享状态
@@ -64,6 +74,13 @@ class DesktopShareServer extends BaseServer {
       this.state.desktopShareInfo = stream.attributes
       this.$emit('screen_stream_add', stream.streamId);
     }
+  }
+
+  // 创建桌面共享流
+  createLocaldesktopStream(options = {}) {
+    const interactiveServer = useInteractiveServer();
+    const params = merge.recursive({ streamType: 3 }, options);
+    return interactiveServer.createLocalStream(params)
   }
 
   //检测浏览器是否支持桌面共享
@@ -111,33 +128,29 @@ class DesktopShareServer extends BaseServer {
 
   // 开始桌面共享
   startShareScreen(options) {
-    const interactiveServer = useInteractiveServer();
     const roomBaseServer = useRoomBaseServer();
 
-    const { state: roomBaseServerState } = roomBaseServer;
+    const { join_info } = roomBaseServer.state.watchInitData;
 
     const retOptions = {
       videoNode: options.videoNode,
       profile: options.profile,
       audio: false, // 桌面共享不采集麦克风防止回声
-      speaker: true // 桌面共享开启采集扬声器声音的入口
-    };
-
-    const addConfig = {
+      speaker: true, // 桌面共享开启采集扬声器声音的入口
       videoDevice: 'desktopScreen',
       attributes: JSON.stringify({
-        accountId: roomBaseServerState.watchInitData.join_info.third_party_user_id,
-        nickname: roomBaseServerState.watchInitData.join_info.nickname,
-        role: roomBaseServerState.watchInitData.join_info.role_name
+        accountId: join_info.third_party_user_id,
+        nickname: join_info.nickname,
+        role: join_info.role_name
       })
     };
 
-    return interactiveServer.createLocaldesktopStream(retOptions, addConfig).then(data => {
+    return this.createLocaldesktopStream(retOptions).then(data => {
       this.state.localDesktopStreamId = data.streamId
       this.state.desktopShareInfo = {
-        accountId: roomBaseServerState.watchInitData.join_info.third_party_user_id,
-        nickname: roomBaseServerState.watchInitData.join_info.nickname,
-        role: roomBaseServerState.watchInitData.join_info.role_name
+        accountId: join_info.third_party_user_id,
+        nickname: join_info.nickname,
+        role: join_info.role_name
       }
       return data
     });
