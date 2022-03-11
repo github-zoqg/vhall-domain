@@ -858,7 +858,26 @@ class StandardGroupServer extends BaseServer {
       if (roomBaseServer.state.watchInitData.join_info.role_name != 2) {
         await roomBaseServer.getInavToolStatus();
       } else {
-        await roomBaseServer.getCommonConfig();
+        await roomBaseServer.getConfigList();
+        await roomBaseServer.getCommonConfig({
+          tags: [
+            'skin',
+            'screen-poster',
+            'like',
+            'keywords',
+            'public-account',
+            'webinar-tag',
+            'menu',
+            'adv-default',
+            'invite-card',
+            'red-packet',
+            'room-tool',
+            'goods-default',
+            'announcement',
+            'sign',
+            'timer'
+          ]
+        });
       }
 
       // 派发小组变更的事件
