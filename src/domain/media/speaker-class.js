@@ -2,6 +2,7 @@
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
 export default class Speaker {
+  // audio video   数字1 代表fasle 不禁止
   constructor({ account_id: accountId,
     audio: audioMuted,
     video: videoMuted,

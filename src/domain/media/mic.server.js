@@ -24,7 +24,7 @@ class MicServer extends BaseServer {
     return this;
   }
   init() {
-    // this.updateSpeakerList()
+    this.updateSpeakerList()
     this.getSpeakerStatus();
     this._initEventListeners();
   }
@@ -212,6 +212,10 @@ class MicServer extends BaseServer {
           break;
       }
     });
+    const groupServer = useGroupServer()
+    groupServer.$on('GROUP_IS_IN_GROUP_CHANGE', () => {
+      this.updateSpeakerList()
+    })
   }
 
   setSpeakOffToInit(val) {
@@ -239,7 +243,9 @@ class MicServer extends BaseServer {
     const retParams = merge.recursive({}, defaultParams, data);
 
     const methodName = data.receive_account_id ? 'speakOffUser' : 'speakOffSelf';
-    return im.signaling[methodName](retParams);
+    let res = im.signaling[methodName](retParams);
+    console.warn('下麦结果----- ', res)
+    return res
   }
   // 允许举手
   setHandsUp(data = {}) {

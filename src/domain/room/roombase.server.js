@@ -336,8 +336,6 @@ class RoomBaseServer extends BaseServer {
           this.state.interactToolStatus.presentation_screen =
             this.state.interactToolStatus.doc_permission;
         }
-
-        useMicServer().updateSpeakerList()
       }
       return res;
     });
