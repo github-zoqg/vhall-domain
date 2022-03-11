@@ -244,7 +244,9 @@ class InteractiveServer extends BaseServer {
     { name: 'isInGroup', val: groupInitData.isInGroup },
     { name: 'is_banned', val: parseInt(groupInitData.is_banned) },
     { name: 'isSpeakOffToInit', val: micServer.state.isSpeakOffToInit },
-    { name: 'role_name', val: watchInitData.join_info.role_name }])
+    { name: 'role_name', val: watchInitData.join_info.role_name },
+    { name: 'chatServer_banned', val: chatServer.state.banned },
+    { name: 'chatServer_allBanned', val: chatServer.state.allBanned }])
 
     let autoSpeak = false
 
