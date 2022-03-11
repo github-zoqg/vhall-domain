@@ -99,19 +99,17 @@ class ChatServer extends BaseServer {
       }
       // 开启全体禁言
       if (rawMsg.data.type === 'disable_all') {
+        this.setLocalAllBanned(true)
         if (role_name == 2) {
-          this.setLocalAllBanned(true)
           useMicServer().speakOff();
-          this.$emit('allBanned', this.state.allBanned);
         }
+        this.$emit('allBanned', this.state.allBanned);
 
       }
       // 关闭全体禁言
       if (rawMsg.data.type === 'permit_all') {
-        if (role_name == 2) {
-          this.setLocalAllBanned(false)
-          this.$emit('allBanned', this.state.allBanned);
-        }
+        this.setLocalAllBanned(false)
+        this.$emit('allBanned', this.state.allBanned);
       }
     });
     msgServer.$onMsg('ROOM_MSG', rawMsg => {
@@ -133,10 +131,10 @@ class ChatServer extends BaseServer {
       this.$emit('changeChannel');
     });
     //监听进出子房间消息
-    groupServer.$on('GROUP_ENTER_OUT', (isInGroup) => {
+    groupServer.$on('GROUP_IS_IN_GROUP_CHANGE', (group) => {
       const { groupInitData } = groupServer.state
       const { interactToolStatus } = useRoomBaseServer().state;
-      if (isInGroup) {
+      if (group.isInGroup) {
         this.setLocalAllBanned(false);
         this.setLocalBanned(groupInitData.is_banned == 1 ? true : false)
         this.$emit('banned', this.state.banned);

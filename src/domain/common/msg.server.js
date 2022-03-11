@@ -132,9 +132,11 @@ class MsgServer extends BaseServer {
     // 'room';
     // 'custom'
     switch (eventType) {
+      //房间消息
       case 'ROOM_MSG':
         instance.onRoomMsg(cb); // 这个小写的字符串是跟微吼云沟通添加的，现在房间消息还没有常量
         break;
+      //聊天消息
       case 'CHAT':
         instance.on(cb);
         break;
@@ -153,6 +155,9 @@ class MsgServer extends BaseServer {
       case 'KICK':
         // instance.on(VhallChat.EVENTS.KICK, fn);
         break;
+      //自定义消息
+      case 'CUSTOM_MSG':
+        instance.onCustomMsg(cb)
       // case 'MUTE':
       //   instance.on(VhallChat.EVENTS.MUTE, fn);
       //   break;
@@ -357,7 +362,7 @@ class MsgServer extends BaseServer {
     if (!this.msgInstance) return;
     this.msgInstance.destroy();
     this.msgInstance = null;
-    this.changeChannel(this.groupMsgInstance);
+    // this.changeChannel(this.groupMsgInstance);
   }
 
   // 获取当前主房间初始化参数
