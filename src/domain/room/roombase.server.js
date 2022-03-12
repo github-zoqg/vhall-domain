@@ -177,7 +177,7 @@ class RoomBaseServer extends BaseServer {
     msgServer.$onMsg('CUSTOM_MSG', msg => {
       switch (msg.data.type) {
         case 'edit_webinar_role_name':
-          alert(JSON.stringify(msg.data))
+          this.state.customRoleName[Number(msg.data.role_type)] = msg.data.name
       }
     })
   }
