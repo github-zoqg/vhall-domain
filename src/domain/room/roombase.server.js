@@ -513,6 +513,7 @@ class RoomBaseServer extends BaseServer {
     });
   }
 
+
   // 观看端底部反馈
   feedbackInfo(data = {}) {
     const defaultParams = {
@@ -538,6 +539,11 @@ class RoomBaseServer extends BaseServer {
   // 设置第三方推流
   setThirdPushStream(value) {
     this.state.isThirdStream = value;
+  }
+
+  // 设置用户信息的头像和昵称
+  setChangeUserInfo(type, info) {
+    type == 1 ? this.state.watchInitData.join_info.avatar = info.avatar : this.state.watchInitData.join_info.nickname = info.nick_name;
   }
 
   // 关闭开屏海报事件
