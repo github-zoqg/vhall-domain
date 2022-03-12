@@ -884,7 +884,7 @@ class StandardGroupServer extends BaseServer {
     const result = await this.getGroupInfo();
     console.log('[group] groupInit result:', result);
 
-    this.state.groupInitData = result || {};
+    this.state.groupInitData = (result && result.data) || {};
     if (this.state.groupInitData?.group_id) {
       this.state.groupInitData.isInGroup = true;
     } else {
