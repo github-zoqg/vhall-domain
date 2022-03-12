@@ -50,7 +50,16 @@ class DesktopShareServer extends BaseServer {
     interactiveServer.$on('EVENT_REMOTESTREAM_REMOVED', e => {
       if (e.data.streamId == this.state.localDesktopStreamId) {
         this.state.localDesktopStreamId = '';
-        const miniElement = useGroupServer().state.groupInitData.isInGroup ? 'stream-list' : ''
+        let miniElement = null
+        const { role_name } = useRoomBaseServer().state.watchInitData.join_info
+
+        if (useGroupServer().state.groupInitData.isInGroup) {
+          miniElement = 'stream-list'
+        } else if (role_name == 1) {
+          miniElement = 'stream-list'
+        } else {
+          miniElement = ''
+        }
         useRoomBaseServer().setChangeElement(miniElement);
         this.$emit('screen_stream_remove', e);
       }

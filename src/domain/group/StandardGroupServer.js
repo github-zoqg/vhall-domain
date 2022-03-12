@@ -447,7 +447,7 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] groupJoinChangeInfo:', groupJoinChangeInfo);
 
     // 没有换组的人，需要更新自己所在房间的信息
-    if (msg.data.group_ids.includes(this.state.groupInitData.group_id) && !groupJoinChangeInfo.isNeedCare) {
+    if ((!this.state.groupInitData.group_id || msg.data.group_ids.includes(this.state.groupInitData.group_id)) && !groupJoinChangeInfo.isNeedCare) {
       // 如果变更的小组中包含主房间，需要更新主房间的上麦列表
       if (msg.data.group_ids.includes(0)) {
         await this.updateMainRoomInavToolStatus()
@@ -456,6 +456,11 @@ class StandardGroupServer extends BaseServer {
       useMicServer().updateSpeakerList()
       console.log('[group] 当前用户不需要关心这条切换的小组消息');
       return false;
+    }
+
+    // 自己回到主房间，需要获取主房间上麦列表
+    if (groupJoinChangeInfo.isNeedCare && groupJoinChangeInfo.to === 0) {
+      await this.updateMainRoomInavToolStatus()
     }
 
     // 换组的人更新自己的上麦列表
