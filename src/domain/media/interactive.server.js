@@ -58,7 +58,6 @@ class InteractiveServer extends BaseServer {
 
     // 这里判断上麦角色以及是否自动上麦
     const defaultOptions = await this._getDefaultOptions();
-    console.warn('查看 --- 初始化是否调用默认角色等相关信息')
     const options = merge.recursive({}, defaultOptions, customOptions);
 
     // 根据roomId和role判断是否需要销毁实例重新初始化
@@ -112,7 +111,7 @@ class InteractiveServer extends BaseServer {
             }
             return stream.streamType === 2;
           });
-          console.warn('streams----', streams)
+          console.log('[interactiveServer] streams----', streams)
           streams.forEach(stream => {
 
             useMicServer().updateSpeakerByAccountId(stream.accountId, stream)
@@ -211,7 +210,7 @@ class InteractiveServer extends BaseServer {
           : {}, // 自动旁路   开启旁路直播方法所需参数
       otherOption: watchInitData.report_data
     };
-    console.warn('查看 最新的group Data数据----', defaultOptions)
+    console.log('查看 最新的group Data数据----', defaultOptions)
     return defaultOptions;
   }
 
@@ -224,7 +223,6 @@ class InteractiveServer extends BaseServer {
     const { groupInitData } = useGroupServer().state
 
 
-    console.warn('查看 ---_getInteractiveRole', useMicServer().state.speakerList)
     // 如果在麦上，设为 HOST
     if (useMicServer().getSpeakerStatus()) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
@@ -286,7 +284,7 @@ class InteractiveServer extends BaseServer {
     if (autoSpeak) {
       // 调上麦接口判断当前人是否可以上麦
       const res = await micServer.userSpeakOn();
-      console.error('查看互动服务内，调用上麦接口，其返回值', res)
+      console.log('[interactiveServer]----上麦接口响应', res)
       // 如果上麦成功，设为 HOST
       if (res.code == 200) {
 
@@ -297,7 +295,7 @@ class InteractiveServer extends BaseServer {
       } else if (res.code == '513025') {
         // 由于调用上麦是在互动服务内，异常时，无法提示，  直接派发的话，业务未初始化，故延迟500
         setTimeout(() => {
-          this.$emit('speakOnFailed', res)
+          this.$emit('SPEAKON_FAILED', res)
         }, 500);
       }
     } else {
@@ -349,11 +347,11 @@ class InteractiveServer extends BaseServer {
         this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
         this._clearLocalStream()
       }).then(() => {
-        console.log('互动sdk销毁成功');
+        console.log('[interactiveServer]----互动sdk销毁成功');
 
       })
       .catch(err => {
-        console.log('互动sdk销毁失败', err);
+        console.log('[interactiveServer]----互动sdk销毁失败', err);
         return err;
       });
   }
@@ -400,7 +398,7 @@ class InteractiveServer extends BaseServer {
         // 派发上麦流列表更新事件
         this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
       }
-      console.log('----流加入事件----', e);
+      console.log('[interactiveServer]--------流加入事件----', e);
 
       this.$emit('EVENT_REMOTESTREAM_ADD', e);
     });
@@ -417,7 +415,7 @@ class InteractiveServer extends BaseServer {
 
     // 远端流音视频状态改变事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_MUTE, e => {
-      console.log('---远端流音视频状态改变事件----', e);
+      console.log('[interactiveServer]-------远端流音视频状态改变事件----', e);
       let params = {
         audioMuted: e.data.muteStream.audio,
         videoMuted: e.data.muteStream.video
@@ -459,6 +457,7 @@ class InteractiveServer extends BaseServer {
     msgServer.$onMsg('ROOM_MSG', msg => {
       const { speakerList } = useMicServer().state
       const localSpeaker = speakerList.find(speaker => speaker.accountId == third_party_user_id)
+      console.log(`[interactiveServer]----消息监听----：msgType:${msg.data.type}`)
       if (
         msg.data.type == 'vrtc_frames_forbid' && // 业务关闭摄像头消息
         msg.data.target_id == localSpeaker.accountId
@@ -653,7 +652,7 @@ class InteractiveServer extends BaseServer {
    * 获取分辨率
    */
   getVideoProfile() {
-    console.log('---获取分辨率---')
+    console.log('[interactiveServer]-------获取分辨率---')
     const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
 
     const isHost = interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
@@ -665,7 +664,7 @@ class InteractiveServer extends BaseServer {
       } else {
         profile = this.formatDefinition('360');
       }
-      console.log('---分辨率计算结果---', profile)
+      console.log('[interactiveServer]-------分辨率计算结果---', profile)
       return profile
     }
     const onlineLength = remoteStream.filter(item => item.streamType == 2).length;
@@ -690,7 +689,7 @@ class InteractiveServer extends BaseServer {
         profile = this.formatDefinition('180');
       }
     }
-    console.log('---分辨率计算结果---', profile)
+    console.log('[interactiveServer]-------分辨率计算结果---', profile)
     return profile;
   }
 
@@ -784,7 +783,7 @@ class InteractiveServer extends BaseServer {
         video: speaker.videoMuted
       };
     }
-    console.warn('defaultOptions-------------', speaker, defaultOptions)
+    console.log('[interactiveServer]----createWapLocalStream内speaker：', speaker, '默认参数', defaultOptions)
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return await this.createLocalStream(params).then(data => {
       let params = {
@@ -797,7 +796,7 @@ class InteractiveServer extends BaseServer {
           useMicServer().updateSpeakerByAccountId(speaker.accountId, params)
         }
       } catch (error) {
-        console.warn('出现异常----', error)
+        console.log('[interactiveServer]----更新speaker出现异常----', error)
       }
       this.state.localStream = {
         streamId: data.streamId
@@ -841,7 +840,6 @@ class InteractiveServer extends BaseServer {
 
   // 推送本地流到远端
   publishStream(options = {}) {
-    console.warn('查看推流信息----', options.streamId || this.state.localStream.streamId)
     const { state: roomBaseServerState } = useRoomBaseServer();
     return this.interactiveInstance
       .publish({
@@ -989,10 +987,10 @@ class InteractiveServer extends BaseServer {
     if (stream) {
       this.setBroadCastScreen(stream.streamId)
         .then(() => {
-          console.log('动态设置旁路主屏幕成功', stream.streamId);
+          console.log('[interactiveServer]----动态设置旁路主屏幕成功', stream.streamId);
         })
         .catch(e => {
-          console.error('动态设置旁路主屏幕失败', e);
+          console.error('[interactiveServer]----动态设置旁路主屏幕失败', e);
         });
     }
 
@@ -1218,7 +1216,6 @@ class InteractiveServer extends BaseServer {
   //判断是不是发送给当前用户的消息
   isMyMsg(msg) {
     const { watchInitData } = useRoomBaseServer().state;
-    console.log(msg.data.target_id, '-', watchInitData.join_info);
     if (msg.data.accountId) {
       return msg.data.accountId == watchInitData.join_info.third_party_user_id;
     } else {
