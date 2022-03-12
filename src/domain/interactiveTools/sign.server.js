@@ -41,7 +41,7 @@ class SignServer extends BaseServer {
           break;
         // 直播结束
         case 'live_over':
-          this.$emit('sign_end', temp);
+          this.$emit('live_over', temp);
           break;
         default:
           break;
