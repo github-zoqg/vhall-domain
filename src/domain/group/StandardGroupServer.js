@@ -881,16 +881,21 @@ class StandardGroupServer extends BaseServer {
    * 更新GroupInitData数据
    */
   async updateGroupInitData() {
-    const result = await this.getGroupInfo();
-    console.log('[group] groupInit result:', result);
+    const res = await this.getGroupInfo();
+    console.log('[group] groupInit result:', res);
 
-    this.state.groupInitData = result || {};
-    if (this.state.groupInitData?.group_id) {
-      this.state.groupInitData.isInGroup = true;
+    if (res.code === 200) {
+      this.state.groupInitData = res.data || {};
+      if (this.state.groupInitData?.group_id) {
+        this.state.groupInitData.isInGroup = true;
+      } else {
+        this.state.groupInitData.isInGroup = false;
+      }
+      return Promise.resolve()
     } else {
-      this.state.groupInitData.isInGroup = false;
+      // return Promise.reject(res)
+      return Promise.resolve()
     }
-    return Promise.resolve(result)
   }
 
   // 更新主房间互动工具的状态
