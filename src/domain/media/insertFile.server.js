@@ -1,9 +1,11 @@
 import { insertFile } from '../../request/index.js';
 import { uploadFile, isChrome88 } from '@/utils/index.js';
-import { im as iMRequest } from '@/request/index.js';
+import { im } from '@/request/index.js';
 import useRoomBaseServer from '../room/roombase.server';
 import BaseServer from '../common/base.server.js';
 import useInteractiveServer from './interactive.server.js';
+import useMicServer from './mic.server.js'
+import useMsgServer from '../common/msg.server.js';
 
 class InsertFileServer extends BaseServer {
   constructor() {
@@ -28,7 +30,8 @@ class InsertFileServer extends BaseServer {
       currentRemoteInsertFile: {}, // 远端插播文件信息
       insertFileType: 'local', // 插播类型 local本地插播 remote云插播(观看端不会关心这个状态)
       isInsertFilePushing: false, // 是否有人正在插播（可能不是当前用户）
-      isChrome88: isChrome88()
+      isChrome88: isChrome88(),
+      oldMicMute: false // 插播状态变更的时候存储当前用户麦克风的状态
     };
     InsertFileServer.instance = this;
     return this;
@@ -42,6 +45,7 @@ class InsertFileServer extends BaseServer {
   // 注册监听事件
   _addListeners() {
     const interactiveServer = useInteractiveServer();
+    const msgServer = useMsgServer();
     // 互动初始化完成
     interactiveServer.$on('INTERACTIVE_INSTANCE_INIT_SUCCESS', () => {
       this.getInsertFileStream()
@@ -51,6 +55,8 @@ class InsertFileServer extends BaseServer {
       e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
       if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) { // 判断两种类型的 streamType 是为了兼容客户端
         this.getInsertFileStream()
+        // 更新麦克风状态
+        this.updateMicMuteStatusByInsert({ isStart: true })
         this.$emit('INSERT_FILE_STREAM_ADD', e);
       }
     });
@@ -59,6 +65,8 @@ class InsertFileServer extends BaseServer {
       e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
       if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
         this.getInsertFileStream()
+        // 更新麦克风状态
+        this.updateMicMuteStatusByInsert({ isStart: false })
         this.$emit('INSERT_FILE_STREAM_REMOVE', e);
       }
     });
@@ -68,6 +76,16 @@ class InsertFileServer extends BaseServer {
         this.$emit('INSERT_FILE_STREAM_FAILED', e);
       }
     });
+    // 监听插播的暂停与开始，更改麦克风状态，并 message 提示用户
+    msgServer.$onMsg('ROOM_MSG', msg => {
+      // 插播播放状态更改消息
+      if (msg.data.type == 'insert_file_status') {
+        // 如果是开始插播，静音并保存麦克风状态
+        // 如果是暂停插播，还原麦克风状态
+        // msg.data.status  1 开始插播   0 暂停插播
+        this.updateMicMuteStatusByInsert({ isStart: Boolean(msg.data.status) })
+      }
+    })
   }
 
   // 设置当前本地插播文件
@@ -344,7 +362,7 @@ class InsertFileServer extends BaseServer {
 
   /**
    * 插播开始、暂停发送自定义消息通知对端，更改、还原麦克风状态
-   * @param {*} status 1 开始播放、关闭麦克风   2 暂停播放、还原麦克风
+   * @param {*} status 1 开始播放、关闭麦克风   0 暂停播放、还原麦克风
    */
   sendStateChangeMessage(status) {
     const { watchInitData } = useRoomBaseServer().state
@@ -352,11 +370,11 @@ class InsertFileServer extends BaseServer {
       room_id: watchInitData.interact.room_id,
       body: JSON.stringify({
         type: 'insert_file_status',
-        status: status // 1：播放关闭麦克风  0：暂停打开麦克风（如果之前静音布处理）
+        status: status // 1：播放关闭麦克风  0：暂停打开麦克风（如果之前静音不处理）
       }),
       client: 'pc_browser'
     };
-    return iMRequest.chat.sendCustomMessage(_data)
+    return im.chat.sendCustomMessage(_data)
   }
 
   // 订阅插播流
@@ -375,6 +393,42 @@ class InsertFileServer extends BaseServer {
       this.clearInsertFileInfo()
       return res
     });
+  }
+
+  // 更新上麦人员麦克风状态
+  updateMicMuteStatusByInsert(options = { isStart: true }) {
+    const roomBaseServer = useRoomBaseServer()
+    const micServer = useMicServer()
+    const interactiveServer = useInteractiveServer()
+    const localSpeaker = micServer.state.speakerList.find(item => item.accountId == roomBaseServer.state.watchInitData.join_info.third_party_user_id)
+
+    // 无延迟或者分组直播的时候没有上麦，也是互动流，直接 return
+    if (!localSpeaker) return
+
+    if (options.isStart) {
+      // 如果是开启插播、开始播放，保存当前麦克风状态，并静音麦克风
+      // 存储原麦克风状态，待结束插播的时候还原用
+      this.state.oldMicMute = localSpeaker.audioMuted
+
+      // 如果麦克风开启，静音
+      if (!localSpeaker.audioMuted && localSpeaker.streamId) {
+        interactiveServer.muteAudio({
+          streamId: localSpeaker.streamId,
+          isMute: true
+        })
+        this.$emit('insert_mic_mute_change', 'play')
+      }
+    } else {
+      // 如果是关闭插播、暂停播放、播放结束，还原麦克风状态
+      // 如果现在的麦克风状态和原麦克风状态不同，还原
+      if (localSpeaker.streamId && localSpeaker.audioMuted != this.state.oldMicMute) {
+        interactiveServer.muteAudio({
+          streamId: localSpeaker.streamId,
+          isMute: this.state.oldMicMute
+        })
+        this.$emit('insert_mic_mute_change', 'pause')
+      }
+    }
   }
 }
 
