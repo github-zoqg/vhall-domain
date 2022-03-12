@@ -210,7 +210,7 @@ class MicServer extends BaseServer {
       }
     });
     const groupServer = useGroupServer()
-    groupServer.$on('GROUP_IS_IN_GROUP_CHANGE', () => {
+    groupServer.$on('ROOM_CHANNEL_CHANGE', () => {
       this.updateSpeakerList()
     })
   }

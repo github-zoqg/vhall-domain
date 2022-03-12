@@ -61,7 +61,8 @@ class RoomBaseServer extends BaseServer {
       languages: {
         curLang: 'zh',
         langList: []
-      }
+      },
+      customRoleName: {}
     };
     RoomBaseServer.instance = this;
     return this;
@@ -110,7 +111,8 @@ class RoomBaseServer extends BaseServer {
   }
 
   addListeners() {
-    useMsgServer().$onMsg('ROOM_MSG', msg => {
+    const msgServer = useMsgServer()
+    msgServer.$onMsg('ROOM_MSG', msg => {
 
       if (msg.data.type == 'live_start') {
         // 观看端如果在看回放，直播时没刷新，不能显示直播的页面，故type不能改成1
@@ -142,7 +144,7 @@ class RoomBaseServer extends BaseServer {
       }
     });
     // 单点登录逻辑
-    useMsgServer().$onMsg('JOIN', msg => {
+    msgServer.$onMsg('JOIN', msg => {
       if (sessionStorage.getItem('ssoEnabled') == 1) {
         const kickId = sessionStorage.getItem('kickId');
         const kickMark = `${sessionStorage.getItem('kickMark')}${this.state.watchInitData.webinar.id
@@ -158,6 +160,12 @@ class RoomBaseServer extends BaseServer {
             }, 2000)
           }
         }
+      }
+    });
+    msgServer.$onMsg('CUSTOM_MSG', msg => {
+      switch (msg.data.type) {
+        case 'edit_webinar_role_name':
+          alert(JSON.stringify(msg.data))
       }
     })
   }
@@ -532,6 +540,17 @@ class RoomBaseServer extends BaseServer {
     } else {
       return false;
     }
+  }
+  getCustomRoleName() {
+    return meeting.getCustomRoleName({
+      webinar_id: this.state.watchInitData.webinar && this.state.watchInitData.webinar.id,
+    }).then(res => {
+      if (res.code == 200) {
+        this.state.customRoleName[1] = res.data.host_name;
+        this.state.customRoleName[3] = res.data.assistant_name
+        this.state.customRoleName[4] = res.data.guest_name
+      }
+    })
   }
 }
 
