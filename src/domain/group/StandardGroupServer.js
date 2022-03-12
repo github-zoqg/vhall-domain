@@ -887,16 +887,17 @@ class StandardGroupServer extends BaseServer {
       this.state.groupInitData.isInGroup = true;
     } else {
       this.state.groupInitData.isInGroup = false;
+      // return Promise.reject(res)
     }
-    return Promise.resolve(result)
+    return Promise.resolve()
   }
 
   // 更新主房间互动工具的状态
   async updateMainRoomInavToolStatus() {
-    if (roomBaseServer.state.watchInitData.join_info.role_name != 2) {
-      await roomBaseServer.getInavToolStatus();
+    if (useRoomBaseServer().state.watchInitData.join_info.role_name != 2) {
+      await useRoomBaseServer().getInavToolStatus();
     } else {
-      await roomBaseServer.getCommonConfig()
+      await useRoomBaseServer().getCommonConfig()
       // await Promise.all([roomBaseServer.getConfigList(), roomBaseServer.getCommonConfig()])
     }
   }
