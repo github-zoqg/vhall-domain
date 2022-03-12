@@ -8,7 +8,7 @@ export default class Msg {
     const roomserver = useRoomBaseServer();
     const groupServer = useGroupServer();
     const { avatar, nickname, role_name, user_id } = roomserver.state.watchInitData.join_info;
-    console.log(JSON.stringify(roomserver.state.watchInitData.join_info));
+    console.log("join_info", JSON.stringify(roomserver.state.watchInitData.join_info));
     //分组相关逻辑判断
     const { groupInitData = {} } = useGroupServer().state;
     this.data = {
