@@ -863,6 +863,7 @@ class InteractiveServer extends BaseServer {
         return data;
       }).catch(error => {
         console.error('publishStream', error)
+        return Promise.reject(error)
       })
   }
 

@@ -360,16 +360,24 @@ export default class StandardDocServer extends AbstractDocServer {
 
       if (useGroupServer().state.groupInitData.isInGroup) {
         // 如果在小组内
-        if (useGroupServer().getGroupSpeakStatus) {
+        if (useMicServer().getSpeakerStatus()) {
           // 如果小组成员在麦上,小屏默认显示流窗口
           roomBaseServer.setChangeElement('stream-list');
         }
 
       } else {
-        if (this.state.switchStatus) {
-          if (roomBaseServer.state.watchInitData.webinar.type == 1 && (
-            roomBaseServer.state.watchInitData.webinar.no_delay_webinar == 1 || useMicServer().getSpeakerStatus()
-          )) {
+        const {
+          interactToolStatus: { presentation_screen },
+          watchInitData: { join_info: { third_party_user_id }, webinar: { type, no_delay_webinar } }
+        } = roomBaseServer.state
+
+        // 不在小组内且自己是演示者
+        if (presentation_screen == third_party_user_id) {
+          // 直播状态下，无延迟或上麦是流列表
+          roomBaseServer.setChangeElement('stream-list');
+
+        } else if (this.state.switchStatus) {
+          if (type == 1 && (no_delay_webinar == 1 || useMicServer().getSpeakerStatus())) {
             // 直播状态下，无延迟或上麦是流列表
             roomBaseServer.setChangeElement('stream-list');
           } else {
