@@ -6,6 +6,7 @@ import useRebroadcastServer from '../interactiveTools/rebroadcast.server';
 import useMsgServer from '../common/msg.server';
 import { doc as docApi } from '../../request/index.js';
 import request from '@/utils/http.js';
+import useMicServer from '../media/mic.server';
 /**
  * 标准（通用）直播场景下的文档白板服务
  * 继承自AbstractDocServer
@@ -172,7 +173,7 @@ export default class StandardDocServer extends AbstractDocServer {
           this.state.allComplete = false;
           this.state.docLoadComplete = true; // 文档是否加载完成
           this.state.thumbnailList = []; // 缩略图列表
-          this.state.switchStatus = false; // 观众是否可见  
+          this.state.switchStatus = false; // 观众是否可见
           break;
       }
     })
@@ -367,7 +368,7 @@ export default class StandardDocServer extends AbstractDocServer {
       } else {
         if (this.state.switchStatus) {
           if (roomBaseServer.state.watchInitData.webinar.type == 1 && (
-            roomBaseServer.state.watchInitData.webinar.no_delay_webinar == 1 || roomBaseServer.getSpeakStatus()
+            roomBaseServer.state.watchInitData.webinar.no_delay_webinar == 1 || useMicServer().getSpeakerStatus()
           )) {
             // 直播状态下，无延迟或上麦是流列表
             roomBaseServer.setChangeElement('stream-list');
