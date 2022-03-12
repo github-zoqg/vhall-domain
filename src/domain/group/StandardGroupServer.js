@@ -382,6 +382,11 @@ class StandardGroupServer extends BaseServer {
     // 结束讨论但不在分组中，不需要发消息，直接 return
     if (!this.state.groupInitData.isInGroup) {
       // 通知需要更新在线人员列表（结束讨论之后没有回到主房间的人，在主房间的 getOnlineList 中也能获取到）
+      try {
+        // 由于在不在小组内都派发此消息， 业务侧监听此事件，在小组内进行提示，不在小组内不进行提示  ------> 下述几行会改变小组状态，此时回到主直播间都会显示不在小组内
+        msg.data.groupToast = true
+      } catch (error) {
+      }
       this.$emit(this.EVENT_TYPE.GROUP_SWITCH_END, msg);
       return;
     }

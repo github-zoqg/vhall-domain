@@ -11,6 +11,7 @@ import interactive from '@/request/interactive';
 import useMediaSettingServer from './mediaSetting.server';
 import useDesktopShareServer from './desktopShare.server';
 import useChatServer from '../chat/chat.server'
+import useInsertFileServer from './insertFile.server';
 class InteractiveServer extends BaseServer {
   constructor() {
     super();
@@ -432,6 +433,8 @@ class InteractiveServer extends BaseServer {
 
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
+      // 更改设备状态
+      useMediaCheckServer().getMediaInputPermission();
       this.$emit('EVENT_STREAM_END', e);
     });
 
@@ -586,6 +589,9 @@ class InteractiveServer extends BaseServer {
       !defaultOptions.mute && (defaultOptions.mute = { video: true });
     }
 
+    // 处理插播中的麦克风状态
+    defaultOptions = this.handleInsertFileMicStatus(defaultOptions)
+
     const params = merge.recursive({}, defaultOptions, options);
 
     return this.createLocalStream(params).then(data => {
@@ -732,6 +738,10 @@ class InteractiveServer extends BaseServer {
         video: !isOnMicObj.video
       };
     }
+
+    // 处理插播中的麦克风状态
+    defaultOptions = this.handleInsertFileMicStatus(defaultOptions)
+
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return this.createLocalStream(params).then(data => {
 
@@ -783,6 +793,10 @@ class InteractiveServer extends BaseServer {
         video: speaker.videoMuted
       };
     }
+
+    // 处理插播中的麦克风状态
+    defaultOptions = this.handleInsertFileMicStatus(defaultOptions)
+
     console.log('[interactiveServer]----createWapLocalStream内speaker：', speaker, '默认参数', defaultOptions)
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return await this.createLocalStream(params).then(data => {
@@ -1221,6 +1235,22 @@ class InteractiveServer extends BaseServer {
     } else {
       return msg.data.target_id == watchInitData.join_info.third_party_user_id;
     }
+  }
+
+  /**
+   * 初始化本地流的时候，处理插播情况的麦克风状态
+   * @param {Object} options 初始化本地流的参数
+   * @returns {Object} options 根据插播状态处理过的本地流参数
+   */
+  handleInsertFileMicStatus(options) {
+    // 如果存在插播流，需要静音推流，并保存当前人的麦克风状态
+    if (useInsertFileServer().getInsertFileStream()) {
+      // 备份麦克风状态
+      useInsertFileServer().state.oldMicMute = options.mute.audio
+      // 设置流静音
+      options.mute.audio = true
+    }
+    return options
   }
 }
 
