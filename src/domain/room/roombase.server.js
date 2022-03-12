@@ -40,7 +40,7 @@ class RoomBaseServer extends BaseServer {
       },
       clientType: '',
       deviceType: '', // 设备类型   pc 或 手机
-      isThirdStream: false,
+      isThirdStream: Number(sessionStorage.getItem('isShowThirdStream')) == 1 || false, //
       skinInfo: {}, // 皮肤信息
       webinarTag: {}, //活动标识
       screenPosterInfo: {}, // 开屏海报信息
@@ -121,6 +121,7 @@ class RoomBaseServer extends BaseServer {
           this.state.watchInitData.webinar.type = 1;
           // 第三方推流监听消息
           if (this.state.isThirdStream) {
+            sessionStorage.setItem('isShowThirdStream', Number(this.state.isThirdStream));
             this.$emit('LIVE_START')
           }
         }
@@ -131,6 +132,12 @@ class RoomBaseServer extends BaseServer {
 
       } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
         this.state.watchInitData.webinar.type = 3;
+        // 结束直播时，将第三方推流标识关闭
+        if (this.state.isThirdStream) {
+          this.state.isThirdStream = false;
+          sessionStorage.removeItem('isShowThirdStream');
+        }
+
       }
 
       switch (msg.data.type) {
