@@ -320,14 +320,16 @@ class InsertFileServer extends BaseServer {
   }
 
   // 停止推流
-  stopPublishInsertStream(streamId) {
+  stopPublishInsertStream(streamId, { isNotClearInsertFileInfo }) {
     const interactiveServer = useInteractiveServer();
     console.log('stopPublishInsertStream', streamId);
     return interactiveServer
       .unpublishStream({
         streamId: streamId || this.state.insertStreamInfo.streamId
       }).then(res => {
-        this.clearInsertFileInfo()
+        if (!isNotClearInsertFileInfo) {
+          this.clearInsertFileInfo()
+        }
         return res
       })
   }

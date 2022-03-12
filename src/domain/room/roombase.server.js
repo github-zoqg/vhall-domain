@@ -116,7 +116,10 @@ class RoomBaseServer extends BaseServer {
 
       if (msg.data.type == 'live_start') {
         // 观看端如果在看回放，直播时没刷新，不能显示直播的页面，故type不能改成1
-        // this.state.watchInitData.webinar.type = 1;
+        if (['send', 'sdk', 'record', 'clientEmbed'].includes(this.state.clientType)) {
+          this.state.watchInitData.webinar.type = 1;
+        }
+
         // 消息中未提供开播时间字段 start_time
         this.state.watchInitData.switch.switch_id = msg.data.switch_id;
         this.state.watchInitData.switch.switch_type = msg.data.switch_type;
