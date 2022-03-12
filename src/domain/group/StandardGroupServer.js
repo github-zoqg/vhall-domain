@@ -896,10 +896,10 @@ class StandardGroupServer extends BaseServer {
 
   // 更新主房间互动工具的状态
   async updateMainRoomInavToolStatus() {
-    if (roomBaseServer.state.watchInitData.join_info.role_name != 2) {
-      await roomBaseServer.getInavToolStatus();
+    if (useRoomBaseServer().state.watchInitData.join_info.role_name != 2) {
+      await useRoomBaseServer().getInavToolStatus();
     } else {
-      await roomBaseServer.getCommonConfig()
+      await useRoomBaseServer().getCommonConfig()
       // await Promise.all([roomBaseServer.getConfigList(), roomBaseServer.getCommonConfig()])
     }
   }
