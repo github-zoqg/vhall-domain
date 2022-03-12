@@ -12,14 +12,6 @@ export default class StandardNoticeServer extends BaseServer {
     this.state = {
       //公告列表
       noticeList: [],
-      latestNotice: {
-        noticeContent:
-          roomBaseServer.state.noticeInfo.total &&
-          roomBaseServer.state.noticeInfo.list[0].content['content'],
-        total: roomBaseServer.state.noticeInfo.total,
-        created_at: roomBaseServer.state.noticeInfo.total &&
-          roomBaseServer.state.noticeInfo.list[0].created_at
-      },
       //请求的分页参数
       pageInfo: {
         pos: 0,
@@ -93,10 +85,6 @@ export default class StandardNoticeServer extends BaseServer {
     });
   }
 
-  // 设置最新公告（区分小组内和主直播间）
-  setLatestNoticeInfo(info) {
-    this.state.latestNotice.noticeContent = info;
-  }
 
   /**
    * 增加一条消息
