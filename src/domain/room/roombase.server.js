@@ -40,6 +40,7 @@ class RoomBaseServer extends BaseServer {
       },
       clientType: '',
       deviceType: '', // 设备类型   pc 或 手机
+      isThirdStream: false,
       skinInfo: {}, // 皮肤信息
       webinarTag: {}, //活动标识
       screenPosterInfo: {}, // 开屏海报信息
@@ -118,6 +119,10 @@ class RoomBaseServer extends BaseServer {
         // 观看端如果在看回放，直播时没刷新，不能显示直播的页面，故type不能改成1
         if (['send', 'sdk', 'record', 'clientEmbed'].includes(this.state.clientType)) {
           this.state.watchInitData.webinar.type = 1;
+          // 第三方推流监听消息
+          if (this.state.isThirdStream) {
+            this.$emit('LIVE_START')
+          }
         }
 
         // 消息中未提供开播时间字段 start_time
@@ -521,6 +526,11 @@ class RoomBaseServer extends BaseServer {
     return meeting.tipOffInfo(retParams).then(res => {
       return res;
     });
+  }
+
+  // 设置第三方推流
+  setThirdPushStream(value) {
+    this.state.isThirdStream = value;
   }
 
   // 关闭开屏海报事件
