@@ -520,19 +520,6 @@ class RoomBaseServer extends BaseServer {
     this.$emit('screenPostClose', data);
   }
 
-  // 获取上麦状态
-  getSpeakStatus() {
-    const {
-      interactToolStatus: { speaker_list },
-      watchInitData: { join_info }
-    } = this.state;
-    if (!speaker_list) return false;
-    if (speaker_list.length) {
-      return speaker_list.some(item => item.account_id == join_info.third_party_user_id);
-    } else {
-      return false;
-    }
-  }
 }
 
 export default function useRoomBaseServer() {
