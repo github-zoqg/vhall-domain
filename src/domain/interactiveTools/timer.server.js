@@ -13,6 +13,7 @@ class timerServer extends BaseServer {
     super();
     this.state = {};
     timerServer.instance = this;
+    this, this.listenMsg()
   }
 
   setState(key, value) {
