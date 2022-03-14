@@ -16,6 +16,8 @@ class StandardGroupServer extends BaseServer {
   constructor() {
     super();
 
+    window.groupServer = this
+
     this.state = {
       // 当前用户所在小组数据
       groupInitData: {
@@ -545,7 +547,8 @@ class StandardGroupServer extends BaseServer {
         await useDocServer().groupReInitDocProcess();
       }
     }
-    this.$emit(this.EVENT_TYPE.GROUP_JOIN_CHANGE, msg);
+
+    this.$emit(this.EVENT_TYPE.GROUP_JOIN_CHANGE, msg, groupJoinChangeInfo);
   }
 
   // 分组相关 设置组长操作权限 与 身份分离

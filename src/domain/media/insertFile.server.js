@@ -49,6 +49,9 @@ class InsertFileServer extends BaseServer {
     // 互动初始化完成
     interactiveServer.$on('INTERACTIVE_INSTANCE_INIT_SUCCESS', () => {
       this.getInsertFileStream()
+      if (this.state.insertStreamInfo.streamId) {
+        this.$emit('INSERT_OTHER_STREAM_ADD')
+      }
     });
     // 流加入
     interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
@@ -130,7 +133,7 @@ class InsertFileServer extends BaseServer {
       }
       this.state.insertStreamInfo.streamId = stream.streamId
       this.state.insertStreamInfo.userInfo = {
-        accountId: retStream.attributes.accountId,
+        accountId: retStream.accountId,
         role: retStream.attributes.role,
         nickname: retStream.attributes.nickname,
 
