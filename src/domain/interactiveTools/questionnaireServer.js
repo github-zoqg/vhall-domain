@@ -149,7 +149,18 @@ class QuestionnaireServer extends BaseServer {
         reject(error)
       })
     })
-
+  }
+  /**
+   * @description 复制问卷
+   */
+  copyQuestionnaire(surveyId) {
+    const { watchInitData } = this.useRoomBaseServer.state;
+    const { webinar, interact } = watchInitData;
+    return questionnaireApi.copyQuestionnaire({
+      webinar_id: webinar.id,
+      room_id: interact.room_id,
+      survey_id: surveyId
+    });
   }
   /**
    * @description 删除问卷
@@ -254,7 +265,7 @@ class QuestionnaireServer extends BaseServer {
           survey_id: data.id
         });
       } else {
-        relt = await questionnaireApi.copyQuestionnaire({
+        relt = await questionnaireApi.copyOtherQuestionnaire({
           webinar_id: webinar.id,
           room_id: interact.room_id,
           survey_id: data.id
