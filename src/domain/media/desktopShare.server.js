@@ -55,7 +55,7 @@ class DesktopShareServer extends BaseServer {
 
         if (useGroupServer().state.groupInitData.isInGroup) {
           miniElement = 'stream-list'
-        } else if (role_name == 1) {
+        } else if (role_name != 2) {
           miniElement = 'stream-list'
         } else {
           miniElement = ''
