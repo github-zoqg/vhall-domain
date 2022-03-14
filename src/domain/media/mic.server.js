@@ -103,7 +103,7 @@ class MicServer extends BaseServer {
       const { join_info } = useRoomBaseServer().state.watchInitData;
       console.log(
         '----连麦服务----房间消息',
-        msg,
+        this.state.isSpeakOn,
         msg.data.receive_account_id,
         join_info.third_party_user_id
       );
@@ -111,6 +111,7 @@ class MicServer extends BaseServer {
         // 开启允许举手
         case 'live_over':
           this.state.speakerList = []
+          this.state.isSpeakOn = false
           break;
         // 开启允许举手
         case 'vrtc_connect_open':
