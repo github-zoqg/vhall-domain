@@ -527,8 +527,8 @@ export default class StandardDocServer extends AbstractDocServer {
       cid = this.createUUID(fileType);
     }
     let noDispatch = true;
-
-    console.log('[doc] noDis:', !this.hasDocPermission())
+    // console.log('[doc] noDis:', !this.hasDocPermission())
+    noDispatch = !this.hasDocPermission();
     let opt = {
       id: cid,
       elId: cid, // 创建时，该参数就是cid
