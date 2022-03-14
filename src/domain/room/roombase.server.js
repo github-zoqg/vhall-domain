@@ -40,7 +40,7 @@ class RoomBaseServer extends BaseServer {
       },
       clientType: '',
       deviceType: '', // 设备类型   pc 或 手机
-      isThirdStream: Number(sessionStorage.getItem('isShowThirdStream')) == 1 || false, //
+      isThirdStream: false, //
       skinInfo: {}, // 皮肤信息
       webinarTag: {}, //活动标识
       screenPosterInfo: {}, // 开屏海报信息
@@ -94,6 +94,10 @@ class RoomBaseServer extends BaseServer {
           // 设置发起端权限
           if (['send', 'record', 'clientEmbed'].includes(options.clientType)) {
             this.state.configList = configMap(res.data.permission)
+            // 判断是不是第三方推流
+            if (res.data.switch && res.data.switch.start_type == 4) {
+              this.state.isThirdStream = true
+            }
           } else {
             // 用来判断是否是单点登录
             sessionStorage.setItem('kickId', res.data.sso.kick_id);
@@ -121,7 +125,6 @@ class RoomBaseServer extends BaseServer {
           this.state.watchInitData.webinar.type = 1;
           // 第三方推流监听消息
           if (this.state.isThirdStream) {
-            sessionStorage.setItem('isShowThirdStream', Number(this.state.isThirdStream));
             this.$emit('LIVE_START')
           }
         }
@@ -135,7 +138,6 @@ class RoomBaseServer extends BaseServer {
         // 结束直播时，将第三方推流标识关闭
         if (this.state.isThirdStream) {
           this.state.isThirdStream = false;
-          sessionStorage.removeItem('isShowThirdStream');
         }
 
       }
