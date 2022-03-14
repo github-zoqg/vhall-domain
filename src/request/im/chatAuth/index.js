@@ -1,6 +1,5 @@
 import request from '@/utils/http.js';
 import env from '../../env';
-import Qs from 'qs';
 
 /**
  * 获取聊天审核相关信息
@@ -15,13 +14,12 @@ function getChatAuthSetting(params = {}) {
 
 /**
  * 审核消息操作
- * 注意，这里进行了入参转换，因为这个接口比较特殊
  * */
 function applyMessageSend(params = {}) {
   return request({
     url: '//api.vhallyun.com/sdk/v2/message/apply-message-send',
     method: 'POST',
-    data: Qs.stringify(params),
+    data: params,
   });
 }
 

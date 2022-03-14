@@ -47,7 +47,7 @@ class MediaCheckServer {
   }
 
   // 获取用户媒体输入许可
-  getMediaInputPermission(options = { isNeedBroadcast: false }) {
+  getMediaInputPermission(options = { isNeedBroadcast: true }) {
     if (navigator.mediaDevices) {
       return navigator.mediaDevices
         .getUserMedia({ audio: true, video: true })
@@ -58,7 +58,7 @@ class MediaCheckServer {
             device_type: this.isMobileDevice() ? 1 : 2
           };
           // TODO: 根据参数判断是否发消息同步状态
-          this.setDevice({ status: 1 });
+          this.setDevice({ status: 1, send_msg: Number(options.isNeedBroadcast) });
           stream.getTracks().forEach(trackInput => {
             trackInput.stop();
           });
@@ -70,7 +70,7 @@ class MediaCheckServer {
             device_type: this.isMobileDevice() ? 1 : 2
           };
           // TODO: 根据参数判断是否发消息同步状态
-          this.setDevice({ status: 2 });
+          this.setDevice({ status: 2, send_msg: Number(options.isNeedBroadcast) });
         });
     }
     return Promise.resolve(false);

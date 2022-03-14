@@ -7,6 +7,7 @@ import useMsgServer from '../common/msg.server';
 import { doc as docApi } from '../../request/index.js';
 import request from '@/utils/http.js';
 import useMicServer from '../media/mic.server';
+import useInsertFileServer from '../media/insertFile.server';
 /**
  * 标准（通用）直播场景下的文档白板服务
  * 继承自AbstractDocServer
@@ -377,7 +378,10 @@ export default class StandardDocServer extends AbstractDocServer {
           roomBaseServer.setChangeElement('stream-list');
 
         } else if (this.state.switchStatus) {
-          if (type == 1 && (no_delay_webinar == 1 || useMicServer().getSpeakerStatus())) {
+          if (useInsertFileServer().state.isInsertFilePushing) {
+            // 如果在插播中，文档是小窗，插播是大窗
+            roomBaseServer.setChangeElement('doc');
+          } else if (type == 1 && (no_delay_webinar == 1 || useMicServer().getSpeakerStatus())) {
             // 直播状态下，无延迟或上麦是流列表
             roomBaseServer.setChangeElement('stream-list');
           } else {
@@ -418,51 +422,53 @@ export default class StandardDocServer extends AbstractDocServer {
       console.error('容器宽高错误', width, height);
       this.setDocLoadComplete();
     }
-    this.setDocLoadComplete(false);
-
-    for (const item of this.state.containerList) {
-      const fileType = item.is_board === 1 ? 'document' : 'board';
-      if (
-        fileType == 'document' &&
-        this.state.docCid == item.cid &&
-        document.getElementById(item.cid) &&
-        document.getElementById(item.cid).childNodes.length
-      ) {
-        // 该文档元素已经初始化过，跳过
-        continue;
-      } else if (
-        fileType == 'board' &&
-        this.state.boardCid == item.cid &&
-        document.getElementById(item.cid) &&
-        document.getElementById(item.cid).childNodes.length
-      ) {
-        // 该白板元素已经初始化过，跳过
-        continue;
+    try {
+      for (const item of this.state.containerList) {
+        const fileType = item.is_board === 1 ? 'document' : 'board';
+        if (
+          fileType == 'document' &&
+          this.state.docCid == item.cid &&
+          document.getElementById(item.cid) &&
+          document.getElementById(item.cid).childNodes.length
+        ) {
+          // 该文档元素已经初始化过，跳过
+          continue;
+        } else if (
+          fileType == 'board' &&
+          this.state.boardCid == item.cid &&
+          document.getElementById(item.cid) &&
+          document.getElementById(item.cid).childNodes.length
+        ) {
+          // 该白板元素已经初始化过，跳过
+          continue;
+        }
+        await this.initDocumentOrBoardContainer({
+          width,
+          height,
+          fileType,
+          cid: item.cid,
+          docId: item.docId
+        });
+        if (fileType == 'document') {
+          this.state.docCid = item.cid;
+        } else if (fileType == 'board') {
+          this.state.boardCid = item.cid;
+        }
+        this.setRemoteData(item);
       }
-      await this.initDocumentOrBoardContainer({
-        width,
-        height,
-        fileType,
-        cid: item.cid,
-        docId: item.docId
-      });
-      if (fileType == 'document') {
-        this.state.docCid = item.cid;
-      } else if (fileType == 'board') {
-        this.state.boardCid = item.cid;
+      const activeItem = this.state.containerList.find(item => item.active === 1);
+      if (activeItem) {
+        if (activeItem.is_board === 1) {
+          this.state.pageNum = activeItem.show_page + 1;
+          this.state.pageTotal = activeItem.page;
+        }
+        // 激活选中
+        await this.activeContainer(activeItem.cid);
       }
-      this.setRemoteData(item);
-    }
-    this.setDocLoadComplete(true);
-
-    const activeItem = this.state.containerList.find(item => item.active === 1);
-    if (activeItem) {
-      if (activeItem.is_board === 1) {
-        this.state.pageNum = activeItem.show_page + 1;
-        this.state.pageTotal = activeItem.page;
-      }
-      // 激活选中
-      await this.activeContainer(activeItem.cid);
+      this.setDocLoadComplete();
+    } catch (ex) {
+      this.setDocLoadComplete();
+      console.error('[doc] domain recover error:', ex)
     }
   }
 
@@ -525,8 +531,8 @@ export default class StandardDocServer extends AbstractDocServer {
       cid = this.createUUID(fileType);
     }
     let noDispatch = true;
-
-    console.log('[doc] noDis:', !this.hasDocPermission())
+    // console.log('[doc] noDis:', !this.hasDocPermission())
+    noDispatch = !this.hasDocPermission();
     let opt = {
       id: cid,
       elId: cid, // 创建时，该参数就是cid

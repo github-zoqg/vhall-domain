@@ -80,7 +80,7 @@ class InsertFileServer extends BaseServer {
       }
     });
     // 监听插播的暂停与开始，更改麦克风状态，并 message 提示用户
-    msgServer.$onMsg('ROOM_MSG', msg => {
+    msgServer.$onMsg('CUSTOM_MSG', msg => {
       // 插播播放状态更改消息
       if (msg.data.type == 'insert_file_status') {
         // 如果是开始插播，静音并保存麦克风状态
