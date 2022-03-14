@@ -418,8 +418,6 @@ export default class StandardDocServer extends AbstractDocServer {
       console.error('容器宽高错误', width, height);
       this.setDocLoadComplete();
     }
-    this.setDocLoadComplete(false);
-
     for (const item of this.state.containerList) {
       const fileType = item.is_board === 1 ? 'document' : 'board';
       if (
