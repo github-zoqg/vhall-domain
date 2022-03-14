@@ -1,6 +1,6 @@
 import request from '@/utils/http.js';
 
-// 复制问卷
+// 条件查询问卷
 const queryQuestionnaireList = params => {
   return request({
     url: '/v3/vss/survey/list-webinar-survey',
@@ -8,7 +8,14 @@ const queryQuestionnaireList = params => {
     params: params
   });
 };
-
+// 复制问卷
+const copyQuestionnaire = params => {
+  return request({
+    url: '/v3/vss/survey/copy-webinar-survey',
+    method: 'GET',
+    params
+  });
+};
 // 主持人复制问卷
 const copyMainQuestionnaire = params => {
   return request({
@@ -18,7 +25,7 @@ const copyMainQuestionnaire = params => {
   });
 };
 // 助理/嘉宾
-const copyQuestionnaire = params => {
+const copyOtherQuestionnaire = params => {
   return request({
     url: '/v3/vss/survey/copy-shared-survey-others',
     method: 'GET',
@@ -97,6 +104,7 @@ const getLastSurvey = params => {
 export default {
   queryQuestionnaireList,
   copyMainQuestionnaire,
+  copyOtherQuestionnaire,
   copyQuestionnaire,
   deleteQuestionnaire,
   createLiveQuestion,
