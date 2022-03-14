@@ -645,22 +645,31 @@ class StandardGroupServer extends BaseServer {
     let isOldPresenter = false; //变更之前本人是否是演示者
     let isOldLeader = false; //变更之前本人是否是组长
 
+    const { watchInitData: { join_info: { third_party_user_id, role_name } } } = useRoomBaseServer().state
     if (this.state.groupInitData.isInGroup) {
       // 如果在小组内
-      if (this.state.groupInitData.presentation_screen == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id) {
+      if (this.state.groupInitData.presentation_screen == third_party_user_id) {
         isOldPresenter = true;
       }
-      if (this.state.groupInitData.doc_permission == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id) {
+      if (this.state.groupInitData.doc_permission == third_party_user_id) {
         isOldLeader = true;
       }
       this.state.groupInitData.presentation_screen = msg.data.target_id;
     } else {
       // 在直播间内
-      if (useRoomBaseServer().state.interactToolStatus.presentation_screen
-        == useRoomBaseServer().state.watchInitData.join_info.third_party_user_id) {
+      if (useRoomBaseServer().state.interactToolStatus.presentation_screen == third_party_user_id) {
         isOldPresenter = true;
       }
       await useRoomBaseServer().getInavToolStatus();
+
+      // 非小组时，切换演讲权限布局变化
+      if (!useDocServer().state.switchStatus && role_name == 2) {
+        if (msg.data.target_id == third_party_user_id) {
+          useRoomBaseServer().setChangeElement('stream-list')
+        } else {
+          useRoomBaseServer().setChangeElement('')
+        }
+      }
     }
     useDocServer()._setDocPermisson();
 
