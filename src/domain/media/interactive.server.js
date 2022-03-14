@@ -574,7 +574,9 @@ class InteractiveServer extends BaseServer {
       attributes: JSON.stringify({
         roleName: roleName,
         accountId: watchInitData.join_info.third_party_user_id,
-        nickname: watchInitData.join_info.nickname
+        nickname: watchInitData.join_info.nickname,
+        nickName: watchInitData.join_info.nickname, // app端字段不统一，过渡方案，待字段统一后可删除
+        role: roleName, // app端字段不统一，过渡方案，待字段统一后可删除
       }) //选填，自定义信息，支持字符串类型
     };
 
