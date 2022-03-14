@@ -38,6 +38,14 @@ function isChrome88() {
   return chromeResult && chromeResult.length > 0 && chromeResult[1] > 87;
 }
 
+// 获取地址栏参数
+function getQueryString(name) {
+  const reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)');
+  const r = window.location.search.substr(1).match(reg);
+  if (r != null) return unescape(r[2]);
+  return null;
+}
+
 function randomNumGenerator() {
   let kickMark = '';
   if (!sessionStorage.getItem('kickMark')) {
@@ -138,5 +146,6 @@ export {
   debounce,
   throttling,
   sleep,
-  awaitWrap
+  awaitWrap,
+  getQueryString
 };

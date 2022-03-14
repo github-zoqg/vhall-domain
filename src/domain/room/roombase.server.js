@@ -1,5 +1,5 @@
 import { meeting, roomApi } from '@/request/index.js';
-import { merge } from '@/utils/index.js';
+import { merge, getQueryString } from '@/utils/index.js';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import { configMap } from './js/configMap'
@@ -60,7 +60,8 @@ class RoomBaseServer extends BaseServer {
       miniElement: 'stream-list', // 可能的值：doc  stream-list sceen
       //多语言信息
       languages: {
-        curLang: 'zh',
+        curLang: {},
+        lang: 'zh',
         langList: []
       },
       customRoleName: {}
@@ -255,11 +256,41 @@ class RoomBaseServer extends BaseServer {
   getLangList() {
     return meeting.getLangList({ webinar_id: this.state.watchInitData.webinar.id }).then(res => {
       if (res.code == 200) {
-        this.state.languages.langList = res.data.list;
-        let defaultLanguage = sessionStorage.getItem('lang') ? parseInt(sessionStorage.getItem('lang')) : res.data.default_language
+        const langMap = {
+          1: {
+            label: '简体中文',
+            type: 'zh',
+            key: 1
+          },
+          2: {
+            label: 'English',
+            type: 'en',
+            key: 2
+          }
+        };
+        let defaultLanguage;
+        if (getQueryString('lang')) {
+          defaultLanguage = parseInt(getQueryString('lang'));
+        } else if (localStorage.getItem('lang')) {
+          defaultLanguage = parseInt(localStorage.getItem('lang'))
+        } else {
+          defaultLanguage = res.data.default_language;
+        }
+        if (!(res.data.language_types.split(',').includes((defaultLanguage).toString()))) {
+          debugger;
+          defaultLanguage = res.data.default_language;
+        }
+        localStorage.setItem('lang', defaultLanguage)
+        // 获取当前活动的简介和标题 是个对象
         this.state.languages.curLang = res.data.list.find(item => {
           return item.language_type == defaultLanguage;
         });
+        // 多语言列表
+        this.state.languages.langList = res.data.list.map(item => {
+          return langMap[item.language_type];
+        });
+        // 当前语言的对象
+        this.state.languages.lang = langMap[defaultLanguage]
       }
     });
   }
