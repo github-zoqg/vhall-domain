@@ -159,7 +159,7 @@ export default class StandardDocServer extends AbstractDocServer {
           // 观众不可见
           this.switchOffContainer()
           // 删除所有容器
-          this.docServer.resetContainer();
+          this.resetContainer();
 
           // 还原
           this.state.currentCid = ''; //当前正在展示的容器id
