@@ -103,7 +103,7 @@ class MicServer extends BaseServer {
       const { join_info } = useRoomBaseServer().state.watchInitData;
       console.log(
         '----连麦服务----房间消息',
-        msg,
+        this.state.isSpeakOn,
         msg.data.receive_account_id,
         join_info.third_party_user_id
       );
@@ -111,6 +111,7 @@ class MicServer extends BaseServer {
         // 开启允许举手
         case 'live_over':
           this.state.speakerList = []
+          this.state.isSpeakOn = false
           break;
         // 开启允许举手
         case 'vrtc_connect_open':
@@ -173,8 +174,11 @@ class MicServer extends BaseServer {
 
           if (join_info.third_party_user_id == msg.data.room_join_id) {
             this.state.isSpeakOn = true;
+            this.$emit('vrtc_connect_success', msg);
+          } else if (join_info.role_name == 1 || useGroupServer().state.groupInitData.join_role == 20) {
+            // 如果是主持人或者组长派发事件，更新成员列表
+            this.$emit('vrtc_connect_success', msg);
           }
-          this.$emit('vrtc_connect_success', msg);
           break;
         // 用户成功下麦
         case 'vrtc_disconnect_success':
