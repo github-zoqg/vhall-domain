@@ -30,7 +30,7 @@ export default class StandardDocServer extends AbstractDocServer {
       pageTotal: 1, //总页数
       pageNum: 1, // 当前页码
 
-      allComplete: false,
+      allComplete: true,
       docLoadComplete: true, // 文档是否加载完成
 
       thumbnailList: [], // 缩略图列表
@@ -159,9 +159,7 @@ export default class StandardDocServer extends AbstractDocServer {
           // 观众不可见
           this.switchOffContainer()
           // 删除所有容器
-          for (const item of this.state.containerList) {
-            await this.destroyContainer(item.cid);
-          }
+          this.docServer.resetContainer();
 
           // 还原
           this.state.currentCid = ''; //当前正在展示的容器id
@@ -169,8 +167,8 @@ export default class StandardDocServer extends AbstractDocServer {
           this.state.boardCid = ''; // 当前白板容器Id
           this.state.containerList = []; // 动态容器列表
           this.state.pageTotal = 1; //总页数
-          this.state.pageNum = 1; // 当前页码
-          this.state.allComplete = false;
+          this.state.pageNum = 1; // 当前页码Ï
+          this.state.allComplete = true;
           this.state.docLoadComplete = true; // 文档是否加载完成
           this.state.thumbnailList = []; // 缩略图列表
           this.state.switchStatus = false; // 观众是否可见
@@ -193,7 +191,8 @@ export default class StandardDocServer extends AbstractDocServer {
     // 所有文档加载完成事件
     this.on(VHDocSDK.Event.ALL_COMPLETE, () => {
       // if (process.env.NODE_ENV !== 'production') console.debug('所有文档加载完成');
-      const webinarType = useRoomBaseServer().state.watchInitData.webinar.type;
+      console.log('[doc] domain 所有文档加载完成: ');
+      // const webinarType = useRoomBaseServer().state.watchInitData.webinar.type;
       // if (list.includes(this.previewInfo.elId)) this.previewInfo.canOperate = true;
       // console.log('this.cid:', this.cid);
       // console.log('this.isFullscreen :', this.isFullscreen);
@@ -219,8 +218,8 @@ export default class StandardDocServer extends AbstractDocServer {
     });
     // 文档翻页事件
     this.on(VHDocSDK.Event.PAGE_CHANGE, data => {
-      if (useRoomBaseServer().state.watchInitData.webinar.type != 1) return;
       console.log('==============文档翻页================');
+      if (this.isWatch() && useRoomBaseServer().state.watchInitData.webinar.type != 1) return;
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
       this.$emit('dispatch_doc_page_change', data);
@@ -628,12 +627,32 @@ export default class StandardDocServer extends AbstractDocServer {
     console.log('[doc] activeContainer cid:', cid);
     this.selectContainer(cid, !this.hasDocPermission());
     this.state.currentCid = cid;
+
+    const activeItem = this.state.containerList.find(item => item.cid == cid);
+    console.log('[doc] activeItem:', activeItem);
     const type = cid.split('-')[0];
     if (type === 'document') {
       this.state.docCid = cid;
+      // if (activeItem.status_jpeg == 200) {
+      //   this.state.pageNum = Number(activeItem.slideIndex) + 1;
+      //   this.state.pageTotal = activeItem.slidesTotal;
+      // }
+      // if (useRoomBaseServer().state.clientType === 'send') {
+      //   if (this.state.thumbnailList.length === 0) {
+      //     // 主持端才需要获取缩略图
+      //     setTimeout(() => {
+      //       // 延迟100ms获取，否则sdk中要用到的某个数据可能还是空
+      //       this.getCurrentThumbnailList().then(() => {
+      //         // console.log('[doc] this.state.thumbnailList:', this.state.thumbnailList.length);
+      //         // this.state.pageTotal = this.state.thumbnailList.length;
+      //       });
+      //     }, 100);
+      //   }
+      // }
     } else {
       this.state.boardCid = cid;
     }
+
   }
 
   /**
@@ -643,8 +662,6 @@ export default class StandardDocServer extends AbstractDocServer {
     const res = this.docInstance.getThumbnailList();
     console.log('[doc] domain getCurrentThumbnailList res:', res);
     this.state.thumbnailList = res && res[0] ? res[0].list : [];
-    // let doc = Array.isArray(res) ? res.find(item => item.id === this.state.currentCid) : null;
-    // this.state.thumbnailList = doc ? doc.list : [];
   }
 
   /**
@@ -745,6 +762,10 @@ export default class StandardDocServer extends AbstractDocServer {
       }
     }
     return list;
+  }
+
+  isWatch() {
+    return !['send', 'record', 'clientEmbed'].includes(useRoomBaseServer().state.clientType);
   }
 
   // 是否有文档演示权限
