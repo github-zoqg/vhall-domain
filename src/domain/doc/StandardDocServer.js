@@ -457,7 +457,8 @@ export default class StandardDocServer extends AbstractDocServer {
       }
       const activeItem = this.state.containerList.find(item => item.active === 1);
       if (activeItem) {
-        if (activeItem.is_board === 1) {
+        if (activeItem.is_board == 1) {
+          // 如果是文档
           this.state.pageNum = activeItem.show_page + 1;
           this.state.pageTotal = activeItem.page;
         }
@@ -637,22 +638,11 @@ export default class StandardDocServer extends AbstractDocServer {
     const type = cid.split('-')[0];
     if (type === 'document') {
       this.state.docCid = cid;
-      // if (activeItem.status_jpeg == 200) {
-      //   this.state.pageNum = Number(activeItem.slideIndex) + 1;
-      //   this.state.pageTotal = activeItem.slidesTotal;
-      // }
-      // if (useRoomBaseServer().state.clientType === 'send') {
-      //   if (this.state.thumbnailList.length === 0) {
-      //     // 主持端才需要获取缩略图
-      //     setTimeout(() => {
-      //       // 延迟100ms获取，否则sdk中要用到的某个数据可能还是空
-      //       this.getCurrentThumbnailList().then(() => {
-      //         // console.log('[doc] this.state.thumbnailList:', this.state.thumbnailList.length);
-      //         // this.state.pageTotal = this.state.thumbnailList.length;
-      //       });
-      //     }, 100);
-      //   }
-      // }
+      if (activeItem.show_page > -1) {
+        // 如果是文档
+        this.state.pageNum = activeItem.show_page + 1;
+        this.state.pageTotal = activeItem.page;
+      }
     } else {
       this.state.boardCid = cid;
     }
