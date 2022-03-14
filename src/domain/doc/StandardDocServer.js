@@ -7,6 +7,7 @@ import useMsgServer from '../common/msg.server';
 import { doc as docApi } from '../../request/index.js';
 import request from '@/utils/http.js';
 import useMicServer from '../media/mic.server';
+import useInsertFileServer from '../media/insertFile.server';
 /**
  * 标准（通用）直播场景下的文档白板服务
  * 继承自AbstractDocServer
@@ -377,7 +378,10 @@ export default class StandardDocServer extends AbstractDocServer {
           roomBaseServer.setChangeElement('stream-list');
 
         } else if (this.state.switchStatus) {
-          if (type == 1 && (no_delay_webinar == 1 || useMicServer().getSpeakerStatus())) {
+          if (useInsertFileServer().state.isInsertFilePushing) {
+            // 如果在插播中，文档是小窗，插播是大窗
+            roomBaseServer.setChangeElement('doc');
+          } else if (type == 1 && (no_delay_webinar == 1 || useMicServer().getSpeakerStatus())) {
             // 直播状态下，无延迟或上麦是流列表
             roomBaseServer.setChangeElement('stream-list');
           } else {
