@@ -4,7 +4,8 @@ import BaseServer from '../common/base.server';
 import VhallPaasSDK from '@/sdk/index';
 import useGroupServer from '../group/StandardGroupServer';
 import { merge, sleep } from '../../utils';
-import useMicServer from './mic.server';
+import useDocServer from '../doc/doc.server';
+
 
 class DesktopShareServer extends BaseServer {
   constructor() {
@@ -30,6 +31,8 @@ class DesktopShareServer extends BaseServer {
   }
   _addListeners() {
     const interactiveServer = useInteractiveServer();
+
+
 
     // 远端流加入事件
     interactiveServer.$on('INTERACTIVE_INSTANCE_INIT_SUCCESS', () => {
@@ -58,8 +61,8 @@ class DesktopShareServer extends BaseServer {
           miniElement = 'stream-list'
         } else if (role_name != 2) {
           miniElement = 'stream-list'
-        } else if (role_name == 2) {
-          if (useMicServer().getSpeakerStatus()) {
+        } else {
+          if (useDocServer().state.switchStatus) {
             miniElement = 'stream-list'
           } else {
             miniElement = ''
@@ -75,7 +78,7 @@ class DesktopShareServer extends BaseServer {
       if (e.data.streamId == this.state.localDesktopStreamId) {
         this.state.localDesktopStreamId = '';
         useRoomBaseServer().setChangeElement('stream-list');
-        this.$emit('screen_stream_remove', e);
+        this.$emit('EVENT_STREAM_END', e);
       }
     })
   }
