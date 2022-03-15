@@ -4,9 +4,7 @@ import BaseServer from '../common/base.server';
 import VhallPaasSDK from '@/sdk/index';
 import useGroupServer from '../group/StandardGroupServer';
 import { merge, sleep } from '../../utils';
-import useMicServer from './mic.server';
 import useDocServer from '../doc/doc.server';
-import useMsgServer from '../common/msg.server';
 
 
 class DesktopShareServer extends BaseServer {
@@ -34,17 +32,7 @@ class DesktopShareServer extends BaseServer {
   _addListeners() {
     const interactiveServer = useInteractiveServer();
 
-    useMsgServer().$onMsg('ROOM_MSG', msg => {
 
-      if (msg.data.type === 'desktop_sharing_disable') {
-        useRoomBaseServer().setInavToolStatus('is_desktop', 0)
-      }
-      if (msg.data.type === 'desktop_sharing_open') {
-        useRoomBaseServer().setInavToolStatus('is_desktop', 1)
-
-      }
-
-    });
 
     // 远端流加入事件
     interactiveServer.$on('INTERACTIVE_INSTANCE_INIT_SUCCESS', () => {
