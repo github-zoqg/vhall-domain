@@ -38,7 +38,7 @@ class MemberServer extends BaseServer {
       raiseHandTip: false
     };
 
-    this.listenEvents();
+    // this.listenEvents();
     MemberServer.instance = this;
     return this;
   }
