@@ -1138,6 +1138,10 @@ class InteractiveServer extends BaseServer {
   setSpeaker(data = {}) {
     return interactive.setSpeaker(data);
   }
+  // 设置桌面共享最大化
+  setDesktop(data = {}) {
+    return interactive.setDesktop(data);
+  }
 
   // 设置（麦克风-1 摄像头-2）
   setRoomDevice(data = {}) {
