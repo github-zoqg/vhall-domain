@@ -203,6 +203,15 @@ export default class StandardDocServer extends AbstractDocServer {
       // console.log('this.isFullscreen :', this.isFullscreen);
       this.state.allComplete = true;
       this.state.docLoadComplete = true;
+
+      if (useRoomBaseServer().state.clientType === 'send') {
+        // 主持端才需要获取缩略图
+        setTimeout(() => {
+          // 延迟100ms获取，否则sdk中要用到的某个数据可能还是空
+          this.getCurrentThumbnailList();
+        }, 100);
+      }
+
       this.$emit('dispatch_doc_all_complete');
     });
     // 当前文档加载完成
@@ -245,8 +254,8 @@ export default class StandardDocServer extends AbstractDocServer {
     // 创建容器
     this.on(VHDocSDK.Event.CREATE_CONTAINER, data => {
       console.log('===========创建容器===========', data);
-      const { join_info, watchInitData } = roomBaseServer().state;
-      if (join_info.role_name != 1 && watchInitData.webinar.type != 1) {
+      const { watchInitData } = useRoomBaseServer().state;
+      if (watchInitData.join_info.role_name != 1 && watchInitData.webinar.type != 1) {
         return;
       }
       if (typeof this.getDocViewRect === 'function') {
