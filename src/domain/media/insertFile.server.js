@@ -73,6 +73,7 @@ class InsertFileServer extends BaseServer {
         this.$emit('INSERT_FILE_STREAM_REMOVE', e);
       }
     });
+    // 本地推流或订阅远端流异常断开事件
     interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
       e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
       if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
