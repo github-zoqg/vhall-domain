@@ -14,9 +14,7 @@ class LotteryServer extends BaseServer {
     const watchInitData = useRoomBaseServer().state.watchInitData;
     this._roomId = watchInitData.interact.room_id;
     this._webinarId = watchInitData.webinar.id;
-    if (opt?.mode === 'watch') {
-      this.listenMsg();
-    }
+    this.listenMsg();
   }
   //对外暴露通知名称
   Events = {

@@ -51,8 +51,10 @@ class MsgServer extends BaseServer {
             this.destroy();
             this.destroyGroupMsg();
           }
+          break;
         case 'live_over':
           this.$emit('live_over')
+          break;
       }
     });
   }

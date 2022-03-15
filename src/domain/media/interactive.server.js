@@ -21,6 +21,7 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance = null; // 互动实例
     this.interactiveInstanceOptions = null; // 当前互动实例的参数
     this.state = {
+      isInstanceInit: false, // 互动实例是否初始化完成
       localStream: {
         streamId: null, // 本地流id
         // videoMuted: false,
@@ -78,6 +79,8 @@ class InteractiveServer extends BaseServer {
 
           // 互动实例
           this.interactiveInstance = event.vhallrtc;
+          // 是否有互动实例置为true
+          this.state.isInstanceInit = true
           console.log('%c[interactive server] 初始化互动实例完成', 'color:#0000FF', event)
 
           this._addListeners();
@@ -342,6 +345,8 @@ class InteractiveServer extends BaseServer {
       .destroyInstance()
       .then(() => {
         this.interactiveInstance = null;
+        // 是否有互动实例置为true
+        this.state.isInstanceInit = false
         // this.state.remoteStreams = [];
         useMicServer().removeAllApeakerStreamId()
         // 派发上麦流列表更新事件
@@ -569,7 +574,9 @@ class InteractiveServer extends BaseServer {
       attributes: JSON.stringify({
         roleName: roleName,
         accountId: watchInitData.join_info.third_party_user_id,
-        nickname: watchInitData.join_info.nickname
+        nickname: watchInitData.join_info.nickname,
+        nickName: watchInitData.join_info.nickname, // app端字段不统一，过渡方案，待字段统一后可删除
+        role: roleName, // app端字段不统一，过渡方案，待字段统一后可删除
       }) //选填，自定义信息，支持字符串类型
     };
 
