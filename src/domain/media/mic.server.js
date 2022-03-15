@@ -174,8 +174,11 @@ class MicServer extends BaseServer {
 
           if (join_info.third_party_user_id == msg.data.room_join_id) {
             this.state.isSpeakOn = true;
+            this.$emit('vrtc_connect_success', msg);
+          } else if (join_info.role_name == 1 || useGroupServer().state.groupInitData.join_role == 20) {
+            // 如果是主持人或者组长派发事件，更新成员列表
+            this.$emit('vrtc_connect_success', msg);
           }
-          this.$emit('vrtc_connect_success', msg);
           break;
         // 用户成功下麦
         case 'vrtc_disconnect_success':
@@ -200,7 +203,6 @@ class MicServer extends BaseServer {
           break;
         // 设置主画面
         case 'vrtc_big_screen_set':
-          console.warn('？？？？ 为何没有监听到', useGroupServer().state.groupInitData.isInGroup)
           if (useGroupServer().state.groupInitData.isInGroup) return;
           const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
           // if(useGroupServer().state.groupInitData.isInGroup)
