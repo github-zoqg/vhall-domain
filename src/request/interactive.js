@@ -35,9 +35,28 @@ const setSpeaker = (params = {}) => {
     method: 'POST',
     data: retParams
   });
+}
+// 设置主讲人/文档控制权限
+const setDesktop = (params = {}) => {
+  const { watchInitData } = useRoomBaseServer().state;
+
+  let retParams = {
+    room_id: params.room_id || watchInitData.interact.room_id
+  };
+  retParams = Object.assign(retParams, params);
+
+  const url =
+    env.activity === 'v3' ? '/v3/interacts/room/set-desktop' : '/v4/room/set-desktop';
+
+  return request({
+    url: url,
+    method: 'POST',
+    data: retParams
+  });
 };
 
 export default {
   setMainScreen, // 设置主屏
-  setSpeaker // 设置主讲人
+  setSpeaker, // 设置主讲人
+  setDesktop, // 开启桌面共享自动最大化
 };
