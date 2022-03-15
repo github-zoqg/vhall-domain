@@ -1,15 +1,12 @@
 /**
- * @description 抽奖服务
+ * @description 抽奖
  */
 import useRoomBaseServer from '../room/roombase.server';
 import lotteryApi from '../../request/lottery';
 import useMsgServer from '../common/msg.server';
 import BaseServer from '../common/base.server';
-
-// const LOTTERY_PUSH = 'lottery_push';
-// const LOTTERY_RESULT_NOTICE = 'lottery_result_notice';
 class LotteryServer extends BaseServer {
-  constructor(opt = {}) {
+  constructor() {
     super();
     const watchInitData = useRoomBaseServer().state.watchInitData;
     this._roomId = watchInitData.interact.room_id;
@@ -18,12 +15,13 @@ class LotteryServer extends BaseServer {
   }
   //对外暴露通知名称
   Events = {
-    LOTTERY_PUSH: 'lottery_push',
-    LOTTERY_RESULT_NOTICE: 'lottery_result_notice',
+    LOTTERY_PUSH: 'lottery_push', // 开始抽奖
+    LOTTERY_RESULT_NOTICE: 'lottery_result_notice', // 抽奖结果
     LOTTERY_WIN: 'lottery_win', // 中奖
     LOTTERY_MISS: 'lottery_miss', // 未中奖
-    LOTTERY_SUBMIT: 'lottery_submit', // 中奖提交
+    LOTTERY_SUBMIT: 'lottery_submit', // 提交领奖
   };
+
   // 监听消息
   listenMsg() {
     console.log('监听了 抽奖消息')
@@ -52,7 +50,6 @@ class LotteryServer extends BaseServer {
 
   // 初始化抽奖基础内容
   async initLotteryForm() {
-    this.state.joinCondition = '1';
     await this.getPrizeList();
     this.getQualifiedNum();
   }
@@ -61,6 +58,7 @@ class LotteryServer extends BaseServer {
   checkLottery() {
     return lotteryApi.checkLottery();
   }
+
   // 参加口令抽奖
   joinLottery(lotteryId) {
     return lotteryApi.joinLottery({
@@ -71,6 +69,7 @@ class LotteryServer extends BaseServer {
       return res
     });
   }
+
   // 获取可参与抽奖用户
   queryQualifiedPerson(params) {
     return lotteryApi.queryQualifiedPerson({
@@ -117,6 +116,7 @@ class LotteryServer extends BaseServer {
       lottery_id: lotteryId
     });
   }
+
   // 获取表单信息
   getDrawPrizeInfo() {
     return lotteryApi.getDrawPrizeInfo({
