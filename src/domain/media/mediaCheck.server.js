@@ -53,10 +53,8 @@ class MediaCheckServer {
         .getUserMedia({ audio: true, video: true })
         .then(async stream => {
           // 更新当前用户设备信息
-          this.state.deviceInfo = {
-            device_status: 1,
-            device_type: this.isMobileDevice() ? 1 : 2
-          };
+          this.state.deviceInfo.device_status = 1;
+          this.state.deviceInfo.device_type = this.isMobileDevice() ? 1 : 2
           // TODO: 根据参数判断是否发消息同步状态
           this.setDevice({ status: 1, send_msg: Number(options.isNeedBroadcast) });
           stream.getTracks().forEach(trackInput => {
@@ -65,10 +63,8 @@ class MediaCheckServer {
         })
         .catch(async () => {
           // 更新当前用户设备信息
-          this.state.deviceInfo = {
-            device_status: 2,
-            device_type: this.isMobileDevice() ? 1 : 2
-          };
+          this.state.deviceInfo.device_status = 2;
+          this.state.deviceInfo.device_type = this.isMobileDevice() ? 1 : 2
           // TODO: 根据参数判断是否发消息同步状态
           this.setDevice({ status: 2, send_msg: Number(options.isNeedBroadcast) });
         });
