@@ -33,17 +33,6 @@ class RedPacketServer extends BaseServer {
           console.log('红包消息:RED_ENVELOPE_OK')
           this.state.available = true
           this.$emit(RED_ENVELOPE_OK, msg.data);
-          if (opts?.mode === 'watch') {
-            useChatServer().addChatToList({
-              avatar: '//cnstatic01.e.vhall.com/static/images/watch/system.png',
-              content: {
-                text_content: '红包派发中'
-              },
-              type: msg.type,
-              interactStatus: true,
-              Show: true
-            });
-          }
           break;
       }
     });
