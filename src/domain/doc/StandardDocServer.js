@@ -638,11 +638,6 @@ export default class StandardDocServer extends AbstractDocServer {
     const type = cid.split('-')[0];
     if (type === 'document') {
       this.state.docCid = cid;
-      if (activeItem.show_page > -1) {
-        // 如果是文档
-        this.state.pageNum = activeItem.show_page + 1;
-        this.state.pageTotal = activeItem.page;
-      }
     } else {
       this.state.boardCid = cid;
     }
