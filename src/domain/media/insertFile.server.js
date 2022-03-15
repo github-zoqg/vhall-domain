@@ -410,11 +410,11 @@ class InsertFileServer extends BaseServer {
 
     if (options.isStart) {
       // 如果是开启插播、开始播放，保存当前麦克风状态，并静音麦克风
-      // 存储原麦克风状态，待结束插播的时候还原用
-      this.state.oldMicMute = localSpeaker.audioMuted
 
       // 如果麦克风开启，静音
       if (!localSpeaker.audioMuted && localSpeaker.streamId) {
+        // 存储原麦克风状态，待结束插播的时候还原用
+        this.state.oldMicMute = localSpeaker.audioMuted
         interactiveServer.muteAudio({
           streamId: localSpeaker.streamId,
           isMute: true
