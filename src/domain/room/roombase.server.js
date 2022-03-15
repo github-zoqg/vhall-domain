@@ -277,7 +277,6 @@ class RoomBaseServer extends BaseServer {
           defaultLanguage = res.data.default_language;
         }
         if (!(res.data.language_types.split(',').includes((defaultLanguage).toString()))) {
-          debugger;
           defaultLanguage = res.data.default_language;
         }
         localStorage.setItem('lang', defaultLanguage)
