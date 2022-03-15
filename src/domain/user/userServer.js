@@ -2,6 +2,7 @@
  * @description 用户登录-注册-三方登录
  */
 import { user as userApi } from '@/request/index.js';
+import useRoomBaseServer from '@/domain/room/roombase.server.js';
 
 class UserServer {
   static getInstance() {
@@ -45,6 +46,8 @@ class UserServer {
    * */
   async initNECaptcha(element = '#codeLoginCaptcha') {
     await this.getCaptchaId();
+    const { languages } = useRoomBaseServer().state
+    let lang = languages.lang.type == 'zh' ? 'zh-CN' : 'en';
     if (!this.captchaId) {
       console.warn('当前未获取到图形验证this.captchaId的值，需要后端人员协助');
       return false;
@@ -54,9 +57,7 @@ class UserServer {
       captchaId: this.captchaId,
       element,
       mode: 'float',
-      // FIXME: 网易易顿多语言字段 lang 需要翻译(暂时写死)
-      lang: 'zh-CN',
-      // lang: window.$globalConfig.currentLang || 'zh-CN',
+      lang: lang || 'zh-CN',
       onReady(instance) {
         console.log('🚀 ~ initNECaptcha onReady ', instance);
         that.capInstance = instance;
