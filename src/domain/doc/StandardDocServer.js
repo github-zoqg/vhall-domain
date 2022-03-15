@@ -245,13 +245,8 @@ export default class StandardDocServer extends AbstractDocServer {
     // 创建容器
     this.on(VHDocSDK.Event.CREATE_CONTAINER, data => {
       console.log('===========创建容器===========', data);
-      // docId: "855f3f68"
-      // height: 447.75
-      // id: "document-31c5459"
-      // type: "document"
-      // width: 796
       const { join_info, watchInitData } = roomBaseServer().state;
-      if (join_info.role_name != 1 && this.watchInitData.webinar.type != 1) {
+      if (join_info.role_name != 1 && watchInitData.webinar.type != 1) {
         return;
       }
       if (typeof this.getDocViewRect === 'function') {
