@@ -205,20 +205,16 @@ class StandardGroupServer extends BaseServer {
       // 加入房间
       console.log('[group] domain 加入房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
-        this.getWaitingUserList();
-        this.getGroupedUserList();
-
-        this.handleGroupLeaderBack(msg) // 处理组长回归
+        // 处理主持人、助理回归
+        this.handleGroupLeaderBack(msg)
       }
     });
     useMsgServer().$onMsg('LEFT', msg => {
       // 离开房间
       console.log('[group] domain 离开房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
-        this.getWaitingUserList();
-        this.getGroupedUserList();
-
-        this.handleGroupLeaderLeave(msg) // 处理组长离开
+        // 处理主持人、助理离开
+        this.handleGroupLeaderLeave(msg)
       }
     });
   }
