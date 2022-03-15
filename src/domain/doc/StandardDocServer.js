@@ -37,6 +37,10 @@ export default class StandardDocServer extends AbstractDocServer {
       thumbnailList: [], // 缩略图列表
       switchStatus: false // 直播中观众是否可见
     };
+
+    // 由于文档对象的创建需要指定具体的宽高，而宽高需要根据具体dom计算，所以需要在文档组件初始化时初始化该方法
+    // 获取文档宽高的方法
+    getDocViewRect: null;
   }
 
   /**
@@ -241,9 +245,17 @@ export default class StandardDocServer extends AbstractDocServer {
     // 创建容器
     this.on(VHDocSDK.Event.CREATE_CONTAINER, data => {
       console.log('===========创建容器===========', data);
-      // if ((this.roleName != 1 && this.liveStatus != 1) || this.cids.includes(data.id)) {
-      //   return;
-      // }
+      const { join_info, watchInitData } = roomBaseServer().state;
+      if (join_info.role_name != 1 && watchInitData.webinar.type != 1) {
+        return;
+      }
+      if (typeof this.getDocViewRect === 'function') {
+        const { width, height } = this.getDocViewRect();
+        const { docId, id, type } = data;
+        if (width > 0 && height > 0 && this.state.containerList.findIndex(item => item.cid == data.id) == -1) {
+          this.addNewDocumentOrBorad({ width, height, fileType: type, cid: id, docId });
+        }
+      }
       this.$emit('dispatch_doc_create_container', data);
     });
 
