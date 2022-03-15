@@ -4,6 +4,7 @@ import BaseServer from '../common/base.server';
 import VhallPaasSDK from '@/sdk/index';
 import useGroupServer from '../group/StandardGroupServer';
 import { merge, sleep } from '../../utils';
+import useMicServer from './mic.server';
 
 class DesktopShareServer extends BaseServer {
   constructor() {
@@ -57,8 +58,12 @@ class DesktopShareServer extends BaseServer {
           miniElement = 'stream-list'
         } else if (role_name != 2) {
           miniElement = 'stream-list'
-        } else {
-          miniElement = ''
+        } else if (role_name == 2) {
+          if (useMicServer().getSpeakerStatus()) {
+            miniElement = 'stream-list'
+          } else {
+            miniElement = ''
+          }
         }
         useRoomBaseServer().setChangeElement(miniElement);
         this.$emit('screen_stream_remove', e);
