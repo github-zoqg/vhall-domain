@@ -196,7 +196,7 @@ export default class StandardDocServer extends AbstractDocServer {
     // 所有文档加载完成事件
     this.on(VHDocSDK.Event.ALL_COMPLETE, () => {
       // if (process.env.NODE_ENV !== 'production') console.debug('所有文档加载完成');
-      console.log('[doc] domain 所有文档加载完成: ');
+      console.log('[doc]  ========domain 所有文档加载完成======');
       // const webinarType = useRoomBaseServer().state.watchInitData.webinar.type;
       // if (list.includes(this.previewInfo.elId)) this.previewInfo.canOperate = true;
       // console.log('this.cid:', this.cid);
@@ -216,7 +216,7 @@ export default class StandardDocServer extends AbstractDocServer {
     });
     // 当前文档加载完成
     this.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE, data => {
-      console.log('[doc] domain 当前文档加载完成: ', data);
+      console.log('[doc] ========domain 当前文档加载完成======', data);
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
       this.state.docLoadComplete = true;
@@ -232,7 +232,7 @@ export default class StandardDocServer extends AbstractDocServer {
     });
     // 文档翻页事件
     this.on(VHDocSDK.Event.PAGE_CHANGE, data => {
-      console.log('==============文档翻页================');
+      console.log('[doc] ==============文档翻页================');
       if (this.isWatch() && useRoomBaseServer().state.watchInitData.webinar.type != 1) return;
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
@@ -242,7 +242,7 @@ export default class StandardDocServer extends AbstractDocServer {
     // 观众可见按钮切换
     this.on(VHDocSDK.Event.SWITCH_CHANGE, status => {
       if (useRoomBaseServer().state.watchInitData.webinar.type != 1) return;
-      console.log('==[doc] [player]========控制文档开关=============', status);
+      console.log('[doc] ========控制文档开关=============', status);
       this.state.switchStatus = status === 'on';
       if (useRoomBaseServer().state.clientType != 'send') {
         // 观看端
@@ -253,7 +253,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 创建容器
     this.on(VHDocSDK.Event.CREATE_CONTAINER, data => {
-      console.log('===========创建容器===========', data);
+      console.log('[doc] ===========创建容器===========', data);
       const { watchInitData } = useRoomBaseServer().state;
       if (watchInitData.join_info.role_name != 1 && watchInitData.webinar.type != 1) {
         return;
@@ -283,11 +283,17 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 选中容器
     this.on(VHDocSDK.Event.SELECT_CONTAINER, data => {
+      console.log('[doc] =============选中容器========');
+      const { watchInitData } = useRoomBaseServer().state;
+      if (watchInitData.join_info.role_name != 1 && watchInitData.webinar.type != 1) {
+        return;
+      }
+
       this.$emit('dispatch_doc_select_container', data);
     });
 
     this.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT, ({ cid, docId }) => {
-      console.log('=============文档不存在或已删除========', cid, docId);
+      console.log('[doc] =============文档不存在或已删除========', cid, docId);
       if (cid == this.currentCid) {
         setTimeout(() => {
           const index = this.containerList.findIndex(item => item.cid == cid);

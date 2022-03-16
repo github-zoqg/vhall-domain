@@ -264,7 +264,7 @@ class MsgServer extends BaseServer {
   getDefaultOptions() {
     const { state: roomBaseServerState } = useRoomBaseServer();
     const isPcClient = isPc();
-    const { watchInitData } = roomBaseServerState;
+    const {watchInitData, interactToolStatus = {}} = roomBaseServerState;
     const { groupInitData } = useGroupServer().state;
     const defaultContext = {
       nickname: watchInitData.join_info.nickname,
@@ -277,6 +277,7 @@ class MsgServer extends BaseServer {
       audience: roomBaseServerState.clientType !== 'send',
       kick_id: sessionStorage.getItem('kickId'),
       kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
+      is_banned: interactToolStatus.is_banned,
       privacies: watchInitData.join_info.privacies || '',
       groupInitData//只代表刚进入直播时小组状态，不代表实时小组状态
     };
@@ -297,7 +298,7 @@ class MsgServer extends BaseServer {
   getGroupDefaultOptions() {
     const { state: roomBaseServerState } = useRoomBaseServer();
     const isPcClient = isPc();
-    const { watchInitData } = roomBaseServerState;
+    const { watchInitData ,interactToolStatus = {}} = roomBaseServerState;
     const { groupInitData } = useGroupServer().state;
     const defaultContext = {
       nickname: watchInitData.join_info.nickname,
@@ -311,7 +312,8 @@ class MsgServer extends BaseServer {
       audience: roomBaseServerState.clientType !== 'send', //是不是观众
       kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
       privacies: watchInitData.join_info.privacies || '',
-      groupInitData: groupInitData
+      groupInitData: groupInitData,
+      is_banned: groupInitData.isInGroup ? groupInitData.is_banned : interactToolStatus.is_banned
     };
     const defaultOptions = {
       context: defaultContext,
