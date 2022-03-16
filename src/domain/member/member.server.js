@@ -74,7 +74,7 @@ class MemberServer extends BaseServer {
       const type = msg.data.event_type || msg.data.type || '';
       switch (type) {
         case 'disable':
-          _this._changeUserStatus(msg.data.target_id, _this.onlineUsers, {is_banned: 1});
+          _this._changeUserStatus(msg.data.target_id, _this.state.onlineUsers, {is_banned: 1});
           _this._changeUserStatus(msg.data.target_id, _this.state.limitedUsers, {is_banned: 1});
           _this._changeUserStatus(msg.data.target_id, _this.state.applyUsers, {is_banned: 1});
           // 禁言并且是举手列表
