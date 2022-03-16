@@ -58,8 +58,10 @@ class DesktopShareServer extends BaseServer {
         const { role_name } = useRoomBaseServer().state.watchInitData.join_info
 
         if (useGroupServer().state.groupInitData.isInGroup) {
+          // 在小组内，文档区域常显，小屏显示主画面
           miniElement = 'stream-list'
         } else if (role_name != 2) {
+          // 非观众文档区域常显，小屏显示主画面
           miniElement = 'stream-list'
         } else {
           if (useDocServer().state.switchStatus) {
