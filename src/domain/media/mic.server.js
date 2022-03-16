@@ -50,6 +50,10 @@ class MicServer extends BaseServer {
     })
   }
 
+  setSpeakerList(val) {
+    this.state.speakerList = val
+  }
+
   // 获取是否上麦状态
   getSpeakerStatus() {
     const { join_info } = useRoomBaseServer().state.watchInitData;
@@ -110,8 +114,7 @@ class MicServer extends BaseServer {
       switch (msg.data.type) {
         // 开启允许举手
         case 'live_over':
-          this.state.speakerList = []
-          this.state.isSpeakOn = false
+          this.$emit('live_over', msg);
           break;
         // 开启允许举手
         case 'vrtc_connect_open':
