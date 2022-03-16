@@ -35,7 +35,9 @@ class MemberServer extends BaseServer {
       //当前的tabIndex
       tabIndex: 1,
       //举手栏是否有小红点
-      raiseHandTip: false
+      raiseHandTip: false,
+      //举手定时器集合
+      handsUpTimerMap: {}
     };
 
     // this.listenEvents();
@@ -81,6 +83,8 @@ class MemberServer extends BaseServer {
 
     //房间消息监听
     useMsgServer().$onMsg('ROOM_MSG', rawMsg => {
+      const {clientType = '', watchInitData = {}} = useRoomBaseServer().state;
+      const isLive = clientType === 'send';
       let msg = Object.assign({}, rawMsg);
       if (Object.prototype.toString.call(msg.data) !== '[object Object]') {
         msg.data = JSON.parse(msg.data);
@@ -93,41 +97,54 @@ class MemberServer extends BaseServer {
           _this._handleApplyConnect(msg);
           break;
         case 'vrtc_connect_apply_cancel':
+          _this._handleCancelApplyConnect(msg);
           break;
         case 'vrtc_connect_agree':
+          _this._handleAgreeApplyConnect(msg);
           break;
         case 'vrtc_connect_success':
+          _this._handleSuccessConnect(msg);
           break;
         case 'vrtc_connect_invite_refused':
+          _this._handleUserRejectConnect(msg);
           break;
         case 'vrtc_disconnect_success':
+          _this._handleSuccessDisconnect(msg);
           break;
         case 'vrtc_speaker_switch':
+          _this._handleChangeSpeaker(msg);
           break;
         case 'vrtc_connect_device_check':
+          _this._handleDeviceCheck(msg);
           break;
         case 'kicked_in_chat':
         case 'room_kickout':
+          _this._handleKicked(msg);
           break;
         case 'vrtc_disconnect_presentation_success':
+          _this._handleUserEndPresentation(msg);
           break;
         case 'main_room_join_change':
-          break;
-        case 'endLive':
-          break;
-        case 'room_kickout_cancel':
+          _this._handleMainRoomJoinChange(msg);
           break;
         case 'changeGroupInitData':
+          //视图处理
           break;
         case 'vrtc_connect_presentation_agree':
+          //视图处理
           break;
         case 'vrtc_connect_presentation_success':
+          !isLive && _this._handlePresentationPermissionChange(msg);
           break;
         case 'room_vrtc_disconnect_success':
+          //下麦成功
+          !isLive && _this._handleRoomDisconnectSuccess(temp);
           break;
         case 'group_switch_start':
+          //视图处理
           break;
         case 'group_join_change':
+          //视图处理
           break;
         default:
           break;
@@ -141,7 +158,7 @@ class MemberServer extends BaseServer {
     const {join_info = {}} = watchInitData;
     const userId = join_info.third_party_user_id;
     const isLive = clientType === 'send';
-    console.log(isLive,'isLive-------------------');
+    console.log(isLive, 'isLive-------------------');
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
     const _this = this;
     try {
@@ -291,12 +308,234 @@ class MemberServer extends BaseServer {
     }
     _this._deleteUser(msg.sender_id, _this.state.onlineUsers);
     _this._deleteUser(msg.sender_id, _this.state.applyUsers);
-    _this.$emit('LEFT',msg);
+    _this.$emit('LEFT', msg);
   }
 
   //用户申请上麦
-  _handleApplyConnect(msg){
+  _handleApplyConnect(msg) {
+    const {watchInitData = {}} = useRoomBaseServer().state;
+    const {join_info = {}} = watchInitData;
+    const userId = join_info.third_party_user_id;
+    const _this = this;
+    //举手tab的小红点
+    if (this.state.tabIndex !== 2) {
+      this.state.raiseHandTip = true;
+    }
+    // 如果申请人是自己
+    if (msg.data.room_join_id == userId) {
+      return;
+    }
 
+    let user = {
+      account_id: msg.data.room_join_id,
+      avatar: msg.data.avatar,
+      device_status: msg.data.device_status,
+      device_type: msg.data.device_type,
+      nickname: msg.data.nick_name,
+      role_name: msg.data.room_role
+    };
+
+    const {member_info = {is_apply: 1}} = msg.data;
+    user = Object.assign(user, member_info);
+    this.state.applyUsers.unshift(user);
+    // 去重
+    this.state.applyUsers = this.uniqBy(this.state.applyUsers, 'account_id');
+    this._changeUserStatus(user.account_id, this.state.onlineUsers, member_info);
+
+    //消息容错处理，如果这个人正在申请中，则重新计时
+    if (this.state.handsUpTimerMap[user.account_id]) {
+      clearTimeout(this.state.handsUpTimerMap[user.account_id]);
+      delete this.state.handsUpTimerMap[user.account_id];
+    }
+
+    // 申请30秒后从列表去掉
+    this.state.handsUpTimerMap[user.account_id] = setTimeout(() => {
+      _this.state.handsUpTimerMap[user.account_id] && clearTimeout(_this.state.handsUpTimerMap[user.account_id]);
+      delete _this.state.handsUpTimerMap[user.account_id];
+      _this._changeUserStatus(user.account_id, _this.state.onlineUsers, {is_apply: 0});
+      _this.state.applyUsers = _this.state.applyUsers.filter(u => u.account_id !== user.account_id);
+      if (!_this.state.applyUsers.length) {
+        _this.state.raiseHandTip = false;
+        _this.$emit('UPDATE_TAB_TIPS', {visible: false});
+      }
+    }, 30000);
+
+    //通知更新menu tab栏小红点显示状态
+    this.$emit('UPDATE_TAB_TIPS', {visible: true});
+
+  }
+
+  //用户取消上麦
+  _handleCancelApplyConnect(msg) {
+    const {member_info = {is_apply: 0}} = msg.data;
+    //发起端举手提示
+    this.state.raiseHandTip = false;
+    this._deleteUser(msg.data.room_join_id, this.state.applyUsers);
+    this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
+    //用户取消下麦,清除30秒自动拒绝的定时器
+    this.state.handsUpTimerMap[msg.data.room_join_id] && clearTimeout(this.handsUpTimerMap[msg.data.room_join_id]);
+    delete this.handsUpTimerMap[msg.data.room_join_id];
+  }
+
+  //同意了用户上麦
+  _handleAgreeApplyConnect(msg) {
+    const {clientType = ''} = useRoomBaseServer().state;
+    const isLive = clientType === 'send';
+    if (isLive) {
+      this.state.raiseHandTip = false;
+      return;
+    }
+    this._changeUserStatus(msg.room_join_id, this.state.onlineUsers, {is_apply: 0, is_speak: 1});
+  }
+
+  //用户上麦成功
+  _handleSuccessConnect(msg) {
+    const {clientType = '', watchInitData = {}} = useRoomBaseServer().state;
+    const {join_info = {}} = watchInitData;
+    const userId = join_info.third_party_user_id;
+    const isLive = clientType === 'send';
+    console.log(isLive, 'isLive-------------------');
+    const isInGroup = useGroupServer().state.groupInitData.isInGroup;
+    const _this = this;
+
+    const {member_info = {is_apply: 0, is_speak: 1}} = msg.data;
+    this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
+    //如果已经没有举手的人，清除一下举手一栏的小红点
+    if (!this.state.applyUsers.length) {
+      this.state.raiseHandTip = false;
+    }
+
+    if (msg.data.room_join_id == userId && msg.data.room_role == 2) {
+      return;
+    }
+    //将事件通过memberServer派发出去
+    this.$emit('vrtc_connect_success', msg);
+    //清除举手倒计时的定时器
+    this.state.handsUpTimerMap[msg.data.room_join_id] && clearTimeout(this.state.handsUpTimerMap[msg.data.room_join_id]);
+    delete this.state.handsUpTimerMap[msg.data.room_join_id];
+  }
+
+  //用户拒绝上麦邀请
+  _handleUserRejectConnect(msg) {
+    this.$emit('vrtc_connect_invite_refused', msg);
+  }
+
+  //互动连麦断开成功 todo 视图需要改造
+  _handleSuccessDisconnect(msg) {
+    const {watchInitData = {}} = useRoomBaseServer().state;
+    const {join_info = {}} = watchInitData;
+    const userId = join_info.third_party_user_id;
+
+    this._changeUserStatus(msg.data.target_id, this.state.onlineUsers, {is_speak: 0, is_apply: 0});
+
+    if (msg.data.target_id == userId) {
+      this.$emit('vrtc_disconnect_success', msg);
+      return;
+    }
+
+    if (this.state.applyUsers.length > 0) {
+      const deleteIndex = this.state.applyUsers.findIndex(item => item.account_id == msg.data.target_id);
+      deleteIndex !== -1 && (this.state.applyUsers.splice(deleteIndex, 1));
+    }
+    this.$emit('vrtc_disconnect_success', msg);
+  }
+
+  //互动设置主讲人
+  _handleChangeSpeaker(msg) {
+    console.log(msg, '设置主讲人------------');
+  }
+
+  //设备检测
+  _handleDeviceCheck(msg) {
+    const {member_info = {}} = msg.data;
+    this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
+    // if (![2, '2'].includes(msg.data.device_type)) {
+    //   this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
+    // }
+    // if (![0, '0'].includes(msg.data.device_status)) {
+    //   this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
+    // }
+  }
+
+  //处理踢出人员
+  _handleKicked(msg) {
+    this._deleteUser(msg.accountId, this.state.onlineUsers);
+    this._deleteUser(msg.accountId, this.state.applyUsers);
+    this.$emit(msg.type, msg);
+    this.getLimitUserList();
+  }
+
+  //用户主动结束演示
+  _handleUserEndPresentation(msg) {
+    console.log(msg, '用户主动结束了演示---------');
+  }
+
+  //主房间人员变动
+  _handleMainRoomJoinChange(msg) {
+    const {clientType = '', watchInitData = {}} = useRoomBaseServer().state;
+    const {join_info = {}} = watchInitData;
+    const userId = join_info.third_party_user_id;
+    const isLive = clientType === 'send';
+    const isInGroup = useGroupServer().state.groupInitData.isInGroup;
+    //必须在主房间
+    if (!isInGroup) return;
+
+    if (isLive) {
+      this.state.totalNum = msg.uv - useGroupServer().state.groupedUserList.length;
+      this.state.totalNum = this.state.totalNum >= 0 ? this.state.totalNum : 0;
+      // 如果sender_id==自己
+      if (msg.sender_id == userId) {
+        this.state.totalNum++;
+      }
+    }
+
+    if (msg.data.isJoinMainRoom) {
+      const flag = this.state.onlineUsers.find(item => item.account_id == msg.sender_id);
+      if (flag) return false;
+      this.state.onlineUsers.push({
+        nickname: msg.data.nickname,
+        is_banned: msg.data.isBanned,
+        account_id: msg.data.accountId,
+        role_name: msg.data.role_name == 20 ? 2 : msg.data.role_name,
+        device_type: msg.data.device_type,
+        is_apply: 0
+      });
+    } else {
+      this.state.onlineUsers.forEach((item, index) => {
+        if (item.account_id === msg.data.accountId) {
+          this.state.onlineUsers.splice(index, 1);
+        }
+      });
+    }
+
+  }
+
+  //演示权限变更
+  _handlePresentationPermissionChange(msg) {
+    this._changeUserStatus(msg.sender_id, this.state.onlineUsers, {is_speak: 1});
+  }
+
+  //下麦成功
+  _handleRoomDisconnectSuccess(msg) {
+    console.log(msg, '下麦成功--------------');
+  }
+
+
+  //todo 临时放这里，都迁移好了测试无误放utils里
+  uniqBy(list = [], uniqKey = '') {
+    const mapObj = new Map();
+    return list.filter(item => !mapObj.has(item[uniqKey]) && mapObj.set(item[uniqKey], 1));
+  }
+
+  //更新人员的一些属性
+  _changeUserStatus(accountId = '', list = [], obj = {}) {
+    console.log('更改成员属性', accountId, list, obj);
+    const item = list.find(item => item.account_id === accountId);
+    if (!item) {
+      return;
+    }
+    Object.assign(item || {}, obj);
+    console.log(this.onlineUsers, '更改后的成员列表');
   }
 
   //查找用户在数组里的索引号
@@ -353,25 +592,22 @@ class MemberServer extends BaseServer {
   }
 
   //获取受限人员列表
-  async getLimitUserList(params = {}) {
-    const _this = MemberServer.instance;
+  async getLimitUserList() {
+    const {watchInitData = {}} = useRoomBaseServer().state;
+    const {interact = {}} = watchInitData;
+    const roomId = interact.room_id;
     const data = {
-      room_id: _this.roomId,
+      room_id: roomId,
       pos: 0,
       limit: 100
     };
-    let requestParams = Object.assign(data, params);
     try {
-      const bannedList = await _this.getMutedUserList(requestParams);
-      const kickedList = _this.state.isInGroup
-        ? {data: {list: []}}
-        : await _this.getKickedUserList(requestParams);
-      const list = bannedList.data.list.concat(kickedList.data.list);
-      const hash = {};
-      _this.state.limitedUsers = list.reduce((preVal, curVal) => {
-        !hash[curVal.account_id] && (hash[curVal.account_id] = true && preVal.push(curVal));
-        return preVal;
-      }, []);
+      let bannedList = await this.getMutedUserList(data);
+      let kickedList = useGroupServer().state.groupInitData.isInGroup ? {data: {list: []}} : await this.getKickedUserList(data);
+      bannedList = bannedList?.data?.list || [];
+      kickedList = kickedList?.data?.list || [];
+      const list = bannedList.concat(kickedList);
+      this.state.limitedUsers = this.uniqBy(list, 'account_id');
     } catch (error) {
       console.error('获取受限人员列表接口错误', error);
     }

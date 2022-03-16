@@ -126,6 +126,12 @@ class StandardGroupServer extends BaseServer {
         `${msg.data.type ? 'type:' : 'event_type'}:${msg.data.type || msg.data.event_type}`
       );
       switch (msg.data.event_type || msg.data.type) {
+        // 直播结束
+        case 'live_over':
+          this.state.panelShow = false
+          this.state.waitingUserList = [];
+          this.state.groupedUserList = [];
+          break;
         //【分组创建/新增完成】
         case 'group_room_create':
           this.msgdoForGroupRoomCreate(msg);
@@ -205,16 +211,57 @@ class StandardGroupServer extends BaseServer {
       // 加入房间
       console.log('[group] domain 加入房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
-        // 处理主持人、助理回归
-        this.handleGroupLeaderBack(msg)
+        if (msg.context.groupInitData.group_id) {
+          this.state.groupUserList.forEach((item, index) => {
+            if (item.id == msg.context.groupInitData.group_id) {
+              // 没有再添加
+              const obj = item.group_joins.find(item => item.account_id == msg.sender_id);
+              if (!obj) {
+                item.group_joins.push({
+                  account_id: msg.sender_id,
+                  ...msg.context,
+                  ...msg.context.groupInitData,
+                  nick_name: msg.context.nick_name
+                });
+              }
+            }
+          });
+        } else {
+          if (msg.context.role_name != 2) {
+            return;
+          }
+          this.state.waitingUserList.push({
+            account_id: msg.sender_id,
+            ...msg.context
+          });
+          console.log({
+            account_id: msg.sender_id,
+            ...msg.context
+          }, '上线人员信息');
+        }
+        this.handleGroupLeaderBack(msg) // 处理组长回归
       }
     });
     useMsgServer().$onMsg('LEFT', msg => {
       // 离开房间
       console.log('[group] domain 离开房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
-        // 处理主持人、助理离开
-        this.handleGroupLeaderLeave(msg)
+        this.state.groupedUserList.forEach((item, index) => {
+          if (item.group_joins.length != 0) {
+            item.group_joins.forEach((ITEM, ind) => {
+              if (msg.sender_id == ITEM.account_id) {
+                item.group_joins.splice(ind, 1);
+              }
+            });
+          }
+        });
+        this.state.waitingUserList.forEach((item, index) => {
+          if (item.account_id == msg.sender_id) {
+            this.state.waitingUserList.splice(index, 1);
+          }
+        });
+
+        this.handleGroupLeaderLeave(msg) // 处理组长离开
       }
     });
   }
@@ -367,6 +414,8 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] domain group_switch_end', msg);
     // 设置开始为未讨论状态
     roomBaseServer.setInavToolStatus('is_open_switch', 0);
+    // 主持人是否在小组内
+    roomBaseServer.setInavToolStatus('is_host_in_group', 0);
     // 重置分配人员列表
     this.state.waitingUserList = [];
     this.state.groupedUserList = [];

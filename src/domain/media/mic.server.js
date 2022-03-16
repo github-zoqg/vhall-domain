@@ -159,6 +159,7 @@ class MicServer extends BaseServer {
             video: msg.data.vrtc_video_status == 'on' ? 1 : 0
           }
 
+          // 主持人是先推流后收到上麦成功消息，此时接受到消息，需要把streamId合并
           if (useInteractiveServer().interactiveInstance) {
             const streams = useInteractiveServer().getRoomStreams()
             const stream = streams.find(item => item.accountId == msg.data.room_join_id)
