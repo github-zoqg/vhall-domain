@@ -48,6 +48,7 @@ class MemberServer extends BaseServer {
   //监听msgServer通知
   listenEvents() {
     const _this = this;
+    const groupServer = useGroupServer();
     //加入房间消息
     useMsgServer().$onMsg('JOIN', msg => {
       this._handleUserJoinRoom(msg);
@@ -73,8 +74,23 @@ class MemberServer extends BaseServer {
       const type = msg.data.event_type || msg.data.type || '';
       switch (type) {
         case 'disable':
+          _this._changeUserStatus(msg.data.target_id, _this.state.onlineUsers, {is_banned: 1});
+          _this._changeUserStatus(msg.data.target_id, _this.state.limitedUsers, {is_banned: 1});
+          _this._changeUserStatus(msg.data.target_id, _this.state.applyUsers, {is_banned: 1});
+          // 禁言并且是举手列表
+          if (_this.state.tabIndex === 2) {
+            _this._deleteUser(msg.data.target_id, _this.state.applyUsers);
+          }
           break;
         case 'permit':
+          _this._changeUserStatus(msg.data.target_id, _this.state.onlineUsers, {is_banned: 0});
+          _this._changeUserStatus(msg.data.target_id, _this.state.limitedUsers, {is_banned: 0});
+          _this._changeUserStatus(msg.data.target_id, _this.state.applyUsers, {is_banned: 0});
+          _this.state.limitedUsers.forEach((item, index) => {
+            if (item.account_id == msg.data.target_id) {
+              _this.state.limitedUsers.splice(index, 1);
+            }
+          });
           break;
         default:
           break;
@@ -138,7 +154,7 @@ class MemberServer extends BaseServer {
           break;
         case 'room_vrtc_disconnect_success':
           //下麦成功
-          !isLive && _this._handleRoomDisconnectSuccess(temp);
+          !isLive && _this._handleRoomDisconnectSuccess(msg);
           break;
         case 'group_switch_start':
           //视图处理
@@ -150,6 +166,28 @@ class MemberServer extends BaseServer {
           break;
       }
     });
+
+    //分组事件监听
+
+    //为上线的分组成员添加身份
+    groupServer.$on('GROUP_JOIN_INFO', msg => {
+      _this._handleSetUserJoinInfo(msg);
+    });
+
+    //切换频道，视图处理
+    //结束讨论，视图处理
+
+    // 踢出小组
+    groupServer.$on('ROOM_GROUP_KICKOUT', msg => {
+      _this._handleGroupKicked(msg);
+    });
+
+    //解散分组,视图处理
+    //切换组长(组长变更)，视图处理
+    //主持人进入退出小组 消息监听 ，视图处理
+    //频道变更-开始讨论，视图处理
+
+
   }
 
   //处理用户加入房间
@@ -520,6 +558,53 @@ class MemberServer extends BaseServer {
     console.log(msg, '下麦成功--------------');
   }
 
+  //处理分组人员信息变更
+  _handleSetUserJoinInfo(msg) {
+    const {watchInitData = {}} = useRoomBaseServer().state;
+    const {join_info = {}} = watchInitData;
+    const userId = join_info.third_party_user_id;
+    const isInGroup = useGroupServer().state.groupInitData.isInGroup;
+
+    // 是自己 && 不在分组中
+    if (msg.sender_id == userId && !isInGroup) {
+      return;
+    }
+    // 是否已添加
+    const flag = this.state.onlineUsers.find(item => item.account_id == msg.sender_id);
+    // 从上麦人员列表中获取人员是否在上麦
+    const speakIndex = this._getUserIndex(msg.sender_id, useMicServer().state.speakerList);
+    if (flag) {
+      this.state.onlineUsers.forEach(item => {
+        if (item.account_id == msg.sender_id) {
+          Object.assign(item, {
+            account_id: msg.sender_id,
+            is_banned: msg.data.is_banned,
+            role_name: msg.data.join_role,
+            is_speak: speakIndex >= 0 ? 1 : 0,
+            nickname: msg.data.nickname,
+            is_apply: 0
+          });
+        }
+      });
+      this.state.onlineUsers = this._sortUsers(this.state.onlineUsers);
+    } else {
+      const user = {
+        account_id: msg.sender_id,
+        is_banned: msg.data.is_banned,
+        role_name: msg.data.join_role,
+        is_speak: speakIndex >= 0 ? 1 : 0,
+        nickname: msg.data.nickname,
+        is_apply: 0
+      };
+      this.state.onlineUsers.push(user);
+      this.state.onlineUsers = this._sortUsers(this.state.onlineUsers);
+    }
+
+  }
+
+  //处理分组内踢出
+  _handleGroupKicked(msg) {
+  }
 
   //todo 临时放这里，都迁移好了测试无误放utils里
   uniqBy(list = [], uniqKey = '') {

@@ -19,12 +19,13 @@ class CanvasStreamServer {
     };
   }
 
+  // 初始化canvas相关Dom
   init(options) {
-    // dom
     this.canvasDom = options.canvasDom;
     this.canvasImgDom = options.canvasImgDom;
   }
 
+  // 设置canvas的大小
   setCanvasSize(options) {
     options.width && (this.state.canvasSize.width = options.width);
     options.height && (this.state.canvasSize.height = options.height);

@@ -209,23 +209,23 @@ class StandardGroupServer extends BaseServer {
 
     useMsgServer().$onMsg('JOIN', msg => {
       // 加入房间
-      console.log('[group] domain 加入房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
         if (msg.context.groupInitData.group_id) {
-          this.state.groupUserList.forEach((item, index) => {
+          for (let item of this.state.groupedUserList) {
             if (item.id == msg.context.groupInitData.group_id) {
-              // 没有再添加
               const obj = item.group_joins.find(item => item.account_id == msg.sender_id);
               if (!obj) {
+                // 没有再添加
                 item.group_joins.push({
                   account_id: msg.sender_id,
                   ...msg.context,
                   ...msg.context.groupInitData,
-                  nick_name: msg.context.nick_name
+                  nick_name: msg.context.nickname
                 });
               }
+              break;
             }
-          });
+          }
         } else {
           if (msg.context.role_name != 2) {
             return;
@@ -336,6 +336,11 @@ class StandardGroupServer extends BaseServer {
 
       // 处理文档channel切换逻辑
       await useDocServer().groupReInitDocProcess();
+    }
+
+    // 不在小组中，更新主房间状态（如果主持人在小组内被解散，在主房间的观众收到此条消息需要更新状态）
+    if (!this.state.groupInitData.isInGroup) {
+      this.updateMainRoomInavToolStatus()
     }
 
     if (useRoomBaseServer().state.clientType === 'send') {
@@ -494,7 +499,7 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] groupJoinChangeInfo:', groupJoinChangeInfo);
 
     // 没有换组的人，需要更新自己所在房间的信息
-    if ((!this.state.groupInitData.group_id || msg.data.group_ids.includes(this.state.groupInitData.group_id)) && !groupJoinChangeInfo.isNeedCare) {
+    if ((!this.state.groupInitData.group_id || msg.data.group_ids.includes(Number(this.state.groupInitData.group_id))) && !groupJoinChangeInfo.isNeedCare) {
       // 如果变更的小组中包含主房间，需要更新主房间的上麦列表
       if (msg.data.group_ids.includes(0)) {
         await this.updateMainRoomInavToolStatus()
