@@ -35,8 +35,11 @@ export default class StandardDocServer extends AbstractDocServer {
       docLoadComplete: true, // 文档是否加载完成
 
       thumbnailList: [], // 缩略图列表
-      switchStatus: false // 直播中观众是否可见
+      switchStatus: false, // 直播中观众是否可见
+
+      isVodUpdateFirst: true //是否回放update消息第一次执行
     };
+
 
     // 由于文档对象的创建需要指定具体的宽高，而宽高需要根据具体dom计算，所以需要在文档组件初始化时初始化该方法
     // 获取文档宽高的方法
@@ -315,7 +318,13 @@ export default class StandardDocServer extends AbstractDocServer {
       });
 
       this.on(VHDocSDK.Event.VOD_TIME_UPDATE, data => {
-        // console.log('[doc] dispatch_doc_vod_time_update:', data);
+        // console.log('[doc] VOD_TIME_UPDATE:', data);
+        let isChange = this.state.switchStatus !== data.watchOpen;
+        if (this.state.isVodUpdateFirst) {
+          this.state.isVodUpdateFirst = false;
+          isChange = true; //首次 isChange强制为true
+        }
+        // 是否文档可见
         this.state.switchStatus = data.watchOpen;
         if (data.activeId) {
           this.selectContainer(data.activeId, !this.hasDocPermission());
@@ -323,7 +332,7 @@ export default class StandardDocServer extends AbstractDocServer {
         } else {
           this.state.currentCid = '';
         }
-        this.$emit('dispatch_doc_vod_time_update', data);
+        this.$emit('dispatch_doc_vod_time_update', { isChange });
       });
     }
   }
