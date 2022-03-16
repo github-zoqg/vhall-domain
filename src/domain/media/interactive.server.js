@@ -113,7 +113,7 @@ class InteractiveServer extends BaseServer {
               stream.audioMuted = _muteObj.audioMuted
               stream.videoMuted = _muteObj.videoMuted
             }
-            return stream.streamType === 2;
+            return stream.streamType <= 2;
           });
           console.log('[interactiveServer] streams----', streams)
           streams.forEach(stream => {
