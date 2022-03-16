@@ -367,6 +367,8 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] domain group_switch_end', msg);
     // 设置开始为未讨论状态
     roomBaseServer.setInavToolStatus('is_open_switch', 0);
+    // 主持人是否在小组内
+    roomBaseServer.setInavToolStatus('is_host_in_group', 0);
     // 重置分配人员列表
     this.state.waitingUserList = [];
     this.state.groupedUserList = [];
