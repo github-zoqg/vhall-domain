@@ -126,6 +126,12 @@ class StandardGroupServer extends BaseServer {
         `${msg.data.type ? 'type:' : 'event_type'}:${msg.data.type || msg.data.event_type}`
       );
       switch (msg.data.event_type || msg.data.type) {
+        // 直播结束
+        case 'live_over':
+          this.state.panelShow = false
+          this.state.waitingUserList = [];
+          this.state.groupedUserList = [];
+          break;
         //【分组创建/新增完成】
         case 'group_room_create':
           this.msgdoForGroupRoomCreate(msg);
@@ -205,16 +211,20 @@ class StandardGroupServer extends BaseServer {
       // 加入房间
       console.log('[group] domain 加入房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
-        // 处理主持人、助理回归
-        this.handleGroupLeaderBack(msg)
+        this.getWaitingUserList();
+        this.getGroupedUserList();
+
+        this.handleGroupLeaderBack(msg) // 处理组长回归
       }
     });
     useMsgServer().$onMsg('LEFT', msg => {
       // 离开房间
       console.log('[group] domain 离开房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
-        // 处理主持人、助理离开
-        this.handleGroupLeaderLeave(msg)
+        this.getWaitingUserList();
+        this.getGroupedUserList();
+
+        this.handleGroupLeaderLeave(msg) // 处理组长离开
       }
     });
   }
