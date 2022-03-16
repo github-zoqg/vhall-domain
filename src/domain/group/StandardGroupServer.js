@@ -965,8 +965,8 @@ class StandardGroupServer extends BaseServer {
   }
 
   // 更新主房间互动工具的状态
-  async() {
-    if (useRoomBaseServer().staupdateMainRoomInavToolStatuste.watchInitData.join_info.role_name != 2) {
+  async updateMainRoomInavToolStatus() {
+    if (useRoomBaseServer().state.watchInitData.join_info.role_name != 2) {
       await useRoomBaseServer().getInavToolStatus();
     } else {
       await useRoomBaseServer().getCommonConfig()
