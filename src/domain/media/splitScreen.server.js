@@ -1,7 +1,5 @@
 import useInteractiveServer from './interactive.server';
-import useRoomBaseServer from '../room/roombase.server';
 import BaseServer from '../common/base.server';
-import { merge } from '../../utils';
 class SplitScreenServer extends BaseServer {
   constructor() {
     super();
@@ -49,10 +47,6 @@ class SplitScreenServer extends BaseServer {
         type: 'shadow_connect',
         source_type: 'split_screen'
       }, '*')
-      // 启动分屏页面 ping 主页面定时器
-      // this._heartbeatInterval = setInterval(() => {
-      //   this.hostWin.postMessage('shadow_live', '*')
-      // }, 50)
       // 分屏页面消息监听
       this.initSplitscreenPostMsgEvent()
       return Promise.resolve()
@@ -121,14 +115,6 @@ class SplitScreenServer extends BaseServer {
           // 派发分屏页面关闭消息
           this.$emit('SPLIT_SHADOW_CLOSE')
           break
-        // 分屏页面通知主页面更新本地流信息
-        // case 'split_screen_local_stream_update':
-        //   interactiveServer.state.localStream = e.data.localStream
-        //   break
-        // 分屏页面通知主页面更新上麦流列表信息
-        // case 'split_screen_remote_streams_update':
-        //   interactiveServer.state.remoteStreams = e.data.remoteStreams
-        //   break
         case 'custom_msg':
           this.$emit('SPLIT_CUSTOM_MESSAGE', e)
           break
@@ -171,27 +157,6 @@ class SplitScreenServer extends BaseServer {
           clearInterval(this._heartbeatInterval);
           // 主页面回来了，关闭延时器
           clearTimeout(this._shadowAutoCloseTimeout)
-
-          // 通知主页面本地流信息更新(开启分屏之后,主页面将不能自主更新本地流信息)
-          // this.hostWin.postMessage({
-          //   type: 'split_screen_local_stream_update',
-          //   source_type: 'split_screen',
-          //   localStream: interactiveServer.state.localStream
-          // }, '*')
-
-          // 通知主页面上麦流列表信息更新(开启分屏之后,主页面将不能自主更新上麦流列表信息)
-          // const remoteStreamsCopy = [...interactiveServer.state.remoteStreams]
-          // // 由于 stream 对象太大了,postMessage发不过去,而且这个东西没用,所以删掉
-          // remoteStreamsCopy.forEach(item => {
-          //   if (item.stream) {
-          //     delete item.stream
-          //   }
-          // })
-          // this.hostWin.postMessage({
-          //   type: 'split_screen_remote_streams_update',
-          //   source_type: 'split_screen',
-          //   remoteStreams: remoteStreamsCopy
-          // }, '*')
           break;
         // 主页面点击关闭分屏按钮,通知分屏页面处理关闭分屏的逻辑
         case 'shadow_stop':
@@ -233,36 +198,6 @@ class SplitScreenServer extends BaseServer {
         source_type: 'split_screen'
       }, '*')
     }
-
-    // 流信息更新事件注册
-    // const interactiveServer = useInteractiveServer()
-    // const { INTERACTIVE_LOCAL_STREAM_UPDATE, INTERACTIVE_REMOTE_STREAMS_UPDATE } = interactiveServer.EVENT_TYPE
-    // 监听本地流信息更新事件,通知主页面本地流信息更新(开启分屏之后,主页面将不能自主更新本地流信息)
-    // interactiveServer.$on(INTERACTIVE_LOCAL_STREAM_UPDATE, localStream => {
-    //   this.hostWin.postMessage({
-    //     type: 'split_screen_local_stream_update',
-    //     source_type: 'split_screen',
-    //     localStream
-    //   }, '*')
-    // })
-
-    // 监听上麦流列表信息更新事件,通知主页面上麦流列表信息更新(开启分屏之后,主页面将不能自主更新上麦流列表信息)
-    // interactiveServer.$on(INTERACTIVE_REMOTE_STREAMS_UPDATE, remoteStreams => {
-    //   console.log('-----splitScreen--------远端流列表更新----', remoteStreams)
-    //   const remoteStreamsCopy = [...remoteStreams]
-    //   // 由于 stream 对象太大了,postMessage发不过去,而且这个东西没用,所以删掉
-    //   remoteStreamsCopy.forEach(item => {
-    //     if (item.stream) {
-    //       delete item.stream
-    //     }
-    //   })
-    //   this.hostWin.postMessage({
-    //     type: 'split_screen_remote_streams_update',
-    //     source_type: 'split_screen',
-    //     remoteStreams: remoteStreamsCopy
-    //   }, '*')
-    // })
-
   }
 
   /**

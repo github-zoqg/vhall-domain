@@ -499,7 +499,7 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] groupJoinChangeInfo:', groupJoinChangeInfo);
 
     // 没有换组的人，需要更新自己所在房间的信息
-    if ((!this.state.groupInitData.group_id || msg.data.group_ids.includes(this.state.groupInitData.group_id)) && !groupJoinChangeInfo.isNeedCare) {
+    if ((!this.state.groupInitData.group_id || msg.data.group_ids.includes(Number(this.state.groupInitData.group_id))) && !groupJoinChangeInfo.isNeedCare) {
       // 如果变更的小组中包含主房间，需要更新主房间的上麦列表
       if (msg.data.group_ids.includes(0)) {
         await this.updateMainRoomInavToolStatus()
