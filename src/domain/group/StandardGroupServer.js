@@ -338,6 +338,11 @@ class StandardGroupServer extends BaseServer {
       await useDocServer().groupReInitDocProcess();
     }
 
+    // 不在小组中，更新主房间状态（如果主持人在小组内被解散，在主房间的观众收到此条消息需要更新状态）
+    if (!this.state.groupInitData.isInGroup) {
+      this.updateMainRoomInavToolStatus()
+    }
+
     if (useRoomBaseServer().state.clientType === 'send') {
       // 如果是发起端，还需要更新分组讨论列表数据
       this.getWaitingUserList();
@@ -960,8 +965,8 @@ class StandardGroupServer extends BaseServer {
   }
 
   // 更新主房间互动工具的状态
-  async updateMainRoomInavToolStatus() {
-    if (useRoomBaseServer().state.watchInitData.join_info.role_name != 2) {
+  async() {
+    if (useRoomBaseServer().staupdateMainRoomInavToolStatuste.watchInitData.join_info.role_name != 2) {
       await useRoomBaseServer().getInavToolStatus();
     } else {
       await useRoomBaseServer().getCommonConfig()
