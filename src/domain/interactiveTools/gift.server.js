@@ -39,9 +39,6 @@ class giftsServer extends BaseServer {
 
       const { type = '' } = temp.data || {};
       switch (type) {
-        // case 'timer_start': // 计时器开始
-        //   this.$emit('timer_start', temp);
-        //   break;
         case 'gift_send_success': //接收送礼物消息
           this.$emit('gift_send_success', temp);
           break;
@@ -50,7 +47,7 @@ class giftsServer extends BaseServer {
       }
     });
     // 自定义消息
-    useMsgServer().$onMsg('CUSTOM_MSG', rawMsg => {
+    useMsgServer().$onMsg('CHAT', rawMsg => {
       let temp = Object.assign({}, rawMsg);
 
       if (typeof temp.data !== 'object') {
@@ -58,11 +55,11 @@ class giftsServer extends BaseServer {
         temp.context = JSON.parse(temp.context);
       }
       console.log(temp, '原始消息');
-      const { type = '' } = temp.data || {};
-      switch (type) {
+      const { event_type = '' } = temp.data || {};
+      switch (event_type) {
         // 计时器暂停
-        case 'timer_pause':
-          this.$emit('timer_pause', temp);
+        case 'free_gift_send':
+          this.$emit('gift_send_success', temp);
           break;
         default:
           break;
