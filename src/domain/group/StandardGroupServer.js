@@ -209,23 +209,23 @@ class StandardGroupServer extends BaseServer {
 
     useMsgServer().$onMsg('JOIN', msg => {
       // 加入房间
-      console.log('[group] domain 加入房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
         if (msg.context.groupInitData.group_id) {
-          this.state.groupUserList.forEach((item, index) => {
+          for (let item of this.state.groupedUserList) {
             if (item.id == msg.context.groupInitData.group_id) {
-              // 没有再添加
               const obj = item.group_joins.find(item => item.account_id == msg.sender_id);
               if (!obj) {
+                // 没有再添加
                 item.group_joins.push({
                   account_id: msg.sender_id,
                   ...msg.context,
                   ...msg.context.groupInitData,
-                  nick_name: msg.context.nick_name
+                  nick_name: msg.context.nickname
                 });
               }
+              break;
             }
-          });
+          }
         } else {
           if (msg.context.role_name != 2) {
             return;
