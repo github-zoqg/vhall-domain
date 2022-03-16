@@ -5,7 +5,7 @@
 
 class ZIndexServer {
   constructor() {
-    this._zindexList = [18, 21, 22, 23, 27, 28, 30, 32]
+    this._zindexList = [1018, 1021, 1022, 1023, 1027, 1028, 1030, 1032]
     this._typeList = [
       'giftPay', // 礼物支付弹窗
       'lottery', // 抽奖弹窗
