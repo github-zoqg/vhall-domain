@@ -211,9 +211,34 @@ class StandardGroupServer extends BaseServer {
       // 加入房间
       console.log('[group] domain 加入房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
-        this.getWaitingUserList();
-        this.getGroupedUserList();
-
+        if (msg.context.groupInitData.group_id) {
+          this.state.groupUserList.forEach((item, index) => {
+            if (item.id == msg.context.groupInitData.group_id) {
+              // 没有再添加
+              const obj = item.group_joins.find(item => item.account_id == msg.sender_id);
+              if (!obj) {
+                item.group_joins.push({
+                  account_id: msg.sender_id,
+                  ...msg.context,
+                  ...msg.context.groupInitData,
+                  nick_name: msg.context.nick_name
+                });
+              }
+            }
+          });
+        } else {
+          if (msg.context.role_name != 2) {
+            return;
+          }
+          this.state.waitingUserList.push({
+            account_id: msg.sender_id,
+            ...msg.context
+          });
+          console.log({
+            account_id: msg.sender_id,
+            ...msg.context
+          }, '上线人员信息');
+        }
         this.handleGroupLeaderBack(msg) // 处理组长回归
       }
     });
@@ -221,8 +246,20 @@ class StandardGroupServer extends BaseServer {
       // 离开房间
       console.log('[group] domain 离开房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
-        this.getWaitingUserList();
-        this.getGroupedUserList();
+        this.state.groupedUserList.forEach((item, index) => {
+          if (item.group_joins.length != 0) {
+            item.group_joins.forEach((ITEM, ind) => {
+              if (msg.sender_id == ITEM.account_id) {
+                item.group_joins.splice(ind, 1);
+              }
+            });
+          }
+        });
+        this.state.waitingUserList.forEach((item, index) => {
+          if (item.account_id == msg.sender_id) {
+            this.state.waitingUserList.splice(index, 1);
+          }
+        });
 
         this.handleGroupLeaderLeave(msg) // 处理组长离开
       }
