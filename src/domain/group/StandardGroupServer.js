@@ -724,7 +724,7 @@ class StandardGroupServer extends BaseServer {
     }
     useDocServer()._setDocPermisson();
 
-    this.$emit(this.EVENT_TYPE.VRTC_PRESENTATION_SCREEN_SET, msg, { isOldPresenter, isOldLeader });
+    this.$emit(this.EVENT_TYPE.VRTC_PRESENTATION_SCREEN_SET, { msg, isOldPresenter, isOldLeader });
   }
 
   // 同意邀请演示成功消息
