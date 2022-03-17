@@ -336,6 +336,8 @@ class StandardGroupServer extends BaseServer {
 
       // 处理文档channel切换逻辑
       await useDocServer().groupReInitDocProcess();
+
+      this.$emit(this.EVENT_TYPE.GROUP_DISBAND, msg);
     }
 
     // 不在小组中，更新主房间状态（如果主持人在小组内被解散，在主房间的观众收到此条消息需要更新状态）
@@ -348,7 +350,6 @@ class StandardGroupServer extends BaseServer {
       this.getWaitingUserList();
       this.getGroupedUserList();
     }
-    this.$emit(this.EVENT_TYPE.GROUP_DISBAND, msg);
   }
 
   // 请求协助,主持端收到请求协助消息，会在对应的小组面板头部显示“请求协助中...”文字
