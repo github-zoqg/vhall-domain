@@ -119,7 +119,7 @@ class ChatServer extends BaseServer {
           const _index = this.state.chatList.findIndex(chatMsg => {
             return chatMsg.msgId === rawMsg.data.msg_id;
           });
-          this.state.chatList.splice(_index, 1);
+          _index > -1 && this.state.chatList.splice(_index, 1);
         }
       }
       if (rawMsg.data.type === 'room_kickout' && this.isMyMsg(rawMsg)) {
@@ -369,7 +369,7 @@ class ChatServer extends BaseServer {
     const _index = this.state.chatList.findIndex(chatMsg => {
       return chatMsg.msgId === params.msg_id;
     });
-    this.state.chatList.splice(_index, 1);
+    _index > -1 && this.state.chatList.splice(_index, 1);
     return iMRequest.chat.deleteMessage(params);
   }
 
