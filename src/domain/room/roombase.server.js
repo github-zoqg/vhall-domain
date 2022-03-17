@@ -140,6 +140,8 @@ class RoomBaseServer extends BaseServer {
 
       } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
         this.state.watchInitData.webinar.type = 3;
+        // 结束直播时，将多语言缓存清除
+        localStorage.removeItem('lang')
         // 结束直播时，将第三方推流标识关闭
         if (this.state.isThirdStream) {
           this.state.isThirdStream = false;

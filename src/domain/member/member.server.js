@@ -47,7 +47,6 @@ class MemberServer extends BaseServer {
 
   //监听msgServer通知
   listenEvents() {
-    const _this = this;
     const groupServer = useGroupServer();
     //加入房间消息
     useMsgServer().$onMsg('JOIN', msg => {
@@ -74,21 +73,21 @@ class MemberServer extends BaseServer {
       const type = msg.data.event_type || msg.data.type || '';
       switch (type) {
         case 'disable':
-          _this._changeUserStatus(msg.data.target_id, _this.state.onlineUsers, {is_banned: 1});
-          _this._changeUserStatus(msg.data.target_id, _this.state.limitedUsers, {is_banned: 1});
-          _this._changeUserStatus(msg.data.target_id, _this.state.applyUsers, {is_banned: 1});
+          this._changeUserStatus(msg.data.target_id, this.state.onlineUsers, {is_banned: 1});
+          this._changeUserStatus(msg.data.target_id, this.state.limitedUsers, {is_banned: 1});
+          this._changeUserStatus(msg.data.target_id, this.state.applyUsers, {is_banned: 1});
           // 禁言并且是举手列表
-          if (_this.state.tabIndex === 2) {
-            _this._deleteUser(msg.data.target_id, _this.state.applyUsers);
+          if (this.state.tabIndex === 2) {
+            this._deleteUser(msg.data.target_id, this.state.applyUsers);
           }
           break;
         case 'permit':
-          _this._changeUserStatus(msg.data.target_id, _this.state.onlineUsers, {is_banned: 0});
-          _this._changeUserStatus(msg.data.target_id, _this.state.limitedUsers, {is_banned: 0});
-          _this._changeUserStatus(msg.data.target_id, _this.state.applyUsers, {is_banned: 0});
-          _this.state.limitedUsers.forEach((item, index) => {
+          this._changeUserStatus(msg.data.target_id, this.state.onlineUsers, {is_banned: 0});
+          this._changeUserStatus(msg.data.target_id, this.state.limitedUsers, {is_banned: 0});
+          this._changeUserStatus(msg.data.target_id, this.state.applyUsers, {is_banned: 0});
+          this.state.limitedUsers.forEach((item, index) => {
             if (item.account_id == msg.data.target_id) {
-              _this.state.limitedUsers.splice(index, 1);
+              this.state.limitedUsers.splice(index, 1);
             }
           });
           break;
@@ -99,7 +98,7 @@ class MemberServer extends BaseServer {
 
     //房间消息监听
     useMsgServer().$onMsg('ROOM_MSG', rawMsg => {
-      const {clientType = '', watchInitData = {}} = useRoomBaseServer().state;
+      const {clientType = ''} = useRoomBaseServer().state;
       const isLive = clientType === 'send';
       let msg = Object.assign({}, rawMsg);
       if (Object.prototype.toString.call(msg.data) !== '[object Object]') {
@@ -110,38 +109,38 @@ class MemberServer extends BaseServer {
       switch (type) {
         case 'vrtc_connect_apply':
           //用户申请上麦
-          _this._handleApplyConnect(msg);
+          this._handleApplyConnect(msg);
           break;
         case 'vrtc_connect_apply_cancel':
-          _this._handleCancelApplyConnect(msg);
+          this._handleCancelApplyConnect(msg);
           break;
         case 'vrtc_connect_agree':
-          _this._handleAgreeApplyConnect(msg);
+          this._handleAgreeApplyConnect(msg);
           break;
         case 'vrtc_connect_success':
-          _this._handleSuccessConnect(msg);
+          this._handleSuccessConnect(msg);
           break;
         case 'vrtc_connect_invite_refused':
-          _this._handleUserRejectConnect(msg);
+          this._handleUserRejectConnect(msg);
           break;
         case 'vrtc_disconnect_success':
-          _this._handleSuccessDisconnect(msg);
+          this._handleSuccessDisconnect(msg);
           break;
         case 'vrtc_speaker_switch':
-          _this._handleChangeSpeaker(msg);
+          this._handleChangeSpeaker(msg);
           break;
         case 'vrtc_connect_device_check':
-          _this._handleDeviceCheck(msg);
+          this._handleDeviceCheck(msg);
           break;
         case 'kicked_in_chat':
         case 'room_kickout':
-          _this._handleKicked(msg);
+          this._handleKicked(msg);
           break;
         case 'vrtc_disconnect_presentation_success':
-          _this._handleUserEndPresentation(msg);
+          this._handleUserEndPresentation(msg);
           break;
         case 'main_room_join_change':
-          _this._handleMainRoomJoinChange(msg);
+          this._handleMainRoomJoinChange(msg);
           break;
         case 'changeGroupInitData':
           //视图处理
@@ -150,11 +149,11 @@ class MemberServer extends BaseServer {
           //视图处理
           break;
         case 'vrtc_connect_presentation_success':
-          !isLive && _this._handlePresentationPermissionChange(msg);
+          !isLive && this._handlePresentationPermissionChange(msg);
           break;
         case 'room_vrtc_disconnect_success':
           //下麦成功
-          !isLive && _this._handleRoomDisconnectSuccess(msg);
+          !isLive && this._handleRoomDisconnectSuccess(msg);
           break;
         case 'group_switch_start':
           //视图处理
@@ -171,7 +170,7 @@ class MemberServer extends BaseServer {
 
     //为上线的分组成员添加身份
     groupServer.$on('GROUP_JOIN_INFO', msg => {
-      _this._handleSetUserJoinInfo(msg);
+      this._handleSetUserJoinInfo(msg);
     });
 
     //切换频道，视图处理
@@ -179,7 +178,7 @@ class MemberServer extends BaseServer {
 
     // 踢出小组
     groupServer.$on('ROOM_GROUP_KICKOUT', msg => {
-      _this._handleGroupKicked(msg);
+      this._handleGroupKicked(msg);
     });
 
     //解散分组,视图处理
@@ -198,7 +197,6 @@ class MemberServer extends BaseServer {
     const isLive = clientType === 'send';
     console.log(isLive, 'isLive-------------------');
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
-    const _this = this;
     try {
       const {context} = msg;
       //如果上线的人是自己，不做操作
@@ -206,23 +204,23 @@ class MemberServer extends BaseServer {
         return;
       }
       //找一下当前的在线人员里是否有这个用户
-      const index = _this._getUserIndex(msg.sender_id, _this.state.onlineUsers);
+      const index = this._getUserIndex(msg.sender_id, this.state.onlineUsers);
 
       //如果在列表中，就不
       // 在线人数大于200不再添加到列表里，只能加载更多
       // 隐身模式登录也不加入列表中
-      if ((!isLive && !isInGroup && index >= 0) || (isLive && index >= 0) || _this.state.totalNum > 200 || msg.data.hide) {
+      if ((!isLive && !isInGroup && index >= 0) || (isLive && index >= 0) || this.state.totalNum > 200 || msg.data.hide) {
         return;
       }
 
       // 从上麦人员列表中获取加入房间的人是否上麦
-      const speakIndex = _this._getUserIndex(msg.sender_id, useMicServer().state.speakerList);
+      const speakIndex = this._getUserIndex(msg.sender_id, useMicServer().state.speakerList);
 
       //发起端
       if (isLive) {
         const groupUsersNumber = useGroupServer().state.groupedUserList.length || 0;
         const fixedNum = [1, 2, '1', '2'].includes(useRoomBaseServer().state.interactToolStatus.is_open_switch) ? groupUsersNumber : 0;
-        _this.state.totalNum = isInGroup ? msg.uv : msg.uv - fixedNum;
+        this.state.totalNum = isInGroup ? msg.uv : msg.uv - fixedNum;
         //人员信息基础模板
         let user = {
           account_id: msg.sender_id,
@@ -240,12 +238,12 @@ class MemberServer extends BaseServer {
           user.role_name = context.groupInitData.join_role;
           user.is_banned = isNaN(Number(context.groupInitData.is_banned)) ? 0 : Number(context.groupInitData.is_banned);
         }
-        _this.state.onlineUsers.push(user);
-        _this.state.onlineUsers = _this._sortUsers(_this.state.onlineUsers);
+        this.state.onlineUsers.push(user);
+        this.state.onlineUsers = this._sortUsers(this.state.onlineUsers);
 
         //如果是嘉宾，则视图那边收到监听会发送一个提示消息
         if (msg.context.role_name == 4 && msg.sender_id != userId) {
-          _this.$emit('JOIN', msg);
+          this.$emit('JOIN', msg);
         }
 
         return;
@@ -254,12 +252,12 @@ class MemberServer extends BaseServer {
       //观看端
       if (!isLive) {
         //更新在线人数
-        _this.state.totalNum = msg.uv;
+        this.state.totalNum = msg.uv;
         //观看端，分组内
         if (isInGroup) {
-          const index = _this.state.onlineUsers.find(item => item.account_id == msg.sender_id);
+          const index = this.state.onlineUsers.find(item => item.account_id == msg.sender_id);
           if (index >= 0) {
-            _this.state.onlineUsers.forEach(item => {
+            this.state.onlineUsers.forEach(item => {
               if (item.account_id == msg.sender_id) {
                 Object.assign(item, {
                   avatar: context.avatar,
@@ -271,7 +269,7 @@ class MemberServer extends BaseServer {
                 });
               }
             });
-            _this.state.onlineUsers = _this._sortUsers(_this.state.onlineUsers);
+            this.state.onlineUsers = this._sortUsers(this.state.onlineUsers);
             return;
           }
           if (index === -1) {
@@ -291,8 +289,8 @@ class MemberServer extends BaseServer {
               user.role_name = context.groupInitData.join_role;
               user.is_banned = isNaN(Number(context.groupInitData.is_banned)) ? 0 : Number(context.groupInitData.is_banned);
             }
-            _this.state.onlineUsers.push(user);
-            _this.state.onlineUsers = _this._sortUsers(_this.state.onlineUsers);
+            this.state.onlineUsers.push(user);
+            this.state.onlineUsers = this._sortUsers(this.state.onlineUsers);
           }
           return;
         }
@@ -309,11 +307,11 @@ class MemberServer extends BaseServer {
             is_speak: speakIndex >= 0 ? 1 : 0,
             is_apply: 0
           };
-          _this.state.onlineUsers.push(user);
-          _this.onlineUsers = _this._sortUsers(_this.state.onlineUsers);
+          this.state.onlineUsers.push(user);
+          this.onlineUsers = this._sortUsers(this.state.onlineUsers);
           //如果是嘉宾，则视图那边收到监听会发送一个提示消息
           if (msg.context.role_name == 4 && msg.sender_id != userId) {
-            _this.$emit('JOIN', msg);
+            this.$emit('JOIN', msg);
           }
         }
       }
@@ -328,7 +326,6 @@ class MemberServer extends BaseServer {
     const {clientType = ''} = useRoomBaseServer().state;
     const isLive = clientType === 'send';
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
-    const _this = this;
     // 如果是聊天审核页面不做任何操作
     if (msg.context.isAuthChat) {
       return;
@@ -337,16 +334,16 @@ class MemberServer extends BaseServer {
     const groupUserNum = useGroupServer().state.groupedUserList.length >= 1 ? useGroupServer().state.groupedUserList.length - 1 : 0;
     const fixedNum = ([1, 2, '1', '2'].includes(useRoomBaseServer().state.interactToolStatus.is_open_switch) ? groupUserNum : 0);
     if (isLive) {
-      _this.state.totalNum = isInGroup ? msg.uv : msg.uv - fixedNum;
+      this.state.totalNum = isInGroup ? msg.uv : msg.uv - fixedNum;
     } else {
-      _this.state.totalNum = msg.uv;
+      this.state.totalNum = msg.uv;
     }
-    if (_this.state.totalNum < 0) {
-      _this.state.totalNum = 0;
+    if (this.state.totalNum < 0) {
+      this.state.totalNum = 0;
     }
-    _this._deleteUser(msg.sender_id, _this.state.onlineUsers);
-    _this._deleteUser(msg.sender_id, _this.state.applyUsers);
-    _this.$emit('LEFT', msg);
+    this._deleteUser(msg.sender_id, this.state.onlineUsers);
+    this._deleteUser(msg.sender_id, this.state.applyUsers);
+    this.$emit('LEFT', msg);
   }
 
   //用户申请上麦
@@ -354,7 +351,6 @@ class MemberServer extends BaseServer {
     const {watchInitData = {}} = useRoomBaseServer().state;
     const {join_info = {}} = watchInitData;
     const userId = join_info.third_party_user_id;
-    const _this = this;
     //举手tab的小红点
     if (this.state.tabIndex !== 2) {
       this.state.raiseHandTip = true;
@@ -388,13 +384,13 @@ class MemberServer extends BaseServer {
 
     // 申请30秒后从列表去掉
     this.state.handsUpTimerMap[user.account_id] = setTimeout(() => {
-      _this.state.handsUpTimerMap[user.account_id] && clearTimeout(_this.state.handsUpTimerMap[user.account_id]);
-      delete _this.state.handsUpTimerMap[user.account_id];
-      _this._changeUserStatus(user.account_id, _this.state.onlineUsers, {is_apply: 0});
-      _this.state.applyUsers = _this.state.applyUsers.filter(u => u.account_id !== user.account_id);
-      if (!_this.state.applyUsers.length) {
-        _this.state.raiseHandTip = false;
-        _this.$emit('UPDATE_TAB_TIPS', {visible: false});
+      this.state.handsUpTimerMap[user.account_id] && clearTimeout(this.state.handsUpTimerMap[user.account_id]);
+      delete this.state.handsUpTimerMap[user.account_id];
+      this._changeUserStatus(user.account_id, this.state.onlineUsers, {is_apply: 0});
+      this.state.applyUsers = this.state.applyUsers.filter(u => u.account_id !== user.account_id);
+      if (!this.state.applyUsers.length) {
+        this.state.raiseHandTip = false;
+        this.$emit('UPDATE_TAB_TIPS', {visible: false});
       }
     }, 30000);
 
@@ -434,7 +430,6 @@ class MemberServer extends BaseServer {
     const isLive = clientType === 'send';
     console.log(isLive, 'isLive-------------------');
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
-    const _this = this;
 
     const {member_info = {is_apply: 0, is_speak: 1}} = msg.data;
     this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
@@ -647,33 +642,39 @@ class MemberServer extends BaseServer {
 
   //请求全部在线人员列表
   getOnlineUserList(params) {
-    const _this = MemberServer.instance;
-    return imRequest.chat.getOnlineList(params).then(res => {
-      if (res && [200, '200'].includes(res.code)) {
-
-        _this.state.onlineUsers = _this._sortUsers(res.data.list);
-        _this.state.applyUsers.forEach(element => {
-          _this.state.onlineUsers.forEach(item => {
-            if (element.accountId === item.accountId) {
-              item.is_apply = true;
-            }
-            if ([20, '20'].includes(item.role_name)) {
-              this.state.leaderId = item.account_id;
-            }
+    return imRequest.chat
+      .getOnlineList(params)
+      .then(res => {
+        if (res && [200, '200'].includes(res.code)) {
+          let list = res.data.list || [];
+          if (params && params.pos == 0) {
+            list = this.uniqBy(list, 'account_id');
+          } else {
+            list = this.uniqBy([...this.state.onlineUsers, ...list], 'account_id');
+          }
+          this.state.onlineUsers = this._sortUsers(list);
+          this.state.applyUsers.forEach(element => {
+            this.state.onlineUsers.forEach(item => {
+              if (element.accountId === item.accountId) {
+                item.is_apply = 1;
+              }
+              if ([20, '20'].includes(item.role_name)) {
+                this.state.leaderId = item.account_id;
+              }
+            });
           });
-        });
 
-        if (res.data.list.length === 0) {
-          _this.state.page--;
+          if (res.data.list.length === 0) {
+            this.state.page--;
+          }
+
+          this.state.totalNum = res.data.total;
         }
-
-        _this.state.totalNum = res.data.total;
-      }
-      if (![200, '200'].includes(res.code)) {
-        _this.state.page--;
-      }
-      return res;
-    });
+        if (![200, '200'].includes(res.code)) {
+          this.state.page--;
+        }
+        return res;
+      });
   }
 
   //获取受限人员列表
