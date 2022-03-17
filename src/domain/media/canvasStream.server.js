@@ -32,6 +32,7 @@ class CanvasStreamServer {
   }
 
   async checkImgStream() {
+    // 获取媒体设置 中的 推流类型及 图片地址
     const { videoType, canvasImgUrl } = useMediaSettingServer().state;
     if (videoType === 'picture') {
       if (canvasImgUrl) {
