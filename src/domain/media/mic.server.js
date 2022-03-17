@@ -3,7 +3,6 @@ import { im } from '../../request';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
-// import useInteractiveServer from './interactive.server';
 import userMemberServer from '../member/member.server';
 import useGroupServer from '../group/StandardGroupServer';
 import Speaker from './speaker-class';
@@ -17,7 +16,7 @@ class MicServer extends BaseServer {
     this.state = {
       // isAllowhandup: false, // 是否开始允许举手
       isSpeakOn: false, // 是否在麦上
-      isSpeakOffToInit: false, // 是否下麦后去初始化互动
+      isSpeakOffToInit: false, // 是否下麦后去初始化互动（自动上麦，下麦后，不走自动上麦）
       speakerList: [] // 上麦人员列表
     };
     MicServer.instance = this;
@@ -248,7 +247,6 @@ class MicServer extends BaseServer {
 
     const methodName = data.receive_account_id ? 'speakOffUser' : 'speakOffSelf';
     let res = im.signaling[methodName](retParams);
-    console.warn('下麦结果----- ', res)
     return res
   }
   // 允许举手
@@ -265,14 +263,6 @@ class MicServer extends BaseServer {
   // 用户举手申请上麦
   userApply(data = {}) {
     const { watchInitData } = useRoomBaseServer().state;
-    // const msgServer = useMsgServer();
-
-    // TODO:后续发消息统一由接口发，现阶段前端自己发消息，联调用
-    // msgServer.sendRoomMsg({
-    //   type: 'user_apply',
-    //   applyUserId: watchInitData.join_info.third_party_user_id,
-    //   nickname: watchInitData.join_info.nickname
-    // });
 
     const defaultParams = {
       room_id: watchInitData.interact.room_id
@@ -284,14 +274,6 @@ class MicServer extends BaseServer {
   // 同意用户的上麦申请
   hostAgreeApply(data = {}) {
     const { watchInitData } = useRoomBaseServer().state;
-    // const msgServer = useMsgServer();
-
-    // TODO:后续发消息统一由接口发，现阶段前端自己发消息，联调用
-    // msgServer.sendRoomMsg({
-    //   type: 'user_apply_host_agree',
-    //   receive_account_id: data.receive_account_id,
-    //   nickname: watchInitData.join_info.nickname
-    // });
 
     const defaultParams = {
       room_id: watchInitData.interact.room_id
@@ -303,14 +285,6 @@ class MicServer extends BaseServer {
   // 拒绝用户的上麦申请
   hostRejectApply(data = {}) {
     const { watchInitData } = useRoomBaseServer().state;
-    const msgServer = useMsgServer();
-
-    // TODO:后续发消息统一由接口发，现阶段前端自己发消息，联调用
-    // msgServer.sendRoomMsg({
-    //   type: 'user_apply_host_reject',
-    //   receive_account_id: data.receive_account_id,
-    //   nickname: watchInitData.join_info.nickname
-    // });
 
     const defaultParams = {
       room_id: watchInitData.interact.room_id
@@ -334,16 +308,12 @@ class MicServer extends BaseServer {
   }
   // 观看端-用户同意邀请上麦
   userAgreeInvite(data = {}) {
-    console.log('观看端-用户同意上麦', data);
     return im.signaling.userAgreeInvite(data);
   }
   // 观看端-用户拒绝邀请上麦
   userRejectInvite(data = {}) {
-    console.log('观看端-用户拒绝上麦', data);
     return im.signaling.userRejectInvite(data);
   }
-  // 拒绝邀请
-  // refuseInvite(data = {}) {}
 }
 
 export default function useMicServer() {
