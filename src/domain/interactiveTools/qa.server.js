@@ -107,10 +107,10 @@ class QaServer extends BaseServer {
     params.room_id = watchInitData.interact.room_id;
     return qa.list.sendQaMsg(params);
   }
-  getHistoryQaMsg() {
-    const { watchInitData } = useRoomBaseServer().state;
-    return qa.list.getHistoryQaMsg({ room_id: watchInitData.interact.room_id });
-  }
+  // getHistoryQaMsg() {
+  //   const { watchInitData } = useRoomBaseServer().state;
+  //   return qa.list.getHistoryQaMsg({ room_id: watchInitData.interact.room_id });
+  // }
   getCurrentPlayQuestionNum(params = {}) {
     const { watchInitData } = useRoomBaseServer().state;
     return qa.list.getCurrentPlayQuestionNum({ room_id: watchInitData.interact.room_id });
