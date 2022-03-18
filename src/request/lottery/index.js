@@ -15,10 +15,11 @@ const getPrizeList = params => {
 };
 
 // 获取当前抽奖状况
-const checkLottery = () => {
+const checkLottery = params => {
   return request({
     url: '/v3/vss/lottery/check',
-    method: 'GET'
+    method: 'GET',
+    params
   });
 };
 
@@ -69,8 +70,8 @@ const getWinnerList = params => {
 // 检测是否已提交领奖信息
 const checkLotteryResult = params => {
   return request('/v3/vss/lottery/award/check', {
-    method: 'POST',
-    data: params
+    method: 'GET',
+    params
   });
 };
 

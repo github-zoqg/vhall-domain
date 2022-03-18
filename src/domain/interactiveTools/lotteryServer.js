@@ -55,8 +55,10 @@ class LotteryServer extends BaseServer {
   }
 
   // 检查当前的抽奖状态
-  checkLottery() {
-    return lotteryApi.checkLottery();
+  checkLottery(lotteryId) {
+    const params = {}
+    if (lotteryId) params.lottery_id = lotteryId
+    return lotteryApi.checkLottery(params);
   }
 
   // 参加口令抽奖
@@ -111,7 +113,7 @@ class LotteryServer extends BaseServer {
   }
 
   // 检测是否已提交领奖信息
-  checkLotteryResult(lotteryId) {
+  checkLotteryResult(lotteryId = '') {
     return lotteryApi.checkLotteryResult({
       lottery_id: lotteryId
     });
