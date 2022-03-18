@@ -56,7 +56,7 @@ class InteractiveServer extends BaseServer {
   async init(customOptions = {}) {
 
     // 是否需要初始化互动
-    if (!this._isNeedInteractive()) return;
+    if (!this._isNeedInteractive()) return Promise.resolve();
 
     // 这里判断上麦角色以及是否自动上麦
     const defaultOptions = await this._getDefaultOptions();
@@ -64,7 +64,7 @@ class InteractiveServer extends BaseServer {
 
     // 根据roomId和role判断是否需要销毁实例重新初始化
     const result = await this._isNeedReInit(options);
-    if (!result) return;
+    if (!result) return Promise.resolve();
 
     // 更新互动实例参数
     this.interactiveInstanceOptions = options;
@@ -119,14 +119,6 @@ class InteractiveServer extends BaseServer {
     });
   }
 
-  /*
-  * 分组进入，退出重新初始化操作
-  */
-  async groupReInitInteractProcess(source) {
-
-    console.log('%c分组重新初始化互动source', 'color:#7cb305', source);
-    return await this.init()
-  }
 
   /**
    * 判断是否需要初始化互动实例
@@ -420,7 +412,7 @@ class InteractiveServer extends BaseServer {
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
       // 更改设备状态
-      useMediaCheckServer().getMediaInputPermission();
+      // useMediaCheckServer().getMediaInputPermission();
       this.$emit('EVENT_STREAM_END', e);
     });
 

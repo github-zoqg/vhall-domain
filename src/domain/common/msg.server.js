@@ -52,6 +52,7 @@ class MsgServer extends BaseServer {
             this.destroyGroupMsg();
           }
           break;
+        //结束直播
         case 'live_over':
           this.$emit('live_over')
           break;
@@ -187,6 +188,7 @@ class MsgServer extends BaseServer {
       // case 'GROUP_DISSOLVE':
       // instance.on(VhallChat.EVENTS.GROUP_DISSOLVE, fn);
       // break;
+      //文档消息
       case 'DocMsg':
         instance.onDocMsg(cb);
       default:
@@ -325,7 +327,7 @@ class MsgServer extends BaseServer {
     };
     return defaultOptions;
   }
-  // 设置主频道静默状态
+  // 设置主频道静默状态(v4)
   setMainChannelMute(mute) {
     if (mute) {
       // _removeListeners(this.msgInstance);
