@@ -1,7 +1,6 @@
 /**
  * @description 红包
  */
-
 import request from '@/utils/http.js';
 
 // 发送红包
@@ -12,6 +11,7 @@ const createRedpacket = params => {
     data: params
   });
 };
+
 // 获取红包信息
 const getRedPacketInfo = params => {
   return request({
@@ -20,6 +20,7 @@ const getRedPacketInfo = params => {
     data: params
   });
 };
+
 // 开红包
 const openRedpacket = params => {
   return request('/v3/interacts/redpacket/open-redpacket', {
@@ -27,7 +28,8 @@ const openRedpacket = params => {
     data: params
   });
 };
-// 红包获奖人历史
+
+// 红包获奖人列表
 const getRedPacketWinners = params => {
   return request('/v3/interacts/redpacket/get-redpacket-partition-recorder', {
     method: 'POST',
