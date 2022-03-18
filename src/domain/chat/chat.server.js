@@ -74,15 +74,15 @@ class ChatServer extends BaseServer {
         }
         //普通消息
         if (!this.isSelfMsg(rawMsg)) {
-          this.$emit('receiveMsg');
+          this.$emit('receiveMsg', rawMsg);
         }
         //@当前用户
         if (this.isAtMe(rawMsg)) {
-          this.$emit('atMe');
+          this.$emit('atMe', rawMsg);
         }
         //回复当前用户
         if (this.isReplyMe(rawMsg)) {
-          this.$emit('replyMe');
+          this.$emit('replyMe', rawMsg);
         }
 
       }
@@ -117,9 +117,9 @@ class ChatServer extends BaseServer {
         //删除某条聊天消息
         if (rawMsg.data.type === 'chat_delete') {
           const _index = this.state.chatList.findIndex(chatMsg => {
-            return chatMsg.msgId === rawMsg.msg_id;
+            return chatMsg.msgId === rawMsg.data.msg_id;
           });
-          this.state.chatList.splice(_index, 1);
+          _index > -1 && this.state.chatList.splice(_index, 1);
         }
       }
       if (rawMsg.data.type === 'room_kickout' && this.isMyMsg(rawMsg)) {
@@ -367,9 +367,9 @@ class ChatServer extends BaseServer {
    * */
   deleteMessage(params) {
     const _index = this.state.chatList.findIndex(chatMsg => {
-      return chatMsg.msg_id === params.msg_id;
+      return chatMsg.msgId === params.msg_id;
     });
-    this.state.chatList.splice(_index, 1);
+    _index > -1 && this.state.chatList.splice(_index, 1);
     return iMRequest.chat.deleteMessage(params);
   }
 

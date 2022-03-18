@@ -249,7 +249,8 @@ export default class StandardDocServer extends AbstractDocServer {
       this.state.switchStatus = status === 'on';
       if (useRoomBaseServer().state.clientType != 'send') {
         // 观看端
-        useRoomBaseServer().setChangeElement('doc');
+        const miniElement = this.state.switchStatus ? 'doc' : ''
+        useRoomBaseServer().setChangeElement(miniElement);
       }
       this.$emit('dispatch_doc_switch_change', this.state.switchStatus);
     });

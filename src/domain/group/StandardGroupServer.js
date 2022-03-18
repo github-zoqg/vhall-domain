@@ -209,23 +209,23 @@ class StandardGroupServer extends BaseServer {
 
     useMsgServer().$onMsg('JOIN', msg => {
       // 加入房间
-      console.log('[group] domain 加入房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
         if (msg.context.groupInitData.group_id) {
-          this.state.groupUserList.forEach((item, index) => {
+          for (let item of this.state.groupedUserList) {
             if (item.id == msg.context.groupInitData.group_id) {
-              // 没有再添加
               const obj = item.group_joins.find(item => item.account_id == msg.sender_id);
               if (!obj) {
+                // 没有再添加
                 item.group_joins.push({
                   account_id: msg.sender_id,
                   ...msg.context,
                   ...msg.context.groupInitData,
-                  nick_name: msg.context.nick_name
+                  nick_name: msg.context.nickname
                 });
               }
+              break;
             }
-          });
+          }
         } else {
           if (msg.context.role_name != 2) {
             return;
@@ -336,6 +336,8 @@ class StandardGroupServer extends BaseServer {
 
       // 处理文档channel切换逻辑
       await useDocServer().groupReInitDocProcess();
+
+      this.$emit(this.EVENT_TYPE.GROUP_DISBAND, msg);
     }
 
     // 不在小组中，更新主房间状态（如果主持人在小组内被解散，在主房间的观众收到此条消息需要更新状态）
@@ -348,7 +350,6 @@ class StandardGroupServer extends BaseServer {
       this.getWaitingUserList();
       this.getGroupedUserList();
     }
-    this.$emit(this.EVENT_TYPE.GROUP_DISBAND, msg);
   }
 
   // 请求协助,主持端收到请求协助消息，会在对应的小组面板头部显示“请求协助中...”文字
@@ -723,7 +724,7 @@ class StandardGroupServer extends BaseServer {
     }
     useDocServer()._setDocPermisson();
 
-    this.$emit(this.EVENT_TYPE.VRTC_PRESENTATION_SCREEN_SET, msg, { isOldPresenter, isOldLeader });
+    this.$emit(this.EVENT_TYPE.VRTC_PRESENTATION_SCREEN_SET, { msg, isOldPresenter, isOldLeader });
   }
 
   // 同意邀请演示成功消息

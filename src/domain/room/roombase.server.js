@@ -103,6 +103,10 @@ class RoomBaseServer extends BaseServer {
             // 用来判断是否是单点登录
             sessionStorage.setItem('kickId', res.data.sso.kick_id);
             sessionStorage.setItem('ssoEnabled', res.data.sso.enabled);
+            // 回放时 不显示推流列表等，所以要把miniElement设置为空
+            if (this.state.watchInitData.webinar.type != 1) {
+              this.state.miniElement = ''
+            }
           }
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
@@ -136,6 +140,8 @@ class RoomBaseServer extends BaseServer {
 
       } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
         this.state.watchInitData.webinar.type = 3;
+        // 结束直播时，将多语言缓存清除
+        localStorage.removeItem('lang')
         // 结束直播时，将第三方推流标识关闭
         if (this.state.isThirdStream) {
           this.state.isThirdStream = false;
