@@ -1,5 +1,6 @@
 import request from '@/utils/http.js';
 
+// 获取奖品列表
 const getPrizeList = params => {
   return request({
     url: '/v3/vss/lottery/post/get-prize-list',
@@ -13,10 +14,12 @@ const getPrizeList = params => {
   });
 };
 
-const checkLottery = () => {
+// 获取当前抽奖状况
+const checkLottery = params => {
   return request({
     url: '/v3/vss/lottery/check',
-    method: 'GET'
+    method: 'GET',
+    params
   });
 };
 
@@ -67,8 +70,8 @@ const getWinnerList = params => {
 // 检测是否已提交领奖信息
 const checkLotteryResult = params => {
   return request('/v3/vss/lottery/award/check', {
-    method: 'POST',
-    data: params
+    method: 'GET',
+    params
   });
 };
 
@@ -88,22 +91,13 @@ const acceptPrize = params => {
   });
 };
 
+// 参与抽奖(口令)
 const joinLottery = params => {
   return request('/v3/vss/lottery/participation', {
     method: 'POST',
     data: params
   });
 };
-
-
-// /v3/vss/lottery/award/check 「聊天内点击」
-function resultCheck() { }
-
-// /v3/vss/lottery/users-get 「设置是否公布中奖结果」
-function setPublishResult() { }
-
-// /v3/vss/lottery/award
-function getAwardInfo() { }
 
 export default {
   getPrizeList,

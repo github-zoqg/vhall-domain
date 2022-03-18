@@ -259,8 +259,8 @@ class RoomBaseServer extends BaseServer {
   }
 
   //获取多语言配置
-  getLangList() {
-    return meeting.getLangList({ webinar_id: this.state.watchInitData.webinar.id }).then(res => {
+  getLangList(params) {
+    return meeting.getLangList({ webinar_id: params || this.state.watchInitData.webinar.id }).then(res => {
       if (res.code == 200) {
         const langMap = {
           1: {

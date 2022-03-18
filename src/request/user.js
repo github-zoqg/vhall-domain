@@ -1,22 +1,15 @@
 /**
  * @description 用户/登录-注册相关接口
- * @param {*} [params={}]
- * @return {*}
  */
-
 import request from '@/utils/http.js';
 import env from './env';
 
-const biz_id = 2; // FIXME: 写死后续动态配置
-// 查询活动配置信息
+const biz_id = 2; // TODO: 目前只有化蝶使用,后续联调中台接口处理
+
+// 获取易盾配置
 const getCapthaKey = (params = {}) => {
   const capthaKey = 'b7982ef659d64141b7120a6af27e19a0';
   return Promise.resolve(capthaKey);
-  // return request({
-  //   url: '/v3/users/permission/get-config-list',
-  //   type: 'POST',
-  //   data: retParmams
-  // });
 };
 
 // 发送验证码(c端)
@@ -37,17 +30,8 @@ const sendCode = (params = {}) => {
   });
 };
 
-// 发送验证码(c端)
+// 登录(c端)
 const userLogin = (params = {}) => {
-  // const params = {
-  // way: 2, // 手机号验证码登录
-  //   phone: this.ruleForm.phone,  // 手机号
-  //   code: this.ruleForm.captchas, // 动态密码【快捷登录（短信验证码登录）必传】
-  //   remember: Number(this.autoLoginStatus) // 自动登录
-  // };
-  // if (this.options.visitorId) {
-  //   params.visitor_id = this.options.visitorId; // 游客id 登录方式为账号密码或者手机号验证码方式，如果传入游客ID会将访客和登录账户进行绑定
-  // }
   return request({
     url:
       env.user === 'v3' ? '/v3/users/user-consumer/login' : '/v4/ucenter-login-reg/consumer/login',
@@ -56,7 +40,7 @@ const userLogin = (params = {}) => {
   });
 };
 
-// 发送验证码(c端)
+// 账号检查(c端)
 const loginCheck = (params = {}) => {
   return request({
     url:
@@ -68,9 +52,7 @@ const loginCheck = (params = {}) => {
   });
 };
 
-/**
- * 获取登录秘钥
- * */
+// 获取登录秘钥
 function getKeyLogin() {
   return request({
     url:
@@ -81,9 +63,7 @@ function getKeyLogin() {
   });
 }
 
-/**
- * 注册
- * */
+// 注册
 const register = (params = {}) => {
   return request({
     url: env.user === 'v3' ? '/v3/users/user-consumer/register' : '',
@@ -172,7 +152,7 @@ const getUserInfo = (data = {}) => {
   });
 };
 
-// 更换用户头像 /v3/users/user-consumer/edit
+// 更换用户头像
 const changeAvatarSend = (data = {}) => {
   return request({
     url: env.user === 'v3' ? '/v3/users/user-consumer/edit' : '/v4/ucenter-b/business/edit',
@@ -208,6 +188,7 @@ const bindInfo = (data = {}) => {
     data: { biz_id, ...data }
   });
 };
+
 //通用上传图片
 const uploadImage = (data = {}) => {
   return request({
