@@ -627,15 +627,22 @@ class StandardGroupServer extends BaseServer {
   async msgdoForGroupLeaderChange(msg) {
     if (msg.data.group_id == this.state.groupInitData.group_id) {
       // 在一个组里面，需要更新小组数据
-      if (this.state.groupInitData.doc_permission != msg.data.account_id) {
-      }
+      // if (this.state.groupInitData.doc_permission != msg.data.account_id) {
+      // }
       await this.updateGroupInitData();
       useDocServer()._setDocPermisson();
 
       // 组长变更，speaker中的roleName会变更，影响到流画面按钮显示，需要更新上麦列表
       useMicServer().updateSpeakerList()
 
-      if (useRoomBaseServer().state.watchInitData.join_info.role_name != 2) {
+      const { join_info } = useRoomBaseServer().state.watchInitData
+      // 被设置为组长的是自己，且没上麦
+      if (msg.data.account_id == join_info.third_party_user_id && !useMicServer().getSpeakerStatus()) {
+        // 处理分组下互动sdk切换channel
+        await useInteractiveServer().init();
+      }
+
+      if (join_info.role_name != 2) {
         this.getGroupedUserList();
       }
     }
