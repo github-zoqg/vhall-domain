@@ -84,21 +84,6 @@ class InteractiveServer extends BaseServer {
           console.log('%c[interactive server] 初始化互动实例完成', 'color:#0000FF', event)
 
           this._addListeners();
-          // this.state.remoteStreams = event.currentStreams.filter(stream => {
-          //   try {
-          //     if (stream.attributes && typeof stream.attributes == 'string') {
-          //       stream.attributes = JSON.parse(stream.attributes);
-          //     }
-          //   } catch (error) {
-          //   }
-          //   // 不直接使用vhallrtc.getRoomStreams()是因为有时候初始化完(非刷新页面下)此值取值有问题
-          //   let _muteObj = event.vhallrtc.getRoomStreams().find(s => s.streamId == stream.streamId)
-          //   if (_muteObj) {
-          //     stream.audioMuted = _muteObj.audioMuted
-          //     stream.videoMuted = _muteObj.videoMuted
-          //   }
-          //   return stream.streamType === 2;
-          // });
 
           let streams = event.currentStreams.filter(stream => {
             try {
@@ -427,7 +412,7 @@ class InteractiveServer extends BaseServer {
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
       // 更改设备状态
-      useMediaCheckServer().getMediaInputPermission();
+      // useMediaCheckServer().getMediaInputPermission();
       this.$emit('EVENT_STREAM_END', e);
     });
 
