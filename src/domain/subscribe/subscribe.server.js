@@ -15,6 +15,9 @@ class SubscribeServer extends BaseServer {
       if (msg.data.type == 'live_start') {
         this.$emit('live_start', msg.data);
       }
+      if (msg.data.type == 'live_over') {
+        this.$emit('live_over', msg.data);
+      }
 
       if (msg.data.type == 'pay_success') {
         console.log('woshi我是预约页')
