@@ -43,6 +43,7 @@ class MicServer extends BaseServer {
       let speaker = this.state.speakerList.find(item => item.accountId == sourceSpeaker.account_id)
       if (speaker) {
         return speaker
+        // return Object.assign(speaker,new Speaker(sourceSpeaker))
       } else {
         return new Speaker(sourceSpeaker)
       }

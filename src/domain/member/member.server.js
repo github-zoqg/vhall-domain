@@ -12,8 +12,9 @@ class MemberServer extends BaseServer {
       return MemberServer.instance;
     }
     super();
-    const {roomId = '', roleName, avatar = ''} = useRoomBaseServer().state.watchInitData;
+    const {roomId = '', roleName, avatar = '',join_info = {}} = useRoomBaseServer().state.watchInitData;
     const {groupInitData = {}} = useRoomBaseServer().state;
+    const userId = join_info.third_party_user_id;
 
     this.state = {
       //在线的成员
@@ -28,6 +29,10 @@ class MemberServer extends BaseServer {
       page: 1,
       //房间号
       roomId,
+      //登录的用户id
+      userId,
+      //登录的用户角色
+      roleName,
       //是否在分组里
       isInGroup: groupInitData.isInGroup,
       //组长的id
@@ -37,7 +42,9 @@ class MemberServer extends BaseServer {
       //举手栏是否有小红点
       raiseHandTip: false,
       //举手定时器集合
-      handsUpTimerMap: {}
+      handsUpTimerMap: {},
+      //记录一下上一个成功下麦消息的人员id
+      lastTargetId:'',
     };
 
     // this.listenEvents();
@@ -107,6 +114,9 @@ class MemberServer extends BaseServer {
       }
       const type = msg.data.event_type || msg.data.type || '';
       switch (type) {
+        case 'endLive':
+          this.$emit(type,msg);
+          break;
         case 'vrtc_connect_apply':
           //用户申请上麦
           this._handleApplyConnect(msg);
@@ -136,6 +146,9 @@ class MemberServer extends BaseServer {
         case 'room_kickout':
           this._handleKicked(msg);
           break;
+        case 'room_kickout_cancel':
+          this.$emit(type,msg);
+          break;
         case 'vrtc_disconnect_presentation_success':
           this._handleUserEndPresentation(msg);
           break;
@@ -146,7 +159,7 @@ class MemberServer extends BaseServer {
           //视图处理
           break;
         case 'vrtc_connect_presentation_agree':
-          //视图处理
+          !isLive && this.$emit(type,msg);
           break;
         case 'vrtc_connect_presentation_success':
           !isLive && this._handlePresentationPermissionChange(msg);
@@ -156,9 +169,11 @@ class MemberServer extends BaseServer {
           !isLive && this._handleRoomDisconnectSuccess(msg);
           break;
         case 'group_switch_start':
+          this.$emit(type,msg);
           //视图处理
           break;
         case 'group_join_change':
+          this.$emit(type,msg);
           //视图处理
           break;
         default:
@@ -185,7 +200,33 @@ class MemberServer extends BaseServer {
     //切换组长(组长变更)，视图处理
     //主持人进入退出小组 消息监听 ，视图处理
     //频道变更-开始讨论，视图处理
+    // 切换组长(组长变更)
+    groupServer.$on('GROUP_LEADER_CHANGE', msg => {
+      const {clientType = ''} = useRoomBaseServer().state;
+      if (clientType === 'send' && !this.isInGroup) {
+        return;
+      }
+      this.leaderId = msg.data.account_id;
+      this.$emit('GROUP_LEADER_CHANGE', msg);
+    });
 
+    // 主持人进入退出小组 消息监听
+    this.groupServer.$on('GROUP_MANAGER_ENTER', msg => {
+      const {clientType = ''} = useRoomBaseServer().state;
+      if (clientType !== 'send') {
+        return;
+      }
+      this.$emit('GROUP_MANAGER_ENTER',msg);
+    });
+
+    //频道变更-开始讨论
+    this.groupServer.$on('ROOM_CHANNEL_CHANGE', msg => {
+      const {clientType = ''} = useRoomBaseServer().state;
+      if (clientType === 'send') {
+        return;
+      }
+      this.$emit('ROOM_CHANNEL_CHANGE',msg);
+    });
 
   }
 
@@ -450,6 +491,10 @@ class MemberServer extends BaseServer {
 
   //用户拒绝上麦邀请
   _handleUserRejectConnect(msg) {
+    // 如果申请人是自己
+    if (msg.data.room_join_id == this.state.userId || this.state.roleName != 1) {
+      return;
+    }
     this.$emit('vrtc_connect_invite_refused', msg);
   }
 
@@ -466,11 +511,20 @@ class MemberServer extends BaseServer {
       return;
     }
 
+    // 当前用户ID,解决俩次触发vrtc_connect_success会提示两次下麦消息
+    if (this.state.lastTargetId != msg.data.target_id) {
+      this.state.lastTargetId = msg.data.target_id;
+      msg.data.room_role != 2 && (this.$emit('vrtc_disconnect_success', msg));
+      setTimeout(() => {
+        this.state.lastTargetId = '';
+      }, 3000);
+    }
+
     if (this.state.applyUsers.length > 0) {
       const deleteIndex = this.state.applyUsers.findIndex(item => item.account_id == msg.data.target_id);
       deleteIndex !== -1 && (this.state.applyUsers.splice(deleteIndex, 1));
     }
-    this.$emit('vrtc_disconnect_success', msg);
+
   }
 
   //互动设置主讲人
@@ -482,19 +536,15 @@ class MemberServer extends BaseServer {
   _handleDeviceCheck(msg) {
     const {member_info = {}} = msg.data;
     this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
-    // if (![2, '2'].includes(msg.data.device_type)) {
-    //   this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
-    // }
-    // if (![0, '0'].includes(msg.data.device_status)) {
-    //   this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
-    // }
   }
 
   //处理踢出人员
   _handleKicked(msg) {
     this._deleteUser(msg.accountId, this.state.onlineUsers);
     this._deleteUser(msg.accountId, this.state.applyUsers);
-    this.$emit(msg.type, msg);
+    //更新一下在线人数
+    this.state.totalNum = this.state.onlineUsers.length;
+    //todo 确认下这里是否可以不重新请求，直接将该人员更改相应状态放入受限制人员列表
     this.getLimitUserList();
   }
 
@@ -599,6 +649,32 @@ class MemberServer extends BaseServer {
 
   //处理分组内踢出
   _handleGroupKicked(msg) {
+    const {clientType = '', watchInitData = {}} = useRoomBaseServer().state;
+    const {join_info = {}} = watchInitData;
+    const userId = join_info.third_party_user_id;
+    const isLive = clientType === 'send';
+    const isInGroup = useGroupServer().state.groupInitData.isInGroup;
+    if (isLive) {
+      this.$emit('ROOM_GROUP_KICKOUT',msg);
+      return;
+    }
+
+    if (!isInGroup) return;
+
+    if (userId == msg.data.target_id) {
+      this.$emit('ROOM_GROUP_KICKOUT',msg);
+      return;
+    }
+
+    //不是当前登录用户的时侯删除该人员
+    this.state.onlineUsers.forEach((item, index) => {
+      if (item.account_id == msg.data.target_id) {
+        this.state.onlineUsers.splice(index, 1);
+        this.state.totalNum--;
+      }
+    });
+
+
   }
 
   //todo 临时放这里，都迁移好了测试无误放utils里

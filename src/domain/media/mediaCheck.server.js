@@ -58,6 +58,7 @@ class MediaCheckServer {
           // TODO: 根据参数判断是否发消息同步状态
           this.setDevice({ status: 1, send_msg: Number(options.isNeedBroadcast) });
           stream.getTracks().forEach(trackInput => {
+            console.log('[interactiveServer]  look stop -6');
             trackInput.stop();
           });
         })
