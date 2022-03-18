@@ -5,12 +5,6 @@ import { user as userApi } from '@/request/index.js';
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
 
 class UserServer {
-  static getInstance() {
-    if (!UserServer.instance) {
-      UserServer.instance = new UserServer();
-    }
-    return UserServer.instance;
-  }
   constructor() {
     this.capInstance = null; // 云盾实例
     this.captchaId = null; // 云盾key
@@ -21,7 +15,6 @@ class UserServer {
       capErrorMsg: '', // 错误提示
       userInfo: {}, // 用户信息
       thirdInfo: {}, // 第三方授权绑定的信息 从userInfo拆分的
-
     };
   }
 
@@ -33,12 +26,10 @@ class UserServer {
   /**
    * @description 获取易盾的key
    * */
-  // TODO: 后续接v4接口
   async getCaptchaId() {
-    this.captchaId = 'b7982ef659d64141b7120a6af27e19a0'; // 识别
-    return new Promise((resolve, reject) => {
-      resolve(this.captchaId);
-    });
+    return userApi.getCapthaKey().then(captchaId => {
+      this.captchaId = captchaId
+    })
   }
 
   /**
@@ -74,10 +65,6 @@ class UserServer {
           console.error('🚀 ~ initNECaptcha err ', err);
         }
       }
-      // onload(instance) {
-      //   console.log('🚀 ~ initNECaptcha onload ', instance);
-      //   this.capInstance = instance;
-      // }
     };
     window.initNECaptcha(NECaptchaOpts);
   }
@@ -93,8 +80,7 @@ class UserServer {
   }
 
   /**
-   * 发送手机短信验证码、邮件验证码
-   * @param phoneNum
+   * @description 发送手机短信验证码、邮件验证码
    * */
   sendCode(phoneNum, sceneId = 7) {
     // 开始倒计时
@@ -135,9 +121,7 @@ class UserServer {
   }
 
   /**
-   * 登录
-   * 组织参数(校验)
-   * /v3/users/user-consumer/login
+   * @description 登录
    * */
   userLogin(params) {
     // 登录失败,清空缓存信息
@@ -166,7 +150,7 @@ class UserServer {
   }
 
   /**
-   * 登录状态检查
+   * @description 登录状态检查
    * */
   loginCheck(account) {
     return userApi.loginCheck({
@@ -176,7 +160,7 @@ class UserServer {
   }
 
   /**
-   * 明文密码加密
+   * @description 明文密码加密
    * */
   handleEncryptPassword(password, publicKey) {
     let retPassword = '';
@@ -193,7 +177,7 @@ class UserServer {
   }
 
   /**
-   * 明文密码加密
+   * @description 明文密码加密
    * */
   async handlePassword(password) {
     const getKeyRelt = await userApi.getKeyLogin();
@@ -224,7 +208,7 @@ class UserServer {
   }
 
   /**
-   * 注册
+   * @description 注册
    * */
   register(params) {
     const failure = () => {
@@ -248,57 +232,40 @@ class UserServer {
       });
   }
 
-  // 验证码登录&&账号登录
+  /**
+   * @description 验证码登录&&账号登录
+   * */
   loginInfo(params) {
     return userApi.loginInfo(params);
   }
 
-  // 手机||邮箱验证码
+  /**
+   * @description 手机||邮箱验证码
+   * */
   codeCheck(params) {
     return userApi.codeCheck(params);
   }
 
-  // 密码重置
+  /**
+   * @description 密码重置
+   * */
   resetPassword(params) {
     return userApi.resetPassword(params);
   }
 
   /**
-   * 第三方授权回调 跳转到qq授权登录链接、跳转到微信授权登录链接
-   * /v3/users/oauth/callback
+   * @description 第三方授权回调 跳转到qq授权登录链接、跳转到微信授权登录链接
    * */
   oauthCallback(params) {
     return userApi.oauthCallback(params);
   }
 
   /**
-   * 微信授权接口获取
-   * /v3/commons/auth/weixin-ajax
+   * @description 微信授权接口获取
    * */
   authWeixinAjax(params) {
     return userApi.authWeixinAjax(params);
   };
-
-
-  /**-----------------------  以下是否B端接口?  -----------------------**/
-
-  /**
-   * 校验验证码,获取验证码（图形验证码）
-   * /v3/users/code-consumer/send
-   * */
-  getGraphCode() { }
-
-  /**
-   * 校验手机验证码、邮件验证码
-   * /v3/users/code/check
-   * */
-  checkCode() { }
-
-  /**
-   * 角度口令登录
-   * /v3/webinars/live/role-login
-   * */
-  roleLogin() { }
 
   // 获取用户信息
   getUserInfo(data) {
@@ -343,6 +310,7 @@ class UserServer {
   loginRoleOut(data) {
     return userApi.loginRoleOut(data);
   }
+
   // 替换头像
   changeAvatarSend(data) {
     return userApi.changeAvatarSend(data);
@@ -370,5 +338,8 @@ class UserServer {
 }
 
 export default function useUserServer() {
-  return UserServer.getInstance();
+  if (!UserServer.instance) {
+    UserServer.instance = new UserServer()
+  }
+  return UserServer.instance;
 }

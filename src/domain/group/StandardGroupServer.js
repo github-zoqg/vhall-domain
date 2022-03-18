@@ -332,7 +332,7 @@ class StandardGroupServer extends BaseServer {
       useMsgServer().destroyGroupMsg();
 
       // 退出小组重新初始化互动
-      await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupDisband')
+      await useInteractiveServer().init()
 
       // 处理文档channel切换逻辑
       await useDocServer().groupReInitDocProcess();
@@ -401,7 +401,7 @@ class StandardGroupServer extends BaseServer {
     this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
     // 处理分组下互动sdk切换channel
-    await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupSwitchStart')
+    await useInteractiveServer().init()
 
     // 处理文档channel切换逻辑
     useDocServer().groupReInitDocProcess();
@@ -465,7 +465,7 @@ class StandardGroupServer extends BaseServer {
     useMsgServer().destroyGroupMsg();
 
     // 处理分组下互动sdk切换channel
-    await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupSwitchEnd');
+    await useInteractiveServer().init();
 
     // 处理文档channel切换逻辑
     await useDocServer().groupReInitDocProcess();
@@ -537,7 +537,7 @@ class StandardGroupServer extends BaseServer {
       useMsgServer().destroyGroupMsg();
       // 处理分组下互动sdk切换channel
 
-      await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupJoinChange groupJoinChangeInfo.to === 0');
+      await useInteractiveServer().init();
 
       // 处理文档channel切换逻辑
       await useDocServer().groupReInitDocProcess();
@@ -567,7 +567,7 @@ class StandardGroupServer extends BaseServer {
         this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
         // 处理分组下互动sdk切换channel
-        await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupJoinChange is_open_switch === 1 && isInGroup');
+        await useInteractiveServer().init();
 
         // 处理文档channel切换逻辑
         await useDocServer().groupReInitDocProcess();
@@ -592,7 +592,7 @@ class StandardGroupServer extends BaseServer {
         this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
         // 处理分组下互动sdk切换channel
-        await useInteractiveServer().groupReInitInteractProcess('msgdoForGroupJoinChange else');
+        await useInteractiveServer().init();
 
         // 处理文档channel切换逻辑
         await useDocServer().groupReInitDocProcess();
@@ -628,9 +628,12 @@ class StandardGroupServer extends BaseServer {
     if (msg.data.group_id == this.state.groupInitData.group_id) {
       // 在一个组里面，需要更新小组数据
       if (this.state.groupInitData.doc_permission != msg.data.account_id) {
-        await this.updateGroupInitData();
       }
+      await this.updateGroupInitData();
       useDocServer()._setDocPermisson();
+
+      // 组长变更，speaker中的roleName会变更，影响到流画面按钮显示，需要更新上麦列表
+      useMicServer().updateSpeakerList()
 
       if (useRoomBaseServer().state.watchInitData.join_info.role_name != 2) {
         this.getGroupedUserList();
@@ -683,7 +686,7 @@ class StandardGroupServer extends BaseServer {
       useMsgServer().destroyGroupMsg();
 
       // 处理分组下互动sdk切换channel
-      await useInteractiveServer().groupReInitInteractProcess('msgdoForRoomGroupKickout');
+      await useInteractiveServer().init();
 
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();

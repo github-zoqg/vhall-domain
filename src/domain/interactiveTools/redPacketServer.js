@@ -1,28 +1,32 @@
 import BaseServer from '@/domain/common/base.server.js';
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
-import useChatServer from '@/domain/chat/chat.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
 import redPacketApi from '../../request/redPacket';
 import chatApi from '../../request/im/chat/index'
+
 const RED_ENVELOPE_OK = 'red_envelope_ok'; // 发红包
 const RED_ENVELOPE_OPEN_SUCCESS = 'red_envelope_open_success'; // 红包成功打开
 const RED_ENVELOPE_PUSH = 'red_envelope_push'; // 红包推送
 class RedPacketServer extends BaseServer {
-  constructor(opts) {
+  constructor(opts = {}) {
     super(opts);
     this._uuid = '';
     this.state = {
-      info: {},
+      info: {}, // 红包信息
       online: 0, // 在线人数
-      amount: 0,
-      status: -1, // 红包状态: 0 抢光了
+      amount: 0, // 获奖金额
+      status: -1, // 红包状态: 0 抢光了, 1 可抢
       available: false // 当前红包是否可领取
     };
     this.listenMsg(opts);
   }
+
+  // 更新红包id
   setUUid(uuid) {
     this._uuid = uuid;
   }
+
+  // 设置红包是否可领取
   setAvailable(available) {
     this.state.available = available;
   }
@@ -66,6 +70,7 @@ class RedPacketServer extends BaseServer {
       });
     }
   }
+
   /**
    * @description 获取在线人数
    */
@@ -81,6 +86,7 @@ class RedPacketServer extends BaseServer {
       return res
     })
   }
+
   /**
    * @description 获取红包(观看端的初始化)
    */
@@ -102,6 +108,7 @@ class RedPacketServer extends BaseServer {
         return res;
       });
   }
+
   /**
    * @description 领红包
    */
@@ -130,6 +137,7 @@ class RedPacketServer extends BaseServer {
       ...params
     });
   }
+
   /**
    * @description 红包中奖人列表
    */
@@ -141,50 +149,6 @@ class RedPacketServer extends BaseServer {
       room_id: interact.room_id,
       red_packet_uuid: this._uuid,
       ...params
-    });
-  }
-  /**
-   * @description 发送红包后的数据上报
-   */
-  createReport(params) {
-    this.$vhall_paas_port({
-      k: 110054,
-      data: {
-        business_uid: userId,
-        user_id: '',
-        webinar_id: this.$route.params.il_id,
-        refer: '',
-        s: '',
-        report_extra: {},
-        ref_url: '',
-        req_url: ''
-      }
-    });
-    this.$vhall_paas_port({
-      k: this.redcouponType === 1 ? 110055 : 110056,
-      data: {
-        business_uid: userId,
-        user_id: '',
-        webinar_id: this.$route.params.il_id,
-        refer: '',
-        s: '',
-        report_extra: {},
-        ref_url: '',
-        req_url: ''
-      }
-    });
-    this.$vhall_paas_port({
-      k: this.channel === 'ALIPAY' ? 110058 : 110059,
-      data: {
-        business_uid: userId,
-        user_id: '',
-        webinar_id: this.$route.params.il_id,
-        refer: '',
-        s: '',
-        report_extra: {},
-        ref_url: '',
-        req_url: ''
-      }
     });
   }
 }
