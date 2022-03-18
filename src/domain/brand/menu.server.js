@@ -11,13 +11,13 @@ class MenuServer extends BaseServer {
     this.state = {
       list: [
         { name: '聊天', type: 3, status: '1', welcome_content: '' },
+        { name: '成员', type: 8, text: '成员', status: '1' },
         { name: '公告', type: 'notice', status: '1' },
-        { name: '成员', type: 8, text: '成员', status: '1' }
       ]
     };
   }
 
-  listenEvents() {}
+  listenEvents() { }
 }
 
 export default function useMenuServer() {
