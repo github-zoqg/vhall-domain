@@ -65,9 +65,13 @@ class ChatServer extends BaseServer {
         //私聊我的消息，//自己发的消息不处理
         if (rawMsg.data.target_id) {
           if (this.isMyMsg(rawMsg)) {
-            this.state.curPrivateTargetId = rawMsg.sender_id
-            console.log("aaa", Msg._handleGenerateMsg(rawMsg))
-            this.state.privateChatList.push(Msg._handleGenerateMsg(rawMsg))
+            if (role_name == 2) {
+              this.setCurPrivateTarget(rawMsg.sender_id)
+            }
+            if (role_name == 2 || this.state.curPrivateTargetId == rawMsg.sender_id) {
+              this.state.privateChatList.push(Msg._handleGenerateMsg(rawMsg))
+            }
+
             this.$emit('receivePrivateMsg', Msg._handleGenerateMsg(rawMsg));
           }
           return
@@ -155,6 +159,9 @@ class ChatServer extends BaseServer {
         this.$emit('banned', interactToolStatus.is_banned == 1 ? true : false);
       }
     })
+  }
+  setCurPrivateTarget(targetId) {
+    this.state.curPrivateTargetId = targetId
   }
   // 判断是不是自己发的消息
   isSelfMsg(msg) {
