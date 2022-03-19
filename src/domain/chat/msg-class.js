@@ -26,8 +26,8 @@ export default class Msg {
   }
   //设置私聊对象
   setTarget(targetId) {
-    this.data.target_id = targetId,
-      this.context.to = targetId
+    this.data.target_id = targetId;
+    this.context.to = targetId;
   }
   //给消息添加文本
   setText(val) {
