@@ -11,7 +11,7 @@ class MediaSettingServer {
     }
     this.state = {
       selectedVideoDeviceId: '', // 当前选取的设备id
-      videoPreivewStreamId: '', // 当前[流ID]
+      videoPreviewStreamId: '', // 当前[流ID]
       canvasImgUrl: '//cnstatic01.e.vhall.com/common-static/middle/images/canvasDefault.png', // 当前图片流url
       rate: '', // 当前画质
       screenRate: '', //当前桌面共享画质
@@ -50,7 +50,7 @@ class MediaSettingServer {
   resetState() {
     this.state = {
       selectedVideoDeviceId: '', // 当前选取的设备id
-      videoPreivewStreamId: '', // 当前[流ID]
+      videoPreviewStreamId: '', // 当前[流ID]
       canvasImgUrl: '//cnstatic01.e.vhall.com/common-static/middle/images/canvasDefault.png', // 当前图片流url
       rate: '', // 当前画质
       screenRate: '', //当前桌面共享画质
@@ -196,7 +196,7 @@ class MediaSettingServer {
       VhallPaasSDK.modules.VhallRTC.startPreview(
         options,
         event => {
-          this.state.videoPreivewStreamId = event.streamId;
+          this.state.videoPreviewStreamId = event.streamId;
           this.state.videoPreviewStream = event.stream;
           resolve(event);
         },
@@ -218,14 +218,14 @@ class MediaSettingServer {
    * 结束视频预览
    * @returns {Promise}
    */
-  stopVideoPreview(streamId = this.state.videoPreivewStreamId) {
+  stopVideoPreview(streamId = this.state.videoPreviewStreamId) {
     if (!streamId) {
       return Promise.resolve('预览视频流不存在');
     }
     return new Promise((resolve, reject) => {
       VhallPaasSDK.modules.VhallRTC.stopPreview({ streamId }, resolve, reject);
     }).then(() => {
-      this.state.videoPreivewStreamId = null;
+      this.state.videoPreviewStreamId = null;
     });
   }
 

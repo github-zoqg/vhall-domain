@@ -4,7 +4,7 @@
  */
 import BaseServer from '@/domain/common/base.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
-import { entryformApi } from '@/request/index.js';
+import { entryformApi, signUpFormApi } from '@/request/index.js';
 // import { roomApi } from '@/request/index.js';
 
 class entryformServer extends BaseServer {
@@ -69,7 +69,7 @@ class entryformServer extends BaseServer {
   }
 
   verifyOpenLink(params) {
-    return entryformApi.verifyOpenLink(params);
+    return signUpFormApi.fetchVerifyOpenLink(params);
   }
 
   watchInit(params) {

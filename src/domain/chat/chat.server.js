@@ -33,14 +33,20 @@ class ChatServer extends BaseServer {
       allBanned: groupInitData.isInGroup ? false : (interactToolStatus.all_banned == 1 ? true : false), //1禁言 0取消禁言
       limit: 10,
       curMsg: null,//当前正在编辑的消息
-      prevTime: ''//用来记录每条消息的上一条消息发送的时间
+      prevTime: '',//用来记录每条消息的上一条消息发送的时间
+      curPrivateTargetId: ''//当前私聊对象id
     };
     this.listenEvents();
     this.controller = null;
     ChatServer.instance = this;
     return this;
   }
-
+  Events = {
+    //个人禁言
+    BANNED: "banned",
+    //全体禁言
+    ALLBANNED: 'allBanned'
+  }
   //setSate
   setState(key, value) {
     ChatServer.instance.state[key] = value;
@@ -50,6 +56,7 @@ class ChatServer extends BaseServer {
     const msgServer = useMsgServer();
     const groupServer = useGroupServer();
     const { role_name } = useRoomBaseServer().state.watchInitData.join_info;
+    //监听聊天消息
     msgServer.$onMsg('CHAT', rawMsg => {
       if (['text', 'image'].includes(rawMsg.data.type)) {
         //表情处理
@@ -58,6 +65,8 @@ class ChatServer extends BaseServer {
         //私聊我的消息，//自己发的消息不处理
         if (rawMsg.data.target_id) {
           if (this.isMyMsg(rawMsg)) {
+            this.state.curPrivateTargetId = rawMsg.sender_id
+            console.log("aaa", Msg._handleGenerateMsg(rawMsg))
             this.state.privateChatList.push(Msg._handleGenerateMsg(rawMsg))
             this.$emit('receivePrivateMsg', Msg._handleGenerateMsg(rawMsg));
           }
@@ -216,17 +225,6 @@ class ChatServer extends BaseServer {
       }, [])
       .reverse()
       .filter(item => !['customPraise'].includes(item.type));
-
-    // if (['观看端'].includes(from)) {
-    //   list.forEach((msg, index) => {
-    //     if (index !== 0) {
-    //       const preMsgTime = list[index - 1].sendTime;
-    //       if (preMsgTime.slice(0, 13) === msg.sendTime.slice(0, 13)) {
-    //         msg.showTime = '';
-    //       }
-    //     }
-    //   });
-    // }
     this.state.chatList.unshift(...list);
     console.log('chatList', this.state.chatList);
 
@@ -300,7 +298,7 @@ class ChatServer extends BaseServer {
     this.state.imgUrls.push(...rawData);
   }
 
-  //私有方法，处理私聊列表
+  //私有方法，处理私聊列表(待梳理)
   static _handlePrivateChatList(item, list = [], from = '观看端') {
     if (['观看端'].includes(from)) {
       return list.map(a => {
@@ -400,6 +398,12 @@ class ChatServer extends BaseServer {
   getPrivateContactList(params = {}) {
     return iMRequest.chat.fetchPrivateContactList(params);
   }
+  //将联系人加入到私聊列表
+  addToRankList(params = {}) {
+    return iMRequest.privateChat.setRankList(params)
+  }
+
+
   //获取私聊的记录列表
   getPrivateChatHistoryList(params = {}) {
     const { watchInitData } = useRoomBaseServer().state;
@@ -407,10 +411,21 @@ class ChatServer extends BaseServer {
     params.webinar_id = watchInitData.webinar.id
     return iMRequest.chat.fetchPrivateChatHistoryList(params).then(res => {
       if (res.code == 200) {
-        res.data.list.forEach(ele => {
-          ele.data.text_content = textToEmojiText(ele.data.text_content);
-        });
-        this.state.privateChatList.splice(0, 0, ...res.data.list)
+        let list = res.data.list.map(item => {
+          item.data.text_content &&
+            (item.data.text_content = textToEmojiText(item.data.text_content));
+          //处理图片预览
+          item.data.image_urls && ChatServer._handleImgUrl.call(this, item.data.image_urls);
+          return Msg._handleGenerateMsg(item)
+        }).reduce((acc, curr) => {
+          const showTime = curr.showTime;
+          acc.some(s => s.showTime === showTime)
+            ? acc.push({ ...curr, showTime: '' })
+            : acc.push(curr);
+          return acc;
+        }, [])
+          .reverse()
+        this.state.privateChatList.splice(0, 0, ...list)
       }
     });
   }
