@@ -50,7 +50,7 @@ class InsertFileServer extends BaseServer {
     interactiveServer.$on('INTERACTIVE_INSTANCE_INIT_SUCCESS', () => {
       this.getInsertFileStream()
       if (this.state.insertStreamInfo.streamId) {
-        this.$emit('INSERT_OTHER_STREAM_ADD')
+        this.$emit('INSERT_FILE_STREAM_ADD')
       }
     });
     // 流加入
@@ -406,16 +406,17 @@ class InsertFileServer extends BaseServer {
     const interactiveServer = useInteractiveServer()
     const localSpeaker = micServer.state.speakerList.find(item => item.accountId == roomBaseServer.state.watchInitData.join_info.third_party_user_id)
 
+    const isWatch = ['standard', 'embed', 'sdk'].includes(roomBaseServer.state.clientType)
     // 无延迟或者分组直播的时候没有上麦，也是互动流，直接 return
-    if (!localSpeaker) return
+    if (isWatch && !localSpeaker) return
 
     if (options.isStart) {
       // 如果是开启插播、开始播放，保存当前麦克风状态，并静音麦克风
+      // 存储原麦克风状态，待结束插播的时候还原用
+      this.state.oldMicMute = localSpeaker.audioMuted
 
       // 如果麦克风开启，静音
       if (!localSpeaker.audioMuted && localSpeaker.streamId) {
-        // 存储原麦克风状态，待结束插播的时候还原用
-        this.state.oldMicMute = localSpeaker.audioMuted
         interactiveServer.muteAudio({
           streamId: localSpeaker.streamId,
           isMute: true
