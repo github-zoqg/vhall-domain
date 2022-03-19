@@ -43,7 +43,7 @@ class MicServer extends BaseServer {
       let speaker = this.state.speakerList.find(item => item.accountId == sourceSpeaker.account_id)
       if (speaker) {
         return speaker
-        // return Object.assign(speaker,new Speaker(sourceSpeaker))
+        // return Object.assign(speaker, new Speaker(sourceSpeaker))
       } else {
         return new Speaker(sourceSpeaker)
       }
@@ -216,10 +216,6 @@ class MicServer extends BaseServer {
           break;
       }
     });
-    const groupServer = useGroupServer()
-    groupServer.$on('ROOM_CHANNEL_CHANGE', () => {
-      this.updateSpeakerList()
-    })
   }
 
   setSpeakOffToInit(val) {

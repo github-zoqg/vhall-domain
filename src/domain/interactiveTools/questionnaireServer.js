@@ -1,7 +1,6 @@
 /**
  * 问卷模块(基于问卷SDK)
  */
-
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import questionnaireApi from '../../request/questionnaire';
@@ -11,22 +10,21 @@ const QUESTIONNAIRE_PUSH = 'questionnaire_push'; // 推送消息
 class QuestionnaireServer extends BaseServer {
   constructor(opts = {}) {
     super();
-    console.log('QuestionnaireServer QuestionnaireServer');
     this._uploadUrl = opts.uploadUrl;
     this._creatSelector = opts.creatSelector;
-    // this._prevSelector = opts.prevSelector;
     this._paasSDKInstance = null;
     this.useRoomBaseServer = useRoomBaseServer();
     this.intiPaasQuestionnaireServerSDK(opts);
     this.state = {
       iconVisible: false, // icon 是否显示
       dotVisible: false, // 小红点是否显示
-      lastQuestionnaireId: ''
+      lastQuestionnaireId: '' // 最后一个问卷id
     }
     if (opts.mode === 'watch') {
       this.checkIconStatus()
     }
   }
+
   /**
    * @description 初始化问卷服务sdk
    */
@@ -51,7 +49,6 @@ class QuestionnaireServer extends BaseServer {
     useMsgServer().$onMsg('ROOM_MSG', async msg => {
       console.log('问卷server监听', msg);
       switch (msg.data.event_type || msg.data.type) {
-        //【分组创建/新增完成】
         case QUESTIONNAIRE_PUSH:
           console.log('问卷消息', msg);
           const questionnaireId = msg.data.questionnaire_id
@@ -62,6 +59,8 @@ class QuestionnaireServer extends BaseServer {
       }
     });
   }
+
+  // 初始化发起端事件监听
   initLiveEvent() {
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.CREATE, data => {
       this.$emit(VHall_Questionnaire_Const.EVENT.CREATE, data);
@@ -76,6 +75,8 @@ class QuestionnaireServer extends BaseServer {
       // console.log('问卷错误', data);
     });
   }
+
+  // 初始化观看端事件监听
   initWatchEvent() {
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.SUBMIT, async data => {
       const res = await this.submitQuestion(data);
@@ -90,6 +91,7 @@ class QuestionnaireServer extends BaseServer {
       console.log('问卷错误', data);
     });
   }
+
   /**
    * @description 渲染问卷的视图(编辑)
    */
@@ -105,14 +107,15 @@ class QuestionnaireServer extends BaseServer {
     document.querySelector(selector).innerHTML = '';
     this._paasSDKInstance.renderPagePC(selector, id);
   }
+
   /**
    * @description 渲染问卷的视图(wap)
    */
   renderQuestionnaire4Wap(selector, id) {
     document.querySelector(selector).innerHTML = '';
     this._paasSDKInstance.renderPageH5(selector, id);
-    // this._paasSDKInstance.renderPagePC(selector, id);
   }
+
   /**
    * @description 条件查询问卷列表
    */
@@ -150,6 +153,7 @@ class QuestionnaireServer extends BaseServer {
       })
     })
   }
+
   /**
    * @description 复制问卷
    */
@@ -162,6 +166,7 @@ class QuestionnaireServer extends BaseServer {
       survey_id: surveyId
     });
   }
+
   /**
    * @description 删除问卷
    */
@@ -174,6 +179,7 @@ class QuestionnaireServer extends BaseServer {
       survey_ids: surveyId
     });
   }
+
   /**
    * @description 编辑问卷
    */
@@ -191,10 +197,7 @@ class QuestionnaireServer extends BaseServer {
       room_id: interact.room_id
     });
   }
-  /**
-   * @description 推送问卷的回调处理
-   */
-  handlerQuestionnairePush() { }
+
   // 提交问卷
   async submitQuestion(opt) {
     const { naire_id, data, answer } = opt;
@@ -275,6 +278,7 @@ class QuestionnaireServer extends BaseServer {
     relt = await this.createLiveQuestion(data);
     return relt;
   }
+
   /**
    * @description 创建直播间的问卷
    */
@@ -293,6 +297,7 @@ class QuestionnaireServer extends BaseServer {
       user_id: join_info.user_id || join_info.third_party_user_id
     });
   }
+
   /**
    * 检查用户是否已提交文件
    */
@@ -304,6 +309,7 @@ class QuestionnaireServer extends BaseServer {
       webinar_id: webinar.id,
     });
   }
+
   /**
    * 检查问卷图标的状态
    */
@@ -323,6 +329,9 @@ class QuestionnaireServer extends BaseServer {
     })
   }
 
+  /**
+   * 获取活动最后一个问卷
+   */
   getLastSurvey(index = 0) {
     const { watchInitData } = this.useRoomBaseServer.state;
     const { interact, switch: _switch } = watchInitData;
@@ -334,6 +343,7 @@ class QuestionnaireServer extends BaseServer {
     });
   }
 
+  // 小红点
   setDotVisible(visivle) {
     this.state.dotVisible = visivle
   }

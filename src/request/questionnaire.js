@@ -8,6 +8,7 @@ const queryQuestionnaireList = params => {
     params: params
   });
 };
+
 // 复制问卷
 const copyQuestionnaire = params => {
   return request({
@@ -16,7 +17,8 @@ const copyQuestionnaire = params => {
     params
   });
 };
-// 主持人复制问卷
+
+// 主持人复制(paas)问卷
 const copyMainQuestionnaire = params => {
   return request({
     url: '/v3/vss/survey/copy-shared-survey',
@@ -24,7 +26,8 @@ const copyMainQuestionnaire = params => {
     params
   });
 };
-// 助理/嘉宾
+
+// 助理/嘉宾复制(paas)问卷
 const copyOtherQuestionnaire = params => {
   return request({
     url: '/v3/vss/survey/copy-shared-survey-others',
@@ -32,6 +35,7 @@ const copyOtherQuestionnaire = params => {
     params
   });
 };
+
 // 删除问卷
 const deleteQuestionnaire = params => {
   return request({
@@ -40,7 +44,8 @@ const deleteQuestionnaire = params => {
     data: params
   });
 };
-//
+
+// 创建直播间内问卷
 const createLiveQuestion = params => {
   return request({
     url: '/v3/vss/survey/create-webinar-survey',
@@ -48,7 +53,6 @@ const createLiveQuestion = params => {
     data: params
   });
 };
-
 
 // 发布问卷
 const publishQuestionnaire = params => {
@@ -76,14 +80,7 @@ const submitQuestionnaire = params => {
     data: params
   });
 };
-// 回放时，可以填写问卷
-const getVodQuestion = params => {
-  return request({
-    url: '/v3/vss/survey/check-can-answer',
-    method: 'GET',
-    params
-  });
-};
+
 // 是否提交问卷
 const checkAnswerStatus = params => {
   return request({
@@ -92,6 +89,7 @@ const checkAnswerStatus = params => {
     params
   });
 };
+
 // 获取最后一次问卷
 const getLastSurvey = params => {
   return request({
@@ -112,6 +110,5 @@ export default {
   editQuestionnaire,
   submitQuestionnaire,
   checkAnswerStatus,
-  getVodQuestion,
   getLastSurvey
 };
