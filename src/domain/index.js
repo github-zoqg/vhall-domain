@@ -107,10 +107,15 @@ class Domain {
     return roomBaseServer.initLive(options);
   }
 
-  // 初始化数据上报
+  // 初始化数据上报, 客户需要的统计数据
   initVhallReport(reportOptions, logOptions) {
     window.vhallReport = new VhallReport(reportOptions);
     window.vhallLog = ITextbookLog(logOptions);
+  }
+
+  // 微吼直播产品侧需要的数据
+  initVhallReportForProduct(reportOptions) {
+    window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
   }
 }
 const version = '__VERSION__';

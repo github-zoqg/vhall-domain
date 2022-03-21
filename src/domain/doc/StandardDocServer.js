@@ -396,11 +396,11 @@ export default class StandardDocServer extends AbstractDocServer {
 
 
       if (useGroupServer().state.groupInitData.isInGroup) {
-        // 如果在小组内
-        if (useMicServer().getSpeakerStatus()) {
-          // 如果小组成员在麦上,小屏默认显示流窗口
-          roomBaseServer.setChangeElement('stream-list');
-        }
+        // 如果在小组内,文档常显，所以小屏显示流画面
+        roomBaseServer.setChangeElement('stream-list');
+        // if (useMicServer().getSpeakerStatus()) {
+        //   // 如果小组成员在麦上,小屏默认显示流窗口
+        // }
 
       } else {
         const {

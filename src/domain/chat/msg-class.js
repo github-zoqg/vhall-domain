@@ -2,12 +2,12 @@ let count = 0;
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
 import { isPc } from '@/utils/index.js';
-const defaultAvatar = 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png';
+const defaultAvatar = '';
 export default class Msg {
   constructor(params) {
     const roomserver = useRoomBaseServer();
     const groupServer = useGroupServer();
-    const { avatar, nickname, role_name, user_id } = roomserver.state.watchInitData.join_info;
+    const { avatar, nickname, role_name, user_id, account_id } = roomserver.state.watchInitData.join_info;
     console.log("join_info", JSON.stringify(roomserver.state.watchInitData.join_info));
     //分组相关逻辑判断
     const { groupInitData = {} } = useGroupServer().state;
@@ -21,7 +21,7 @@ export default class Msg {
       avatar,
       nickname,
       role_name: groupInitData.isInGroup && groupInitData.join_role == 20 ? 20 : role_name,
-      user_id
+      user_id: user_id || account_id
     };
   }
   //设置私聊对象
