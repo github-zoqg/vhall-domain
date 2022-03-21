@@ -514,6 +514,11 @@ class StandardGroupServer extends BaseServer {
     // 自己回到主房间，需要获取主房间上麦列表
     if (groupJoinChangeInfo.isNeedCare && groupJoinChangeInfo.to === 0) {
       await this.updateMainRoomInavToolStatus()
+
+      // 主持人退出小组回到主房间显示分组管理面板
+      if (useRoomBaseServer().state.watchInitData.join_info.role_name == 1) {
+        this.state.panelShow = true;
+      }
     }
 
     // 换组的人更新自己的上麦列表

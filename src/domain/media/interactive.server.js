@@ -252,7 +252,7 @@ class InteractiveServer extends BaseServer {
       }
     }
     // 主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题
-    if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup) {
+    if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup && watchInitData.webinar.mode == 6) {
       autoSpeak = true
     }
 
