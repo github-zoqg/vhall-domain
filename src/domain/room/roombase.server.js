@@ -95,6 +95,8 @@ class RoomBaseServer extends BaseServer {
           // 设置发起端权限
           if (['send', 'record', 'clientEmbed'].includes(options.clientType)) {
             this.state.configList = configMap(res.data.permission)
+            // 发起端，将多语言缓存清除
+            localStorage.removeItem('lang')
             // 判断是不是第三方推流
             if (res.data.switch && res.data.switch.start_type == 4) {
               this.state.isThirdStream = true
