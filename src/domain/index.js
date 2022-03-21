@@ -114,7 +114,7 @@ class Domain {
   }
 
   // 微吼直播产品侧需要的数据
-  initVhallReportForSaas() {
+  initVhallReportForProduct() {
     // window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
   }
 }
