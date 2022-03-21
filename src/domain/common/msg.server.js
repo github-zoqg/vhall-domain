@@ -40,7 +40,7 @@ class MsgServer extends BaseServer {
       const { join_info } = useRoomBaseServer().state.watchInitData
       // 结束直播或在小组中结束直播，需要销毁socket，并且只有观众会销毁
       if (join_info.role_name == 2 && (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1))) {
-        // this.destroy();
+        this.destroy();
         this.destroyGroupMsg();
       }
 
