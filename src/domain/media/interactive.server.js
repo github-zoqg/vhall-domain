@@ -412,7 +412,7 @@ class InteractiveServer extends BaseServer {
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
       // 更改设备状态
-      // useMediaCheckServer().getMediaInputPermission();
+      useMediaCheckServer().getMediaInputPermission();
       this.$emit('EVENT_STREAM_END', e);
     });
 
