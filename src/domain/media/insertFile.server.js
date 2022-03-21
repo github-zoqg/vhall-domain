@@ -406,9 +406,9 @@ class InsertFileServer extends BaseServer {
     const interactiveServer = useInteractiveServer()
     const localSpeaker = micServer.state.speakerList.find(item => item.accountId == roomBaseServer.state.watchInitData.join_info.third_party_user_id)
 
-    const isWatch = ['standard', 'embed', 'sdk'].includes(roomBaseServer.state.clientType)
+    // const isWatch = ['standard', 'embed', 'sdk'].includes(roomBaseServer.state.clientType)
     // 无延迟或者分组直播的时候没有上麦，也是互动流，直接 return
-    if (isWatch && !localSpeaker) return
+    if (!localSpeaker) return
 
     if (options.isStart) {
       // 如果是开启插播、开始播放，保存当前麦克风状态，并静音麦克风

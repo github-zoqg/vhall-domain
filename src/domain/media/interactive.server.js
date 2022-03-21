@@ -39,6 +39,8 @@ class InteractiveServer extends BaseServer {
       INTERACTIVE_LOCAL_STREAM_UPDATE: 'INTERACTIVE_LOCAL_STREAM_UPDATE', // 本地流信息更新事件
       INTERACTIVE_REMOTE_STREAMS_UPDATE: 'INTERACTIVE_REMOTE_STREAMS_UPDATE' // 本地流信息更新事件
     }
+
+    this.currentStreams = [] // 多次初始化sdk的时候 getRoomStreams 获取的流信息不准，初始化获取流一currentStreams
     InteractiveServer.instance = this;
     return this;
   }
@@ -98,8 +100,13 @@ class InteractiveServer extends BaseServer {
               stream.audioMuted = _muteObj.audioMuted
               stream.videoMuted = _muteObj.videoMuted
             }
-            return stream.streamType <= 2;
+            return stream;
           });
+
+          // 拷贝streams
+          this.currentStreams = [...streams]
+
+          streams = streams.filter(stream => stream.streamType <= 2)
           console.log('[interactiveServer] streams----', streams)
           streams.forEach(stream => {
 
@@ -966,9 +973,13 @@ class InteractiveServer extends BaseServer {
   }
 
   // 获取插播和桌面共享的流信息
-  getDesktopAndIntercutInfo() {
+  getDesktopAndIntercutInfo(isUseCurrentStreams = false) {
     if (!this.interactiveInstance) return
     let streamList = this.interactiveInstance.getRoomStreams();
+
+    if (isUseCurrentStreams) {
+      streamList = [...this.currentStreams]
+    }
     streamList = streamList.map(stream => ({
       ...stream,
       attributes: stream.attributes && typeof stream.attributes == 'string' ? JSON.parse(stream.attributes) : stream.attributes
