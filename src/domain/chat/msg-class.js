@@ -24,7 +24,7 @@ export default class Msg {
       avatar,
       nickname: nick_name,
       role_name: groupInitData.isInGroup && groupInitData.join_role == 20 ? 20 : role_name,
-      user_id
+      user_id: user_id || account_id
     };
   }
   //设置私聊对象
