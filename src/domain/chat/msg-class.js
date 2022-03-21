@@ -1,14 +1,17 @@
 let count = 0;
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
+import useUserServer from '../user/userServer';
 import { isPc } from '@/utils/index.js';
 const defaultAvatar = '';
 export default class Msg {
   constructor(params) {
     const roomserver = useRoomBaseServer();
     const groupServer = useGroupServer();
-    const { avatar, nickname, role_name, user_id } = roomserver.state.watchInitData.join_info;
-    console.log("join_info", JSON.stringify(roomserver.state.watchInitData.join_info));
+    const useServer = useUserServer()
+    const { avatar, nick_name } = useServer.state.userInfo
+    const { role_name, user_id } = roomserver.state.watchInitData.join_info;
+    console.log('11111111111222join_info', useServer.state.userInfo, JSON.stringify(roomserver.state.watchInitData.join_info));
     //分组相关逻辑判断
     const { groupInitData = {} } = useGroupServer().state;
     this.data = {
@@ -19,7 +22,7 @@ export default class Msg {
       atList: [],
       replyMsg: {},
       avatar,
-      nickname,
+      nickname: nick_name,
       role_name: groupInitData.isInGroup && groupInitData.join_role == 20 ? 20 : role_name,
       user_id
     };
