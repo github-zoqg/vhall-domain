@@ -642,7 +642,7 @@ class StandardGroupServer extends BaseServer {
     }
 
     // 如果是主持人或助理，变更组长不是自己操作的，要更新分组面板数据
-    if ((join_info.role_name != 1 || join_info.role_name != 2)
+    if ((join_info.role_name == 1 || join_info.role_name == 3)
       && msg.sender_id != join_info.third_party_user_id) {
       this.getGroupedUserList();
     }
