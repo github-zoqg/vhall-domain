@@ -118,12 +118,12 @@ class MicServer extends BaseServer {
           break;
         // 开启允许举手
         case 'vrtc_connect_open':
-          useRoomBaseServer().setInavToolStatus('is_handsup', true);
+          useRoomBaseServer().setInavToolStatus('is_handsup', 1);
           this.$emit('vrtc_connect_open', msg);
           break;
         // 关闭允许举手
         case 'vrtc_connect_close':
-          useRoomBaseServer().setInavToolStatus('is_handsup', false);
+          useRoomBaseServer().setInavToolStatus('is_handsup', 0);
           this.$emit('vrtc_connect_close', msg);
           break;
         // 用户申请上麦

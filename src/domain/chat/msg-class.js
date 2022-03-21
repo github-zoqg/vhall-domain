@@ -2,7 +2,7 @@ let count = 0;
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
 import { isPc } from '@/utils/index.js';
-const defaultAvatar = 'https://cnstatic01.e.vhall.com/3rdlibs/vhall-static/img/default_avatar.png';
+const defaultAvatar = '';
 export default class Msg {
   constructor(params) {
     const roomserver = useRoomBaseServer();

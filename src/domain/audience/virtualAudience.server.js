@@ -58,8 +58,8 @@ class VirtualClientStartServer extends BaseServer {
         useRoomBaseServer().state.watchInitData.pv &&
         useRoomBaseServer().state.watchInitData.pv.num2;
       this.state.uvOnline = msg.uv;
-      if (msg.pv > this.state.uvHot) {
-        this.state.uvHot = msg.pv;
+      if (msg.context.pv > this.state.uvHot) {
+        this.state.uvHot = msg.context.pv;
       }
     });
     // 离开房间 ROOM_NUM_UPDATE
