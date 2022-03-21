@@ -88,7 +88,7 @@ class DesktopShareServer extends BaseServer {
   // 初始化桌面共享状态
   initDesktopShareStatus() {
     const interactiveServer = useInteractiveServer();
-    let stream = interactiveServer.getDesktopAndIntercutInfo();
+    let stream = interactiveServer.getDesktopAndIntercutInfo(true);
     if (stream?.streamType === 3) {
       this.state.localDesktopStreamId = stream.streamId
       this.state.desktopShareInfo = stream.attributes
