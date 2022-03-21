@@ -331,7 +331,7 @@ class InteractiveServer extends BaseServer {
       })
       .catch(err => {
         console.log('[interactiveServer]----互动sdk销毁失败', err);
-        return err;
+        return Promise.reject(err);
       });
   }
 
@@ -498,12 +498,17 @@ class InteractiveServer extends BaseServer {
       .createStream(options)
       .catch(err => {
         if (err?.data?.error?.msg?.message === 'Permission denied') {
-          return err;
+          err.name = 'NotAllowed'
+          return Promise.reject(err);
+        }
+        if (err?.name && (err.name == 'NotReadableError' || err.name == 'SecurityError' || err.name == 'NotAllowedError')) {
+          err.name = 'NotAllowed'
+          return Promise.reject(err)
         }
         // 创建失败重试三次
         if (InteractiveServer._createLocalStreamRetryCount >= 3) {
           InteractiveServer._createLocalStreamRetryCount = 0;
-          return err;
+          return Promise.reject(err);
         }
         InteractiveServer._createLocalStreamRetryCount
           ? InteractiveServer._createLocalStreamRetryCount++
@@ -593,8 +598,9 @@ class InteractiveServer extends BaseServer {
       } catch (e) {
         console.error('createLocalVideoStream', e)
       }
-
-    });
+    }).catch(e => {
+      return Promise.reject(e)
+    })
   }
 
   /**
@@ -738,7 +744,9 @@ class InteractiveServer extends BaseServer {
       // 派发本地流更新事件
       this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
       return data
-    });
+    }).catch(e => {
+      return Promise.reject(e)
+    })
   }
 
   // Wap 创建摄像头视频流
@@ -796,7 +804,9 @@ class InteractiveServer extends BaseServer {
         streamId: data.streamId
       };
       return data
-    });
+    }).catch(e => {
+      return Promise.reject(e)
+    })
   }
 
   // 销毁本地流
@@ -939,7 +949,7 @@ class InteractiveServer extends BaseServer {
       // 开启失败重试三次
       if (InteractiveServer._startBroadCastRetryCount >= 3) {
         InteractiveServer._startBroadCastRetryCount = 0;
-        return err;
+        return Promise.reject(err);
       }
       // 等待 1s 重试
       await sleep(1000);
@@ -1018,7 +1028,7 @@ class InteractiveServer extends BaseServer {
         // 设置失败重试三次
         if (InteractiveServer._setBroadCastScreenRetryCount >= 3) {
           InteractiveServer._setBroadCastScreenRetryCount = 0;
-          return err;
+          return Promise.reject(err);
         }
         // 等待 50ms 重试
         await sleep(50);
