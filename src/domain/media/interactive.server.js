@@ -587,24 +587,8 @@ class InteractiveServer extends BaseServer {
     const params = merge.recursive({}, defaultOptions, options);
 
     return this.createLocalStream(params).then(data => {
-
-      try {
-        let params = {
-          streamId: data.streamId,
-          audioMuted: defaultOptions.mute?.audio || false,
-          videoMuted: defaultOptions.mute?.video || false
-        }
-        useMicServer().updateSpeakerByAccountId(watchInitData.join_info.third_party_user_id, params)
-
-        this.state.localStream = {
-          streamId: data.streamId,
-        };
-        // 派发本地流更新事件
-        this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
-        return data
-      } catch (e) {
-        console.error('createLocalVideoStream', e)
-      }
+      this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
+      return data
     }).catch(e => {
       return Promise.reject(e)
     })
@@ -737,26 +721,21 @@ class InteractiveServer extends BaseServer {
 
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return this.createLocalStream(params).then(data => {
-
-      let params = {
-        streamId: data.streamId,
-        audioMuted: defaultOptions.mute?.audio || false,
-        videoMuted: defaultOptions.mute?.video || false
-      }
-      useMicServer().updateSpeakerByAccountId(watchInitData.join_info.third_party_user_id, params)
-
-      this.state.localStream = {
-        streamId: data.streamId
-      };
-      // 派发本地流更新事件
-      this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
+      this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
       return data
     }).catch(e => {
       return Promise.reject(e)
     })
   }
 
-  // Wap 创建摄像头视频流
+
+  /**
+   * 描述 wap创建流
+   * @date 2022-03-22
+   * @param {any} options={}  默认配置
+   * @param {any} addConfig={}  追加config配置
+   * @returns {any}
+   */
   async createWapLocalStream(options = {}, addConfig = {}) {
     const { watchInitData } = useRoomBaseServer().state;
     const { interactToolStatus } = useRoomBaseServer().state;
@@ -795,25 +774,40 @@ class InteractiveServer extends BaseServer {
     console.log('[interactiveServer]----createWapLocalStream内speaker：', speaker, '默认参数', defaultOptions)
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return await this.createLocalStream(params).then(data => {
+      this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
+      return data
+    }).catch(e => {
+      return Promise.reject(e)
+    })
+  }
+
+  /**
+   * 描述   更新 speaklist相关数据
+   * @date 2022-03-22
+   * @param {any} data  创建流成功返回的信息
+   * @param {any} defaultOptions 创建流传的参数
+   * @param {any} watchInitData useRoomBaseServer().state
+   * @returns {any}
+   */
+  updateSpeakerByAccountId(data, defaultOptions, watchInitData) {
+    try {
       let params = {
         streamId: data.streamId,
         audioMuted: defaultOptions.mute?.audio || false,
         videoMuted: defaultOptions.mute?.video || false
       }
-      try {
-        if (speaker) {
-          useMicServer().updateSpeakerByAccountId(speaker.accountId, params)
-        }
-      } catch (error) {
-        console.log('[interactiveServer]----更新speaker出现异常----', error)
-      }
+      // 更新speakList  
+      useMicServer().updateSpeakerByAccountId(watchInitData.join_info.third_party_user_id, params)
+
       this.state.localStream = {
         streamId: data.streamId
-      };
-      return data
-    }).catch(e => {
-      return Promise.reject(e)
-    })
+      }
+
+      // 派发本地流更新事件
+      this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
+    } catch (e) {
+      console.error('updateSpeakerByAccountId__speaker_list error', e)
+    }
   }
 
   // 销毁本地流
