@@ -248,12 +248,7 @@ export default class StandardDocServer extends AbstractDocServer {
       console.log('[doc] ========控制文档开关=============', status);
       this.state.switchStatus = status === 'on';
       if (useRoomBaseServer().state.clientType != 'send') {
-        // 观看端
-        let miniElement = this.state.switchStatus ? 'doc' : ''
-        if (useGroupServer().state.groupInitData.isInGroup) {
-          miniElement = 'stream-list'
-        }
-        useRoomBaseServer().setChangeElement(miniElement);
+        this.resetLayoutByMiniElement()
       }
       this.$emit('dispatch_doc_switch_change', this.state.switchStatus);
     });
@@ -394,44 +389,9 @@ export default class StandardDocServer extends AbstractDocServer {
     // 通知观众可见状态
     this.$emit('dispatch_doc_switch_status', this.state.switchStatus);
 
-    const roomBaseServer = useRoomBaseServer();
-    if (roomBaseServer.state.clientType != 'send') {
+    if (useRoomBaseServer().state.clientType != 'send') {
 
-
-      if (useGroupServer().state.groupInitData.isInGroup) {
-        // 如果在小组内,文档常显，所以小屏显示流画面
-        roomBaseServer.setChangeElement('stream-list');
-        // if (useMicServer().getSpeakerStatus()) {
-        //   // 如果小组成员在麦上,小屏默认显示流窗口
-        // }
-
-      } else {
-        const {
-          interactToolStatus: { presentation_screen },
-          watchInitData: { join_info: { third_party_user_id }, webinar: { type, no_delay_webinar } }
-        } = roomBaseServer.state
-
-        // 不在小组内且自己是演示者
-        if (presentation_screen == third_party_user_id) {
-          // 直播状态下，无延迟或上麦是流列表
-          roomBaseServer.setChangeElement('stream-list');
-
-        } else if (this.state.switchStatus) {
-          if (useInsertFileServer().state.isInsertFilePushing) {
-            // 如果在插播中，文档是小窗，插播是大窗
-            roomBaseServer.setChangeElement('doc');
-          } else if (type == 1 && (no_delay_webinar == 1 || useMicServer().getSpeakerStatus())) {
-            // 直播状态下，无延迟或上麦是流列表
-            roomBaseServer.setChangeElement('stream-list');
-          } else {
-            // 文档如果可见,直接设置 播放器 为小屏
-            roomBaseServer.setChangeElement('player');
-          }
-        } else {
-          roomBaseServer.setChangeElement('');
-          // useRoomBaseServer().setChangeElement('doc');
-        }
-      }
+      this.resetLayoutByMiniElement()
 
     }
 
@@ -905,5 +865,43 @@ export default class StandardDocServer extends AbstractDocServer {
     }
 
 
+  }
+
+  /**
+   * 处理观看端布局
+   */
+  resetLayoutByMiniElement() {
+
+    const { isInGroup } = useGroupServer().state.groupInitData
+    if (isInGroup) {
+      // 如果在小组内,文档常显，所以小屏显示流画面
+      useRoomBaseServer().setChangeElement('stream-list');
+
+    } else {
+      const {
+        interactToolStatus: { presentation_screen },
+        watchInitData: { join_info: { third_party_user_id }, webinar: { type, no_delay_webinar } }
+      } = useRoomBaseServer().state
+
+      // 不在小组内且自己是演示者
+      if (presentation_screen == third_party_user_id) {
+        // 直播状态下，无延迟或上麦是流列表
+        useRoomBaseServer().setChangeElement('stream-list');
+
+      } else if (this.state.switchStatus) {
+        if (useInsertFileServer().state.isInsertFilePushing) {
+          // 如果在插播中，文档是小窗，插播是大窗
+          useRoomBaseServer().setChangeElement('doc');
+        } else if (type == 1 && (no_delay_webinar == 1 || useMicServer().getSpeakerStatus())) {
+          // 直播状态下，无延迟或上麦是流列表
+          useRoomBaseServer().setChangeElement('stream-list');
+        } else {
+          // 文档如果可见,直接设置 播放器 为小屏
+          useRoomBaseServer().setChangeElement('player');
+        }
+      } else {
+        roomBaseServer.setChangeElement('');
+      }
+    }
   }
 }
