@@ -91,6 +91,7 @@ class RoomBaseServer extends BaseServer {
     return new Promise((resolve, reject) => {
       meeting[liveType.get(options.clientType)](options).then(res => {
         if (res.code === 200) {
+          // debugger
           this.state.watchInitData = res.data;
           // 设置发起端权限
           if (['send', 'record', 'clientEmbed'].includes(options.clientType)) {
