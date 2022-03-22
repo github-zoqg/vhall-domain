@@ -598,7 +598,7 @@ export default class StandardDocServer extends AbstractDocServer {
           id: cid,
           elId: cid,
           width: width,
-          height: width,
+          height: height,
           noDispatch,
           backgroundColor: '#FFFFFF'
         };
