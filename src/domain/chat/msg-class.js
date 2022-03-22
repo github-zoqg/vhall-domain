@@ -10,7 +10,7 @@ export default class Msg {
     const groupServer = useGroupServer();
     const useServer = useUserServer()
     const { avatar, nick_name } = useServer.state.userInfo
-    const { role_name, user_id } = roomserver.state.watchInitData.join_info;
+    const { role_name, user_id, third_party_user_id } = roomserver.state.watchInitData.join_info;
     console.log('11111111111222join_info', useServer.state.userInfo, JSON.stringify(roomserver.state.watchInitData.join_info));
     //分组相关逻辑判断
     const { groupInitData = {} } = useGroupServer().state;
@@ -24,7 +24,7 @@ export default class Msg {
       avatar,
       nickname: nick_name,
       role_name: groupInitData.isInGroup && groupInitData.join_role == 20 ? 20 : role_name,
-      user_id: user_id || account_id
+      user_id: user_id || third_party_user_id
     };
   }
   //设置私聊对象

@@ -35,7 +35,7 @@ class UserServer {
   /**
    * @description 初始化易盾
    * */
-  async initNECaptcha(element = '#codeLoginCaptcha') {
+  async initNECaptcha(element = '#codeLoginCaptcha', type) {
     await this.getCaptchaId();
     const { languages } = useRoomBaseServer().state
     let lang = languages.lang.type == 'zh' ? 'zh-CN' : 'en';
@@ -48,7 +48,7 @@ class UserServer {
       captchaId: this.captchaId,
       element,
       mode: 'float',
-      lang: lang || 'zh-CN',
+      lang: !type ? lang || 'zh-CN' : 'zh-CN',
       onReady(instance) {
         console.log('🚀 ~ initNECaptcha onReady ', instance);
         that.capInstance = instance;
