@@ -48,6 +48,7 @@ class MediaCheckServer {
 
   // 获取用户媒体输入许可
   getMediaInputPermission(options = { isNeedBroadcast: true }) {
+    console.log('[mediaCheck] 查看是否走入此处 - 勿删 ( wap本机时，本地无法推流，只能查看线上，后续删除 )')
     if (navigator.mediaDevices) {
       return navigator.mediaDevices
         .getUserMedia({ audio: true, video: true })
@@ -55,6 +56,7 @@ class MediaCheckServer {
           // 更新当前用户设备信息
           this.state.deviceInfo.device_status = 1;
           this.state.deviceInfo.device_type = this.isMobileDevice() ? 1 : 2
+          console.log('[mediaCheck] 查看是否走入此处 - 勿删 ( wap本机时，本地无法推流，只能查看线上，后续删除 )， result:', 1)
           // TODO: 根据参数判断是否发消息同步状态
           this.setDevice({ status: 1, send_msg: Number(options.isNeedBroadcast) });
           stream.getTracks().forEach(trackInput => {
@@ -69,6 +71,7 @@ class MediaCheckServer {
           this.state.deviceInfo.device_status = 2;
           this.state.deviceInfo.device_type = this.isMobileDevice() ? 1 : 2
           // TODO: 根据参数判断是否发消息同步状态
+          console.log('[mediaCheck] 查看是否走入此处 - 勿删 ( wap本机时，本地无法推流，只能查看线上，后续删除 )， result:', 2)
           this.setDevice({ status: 2, send_msg: Number(options.isNeedBroadcast) });
         });
     }
