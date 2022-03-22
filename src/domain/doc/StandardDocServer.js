@@ -311,7 +311,30 @@ export default class StandardDocServer extends AbstractDocServer {
     // 非单视频嵌入监听此事件
     if (!useRoomBaseServer().state.embedObj.embedVideo) {
       // 回放文档加载完成事件
-      this.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, ({ chapters }) => {
+      this.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, async ({ chapters }) => {
+        // 获取回放文档容器数据
+        const data = this.getVodAllCids();
+        this.state.containerList = data.map(item => {
+          return {
+            cid: item.cid
+          };
+        });
+        await this.domNextTick();
+        if (this.state.containerList.length && typeof this.getDocViewRect === 'function') {
+          const { width, height } = this.getDocViewRect();
+          if (width > 0 && height > 0) {
+            // 循环初始化容器数据
+            for (const item of data) {
+              this.initContainer({
+                cid: item.cid,
+                width,
+                height,
+                fileType: item.type.toLowerCase()
+              });
+            }
+          }
+        }
+
         // 获取点播或回放设置的章节
         this.$emit('dispatch_doc_vod_cuepoint_load_complate', chapters);
       });
@@ -598,7 +621,7 @@ export default class StandardDocServer extends AbstractDocServer {
           id: cid,
           elId: cid,
           width: width,
-          height: width,
+          height: height,
           noDispatch,
           backgroundColor: '#FFFFFF'
         };
