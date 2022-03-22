@@ -11,7 +11,7 @@ class MediaCheckServer {
     }
     this.state = {
       deviceInfo: {
-        device_status: 0,
+        device_status: 0, // 0未检测 1可以上麦 2不可以上麦
         device_type: 0
       },
       selectedVideoDeviceId: '', // 当前选取的设备id
