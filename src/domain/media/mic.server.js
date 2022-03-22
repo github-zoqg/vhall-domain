@@ -243,8 +243,7 @@ class MicServer extends BaseServer {
     const retParams = merge.recursive({}, defaultParams, data);
 
     const methodName = data.receive_account_id ? 'speakOffUser' : 'speakOffSelf';
-    let res = im.signaling[methodName](retParams);
-    return res
+    return im.signaling[methodName](retParams);
   }
   // 允许举手
   setHandsUp(data = {}) {
