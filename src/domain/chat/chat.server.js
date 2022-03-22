@@ -1,6 +1,7 @@
 /**
  * 聊天服务
  * */
+import moment from 'moment';
 import { textToEmojiText } from '@/utils/emoji';
 import Msg from './msg-class';
 import { im as iMRequest } from '@/request/index.js';
@@ -273,10 +274,14 @@ class ChatServer extends BaseServer {
     if (this.checkHasKeyword(data.text_content)) {
       useMsgServer().sendChatMsg(data, context);
     }
+    const msg = Msg._handleGenerateMsg({ data, context })
+    const date_time = moment().format('yyyy-MM-DD HH:mm:ss')
+    msg.sendTime = date_time
     if (data.target_id) {
-      this.state.privateChatList.push(Msg._handleGenerateMsg({ data, context }))
+      this.state.privateChatList.push(msg)
     } else {
-      this.state.chatList.push(Msg._handleGenerateMsg({ data, context }))
+      msg.prevTime = this.state.chatList[this.state.chatList.length - 1].sendTime
+      this.state.chatList.push(msg)
     }
     data.text_content = textToEmojiText(data.text_content);
   }
