@@ -151,6 +151,16 @@ class RedPacketServer extends BaseServer {
       ...params
     });
   }
+  /**
+   * @description 获取最后一个红包的领取信息
+   */
+  getLatestRedpacketUsage() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const { interact } = watchInitData;
+    return redPacketApi.getLatestRedpacketUsage({
+      room_id: interact.room_id
+    });
+  }
 }
 
 export default function useRedPacketServer(opts) {
