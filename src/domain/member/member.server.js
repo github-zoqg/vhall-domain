@@ -12,8 +12,9 @@ class MemberServer extends BaseServer {
       return MemberServer.instance;
     }
     super();
-    const {roomId = '', roleName, avatar = '',join_info = {}} = useRoomBaseServer().state.watchInitData;
-    const {groupInitData = {}} = useRoomBaseServer().state;
+    const {roomId = '', roleName, avatar = '', join_info = {}} = useRoomBaseServer().state.watchInitData;
+    const {groupInitData = {}, clientType = ''} = useRoomBaseServer().state;
+    const isLive = clientType === 'send';
     const userId = join_info.third_party_user_id;
 
     this.state = {
@@ -33,6 +34,8 @@ class MemberServer extends BaseServer {
       userId,
       //登录的用户角色
       roleName,
+      //是否是发起端
+      isLive,
       //是否在分组里
       isInGroup: groupInitData.isInGroup,
       //组长的id
@@ -44,12 +47,35 @@ class MemberServer extends BaseServer {
       //举手定时器集合
       handsUpTimerMap: {},
       //记录一下上一个成功下麦消息的人员id
-      lastTargetId:'',
+      lastTargetId: '',
     };
 
     // this.listenEvents();
     MemberServer.instance = this;
     return this;
+  }
+
+  //还原视图数据
+  resetStateData() {
+    this.state.onlineUsers = [];
+    this.state.applyUsers = [];
+    this.state.limitedUsers = [];
+    this.state.totalNum = 0;
+    this.state.page = 1;
+    this.state.leaderId = '';
+    this.state.tabIndex = 1;
+    this.state.raiseHandTip = false;
+    this.state.lastTargetId = '';
+    //如果这时候还有举手的定时器存在，清除一下定时器
+    try {
+      let timerList = Object.keys(this.state.handsUpTimerMap);
+      (timerList || []).forEach(item => {
+        item && clearTimeout(item);
+      });
+      this.state.handsUpTimerMap = {};
+    } catch (e) {
+
+    }
   }
 
   //监听msgServer通知
@@ -115,7 +141,7 @@ class MemberServer extends BaseServer {
       const type = msg.data.event_type || msg.data.type || '';
       switch (type) {
         case 'endLive':
-          this.$emit(type,msg);
+          this.$emit(type, msg);
           break;
         case 'vrtc_connect_apply':
           //用户申请上麦
@@ -147,7 +173,7 @@ class MemberServer extends BaseServer {
           this._handleKicked(msg);
           break;
         case 'room_kickout_cancel':
-          this.$emit(type,msg);
+          this.$emit(type, msg);
           break;
         case 'vrtc_disconnect_presentation_success':
           this._handleUserEndPresentation(msg);
@@ -159,7 +185,7 @@ class MemberServer extends BaseServer {
           //视图处理
           break;
         case 'vrtc_connect_presentation_agree':
-          !isLive && this.$emit(type,msg);
+          !isLive && this.$emit(type, msg);
           break;
         case 'vrtc_connect_presentation_success':
           !isLive && this._handlePresentationPermissionChange(msg);
@@ -169,11 +195,11 @@ class MemberServer extends BaseServer {
           !isLive && this._handleRoomDisconnectSuccess(msg);
           break;
         case 'group_switch_start':
-          this.$emit(type,msg);
+          this.$emit(type, msg);
           //视图处理
           break;
         case 'group_join_change':
-          this.$emit(type,msg);
+          this.$emit(type, msg);
           //视图处理
           break;
         default:
@@ -188,16 +214,28 @@ class MemberServer extends BaseServer {
       this._handleSetUserJoinInfo(msg);
     });
 
-    //切换频道，视图处理
-    //结束讨论，视图处理
+    //切换频道
+    groupServer.$on('GROUP_MSG_CREATED', msg => {
+      console.log('【成员列表】切换频道', msg);
+      this.state.isLive && this.$emit('GROUP_MSG_CREATED', msg);
+    });
+
+    //结束讨论
+    groupServer.$on('GROUP_SWITCH_END', msg => {
+      console.log('【成员列表】结束讨论', msg);
+      this.$emit('GROUP_SWITCH_END', msg);
+    });
 
     // 踢出小组
     groupServer.$on('ROOM_GROUP_KICKOUT', msg => {
       this._handleGroupKicked(msg);
     });
 
-    //解散分组,视图处理
-    //切换组长(组长变更)，视图处理
+    //解散分组
+    // 解散分组(主播&观看均更新)
+    groupServer.$on('GROUP_DISBAND', () => {
+      this.$emit('GROUP_DISBAND');
+    });
     //主持人进入退出小组 消息监听 ，视图处理
     //频道变更-开始讨论，视图处理
     // 切换组长(组长变更)
@@ -211,21 +249,21 @@ class MemberServer extends BaseServer {
     });
 
     // 主持人进入退出小组 消息监听
-    this.groupServer.$on('GROUP_MANAGER_ENTER', msg => {
+    groupServer.$on('GROUP_MANAGER_ENTER', msg => {
       const {clientType = ''} = useRoomBaseServer().state;
       if (clientType !== 'send') {
         return;
       }
-      this.$emit('GROUP_MANAGER_ENTER',msg);
+      this.$emit('GROUP_MANAGER_ENTER', msg);
     });
 
     //频道变更-开始讨论
-    this.groupServer.$on('ROOM_CHANNEL_CHANGE', msg => {
+    groupServer.$on('ROOM_CHANNEL_CHANGE', msg => {
       const {clientType = ''} = useRoomBaseServer().state;
       if (clientType === 'send') {
         return;
       }
-      this.$emit('ROOM_CHANNEL_CHANGE',msg);
+      this.$emit('ROOM_CHANNEL_CHANGE', msg);
     });
 
   }
@@ -279,6 +317,10 @@ class MemberServer extends BaseServer {
           user.role_name = context.groupInitData.join_role;
           user.is_banned = isNaN(Number(context.groupInitData.is_banned)) ? 0 : Number(context.groupInitData.is_banned);
         }
+        //在主房间，但是是分组内成员上线
+        if (!isInGroup && context?.groupInitData?.isInGroup) {
+          return;
+        }
         this.state.onlineUsers.push(user);
         this.state.onlineUsers = this._sortUsers(this.state.onlineUsers);
 
@@ -296,7 +338,7 @@ class MemberServer extends BaseServer {
         this.state.totalNum = msg.uv;
         //观看端，分组内
         if (isInGroup) {
-          const index = this.state.onlineUsers.find(item => item.account_id == msg.sender_id);
+          const index = this.state.onlineUsers.findIndex(item => item.account_id == msg.sender_id);
           if (index >= 0) {
             this.state.onlineUsers.forEach(item => {
               if (item.account_id == msg.sender_id) {
@@ -326,7 +368,7 @@ class MemberServer extends BaseServer {
               is_banned: context && context.groupInitData ? Number(context.groupInitData.is_banned) : 0
             };
             //如果上线的是分组内的成员
-            if (isInGroup && context && context.groupInitData && ![null, void 0, ''].includes(context.groupInitData.join_role)) {
+            if (isInGroup && ![null, void 0, ''].includes(context?.groupInitData?.join_role)) {
               user.role_name = context.groupInitData.join_role;
               user.is_banned = isNaN(Number(context.groupInitData.is_banned)) ? 0 : Number(context.groupInitData.is_banned);
             }
@@ -367,7 +409,7 @@ class MemberServer extends BaseServer {
     const {clientType = ''} = useRoomBaseServer().state;
     const isLive = clientType === 'send';
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
-    // 如果是聊天审核页面不做任何操作
+    // 如果是聊天审核,不做任何操作
     if (msg.context.isAuthChat) {
       return;
     }
@@ -384,6 +426,7 @@ class MemberServer extends BaseServer {
     }
     this._deleteUser(msg.sender_id, this.state.onlineUsers);
     this._deleteUser(msg.sender_id, this.state.applyUsers);
+    this._deleteUser(msg.sender_id, this.state.limitedUsers);
     this.$emit('LEFT', msg);
   }
 
@@ -474,6 +517,8 @@ class MemberServer extends BaseServer {
 
     const {member_info = {is_apply: 0, is_speak: 1}} = msg.data;
     this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
+    //上麦成功，需要更新一下申请上麦的人（因为主持人和助理、组长等都会看到申请列表）
+    this._deleteUser(msg.data.room_join_id, this.state.applyUsers);
     //如果已经没有举手的人，清除一下举手一栏的小红点
     if (!this.state.applyUsers.length) {
       this.state.raiseHandTip = false;
@@ -492,7 +537,7 @@ class MemberServer extends BaseServer {
   //用户拒绝上麦邀请
   _handleUserRejectConnect(msg) {
     // 如果申请人是自己
-    if (msg.data.room_join_id == this.state.userId || this.state.roleName != 1) {
+    if (msg.data.room_join_id == this.state.userId || (this.state.isLive && this.state.roleName != 1)) {
       return;
     }
     this.$emit('vrtc_connect_invite_refused', msg);
@@ -655,14 +700,14 @@ class MemberServer extends BaseServer {
     const isLive = clientType === 'send';
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
     if (isLive) {
-      this.$emit('ROOM_GROUP_KICKOUT',msg);
+      this.$emit('ROOM_GROUP_KICKOUT', msg);
       return;
     }
 
     if (!isInGroup) return;
 
     if (userId == msg.data.target_id) {
-      this.$emit('ROOM_GROUP_KICKOUT',msg);
+      this.$emit('ROOM_GROUP_KICKOUT', msg);
       return;
     }
 
