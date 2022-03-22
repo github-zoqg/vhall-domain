@@ -74,7 +74,7 @@ class MemberServer extends BaseServer {
       });
       this.state.handsUpTimerMap = {};
     } catch (e) {
-
+      console.log('memberServer throw error', e);
     }
   }
 
@@ -241,10 +241,10 @@ class MemberServer extends BaseServer {
     // 切换组长(组长变更)
     groupServer.$on('GROUP_LEADER_CHANGE', msg => {
       const {clientType = ''} = useRoomBaseServer().state;
-      if (clientType === 'send' && !this.isInGroup) {
+      if (clientType === 'send' && !this.state.isInGroup) {
         return;
       }
-      this.leaderId = msg.data.account_id;
+      this.state.leaderId = msg.data.account_id;
       this.$emit('GROUP_LEADER_CHANGE', msg);
     });
 
@@ -391,7 +391,7 @@ class MemberServer extends BaseServer {
             is_apply: 0
           };
           this.state.onlineUsers.push(user);
-          this.onlineUsers = this._sortUsers(this.state.onlineUsers);
+          this.state.onlineUsers = this._sortUsers(this.state.onlineUsers);
           //如果是嘉宾，则视图那边收到监听会发送一个提示消息
           if (msg.context.role_name == 4 && msg.sender_id != userId) {
             this.$emit('JOIN', msg);
@@ -491,8 +491,8 @@ class MemberServer extends BaseServer {
     this._deleteUser(msg.data.room_join_id, this.state.applyUsers);
     this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
     //用户取消下麦,清除30秒自动拒绝的定时器
-    this.state.handsUpTimerMap[msg.data.room_join_id] && clearTimeout(this.handsUpTimerMap[msg.data.room_join_id]);
-    delete this.handsUpTimerMap[msg.data.room_join_id];
+    this.state.handsUpTimerMap[msg.data.room_join_id] && clearTimeout(this.state.handsUpTimerMap[msg.data.room_join_id]);
+    delete this.state.handsUpTimerMap[msg.data.room_join_id];
   }
 
   //同意了用户上麦
@@ -508,15 +508,11 @@ class MemberServer extends BaseServer {
 
   //用户上麦成功
   _handleSuccessConnect(msg) {
-    const {clientType = '', watchInitData = {}} = useRoomBaseServer().state;
-    const {join_info = {}} = watchInitData;
-    const userId = join_info.third_party_user_id;
-    const isLive = clientType === 'send';
-    console.log(isLive, 'isLive-------------------');
-    const isInGroup = useGroupServer().state.groupInitData.isInGroup;
-
+    const userId = useRoomBaseServer().state?.watchInitData?.join_info?.third_party_user_id;
     const {member_info = {is_apply: 0, is_speak: 1}} = msg.data;
     this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
+    //对在线的人员排序一下
+    this.state.onlineUsers = this._sortUsers(this.state.onlineUsers);
     //上麦成功，需要更新一下申请上麦的人（因为主持人和助理、组长等都会看到申请列表）
     this._deleteUser(msg.data.room_join_id, this.state.applyUsers);
     //如果已经没有举手的人，清除一下举手一栏的小红点
@@ -736,7 +732,7 @@ class MemberServer extends BaseServer {
       return;
     }
     Object.assign(item || {}, obj);
-    console.log(this.onlineUsers, '更改后的成员列表');
+    console.log(this.state.onlineUsers, '更改后的成员列表');
   }
 
   //查找用户在数组里的索引号
