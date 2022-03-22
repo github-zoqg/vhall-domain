@@ -209,6 +209,10 @@ class InteractiveServer extends BaseServer {
 
     // 如果在麦上，设为 HOST
     if (useMicServer().getSpeakerStatus()) {
+      if (useMediaCheckServer().state.deviceInfo.device_status === 2) {
+        // 若设备为2   不允许则直接下麦
+        await useMicServer().speakOff()
+      }
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
@@ -257,10 +261,10 @@ class InteractiveServer extends BaseServer {
           groupInitData.isInGroup && groupInitData.doc_permission == watchInitData.join_info.third_party_user_id
         console.log('[interactive server] auto_speak 0', autoSpeak)
       }
-    }
-    // 主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题
-    if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup && watchInitData.webinar.mode == 6) {
-      autoSpeak = true
+      // 主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题
+      if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup && watchInitData.webinar.mode == 6) {
+        autoSpeak = true
+      }
     }
 
 
@@ -419,6 +423,7 @@ class InteractiveServer extends BaseServer {
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
       // 更改设备状态
+      useMicServer().speakOff()
       useMediaCheckServer().getMediaInputPermission();
       this.$emit('EVENT_STREAM_END', e);
     });
