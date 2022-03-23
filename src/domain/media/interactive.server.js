@@ -386,6 +386,14 @@ class InteractiveServer extends BaseServer {
 
     // 远端流离开事件,自己的流删除事件收不到
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
+      console.log('[interactiveServer]--------流退出事件----', e);
+
+      if (e.data.streamType === 2) {
+        let params = {
+          streamId: '',
+        }
+        useMicServer().updateSpeakerByAccountId(e.data.accountId, params)
+      }
       this.$emit('EVENT_REMOTESTREAM_REMOVED', e);
     });
 
@@ -413,9 +421,12 @@ class InteractiveServer extends BaseServer {
 
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
-      // 更改设备状态
-      useMicServer().speakOff()
-      useMediaCheckServer().getMediaInputPermission();
+      console.log('[interactiveServer]-------本地流断开----', e);
+      if (e.data?.streamType != 3) {
+        // 非桌面共享时设置设备不可用  / 若在麦上，下麦( 线上逻辑 )
+        useMicServer().speakOff()
+        useMediaCheckServer().getMediaInputPermission();
+      }
       this.$emit('EVENT_STREAM_END', e);
     });
 
@@ -500,6 +511,7 @@ class InteractiveServer extends BaseServer {
     return this.interactiveInstance
       .createStream(options)
       .catch(err => {
+        console.error('[interactiveServer] 查看创建流失败', err)
         if (err?.data?.error?.msg?.message === 'Permission denied') {
           err.name = 'NotAllowed'
           return Promise.reject(err);
@@ -726,7 +738,7 @@ class InteractiveServer extends BaseServer {
 
 
   /**
-   * 描述 wap创建流
+   * 描述 wap创建流   wap创建时，不能指定设备ID，只能使用facingMode参数
    * @date 2022-03-22
    * @param {any} options={}  默认配置
    * @param {any} addConfig={}  追加config配置
@@ -770,9 +782,11 @@ class InteractiveServer extends BaseServer {
     console.log('[interactiveServer]----createWapLocalStream内speaker：', speaker, '默认参数', defaultOptions)
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return await this.createLocalStream(params).then(data => {
+      console.warn('勿删-----后续删除-----创建流成功-', data, defaultOptions, watchInitData)
       this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
       return data
     }).catch(e => {
+      console.warn('勿删-----后续删除-------创建流失败-', e)
       return Promise.reject(e)
     })
   }
@@ -841,7 +855,6 @@ class InteractiveServer extends BaseServer {
 
   // 推送本地流到远端
   publishStream(options = {}) {
-    const { state: roomBaseServerState } = useRoomBaseServer();
     return this.interactiveInstance
       .publish({
         streamId: options.streamId || this.state.localStream.streamId
@@ -1208,28 +1221,26 @@ class InteractiveServer extends BaseServer {
     this.state.streamListHeightInWatch = val;
   }
 
-  /*
-   * 播放
+  /**
+   * 描述：播放
+   * @date 2022-03-23
+   * @param {any} opt Object {streamId: xxx}
+   * @returns {any} promise
    */
   setPlay(opt) {
     return this.interactiveInstance.play(opt);
   }
-  /*
-   * 播放
+
+  /**
+   * 描述：暂停
+   * @date 2022-03-23
+   * @param {any} opt Object {streamId: xxx}
+   * @returns {any} promise
    */
   setPause(opt) {
     return this.interactiveInstance.pause(opt);
   }
 
-  //判断是不是发送给当前用户的消息
-  isMyMsg(msg) {
-    const { watchInitData } = useRoomBaseServer().state;
-    if (msg.data.accountId) {
-      return msg.data.accountId == watchInitData.join_info.third_party_user_id;
-    } else {
-      return msg.data.target_id == watchInitData.join_info.third_party_user_id;
-    }
-  }
 
   /**
    * 初始化本地流的时候，处理插播情况的麦克风状态
