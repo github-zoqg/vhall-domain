@@ -1,5 +1,4 @@
 import request from '@/utils/http.js';
-import qs from 'qs';
 
 const biz_id = 2;
 
@@ -53,7 +52,7 @@ const withdraw = (data = {}) => {
   return request({
     url: '/v3/fin/withdraw',
     method: 'POST',
-    data: qs.stringify({ biz_id, ...data })
+    data: { biz_id, ...data }
   });
 };
 
@@ -62,8 +61,8 @@ const withdrawSendCode = (data = {}) => {
   return request({
     url: '/v3/fin/withdraw/phone-code',
     method: 'POST',
-    data: qs.stringify({ biz_id, ...data })
-  });
+    data: { biz_id, ...data }
+  })
 };
 
 // 绑定手机号 发送验证码

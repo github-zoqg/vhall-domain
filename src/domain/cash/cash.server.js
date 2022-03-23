@@ -110,17 +110,7 @@ class CashServer {
 
   // 账户收益-提现-发送手机验证码
   withdrawSendCode(data) {
-    return cashApi
-      .withdrawSendCode(data)
-      .then(res => {
-        if (res.code === 200) {
-          // this.state.drawInfo = res.data;
-        }
-        return res;
-      })
-      .catch(err => {
-        return err;
-      });
+    return cashApi.withdrawSendCode(data)
   }
 
   // 绑定手机号 发送验证码

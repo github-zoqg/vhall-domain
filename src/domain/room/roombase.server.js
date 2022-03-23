@@ -139,7 +139,7 @@ class RoomBaseServer extends BaseServer {
 
         // 消息中未提供开播时间字段 start_time
         this.state.watchInitData.switch.switch_id = msg.data.switch_id;
-        this.state.watchInitData.switch.switch_type = msg.data.switch_type;
+        this.state.watchInitData.switch.start_type = msg.data.switch_type;
 
       } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
         this.state.watchInitData.webinar.type = 3;

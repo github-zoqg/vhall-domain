@@ -530,7 +530,7 @@ class InteractiveServer extends BaseServer {
         InteractiveServer._createLocalStreamRetryCount
           ? InteractiveServer._createLocalStreamRetryCount++
           : (InteractiveServer._createLocalStreamRetryCount = 1);
-        this.createLocalStream(options);
+        return this.createLocalStream(options);
       });
   }
 
@@ -712,7 +712,6 @@ class InteractiveServer extends BaseServer {
         nickname: watchInitData.join_info.nickname
       }) //选填，自定义信息，支持字符串类型
     };
-
     // 当前用户是否在上麦列表中
     const isOnMicObj = interactToolStatus.speaker_list.find(
       item => item.account_id == watchInitData.join_info.third_party_user_id
@@ -966,7 +965,7 @@ class InteractiveServer extends BaseServer {
       InteractiveServer._startBroadCastRetryCount
         ? InteractiveServer._startBroadCastRetryCount++
         : (InteractiveServer._startBroadCastRetryCount = 1);
-      this.startBroadCast(options);
+      return this.startBroadCast(options);
     });
   }
 
@@ -995,7 +994,7 @@ class InteractiveServer extends BaseServer {
   // 重新旁路布局
   async resetLayout() {
     const role_name = useRoomBaseServer().state.watchInitData.join_info.role_name;
-    if (![1, 4].includes(+role_name)) return;
+    if (role_name != 1) return;
 
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
     if (isInGroup) return;

@@ -40,7 +40,8 @@ export default class StandardDocServer extends AbstractDocServer {
 
       isVodUpdateFirst: true //是否回放update消息第一次执行
     };
-
+    //  loading定时器
+    loadTimer: 0;
 
     // 由于文档对象的创建需要指定具体的宽高，而宽高需要根据具体dom计算，所以需要在文档组件初始化时初始化该方法
     // 获取文档宽高的方法
@@ -297,6 +298,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     this.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT, ({ cid, docId }) => {
       console.log('[doc] =============文档不存在或已删除========', cid, docId);
+      this.setDocLoadComplete();
       if (cid == this.currentCid) {
         setTimeout(() => {
           const index = this.containerList.findIndex(item => item.cid == cid);
@@ -308,6 +310,12 @@ export default class StandardDocServer extends AbstractDocServer {
         this.$emit('dispatch_doc_not_exit', { cid, docId });
       }
     });
+
+    // 文档报错事件
+    this.on(VHDocSDK.Event.ERROR, (ev) => {
+      console.log('[doc] =============文档报错=======', ev);
+      this.setDocLoadComplete(true);
+    })
 
     // 非单视频嵌入监听此事件
     if (!useRoomBaseServer().state.embedObj.embedVideo) {
