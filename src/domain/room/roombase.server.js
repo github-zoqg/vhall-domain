@@ -146,6 +146,7 @@ class RoomBaseServer extends BaseServer {
         localStorage.removeItem('lang')
         // 结束直播时，将第三方推流标识关闭
         if (this.state.isThirdStream) {
+          this.$emit('LIVE_OVER')
           this.state.isThirdStream = false;
         }
 
