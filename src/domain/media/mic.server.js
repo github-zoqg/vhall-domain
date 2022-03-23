@@ -72,6 +72,9 @@ class MicServer extends BaseServer {
         return speaker
       }
     })
+
+    // 派发上麦流列表更新事件
+    this.$emit('INTERACTIVE_REMOTE_STREAMS_UPDATE', this.state.speakerList)
   }
 
   // 通过streamId来更新speaker
@@ -88,6 +91,9 @@ class MicServer extends BaseServer {
         return speaker
       }
     })
+
+    // 派发上麦流列表更新事件
+    this.$emit('INTERACTIVE_REMOTE_STREAMS_UPDATE', this.state.speakerList)
   }
 
   getSpeakerByAccountId(accountId) {
@@ -243,8 +249,7 @@ class MicServer extends BaseServer {
     const retParams = merge.recursive({}, defaultParams, data);
 
     const methodName = data.receive_account_id ? 'speakOffUser' : 'speakOffSelf';
-    let res = im.signaling[methodName](retParams);
-    return res
+    return im.signaling[methodName](retParams);
   }
   // 允许举手
   setHandsUp(data = {}) {

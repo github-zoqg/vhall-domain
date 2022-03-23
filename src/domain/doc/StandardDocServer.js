@@ -248,9 +248,7 @@ export default class StandardDocServer extends AbstractDocServer {
       console.log('[doc] ========控制文档开关=============', status);
       this.state.switchStatus = status === 'on';
       if (useRoomBaseServer().state.clientType != 'send') {
-        // 观看端
-        const miniElement = this.state.switchStatus ? 'doc' : ''
-        useRoomBaseServer().setChangeElement(miniElement);
+        this.resetLayoutByMiniElement()
       }
       this.$emit('dispatch_doc_switch_change', this.state.switchStatus);
     });
@@ -313,7 +311,30 @@ export default class StandardDocServer extends AbstractDocServer {
     // 非单视频嵌入监听此事件
     if (!useRoomBaseServer().state.embedObj.embedVideo) {
       // 回放文档加载完成事件
-      this.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, ({ chapters }) => {
+      this.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, async ({ chapters }) => {
+        // 获取回放文档容器数据
+        const data = this.getVodAllCids();
+        this.state.containerList = data.map(item => {
+          return {
+            cid: item.cid
+          };
+        });
+        await this.domNextTick();
+        if (this.state.containerList.length && typeof this.getDocViewRect === 'function') {
+          const { width, height } = this.getDocViewRect();
+          if (width > 0 && height > 0) {
+            // 循环初始化容器数据
+            for (const item of data) {
+              this.initContainer({
+                cid: item.cid,
+                width,
+                height,
+                fileType: item.type.toLowerCase()
+              });
+            }
+          }
+        }
+
         // 获取点播或回放设置的章节
         this.$emit('dispatch_doc_vod_cuepoint_load_complate', chapters);
       });
@@ -391,44 +412,9 @@ export default class StandardDocServer extends AbstractDocServer {
     // 通知观众可见状态
     this.$emit('dispatch_doc_switch_status', this.state.switchStatus);
 
-    const roomBaseServer = useRoomBaseServer();
-    if (roomBaseServer.state.clientType != 'send') {
+    if (useRoomBaseServer().state.clientType != 'send') {
 
-
-      if (useGroupServer().state.groupInitData.isInGroup) {
-        // 如果在小组内,文档常显，所以小屏显示流画面
-        roomBaseServer.setChangeElement('stream-list');
-        // if (useMicServer().getSpeakerStatus()) {
-        //   // 如果小组成员在麦上,小屏默认显示流窗口
-        // }
-
-      } else {
-        const {
-          interactToolStatus: { presentation_screen },
-          watchInitData: { join_info: { third_party_user_id }, webinar: { type, no_delay_webinar } }
-        } = roomBaseServer.state
-
-        // 不在小组内且自己是演示者
-        if (presentation_screen == third_party_user_id) {
-          // 直播状态下，无延迟或上麦是流列表
-          roomBaseServer.setChangeElement('stream-list');
-
-        } else if (this.state.switchStatus) {
-          if (useInsertFileServer().state.isInsertFilePushing) {
-            // 如果在插播中，文档是小窗，插播是大窗
-            roomBaseServer.setChangeElement('doc');
-          } else if (type == 1 && (no_delay_webinar == 1 || useMicServer().getSpeakerStatus())) {
-            // 直播状态下，无延迟或上麦是流列表
-            roomBaseServer.setChangeElement('stream-list');
-          } else {
-            // 文档如果可见,直接设置 播放器 为小屏
-            roomBaseServer.setChangeElement('player');
-          }
-        } else {
-          roomBaseServer.setChangeElement('');
-          // useRoomBaseServer().setChangeElement('doc');
-        }
-      }
+      this.resetLayoutByMiniElement()
 
     }
 
@@ -635,7 +621,7 @@ export default class StandardDocServer extends AbstractDocServer {
           id: cid,
           elId: cid,
           width: width,
-          height: width,
+          height: height,
           noDispatch,
           backgroundColor: '#FFFFFF'
         };
@@ -902,5 +888,43 @@ export default class StandardDocServer extends AbstractDocServer {
     }
 
 
+  }
+
+  /**
+   * 处理观看端布局
+   */
+  resetLayoutByMiniElement() {
+
+    const { isInGroup } = useGroupServer().state.groupInitData
+    if (isInGroup) {
+      // 如果在小组内,文档常显，所以小屏显示流画面
+      useRoomBaseServer().setChangeElement('stream-list');
+
+    } else {
+      const {
+        interactToolStatus: { presentation_screen },
+        watchInitData: { join_info: { third_party_user_id }, webinar: { type, no_delay_webinar } }
+      } = useRoomBaseServer().state
+
+      // 不在小组内且自己是演示者
+      if (presentation_screen == third_party_user_id) {
+        // 直播状态下，无延迟或上麦是流列表
+        useRoomBaseServer().setChangeElement('stream-list');
+
+      } else if (this.state.switchStatus) {
+        if (useInsertFileServer().state.isInsertFilePushing) {
+          // 如果在插播中，文档是小窗，插播是大窗
+          useRoomBaseServer().setChangeElement('doc');
+        } else if (type == 1 && (no_delay_webinar == 1 || useMicServer().getSpeakerStatus())) {
+          // 直播状态下，无延迟或上麦是流列表
+          useRoomBaseServer().setChangeElement('stream-list');
+        } else {
+          // 文档如果可见,直接设置 播放器 为小屏
+          useRoomBaseServer().setChangeElement('player');
+        }
+      } else {
+        roomBaseServer.setChangeElement('');
+      }
+    }
   }
 }

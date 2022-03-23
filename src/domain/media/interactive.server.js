@@ -36,8 +36,6 @@ class InteractiveServer extends BaseServer {
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
-      INTERACTIVE_LOCAL_STREAM_UPDATE: 'INTERACTIVE_LOCAL_STREAM_UPDATE', // 本地流信息更新事件
-      INTERACTIVE_REMOTE_STREAMS_UPDATE: 'INTERACTIVE_REMOTE_STREAMS_UPDATE' // 本地流信息更新事件
     }
 
     this.currentStreams = [] // 多次初始化sdk的时候 getRoomStreams 获取的流信息不准，初始化获取流一currentStreams
@@ -112,9 +110,6 @@ class InteractiveServer extends BaseServer {
 
             useMicServer().updateSpeakerByAccountId(stream.accountId, stream)
           })
-          // 派发上麦流列表更新事件
-          this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
-
 
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
           resolve(event);
@@ -209,6 +204,10 @@ class InteractiveServer extends BaseServer {
 
     // 如果在麦上，设为 HOST
     if (useMicServer().getSpeakerStatus()) {
+      if (useMediaCheckServer().state.deviceInfo.device_status === 2) {
+        // 若设备为2   不允许则直接下麦
+        await useMicServer().speakOff()
+      }
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
@@ -257,10 +256,10 @@ class InteractiveServer extends BaseServer {
           groupInitData.isInGroup && groupInitData.doc_permission == watchInitData.join_info.third_party_user_id
         console.log('[interactive server] auto_speak 0', autoSpeak)
       }
-    }
-    // 主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题
-    if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup && watchInitData.webinar.mode == 6) {
-      autoSpeak = true
+      // 主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题
+      if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup && watchInitData.webinar.mode == 6) {
+        autoSpeak = true
+      }
     }
 
 
@@ -329,8 +328,6 @@ class InteractiveServer extends BaseServer {
         this.state.isInstanceInit = false
         // this.state.remoteStreams = [];
         useMicServer().removeAllApeakerStreamId()
-        // 派发上麦流列表更新事件
-        this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
         this._clearLocalStream()
       }).then(() => {
         console.log('[interactiveServer]----互动sdk销毁成功');
@@ -381,8 +378,6 @@ class InteractiveServer extends BaseServer {
         //   videoMuted: e.data.stream.initMuted.video
         // };
         // this.state.remoteStreams.push(remoteStream);
-        // 派发上麦流列表更新事件
-        this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
       }
       console.log('[interactiveServer]--------流加入事件----', e);
 
@@ -419,6 +414,7 @@ class InteractiveServer extends BaseServer {
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
       // 更改设备状态
+      useMicServer().speakOff()
       useMediaCheckServer().getMediaInputPermission();
       this.$emit('EVENT_STREAM_END', e);
     });
@@ -587,24 +583,8 @@ class InteractiveServer extends BaseServer {
     const params = merge.recursive({}, defaultOptions, options);
 
     return this.createLocalStream(params).then(data => {
-
-      try {
-        let params = {
-          streamId: data.streamId,
-          audioMuted: defaultOptions.mute?.audio || false,
-          videoMuted: defaultOptions.mute?.video || false
-        }
-        useMicServer().updateSpeakerByAccountId(watchInitData.join_info.third_party_user_id, params)
-
-        this.state.localStream = {
-          streamId: data.streamId,
-        };
-        // 派发本地流更新事件
-        this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
-        return data
-      } catch (e) {
-        console.error('createLocalVideoStream', e)
-      }
+      this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
+      return data
     }).catch(e => {
       return Promise.reject(e)
     })
@@ -737,26 +717,21 @@ class InteractiveServer extends BaseServer {
 
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return this.createLocalStream(params).then(data => {
-
-      let params = {
-        streamId: data.streamId,
-        audioMuted: defaultOptions.mute?.audio || false,
-        videoMuted: defaultOptions.mute?.video || false
-      }
-      useMicServer().updateSpeakerByAccountId(watchInitData.join_info.third_party_user_id, params)
-
-      this.state.localStream = {
-        streamId: data.streamId
-      };
-      // 派发本地流更新事件
-      this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
+      this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
       return data
     }).catch(e => {
       return Promise.reject(e)
     })
   }
 
-  // Wap 创建摄像头视频流
+
+  /**
+   * 描述 wap创建流
+   * @date 2022-03-22
+   * @param {any} options={}  默认配置
+   * @param {any} addConfig={}  追加config配置
+   * @returns {any}
+   */
   async createWapLocalStream(options = {}, addConfig = {}) {
     const { watchInitData } = useRoomBaseServer().state;
     const { interactToolStatus } = useRoomBaseServer().state;
@@ -795,25 +770,40 @@ class InteractiveServer extends BaseServer {
     console.log('[interactiveServer]----createWapLocalStream内speaker：', speaker, '默认参数', defaultOptions)
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return await this.createLocalStream(params).then(data => {
+      this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
+      return data
+    }).catch(e => {
+      return Promise.reject(e)
+    })
+  }
+
+  /**
+   * 描述   更新 speaklist相关数据
+   * @date 2022-03-22
+   * @param {any} data  创建流成功返回的信息
+   * @param {any} defaultOptions 创建流传的参数
+   * @param {any} watchInitData useRoomBaseServer().state
+   * @returns {any}
+   */
+  updateSpeakerByAccountId(data, defaultOptions, watchInitData) {
+    try {
       let params = {
         streamId: data.streamId,
         audioMuted: defaultOptions.mute?.audio || false,
         videoMuted: defaultOptions.mute?.video || false
       }
-      try {
-        if (speaker) {
-          useMicServer().updateSpeakerByAccountId(speaker.accountId, params)
-        }
-      } catch (error) {
-        console.log('[interactiveServer]----更新speaker出现异常----', error)
-      }
+      // 更新speakList
+      useMicServer().updateSpeakerByAccountId(watchInitData.join_info.third_party_user_id, params)
+
       this.state.localStream = {
         streamId: data.streamId
-      };
-      return data
-    }).catch(e => {
-      return Promise.reject(e)
-    })
+      }
+
+      // 派发本地流更新事件
+      this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
+    } catch (e) {
+      console.error('updateSpeakerByAccountId__speaker_list error', e)
+    }
   }
 
   // 销毁本地流
@@ -893,8 +883,6 @@ class InteractiveServer extends BaseServer {
       // audioMuted: false,
       // attributes: {}
     };
-    // 派发本地流更新事件
-    this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
   }
 
   /**

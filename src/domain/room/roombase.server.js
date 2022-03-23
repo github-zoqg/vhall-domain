@@ -279,9 +279,13 @@ class RoomBaseServer extends BaseServer {
         };
         let defaultLanguage;
         if (localStorage.getItem('lang')) {
-          defaultLanguage = parseInt(localStorage.getItem('lang'))
+          if (getQueryString('lang') && Number(localStorage.getItem('lang')) != Number(getQueryString('lang'))) {
+            defaultLanguage = Number(getQueryString('lang'));
+          } else {
+            defaultLanguage = Number(localStorage.getItem('lang'))
+          }
         } else if (getQueryString('lang')) {
-          defaultLanguage = parseInt(getQueryString('lang'));
+          defaultLanguage = Number(getQueryString('lang'));
         } else {
           defaultLanguage = res.data.default_language;
         }
