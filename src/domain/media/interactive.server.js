@@ -175,7 +175,7 @@ class InteractiveServer extends BaseServer {
         watchInitData.join_info.role_name == 1
           ? {
             adaptiveLayoutMode:
-              VhallPaasSDK.modules.VhallRTC[sessionStorage.getItem('layout')] ||
+              VhallRTC[sessionStorage.getItem('layout')] ||
               VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_FLOAT_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
             profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
             paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
@@ -511,6 +511,7 @@ class InteractiveServer extends BaseServer {
     return this.interactiveInstance
       .createStream(options)
       .catch(err => {
+        console.error('[interactiveServer] 查看创建流失败', err)
         if (err?.data?.error?.msg?.message === 'Permission denied') {
           err.name = 'NotAllowed'
           return Promise.reject(err);
@@ -781,9 +782,11 @@ class InteractiveServer extends BaseServer {
     console.log('[interactiveServer]----createWapLocalStream内speaker：', speaker, '默认参数', defaultOptions)
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return await this.createLocalStream(params).then(data => {
+      console.warn('勿删-----后续删除-----创建流成功-', data, defaultOptions, watchInitData)
       this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
       return data
     }).catch(e => {
+      console.warn('勿删-----后续删除-------创建流失败-', e)
       return Promise.reject(e)
     })
   }
@@ -988,14 +991,23 @@ class InteractiveServer extends BaseServer {
     return stream;
   }
   // 重新旁路布局
-  resetLayout() {
+  async resetLayout() {
     const role_name = useRoomBaseServer().state.watchInitData.join_info.role_name;
-    if (role_name != 1) return;
+    if (![1, 4].includes(+role_name)) return;
 
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
     if (isInGroup) return;
 
     const stream = this.getDesktopAndIntercutInfo();
+
+    if (stream) {
+      // 一人铺满布局
+      await this.setBroadCastLayout({ layout: VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 });
+    } else {
+      // 自适应布局
+      const adaptiveLayoutMode = VhallRTC[useMediaSettingServer().state.layout];
+      await this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode });
+    }
 
     // 如果有桌面共享或插播
     if (stream) {
@@ -1008,23 +1020,26 @@ class InteractiveServer extends BaseServer {
         });
     }
 
-    if (stream) {
-      // 一人铺满布局
-      this.setBroadCastLayout({ layout: VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 });
-    } else {
-      // 自适应布局
-      const adaptiveLayoutMode = useMediaSettingServer().state.layout;
-      this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode });
-    }
+
   }
 
   // 动态配置指定旁路布局模板
   setBroadCastLayout(options = {}) {
-    return this.interactiveInstance.setBroadCastLayout(options);
+    console.log('动态配置指定旁路布局模板参数', options)
+    return this.interactiveInstance.setBroadCastLayout(options).then(res => {
+      console.log('配置指定旁路布局成功', res)
+    }).catch(error => {
+      console.error('配置指定旁路布局失败', error)
+    });
   }
   // 配置旁路布局自适应模式
   setBroadCastAdaptiveLayoutMode(options = {}) {
-    return this.interactiveInstance.setBroadCastAdaptiveLayoutMode(options);
+    console.log('配置布局自适应模式参数', options)
+    return this.interactiveInstance.setBroadCastAdaptiveLayoutMode(options).then(() => {
+      console.log('配置布局自适应模式成功')
+    }).catch(error => {
+      console.error('配置布局自适应模式失败', error)
+    });
   }
 
   // 动态配置旁路主屏
