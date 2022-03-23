@@ -10,40 +10,58 @@ class CanvasStreamServer {
     this.canvasImgDom = null;
 
     this.state = {
+      // 默认canvas宽高大小
       canvasSize: {
         width: 1280,
         height: 720
       },
       getRealImgErr: false, // 真实图片设置是否错误
-      canvasStreamInterval: null
+      canvasStreamInterval: null // 图片绘制canvas的定时器
     };
   }
 
-  // 初始化canvas相关Dom
+  /**
+   * 描述 初始化canvas相关Dom
+   * @date 2022-03-23
+   * @param {any} options IMG 和 Canvas Dom
+   * @returns {any} 无
+   */
   init(options) {
     this.canvasDom = options.canvasDom;
     this.canvasImgDom = options.canvasImgDom;
   }
 
-  // 设置canvas的大小
+  /**
+   * 描述 设置canvas的大小
+   * @date 2022-03-23
+   * @param {any} options
+   * @returns {any}
+   */
   setCanvasSize(options) {
     options.width && (this.state.canvasSize.width = options.width);
     options.height && (this.state.canvasSize.height = options.height);
   }
 
+  /**
+   * 描述： 检查活动 推流类型(videoType) 取真实图片地址(canvasImgUrl)
+   * @date 2022-03-23
+   * @returns {any} 
+   */
   async checkImgStream() {
-    // 获取媒体设置 中的 推流类型及 图片地址
     const { videoType, canvasImgUrl } = useMediaSettingServer().state;
     if (videoType === 'picture') {
       if (canvasImgUrl) {
-        // 非默认图片
         await this.getRealImg();
       }
       this.setCanvasStream();
     }
   }
 
-  // 获取真实的图片宽高
+  /**
+   * 描述：获取真实的图片宽高
+   * @date 2022-03-23
+   * @returns {any}
+   */
   getRealImg() {
     const { canvasImgUrl } = useMediaSettingServer().state;
     return new Promise((resolve, reject) => {
@@ -63,7 +81,11 @@ class CanvasStreamServer {
     });
   }
 
-  // 设置canvas流
+  /**
+   * 描述：图片进行canvas绘制
+   * @date 2022-03-23
+   * @returns {any}
+   */
   setCanvasStream() {
     const c2d = this.canvasDom.getContext('2d');
     if (this.canvasStreamInterval) {
@@ -80,7 +102,11 @@ class CanvasStreamServer {
     }, 1000);
   }
 
-  // 获取图片track
+  /**
+   * 描述  获取图片track
+   * @date 2022-03-23
+   * @returns {any} 返回Canvas的track
+   */
   getCanvasStream() {
     if (this.state.getRealImgErr) {
       return null;
