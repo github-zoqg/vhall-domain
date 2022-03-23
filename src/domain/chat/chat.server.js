@@ -270,8 +270,8 @@ class ChatServer extends BaseServer {
   sendMsg = debounce(this.sendChatMsg.bind(this), 300, true);
   //发送聊天消息
   sendChatMsg({ data, context }) {
-    //判断私聊还是普通消息
-    if (this.checkHasKeyword(data.text_content)) {
+    //判断私聊还是普通消息,私聊不做敏感词限制
+    if (data.target_id || this.checkHasKeyword(data.text_content)) {
       useMsgServer().sendChatMsg(data, context);
     }
     const msg = Msg._handleGenerateMsg({ data, context })
@@ -280,7 +280,7 @@ class ChatServer extends BaseServer {
     if (data.target_id) {
       this.state.privateChatList.push(msg)
     } else {
-      msg.prevTime = this.state.chatList[this.state.chatList.length - 1].sendTime
+      msg.prevTime = this.state.chatList[this.state.chatList.length - 1]?.sendTime
       this.state.chatList.push(msg)
     }
     data.text_content = textToEmojiText(data.text_content);
