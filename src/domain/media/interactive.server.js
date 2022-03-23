@@ -36,8 +36,6 @@ class InteractiveServer extends BaseServer {
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
-      INTERACTIVE_LOCAL_STREAM_UPDATE: 'INTERACTIVE_LOCAL_STREAM_UPDATE', // 本地流信息更新事件
-      INTERACTIVE_REMOTE_STREAMS_UPDATE: 'INTERACTIVE_REMOTE_STREAMS_UPDATE' // 本地流信息更新事件
     }
 
     this.currentStreams = [] // 多次初始化sdk的时候 getRoomStreams 获取的流信息不准，初始化获取流一currentStreams
@@ -112,9 +110,6 @@ class InteractiveServer extends BaseServer {
 
             useMicServer().updateSpeakerByAccountId(stream.accountId, stream)
           })
-          // 派发上麦流列表更新事件
-          this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
-
 
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
           resolve(event);
@@ -333,8 +328,6 @@ class InteractiveServer extends BaseServer {
         this.state.isInstanceInit = false
         // this.state.remoteStreams = [];
         useMicServer().removeAllApeakerStreamId()
-        // 派发上麦流列表更新事件
-        this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
         this._clearLocalStream()
       }).then(() => {
         console.log('[interactiveServer]----互动sdk销毁成功');
@@ -385,8 +378,6 @@ class InteractiveServer extends BaseServer {
         //   videoMuted: e.data.stream.initMuted.video
         // };
         // this.state.remoteStreams.push(remoteStream);
-        // 派发上麦流列表更新事件
-        this.$emit(this.EVENT_TYPE.INTERACTIVE_REMOTE_STREAMS_UPDATE, this.state.remoteStreams)
       }
       console.log('[interactiveServer]--------流加入事件----', e);
 
@@ -903,8 +894,6 @@ class InteractiveServer extends BaseServer {
       // audioMuted: false,
       // attributes: {}
     };
-    // 派发本地流更新事件
-    this.$emit(this.EVENT_TYPE.INTERACTIVE_LOCAL_STREAM_UPDATE, this.state.localStream)
   }
 
   /**

@@ -20,9 +20,6 @@ class QuestionnaireServer extends BaseServer {
       dotVisible: false, // 小红点是否显示
       lastQuestionnaireId: '' // 最后一个问卷id
     }
-    if (opts.mode === 'watch') {
-      this.checkIconStatus()
-    }
   }
 
   /**

@@ -37,9 +37,18 @@ const getRedPacketWinners = params => {
   });
 };
 
+// 获取最后一个红包的领取信息
+const getLatestRedpacketUsage = params => {
+  return request('/v3/interacts/redpacket/get-latest-redpacket-usage', {
+    method: 'GET',
+    params
+  });
+};
+
 export default {
   createRedpacket,
   getRedPacketInfo,
   openRedpacket,
-  getRedPacketWinners
+  getRedPacketWinners,
+  getLatestRedpacketUsage
 };
