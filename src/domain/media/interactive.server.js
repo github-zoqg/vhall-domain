@@ -781,6 +781,7 @@ class InteractiveServer extends BaseServer {
     console.log('[interactiveServer]----createWapLocalStream内speaker：', speaker, '默认参数', defaultOptions)
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return await this.createLocalStream(params).then(data => {
+      console.warn('勿删-----后续删除------', data, defaultOptions, watchInitData)
       this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
       return data
     }).catch(e => {
