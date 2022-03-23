@@ -677,6 +677,12 @@ class StandardGroupServer extends BaseServer {
       this.state.groupInitData.isInGroup &&
       msg.data.target_id == join_info.third_party_user_id
     ) {
+
+      // 后端踢出后会检测有没有在麦上，在麦上会派发下麦消息，初始化互动在下麦消息执行
+      let isNeedInteractiveInit = true
+      if (useMicServer().getSpeakerStatus()) {
+        isNeedInteractiveInit = false
+      }
       // 如果是当前用户被踢出
       // 更新个人所在小组信息
       // 更新主房间互动工具的状态
@@ -697,8 +703,10 @@ class StandardGroupServer extends BaseServer {
       // 销毁子房间聊天实例
       useMsgServer().destroyGroupMsg();
 
-      // 处理分组下互动sdk切换channel
-      await useInteractiveServer().init();
+      if (isNeedInteractiveInit) {
+        // 处理分组下互动sdk切换channel
+        await useInteractiveServer().init();
+      }
 
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();

@@ -149,6 +149,21 @@ class RedPacketServer extends BaseServer {
       room_id: interact.room_id,
       red_packet_uuid: this._uuid,
       ...params
+    }).then(res => {
+      if (res.data.red_packet) {
+        this.state.info = res.data.red_packet
+      }
+      return res
+    })
+  }
+  /**
+   * @description 获取最后一个红包的领取信息
+   */
+  getLatestRedpacketUsage() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const { interact } = watchInitData;
+    return redPacketApi.getLatestRedpacketUsage({
+      room_id: interact.room_id
     });
   }
 }
