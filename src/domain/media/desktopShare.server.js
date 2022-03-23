@@ -173,7 +173,9 @@ class DesktopShareServer extends BaseServer {
         role: join_info.role_name
       }
       return data
-    });
+    }).catch(e => {
+      return Promise.reject(e)
+    })
   }
 
   // 推桌面共享流
@@ -186,7 +188,9 @@ class DesktopShareServer extends BaseServer {
         .then(res => {
           resolve(res);
         })
-        .catch(reject);
+        .catch(err => {
+          reject(err)
+        });
     });
   }
   // 订阅桌面共享流
