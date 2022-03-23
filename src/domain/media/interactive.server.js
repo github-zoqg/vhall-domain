@@ -992,7 +992,7 @@ class InteractiveServer extends BaseServer {
   // 重新旁路布局
   async resetLayout() {
     const role_name = useRoomBaseServer().state.watchInitData.join_info.role_name;
-    if (![1, 4].includes(+role_name)) return;
+    if (role_name != 1) return;
 
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
     if (isInGroup) return;

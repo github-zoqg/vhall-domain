@@ -71,6 +71,8 @@ class DesktopShareServer extends BaseServer {
           }
         }
         useRoomBaseServer().setChangeElement(miniElement);
+        // 重设旁路
+        interactiveServer.resetLayout();
         this.$emit('screen_stream_remove', e);
       }
     })
