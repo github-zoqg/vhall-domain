@@ -18,7 +18,7 @@ class SplitScreenServer extends BaseServer {
     this.state = {
       isOpenSplitScreen: false,  // 是否开启分屏
       splitScreenPageUrl: '', // 分屏页面 url
-      role: '', // 当前角色，host 主页面， split 分屏页面
+      role: '', // 当前角色， hostPage 主页面， splitPage 分屏页面
       isHostWaitingSplit: false // 主页面是否正在等待分屏重新连接
     };
     SplitScreenServer.instance = this;
@@ -32,11 +32,11 @@ class SplitScreenServer extends BaseServer {
    */
   init(options = {
     splitScreenPageUrl: '',
-    role: 'host'
+    role: 'hostPage'
   }) {
     this.state.role = options.role
     this.state.splitScreenPageUrl = options.splitScreenPageUrl
-    if (options.role == 'split') {
+    if (options.role == 'splitPage') {
       // 如果是分屏页面
       this.shadowWin = window
       this.hostWin = window.opener
@@ -273,7 +273,7 @@ class SplitScreenServer extends BaseServer {
    * 关闭分屏
    */
   closeSplit() {
-    if (this.state.role == 'split') {
+    if (this.state.role == 'splitPage') {
       // 分屏页面点击分屏，直接关闭
       this.splitCloseSplitProcess(true)
     } else {
