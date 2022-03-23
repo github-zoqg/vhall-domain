@@ -12,10 +12,13 @@ class SplitScreenServer extends BaseServer {
     // 分屏页面 window 对象
     this.shadowWin = null
 
+    // postMessage targetOrigin
+    this.curOrigin = window.location.origin;
+
     this.state = {
       isOpenSplitScreen: false,  // 是否开启分屏
       splitScreenPageUrl: '', // 分屏页面 url
-      role: '', // 当前角色，host 主页面， split 分屏页面
+      role: '', // 当前角色， hostPage 主页面， splitPage 分屏页面
       isHostWaitingSplit: false // 主页面是否正在等待分屏重新连接
     };
     SplitScreenServer.instance = this;
@@ -29,11 +32,11 @@ class SplitScreenServer extends BaseServer {
    */
   init(options = {
     splitScreenPageUrl: '',
-    role: 'host'
+    role: 'hostPage'
   }) {
     this.state.role = options.role
     this.state.splitScreenPageUrl = options.splitScreenPageUrl
-    if (options.role == 'split') {
+    if (options.role == 'splitPage') {
       // 如果是分屏页面
       this.shadowWin = window
       this.hostWin = window.opener
@@ -47,7 +50,7 @@ class SplitScreenServer extends BaseServer {
       this.hostWin.postMessage({
         type: 'shadow_connect',
         source_type: 'split_screen'
-      }, '*')
+      }, this.curOrigin)
       // 分屏页面消息监听
       this.initSplitscreenPostMsgEvent()
       return Promise.resolve()
@@ -82,11 +85,15 @@ class SplitScreenServer extends BaseServer {
    */
   initHostPostMsgEvent() {
     this.hostWin.onmessage = e => {
+      // 是否是可以信任的来源
+      if (e.origin !== this.curOrigin) {
+        return;
+      }
+      // 是否是分屏服务的消息
       if (e.data.source_type != 'split_screen') {
-        // 只关心分屏的消息
         return false;
       }
-      console.log('-----splitScreen--------主页面---postMessage----', e.data)
+      console.log('-----splitScreen--------主页面---postMessage----', e)
       const interactiveServer = useInteractiveServer()
       switch (e.data.type) {
         case 'shadow_live':
@@ -137,7 +144,7 @@ class SplitScreenServer extends BaseServer {
       this.shadowWin.postMessage({
         type: 'host_close',
         source_type: 'split_screen'
-      }, '*')
+      }, this.curOrigin)
 
     }
   }
@@ -149,8 +156,12 @@ class SplitScreenServer extends BaseServer {
   initSplitscreenPostMsgEvent() {
     // postMessage消息监听
     this.shadowWin.onmessage = e => {
+      // 是否是可以信任的来源
+      if (e.origin !== this.curOrigin) {
+        return;
+      }
+      // 是否是分屏服务的消息
       if (e.data.source_type != 'split_screen') {
-        // 只关心分屏的消息
         return false;
       }
       console.log('-----splitScreen--------分屏页面---postMessage----', e)
@@ -175,7 +186,7 @@ class SplitScreenServer extends BaseServer {
             type: 'split_screen_remote_streams_update',
             source_type: 'split_screen',
             speakerList: speakerListCopy
-          }, '*')
+          }, this.curOrigin)
           break;
         // 主页面点击关闭分屏按钮,通知分屏页面处理关闭分屏的逻辑
         case 'shadow_stop':
@@ -192,7 +203,7 @@ class SplitScreenServer extends BaseServer {
             this.hostWin.postMessage({
               type: 'shadow_live',
               source_type: 'split_screen'
-            }, '*')
+            }, this.curOrigin)
           }, 50);
 
           // 启动延时器，十秒钟之内主页面没有链接回来，自动关闭分屏
@@ -215,21 +226,11 @@ class SplitScreenServer extends BaseServer {
       this.hostWin.postMessage({
         type: 'shadow_close',
         source_type: 'split_screen'
-      }, '*')
+      }, this.curOrigin)
     }
 
     // 流信息更新事件注册
     const micServer = useMicServer()
-    // const { INTERACTIVE_REMOTE_STREAMS_UPDATE } = interactiveServer.EVENT_TYPE
-    // // 监听本地流信息更新事件,通知主页面本地流信息更新(开启分屏之后,主页面将不能自主更新本地流信息)
-    // interactiveServer.$on(INTERACTIVE_LOCAL_STREAM_UPDATE, localStream => {
-    //   this.hostWin.postMessage({
-    //     type: 'split_screen_local_stream_update',
-    //     source_type: 'split_screen',
-    //     localStream
-    //   }, '*')
-    // })
-
     // 监听上麦流列表信息更新事件,通知主页面上麦流列表信息更新(开启分屏之后,主页面将不能自主更新上麦流列表信息)
     micServer.$on('INTERACTIVE_REMOTE_STREAMS_UPDATE', speakerList => {
       console.log('-----splitScreen--------远端流列表更新----', speakerList)
@@ -244,7 +245,7 @@ class SplitScreenServer extends BaseServer {
         type: 'split_screen_remote_streams_update',
         source_type: 'split_screen',
         speakerList: speakerListCopy
-      }, '*')
+      }, this.curOrigin)
     })
   }
 
@@ -264,16 +265,15 @@ class SplitScreenServer extends BaseServer {
       this.shadowWin.postMessage({
         type: 'host_connect',
         source_type: 'split_screen'
-      }, '*')
+      }, this.curOrigin)
     }
-    // this.$emit('SPLIT_SCREEN_OPEN')
   }
 
   /**
    * 关闭分屏
    */
   closeSplit() {
-    if (this.state.role == 'split') {
+    if (this.state.role == 'splitPage') {
       // 分屏页面点击分屏，直接关闭
       this.splitCloseSplitProcess(true)
     } else {
@@ -281,10 +281,9 @@ class SplitScreenServer extends BaseServer {
       this.shadowWin.postMessage({
         type: 'shadow_stop',
         source_type: 'split_screen'
-      }, '*')
+      }, this.curOrigin)
       this.handleShadowDisconnect()
     }
-    // this.$emit('SPLIT_SCREEN_CLOSE')
   }
 
   /**
@@ -296,7 +295,7 @@ class SplitScreenServer extends BaseServer {
       this.hostWin.postMessage({
         type: 'shadow_disconnect',
         source_type: 'split_screen'
-      }, '*')
+      }, this.curOrigin)
     }
     this.state.isOpenSplitScreen = false
     clearInterval(this.state._heartbeatInterval)
