@@ -511,6 +511,7 @@ class InteractiveServer extends BaseServer {
     return this.interactiveInstance
       .createStream(options)
       .catch(err => {
+        console.error('[interactiveServer] 查看创建流失败', err)
         if (err?.data?.error?.msg?.message === 'Permission denied') {
           err.name = 'NotAllowed'
           return Promise.reject(err);
@@ -781,10 +782,11 @@ class InteractiveServer extends BaseServer {
     console.log('[interactiveServer]----createWapLocalStream内speaker：', speaker, '默认参数', defaultOptions)
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return await this.createLocalStream(params).then(data => {
-      console.warn('勿删-----后续删除------', data, defaultOptions, watchInitData)
+      console.warn('勿删-----后续删除-----创建流成功-', data, defaultOptions, watchInitData)
       this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
       return data
     }).catch(e => {
+      console.warn('勿删-----后续删除-------创建流失败-', e)
       return Promise.reject(e)
     })
   }
