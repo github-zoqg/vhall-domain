@@ -414,8 +414,6 @@ class ChatServer extends BaseServer {
   addToRankList(params = {}) {
     return iMRequest.privateChat.setRankList(params)
   }
-
-
   //获取私聊的记录列表
   getPrivateChatHistoryList(params = {}) {
     const { watchInitData } = useRoomBaseServer().state;
