@@ -8,6 +8,7 @@ import { doc as docApi } from '../../request/index.js';
 import request from '@/utils/http.js';
 import useMicServer from '../media/mic.server';
 import useInsertFileServer from '../media/insertFile.server';
+import useDesktopShareServer from '../media/desktopShare.server';
 /**
  * 标准（通用）直播场景下的文档白板服务
  * 继承自AbstractDocServer
@@ -912,8 +913,8 @@ export default class StandardDocServer extends AbstractDocServer {
         useRoomBaseServer().setChangeElement('stream-list');
 
       } else if (this.state.switchStatus) {
-        if (useInsertFileServer().state.isInsertFilePushing) {
-          // 如果在插播中，文档是小窗，插播是大窗
+        if ((useInsertFileServer().state.isInsertFilePushing || useDesktopShareServer().state.localDesktopStreamId) && !useMicServer().getSpeakerStatus()) {
+          // 如果在插播或者桌面共享中，并且没上麦，文档是小窗，插播是大窗
           useRoomBaseServer().setChangeElement('doc');
         } else if (type == 1 && (no_delay_webinar == 1 || useMicServer().getSpeakerStatus())) {
           // 直播状态下，无延迟或上麦是流列表
@@ -923,7 +924,12 @@ export default class StandardDocServer extends AbstractDocServer {
           useRoomBaseServer().setChangeElement('player');
         }
       } else {
-        roomBaseServer.setChangeElement('');
+        if (useMicServer().getSpeakerStatus() && (useInsertFileServer().state.isInsertFilePushing || useDesktopShareServer().state.localDesktopStreamId)) {
+          roomBaseServer.setChangeElement('stream-list');
+        } else {
+          roomBaseServer.setChangeElement('');
+
+        }
       }
     }
   }
