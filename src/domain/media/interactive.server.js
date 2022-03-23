@@ -395,6 +395,14 @@ class InteractiveServer extends BaseServer {
 
     // 远端流离开事件,自己的流删除事件收不到
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
+      console.log('[interactiveServer]--------流退出事件----', e);
+
+      if (e.data.streamType === 2) {
+        let params = {
+          streamId: '',
+        }
+        useMicServer().updateSpeakerByAccountId(e.data.accountId, params)
+      }
       this.$emit('EVENT_REMOTESTREAM_REMOVED', e);
     });
 
@@ -422,9 +430,12 @@ class InteractiveServer extends BaseServer {
 
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
-      // 更改设备状态
-      useMicServer().speakOff()
-      useMediaCheckServer().getMediaInputPermission();
+      console.log('[interactiveServer]-------本地流断开----', e);
+      if (e.data?.streamType != 3) {
+        // 非桌面共享时设置设备不可用  / 若在麦上，下麦( 线上逻辑 )
+        useMicServer().speakOff()
+        useMediaCheckServer().getMediaInputPermission();
+      }
       this.$emit('EVENT_STREAM_END', e);
     });
 
@@ -801,7 +812,7 @@ class InteractiveServer extends BaseServer {
         audioMuted: defaultOptions.mute?.audio || false,
         videoMuted: defaultOptions.mute?.video || false
       }
-      // 更新speakList  
+      // 更新speakList
       useMicServer().updateSpeakerByAccountId(watchInitData.join_info.third_party_user_id, params)
 
       this.state.localStream = {
