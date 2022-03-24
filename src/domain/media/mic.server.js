@@ -194,7 +194,6 @@ class MicServer extends BaseServer {
         case 'vrtc_disconnect_success':
           this.state.speakerList = this.state.speakerList.filter(speaker => speaker.accountId != msg.data.target_id)
           if (join_info.third_party_user_id == msg.data.target_id) {
-            this.state.isSpeakOffToInit = true
             this.state.isSpeakOn = false;
             this.$emit('vrtc_disconnect_success', msg);
           }
@@ -249,7 +248,12 @@ class MicServer extends BaseServer {
     const retParams = merge.recursive({}, defaultParams, data);
 
     const methodName = data.receive_account_id ? 'speakOffUser' : 'speakOffSelf';
-    return im.signaling[methodName](retParams);
+    return im.signaling[methodName](retParams).then(res => {
+
+      // 自己下麦，自动上麦判断时，不再上麦
+      if (res.code == 200 && methodName == 'speakOffSelf')
+        this.setSpeakOffToInit(true)
+    });
   }
   // 允许举手
   setHandsUp(data = {}) {

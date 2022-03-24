@@ -911,7 +911,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     } else {
       const {
-        interactToolStatus: { presentation_screen },
+        interactToolStatus: { presentation_screen, is_desktop },
         watchInitData: { join_info: { third_party_user_id }, webinar: { type, no_delay_webinar } }
       } = useRoomBaseServer().state
 
@@ -921,7 +921,8 @@ export default class StandardDocServer extends AbstractDocServer {
         useRoomBaseServer().setChangeElement('stream-list');
 
       } else if (this.state.switchStatus) {
-        if ((useInsertFileServer().state.isInsertFilePushing || useDesktopShareServer().state.localDesktopStreamId) && !useMicServer().getSpeakerStatus()) {
+        if ((useInsertFileServer().state.isInsertFilePushing || useDesktopShareServer().state.localDesktopStreamId || is_desktop == 1) &&
+          !useMicServer().getSpeakerStatus()) {
           // 如果在插播或者桌面共享中，并且没上麦，文档是小窗，插播是大窗
           useRoomBaseServer().setChangeElement('doc');
         } else if (type == 1 && (no_delay_webinar == 1 || useMicServer().getSpeakerStatus())) {

@@ -327,7 +327,9 @@ class InteractiveServer extends BaseServer {
         // 是否有互动实例置为true
         this.state.isInstanceInit = false
         // this.state.remoteStreams = [];
-        useMicServer().removeAllApeakerStreamId()
+
+        // 在这清空所有streamId会导致出现网络异常占位图
+        // useMicServer().removeAllApeakerStreamId()
         this._clearLocalStream()
       }).then(() => {
         console.log('[interactiveServer]----互动sdk销毁成功');
