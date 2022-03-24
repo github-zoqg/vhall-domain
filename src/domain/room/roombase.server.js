@@ -277,18 +277,20 @@ class RoomBaseServer extends BaseServer {
             key: 2
           }
         };
-        let defaultLanguage;
-        if (localStorage.getItem('lang')) {
-          if (getQueryString('lang') && Number(localStorage.getItem('lang')) != Number(getQueryString('lang'))) {
-            defaultLanguage = Number(getQueryString('lang'));
+        // 默认从地址栏中取值语言参数
+        let defaultLanguage = Number(getQueryString('lang'));
+
+        // 如果地址栏中没有语言参数或者 语言参数不符合规定，是非法字符，就从缓存中取值
+        if (!(defaultLanguage && [1, 2].includes(defaultLanguage))) {
+          if (localStorage.getItem('lang')) {
+            defaultLanguage = Number(localStorage.getItem('lang'));
           } else {
-            defaultLanguage = Number(localStorage.getItem('lang'))
+            // 如果缓存也没有，就从接口中取值
+            defaultLanguage = res.data.default_language;
           }
-        } else if (getQueryString('lang')) {
-          defaultLanguage = Number(getQueryString('lang'));
-        } else {
-          defaultLanguage = res.data.default_language;
         }
+        // 因为开发、测试用的需要活动较多，每个活动都需要比较当前语言值在接口语言列表中是否存在
+        // eg: 第一个活动语言包是英文.第二个活动只有一个中文并且没清理缓存，设置语言为英文就有问题，所以需要看语言列表是否存在当前默认语言
         if (!(res.data.language_types.split(',').includes((defaultLanguage).toString()))) {
           defaultLanguage = res.data.default_language;
         }

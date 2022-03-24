@@ -689,7 +689,8 @@ export default class StandardDocServer extends AbstractDocServer {
    * 上传文档
    * @param {Object}} param
    */
-  uploadFile(param, uploadUrl) {
+  uploadFile(param) {
+    const uploadUrl = docApi.uploadUrl;
     const { watchInitData } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
     // 创建form对象,必须使用这个,会自动把 content-type 设置成 multipart/form-data
@@ -905,9 +906,14 @@ export default class StandardDocServer extends AbstractDocServer {
   resetLayoutByMiniElement() {
 
     const { isInGroup } = useGroupServer().state.groupInitData
+    const isShareScreen = !!useDesktopShareServer().state.localDesktopStreamId
     if (isInGroup) {
-      // 如果在小组内,文档常显，所以小屏显示流画面
-      useRoomBaseServer().setChangeElement('stream-list');
+      if (isShareScreen) {
+        useRoomBaseServer().setChangeElement('doc');
+      } else {
+        // 如果在小组内,文档常显，所以小屏显示流画面
+        useRoomBaseServer().setChangeElement('stream-list');
+      }
 
     } else {
       const {
@@ -921,7 +927,7 @@ export default class StandardDocServer extends AbstractDocServer {
         useRoomBaseServer().setChangeElement('stream-list');
 
       } else if (this.state.switchStatus) {
-        if ((useInsertFileServer().state.isInsertFilePushing || useDesktopShareServer().state.localDesktopStreamId || is_desktop == 1) &&
+        if ((useInsertFileServer().state.isInsertFilePushing || isShareScreen || is_desktop == 1) &&
           !useMicServer().getSpeakerStatus()) {
           // 如果在插播或者桌面共享中，并且没上麦，文档是小窗，插播是大窗
           useRoomBaseServer().setChangeElement('doc');
