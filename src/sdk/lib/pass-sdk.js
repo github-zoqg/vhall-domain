@@ -25,11 +25,11 @@ export default {
   },
   questionnaire: {
     name: 'VhallQuestionnaire',
-    url: '//t-alistatic01.e.vhall.com/common-static/middle/questionnaire/1.0.0/questionnaire_service.js'
+    url: '//cnstatic01.e.vhall.com/common-static/middle/questionnaire/1.0.0/questionnaire_service.js'
   },
   // 数据上报sdk
   report: {
     name: 'VhallReport',
-    url: '//cnstatic01.e.vhall.com/common-static/middle/middle-log/1.0.3/index.min.js'
+    url: '//cnstatic01.e.vhall.com/common-static/middle/middle-log/1.0.4/index.min.js'
   }
 };
