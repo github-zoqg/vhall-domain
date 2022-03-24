@@ -189,7 +189,6 @@ class InteractiveServer extends BaseServer {
           : {}, // 自动旁路   开启旁路直播方法所需参数
       otherOption: watchInitData.report_data
     };
-    console.log('查看 最新的group Data数据----', defaultOptions)
     return defaultOptions;
   }
 
@@ -329,7 +328,7 @@ class InteractiveServer extends BaseServer {
         // this.state.remoteStreams = [];
 
         // 在这清空所有streamId会导致出现网络异常占位图
-        // useMicServer().removeAllApeakerStreamId()
+        useMicServer().removeAllApeakerStreamId()
         this._clearLocalStream()
       }).then(() => {
         console.log('[interactiveServer]----互动sdk销毁成功');
@@ -780,14 +779,11 @@ class InteractiveServer extends BaseServer {
     // 处理插播中的麦克风状态
     defaultOptions = this.handleInsertFileMicStatus(defaultOptions)
 
-    console.log('[interactiveServer]----createWapLocalStream内speaker：', speaker, '默认参数', defaultOptions)
     const params = merge.recursive({}, defaultOptions, options, addConfig);
     return await this.createLocalStream(params).then(data => {
-      console.warn('勿删-----后续删除-----创建流成功-', data, defaultOptions, watchInitData)
       this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
       return data
     }).catch(e => {
-      console.warn('勿删-----后续删除-------创建流失败-', e)
       return Promise.reject(e)
     })
   }

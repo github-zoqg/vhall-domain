@@ -195,6 +195,9 @@ class MicServer extends BaseServer {
           this.state.speakerList = this.state.speakerList.filter(speaker => speaker.accountId != msg.data.target_id)
           if (join_info.third_party_user_id == msg.data.target_id) {
             this.state.isSpeakOn = false;
+            if (!msg.data.vrtc_reason) { // vrtc_reason 为空时，表示自己或者其他用户通过接口下麦
+              this.setSpeakOffToInit(true)
+            }
             this.$emit('vrtc_disconnect_success', msg);
           }
           break;
@@ -248,12 +251,7 @@ class MicServer extends BaseServer {
     const retParams = merge.recursive({}, defaultParams, data);
 
     const methodName = data.receive_account_id ? 'speakOffUser' : 'speakOffSelf';
-    return im.signaling[methodName](retParams).then(res => {
-
-      // 自己下麦，自动上麦判断时，不再上麦
-      if (res.code == 200 && methodName == 'speakOffSelf')
-        this.setSpeakOffToInit(true)
-    });
+    return im.signaling[methodName](retParams)
   }
   // 允许举手
   setHandsUp(data = {}) {

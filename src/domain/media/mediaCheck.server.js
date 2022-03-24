@@ -74,6 +74,8 @@ class MediaCheckServer {
           console.log('[mediaCheck] 查看是否走入此处 - 勿删 ( wap本机时，本地无法推流，只能查看线上，后续删除 )， result:', 2)
           this.setDevice({ status: 2, send_msg: Number(options.isNeedBroadcast) });
         });
+    } else {
+      this.checkSystemRequirements()
     }
     return Promise.resolve(false);
   }
