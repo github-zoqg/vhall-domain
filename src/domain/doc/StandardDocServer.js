@@ -689,7 +689,8 @@ export default class StandardDocServer extends AbstractDocServer {
    * 上传文档
    * @param {Object}} param
    */
-  uploadFile(param, uploadUrl) {
+  uploadFile(param) {
+    const uploadUrl = docApi.uploadUrl;
     const { watchInitData } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
     // 创建form对象,必须使用这个,会自动把 content-type 设置成 multipart/form-data

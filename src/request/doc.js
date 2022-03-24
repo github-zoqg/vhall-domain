@@ -53,9 +53,15 @@ const delDocList = (params = {}) => {
   });
 };
 
+// 上传文档url
+const uploadUrl =
+  env.doc === 'v3' ? '/v3/interacts/document/upload-webinar-document'
+    : '/v4/im-whiteboard/document/upload';
+
 export default {
   getSharedDocList,
   getWebinarDocList,
   syncDoc,
-  delDocList
+  delDocList,
+  uploadUrl
 };
