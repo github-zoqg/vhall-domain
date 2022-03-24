@@ -2,7 +2,6 @@ import { meeting, roomApi } from '@/request/index.js';
 import { merge, getQueryString } from '@/utils/index.js';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
-import { configMap } from './js/configMap'
 
 /**
  * send:发起端
@@ -95,7 +94,7 @@ class RoomBaseServer extends BaseServer {
           this.state.watchInitData = res.data;
           // 设置发起端权限
           if (['send', 'record', 'clientEmbed'].includes(options.clientType)) {
-            this.state.configList = configMap(res.data.permission)
+            this.state.configList = res.data.permissionKey
             // 发起端，将多语言缓存清除
             localStorage.removeItem('lang')
             // 判断是不是第三方推流
@@ -373,15 +372,9 @@ class RoomBaseServer extends BaseServer {
 
   // 黄金链路命中之后的处理
   handleDegradationHit(permissions, tip_message) {
-    // 设置发起端权限
-    if (['send', 'record', 'clientEmbed'].includes(this.state.clientType) && permissions && permissions.initiator && permissions.initiator.length) {
-      // 发起端需要将数组转成json
-      this.state.configList = configMap(permissions.initiator, 0, this.state.configList);
-    } else if (['standard', 'embed', 'sdk'].includes(this.state.clientType) && permissions) {
-      this.state.configList = Object.assign({}, this.state.configList, permissions);
-    } else {
-      return;
-    }
+    // 更新 configList
+    this.state.configList = Object.assign({}, this.state.configList, permissions);
+
     this.state.degradationOptions.isDegraded = true;
     // 击中情况下，友好提示
     this.$emit('DEGRADED_TIP', tip_message);
