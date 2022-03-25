@@ -707,6 +707,9 @@ class InteractiveServer extends BaseServer {
       video: false,
       audio: true,
       videoContentHint: 'detail',
+      mute: {
+        audio: true
+      },
       attributes: JSON.stringify({
         roleName: roleName,
         accountId: watchInitData.join_info.third_party_user_id,
