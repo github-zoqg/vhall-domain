@@ -65,7 +65,7 @@ class QuestionnaireServer extends BaseServer {
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.UPDATE, async data => {
       const extension = JSON.parse(data.extension);
       const relt = await this.editQuestionnaire(data, extension.playback_filling);
-      this.$emit(VHall_Questionnaire_Const.EVENT.UPDATE, relt);
+      this.$emit(VHall_Questionnaire_Const.EVENT.UPDATE, relt, data);
     });
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
       this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, data);
