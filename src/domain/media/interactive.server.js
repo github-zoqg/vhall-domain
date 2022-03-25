@@ -708,7 +708,7 @@ class InteractiveServer extends BaseServer {
       audio: true,
       videoContentHint: 'detail',
       mute: {
-        audio: true
+        audio: watchInitData.webinar.mode == 6 ? true : false
       },
       attributes: JSON.stringify({
         roleName: roleName,
