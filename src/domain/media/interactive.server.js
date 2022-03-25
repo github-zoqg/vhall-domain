@@ -38,6 +38,7 @@ class InteractiveServer extends BaseServer {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
     }
 
+    this.abortStreams = []  // 自动播放失败的订阅流
     this.currentStreams = [] // 多次初始化sdk的时候 getRoomStreams 获取的流信息不准，初始化获取流一currentStreams
     InteractiveServer.instance = this;
     return this;
@@ -417,7 +418,7 @@ class InteractiveServer extends BaseServer {
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
       // 本地推流或订阅远端流异常断开事件
-      // this.$emit('EVENT_REMOTESTREAM_FAILED', e);
+      this.$emit('EVENT_REMOTESTREAM_FAILED', e);
     });
 
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
@@ -442,6 +443,8 @@ class InteractiveServer extends BaseServer {
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_PLAYABORT, e => {
       // 订阅流--  自动播放失败
+      this.abortStreams.push(e.data)
+      console.log('[interactiveServer]-----自动播放失败---------', e)
       this.$emit('EVENT_STREAM_PLAYABORT', e);
     });
 
@@ -880,7 +883,14 @@ class InteractiveServer extends BaseServer {
           this._clearLocalStream();
         }
         return res;
-      });
+      }).catch(error => {
+        // 如果是销毁本地上麦流，清空上麦流参数
+        if (!options.streamId || options.streamId == this.state.localStream.streamId) {
+          this._clearLocalStream();
+        }
+        console.error('unpublishStream', error)
+        return Promise.reject(error)
+      })
   }
 
   /**
@@ -1059,7 +1069,13 @@ class InteractiveServer extends BaseServer {
         return this.setBroadCastScreen(streamId);
       });
   }
-
+  // 播放自动播放失败的流
+  playAbortStreams() {
+    this.abortStreams.forEach(stream => {
+      this.interactiveInstance.play({ streamId: stream.streamId }).then(() => { });
+    });
+    this.abortStreams = []
+  }
   // 获取全部音视频列表
   getDevices() {
     return this.interactiveInstance.getDevices();
