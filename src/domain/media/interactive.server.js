@@ -38,6 +38,7 @@ class InteractiveServer extends BaseServer {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
     }
 
+    this.abortStreams = []  // 自动播放失败的订阅流
     this.currentStreams = [] // 多次初始化sdk的时候 getRoomStreams 获取的流信息不准，初始化获取流一currentStreams
     InteractiveServer.instance = this;
     return this;
@@ -255,8 +256,10 @@ class InteractiveServer extends BaseServer {
           groupInitData.isInGroup && groupInitData.doc_permission == watchInitData.join_info.third_party_user_id
         console.log('[interactive server] auto_speak 0', autoSpeak)
       }
-      // 主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题
-      if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup && watchInitData.webinar.mode == 6) {
+
+      console.warn('cxs--------', watchInitData.join_info.role_name == 1, !groupInitData.isInGroup)
+      // 主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题   无需判断是否为分组活动,原因如下： 若是无延迟活动，设备禁用会让下麦，这时候刷新应能自动上麦的
+      if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup) {
         autoSpeak = true
       }
     }
@@ -417,7 +420,7 @@ class InteractiveServer extends BaseServer {
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
       // 本地推流或订阅远端流异常断开事件
-      // this.$emit('EVENT_REMOTESTREAM_FAILED', e);
+      this.$emit('EVENT_REMOTESTREAM_FAILED', e);
     });
 
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
@@ -442,6 +445,8 @@ class InteractiveServer extends BaseServer {
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_PLAYABORT, e => {
       // 订阅流--  自动播放失败
+      this.abortStreams.push(e.data)
+      console.log('[interactiveServer]-----自动播放失败---------', e)
       this.$emit('EVENT_STREAM_PLAYABORT', e);
     });
 
@@ -705,6 +710,9 @@ class InteractiveServer extends BaseServer {
       video: false,
       audio: true,
       videoContentHint: 'detail',
+      mute: {
+        audio: watchInitData.webinar.mode == 6 ? true : false
+      },
       attributes: JSON.stringify({
         roleName: roleName,
         accountId: watchInitData.join_info.third_party_user_id,
@@ -880,7 +888,14 @@ class InteractiveServer extends BaseServer {
           this._clearLocalStream();
         }
         return res;
-      });
+      }).catch(error => {
+        // 如果是销毁本地上麦流，清空上麦流参数
+        if (!options.streamId || options.streamId == this.state.localStream.streamId) {
+          this._clearLocalStream();
+        }
+        console.error('unpublishStream', error)
+        return Promise.reject(error)
+      })
   }
 
   /**
@@ -1059,7 +1074,13 @@ class InteractiveServer extends BaseServer {
         return this.setBroadCastScreen(streamId);
       });
   }
-
+  // 播放自动播放失败的流
+  playAbortStreams() {
+    this.abortStreams.forEach(stream => {
+      this.interactiveInstance.play({ streamId: stream.streamId }).then(() => { });
+    });
+    this.abortStreams = []
+  }
   // 获取全部音视频列表
   getDevices() {
     return this.interactiveInstance.getDevices();
