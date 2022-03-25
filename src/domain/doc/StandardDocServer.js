@@ -374,9 +374,13 @@ export default class StandardDocServer extends AbstractDocServer {
     if (this.state.switchStatus) {
       this.switchOffContainer();
       this.state.switchStatus = false;
+      // 数据埋点-关闭观众可见
+      window.vhallReportForProduct?.report(110024);
     } else {
       this.switchOnContainer();
       this.state.switchStatus = true;
+      // 数据埋点-开启观众可见
+      window.vhallReportForProduct?.report(110023);
     }
   }
 
