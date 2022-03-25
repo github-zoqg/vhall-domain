@@ -23,7 +23,7 @@ export default class StandardDocServer extends AbstractDocServer {
     super();
 
     this.state = {
-      isChannelChanged: false, // 频道是否变更，进入/退出小组是变化
+      isChannelChanged: false, // 频道是否变更，进入/退出小组时变化
       currentCid: '', //当前正在展示的容器id
       docCid: '', // 当前文档容器Id
       boardCid: '', // 当前白板容器Id
@@ -40,12 +40,10 @@ export default class StandardDocServer extends AbstractDocServer {
 
       isVodUpdateFirst: true //是否回放update消息第一次执行
     };
-    //  loading定时器
-    loadTimer: 0;
 
     // 由于文档对象的创建需要指定具体的宽高，而宽高需要根据具体dom计算，所以需要在文档组件初始化时初始化该方法
     // 获取文档宽高的方法
-    getDocViewRect: null;
+    this.getDocViewRect = null;
   }
 
   /**
@@ -201,7 +199,7 @@ export default class StandardDocServer extends AbstractDocServer {
     // 所有文档加载完成事件
     this.on(VHDocSDK.Event.ALL_COMPLETE, () => {
       // if (process.env.NODE_ENV !== 'production') console.debug('所有文档加载完成');
-      console.log('[doc]  ========domain 所有文档加载完成======');
+      console.log('[doc]========所有文档加载完成======');
       // const webinarType = useRoomBaseServer().state.watchInitData.webinar.type;
       // if (list.includes(this.previewInfo.elId)) this.previewInfo.canOperate = true;
       // console.log('this.cid:', this.cid);
@@ -221,7 +219,7 @@ export default class StandardDocServer extends AbstractDocServer {
     });
     // 当前文档加载完成
     this.on(VHDocSDK.Event.DOCUMENT_LOAD_COMPLETE, data => {
-      console.log('[doc] ========domain 当前文档加载完成======', data);
+      console.log('[doc]========当前文档加载完成======', data);
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
       this.state.docLoadComplete = true;
@@ -237,7 +235,7 @@ export default class StandardDocServer extends AbstractDocServer {
     });
     // 文档翻页事件
     this.on(VHDocSDK.Event.PAGE_CHANGE, data => {
-      console.log('[doc] ==============文档翻页================');
+      console.log('[doc]========文档翻页========');
       if (this.isWatch() && useRoomBaseServer().state.watchInitData.webinar.type != 1) return;
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
@@ -247,7 +245,7 @@ export default class StandardDocServer extends AbstractDocServer {
     // 观众可见按钮切换
     this.on(VHDocSDK.Event.SWITCH_CHANGE, status => {
       if (useRoomBaseServer().state.watchInitData.webinar.type != 1) return;
-      console.log('[doc] ========控制文档开关=============', status);
+      console.log('[doc]========控制文档开关========', status);
       this.state.switchStatus = status === 'on';
       if (useRoomBaseServer().state.clientType != 'send') {
         this.resetLayoutByMiniElement()
@@ -257,7 +255,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 创建容器
     this.on(VHDocSDK.Event.CREATE_CONTAINER, data => {
-      console.log('[doc] ===========创建容器===========', data);
+      console.log('[doc]========创建容器========', data);
       const { watchInitData } = useRoomBaseServer().state;
       if (watchInitData.join_info.role_name != 1 && watchInitData.webinar.type != 1) {
         return;
@@ -274,7 +272,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 删除文档
     this.on(VHDocSDK.Event.DELETE_CONTAINER, data => {
-      console.log('doc] =========删除容器=============', data);
+      console.log('doc]========删除容器========', data);
       if (data && data.id) {
         this.destroyContainer(data.id);
         const idx = this.state.containerList.findIndex((item) => item.cid == data.id);
@@ -287,17 +285,32 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 选中容器
     this.on(VHDocSDK.Event.SELECT_CONTAINER, data => {
-      console.log('[doc] =============选中容器========');
+      console.log('[doc]========选中容器========');
       const { watchInitData } = useRoomBaseServer().state;
       if (watchInitData.join_info.role_name != 1 && watchInitData.webinar.type != 1) {
         return;
       }
-
-      this.$emit('dispatch_doc_select_container', data);
+      if (this.state.currentCid == data.id) {
+        return;
+      }
+      // 判断容器是否存在
+      const currentItem = this.state.containerList.find(item => item.cid === data.id);
+      if (currentItem) {
+        this.activeContainer(data.id);
+      } else {
+        const { id: cid, docId } = data;
+        const fileType = (cid || '').split('-')[0];
+        if (fileType === 'document' && !docId) {
+          // 文档id没有
+          console.log('[doc] 文档id没有 cid:', cid);
+          return;
+        }
+        this.addNewFile({ fileType, docId, cid });
+      }
     });
 
     this.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT, ({ cid, docId }) => {
-      console.log('[doc] =============文档不存在或已删除========', cid, docId);
+      console.log('[doc]========文档不存在或已删除========', cid, docId);
       this.setDocLoadComplete();
       if (cid == this.currentCid) {
         setTimeout(() => {
@@ -313,7 +326,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 文档报错事件
     this.on(VHDocSDK.Event.ERROR, (ev) => {
-      console.log('[doc] =============文档报错=======', ev);
+      console.log('[doc]========文档报错=======', ev);
       this.setDocLoadComplete(true);
     })
 
@@ -321,6 +334,7 @@ export default class StandardDocServer extends AbstractDocServer {
     if (!useRoomBaseServer().state.embedObj.embedVideo) {
       // 回放文档加载完成事件
       this.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, async ({ chapters }) => {
+        console.log('[doc]=======回放文档加载完成事件=======', ev);
         // 获取回放文档容器数据
         const data = this.getVodAllCids();
         this.state.containerList = data.map(item => {
@@ -397,6 +411,25 @@ export default class StandardDocServer extends AbstractDocServer {
     this.state.switchStatus = !!val;
   }
 
+  // 容器大小重置
+  resize() {
+    if (typeof this.getDocViewRect !== 'function') return;
+    let { width, height } = this.getDocViewRect();
+    if (!width || !height) {
+      console.error(`[doc] resize 获取容器宽高异常width=${width},height=${height}`);
+      return;
+    }
+    if (
+      this.state.currentCid && document.getElementById(this.state.currentCid) &&
+      document.getElementById(this.state.currentCid).childNodes.length) {
+      try {
+        this.setSize(width, height, this.state.currentCid);
+      } catch (ex) {
+        console.error('[doc] resize setSize:', ex);
+      }
+    }
+  }
+
   /**
    * 获取容器列表信息
    */
@@ -443,6 +476,38 @@ export default class StandardDocServer extends AbstractDocServer {
    */
   setDocLoadComplete(val = true) {
     this.state.docLoadComplete = val;
+  }
+
+  /**
+   * 增加
+   * @param {*} param0 
+   */
+  async addNewFile({ fileType, docId, docType, cid }) {
+    const docViewRect = this.getDocViewRect();
+    if (!docViewRect || docViewRect.width < 1 || docViewRect.height < 1) {
+      return;
+    }
+    const { width, height } = docViewRect;
+    console.log(
+      '[doc] addNewFile:',
+      JSON.stringify({
+        width,
+        height,
+        fileType,
+        cid,
+        docId,
+        docType
+      })
+    );
+    await this.addNewDocumentOrBorad({
+      width,
+      height,
+      fileType,
+      cid,
+      docId,
+      docType
+    });
+    this.resize();
   }
 
   /**
@@ -580,7 +645,6 @@ export default class StandardDocServer extends AbstractDocServer {
     };
     if (this.state.containerList.findIndex(item => item.cid === cid) === -1) {
       // 说明容器不在列表中，主动添加
-      console.log('[doc] --------向列表中添加容器------');
       this.state.containerList.push({ cid, docId });
       // 确保dom渲染
       await this.domNextTick();
