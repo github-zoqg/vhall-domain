@@ -426,7 +426,6 @@ class StandardGroupServer extends BaseServer {
     this.state.waitingUserList = [];
     this.state.groupedUserList = [];
 
-    // TODO: 演示权限交还主持人
     if (roomBaseServer.state.clientType === 'send') {
       //主持端
       this.state.panelShow = false;
