@@ -374,9 +374,13 @@ export default class StandardDocServer extends AbstractDocServer {
     if (this.state.switchStatus) {
       this.switchOffContainer();
       this.state.switchStatus = false;
+      // 数据埋点-关闭观众可见
+      window.vhallReportForProduct?.report(110024);
     } else {
       this.switchOnContainer();
       this.state.switchStatus = true;
+      // 数据埋点-开启观众可见
+      window.vhallReportForProduct?.report(110023);
     }
   }
 
@@ -582,11 +586,14 @@ export default class StandardDocServer extends AbstractDocServer {
       await this.domNextTick();
     }
     try {
+      // 注意，注意这里创建文档和白板都没有使用await 
+      // 因为使用await对于文档sdk3.2.0以前的版本,存在问题,这里算是做了兼容性处理
       if (fileType === 'document') {
-        await this.createDocument(opt);
+        this.createDocument(opt);
       } else {
-        await this.createBoard(opt);
+        this.createBoard(opt);
       }
+      await this.domNextTick();
     } catch (ex) {
       // 移除失败的容器
       this.state.containerList = this.state.containerList.filter(item => item.cid !== cid);
