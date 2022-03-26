@@ -431,7 +431,9 @@ class RoomBaseServer extends BaseServer {
         this.state.advDefault = res.data['adv-default'] ? res.data['adv-default'].data : {}; // 广告
         this.state.inviteCard = res.data['invite-card'] ? res.data['invite-card'].data : {}; // 邀请卡
         this.state.keywords = res.data['keywords'] ? res.data['keywords'].data : {}; //关键词
-        this.state.redPacket = res.data['red-packet'] ? res.data['red-packet'].data : {}; //红包
+        this.state.redPacket = res.data['red-packet'] ? res.data['red-packet'].data : {};
+        //红包
+        this.$emit('commonConfigRepacketChange') // 通知红包组件获取最新的状态
         this.state.priseLike = res.data['like'] ? res.data['like'].data : {}; //点赞数
         this.state.noticeInfo = res.data['announcement'] ? res.data['announcement'].data : {}; //公告
         this.state.signInfo = res.data['sign'] ? res.data['sign'].data : {}; //签到信息

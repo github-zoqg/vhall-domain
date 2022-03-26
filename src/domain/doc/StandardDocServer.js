@@ -988,12 +988,20 @@ export default class StandardDocServer extends AbstractDocServer {
     } = useRoomBaseServer().state
 
 
+
     if (isInGroup) {
-      if (isShareScreen) {
-        setChangeElement('doc');
-      } else {
-        // 如果在小组内,文档常显，所以小屏显示流画面
+      // 小组内文档常显，
+      if (isSpeakOn) {
+        // 上麦观众房间内不管有没有桌面共享，小屏都显示组长画面
         setChangeElement('stream-list');
+      } else {
+        if (isShareScreen) {
+          // 未上麦观众应展示文档+桌面共享
+          setChangeElement('doc');
+        } else {
+          // 如果在小组内,文档常显，所以小屏显示流画面
+          setChangeElement('stream-list');
+        }
       }
 
     } else {
@@ -1005,7 +1013,11 @@ export default class StandardDocServer extends AbstractDocServer {
       } else if (this.state.switchStatus) {
         if ((isInsertFilePushing || isShareScreen || is_desktop == 1) && !isSpeakOn) {
           // 如果在插播或者桌面共享中，并且没上麦，文档是小窗，插播是大窗
-          setChangeElement('doc');
+          if (role_name == 4) {
+            setChangeElement('stream-list')
+          } else {
+            setChangeElement('doc');
+          }
         } else if (type == 1 && (no_delay_webinar == 1 || isSpeakOn)) {
           // 直播状态下，无延迟或上麦是流列表
           setChangeElement('stream-list');
