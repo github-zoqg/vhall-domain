@@ -452,6 +452,22 @@ class RoomBaseServer extends BaseServer {
     })
   }
 
+  // 获取微信分享信息
+  getShareSettingInfo() {
+    const params = {
+      webinar_id: this.state.watchInitData.webinar.id,
+      room_id: this.state.watchInitData.interact.room_id
+    };
+    return meeting.bindShare(params).then(res => {
+      return res;
+    })
+  }
+  wechatShare(data = {}) {
+    return meeting.wechatShare(data).then(res => {
+      return res;
+    })
+  }
+
   // 设置互动
   setInavToolStatus(props, val) {
     if (!props || typeof props !== 'string') return;
