@@ -243,6 +243,26 @@ function bindShare(params) {
   });
 }
 
+// 手机端微信分享信息
+
+function getShareSettingInfo(params) {
+  const url = env.meeting === 'v3' ? '/v3/webinars/share/info' : '';
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
+
+function wechatShare(params) {
+  const url = env.meeting === 'v3' ? '/v3/commons/auth/weixin-share' : '';
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+};
+
 // 开始暂停结束打点录制api
 function recordApi(data) {
   console.log('录制接口', data);
@@ -323,6 +343,8 @@ const meeting = {
   endRecord,
   createRecordInRecord,
   bindShare,
+  getShareSettingInfo,
+  wechatShare,
   getCustomRoleName
 };
 
