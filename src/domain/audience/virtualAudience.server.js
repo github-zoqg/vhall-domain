@@ -44,19 +44,22 @@ class VirtualClientStartServer extends BaseServer {
       return res;
     });
   }
+  init() {
+    this.state.virtualOnline =
+      useRoomBaseServer().state.watchInitData.online &&
+      useRoomBaseServer().state.watchInitData.online.num;
+    this.state.virtualHot =
+      useRoomBaseServer().state.watchInitData.pv &&
+      useRoomBaseServer().state.watchInitData.pv.num;
+    this.state.uvHot =
+      useRoomBaseServer().state.watchInitData.pv &&
+      useRoomBaseServer().state.watchInitData.pv.num2;
+  }
   listenEvent() {
     const msgServer = useMsgServer();
     // 加入房间
     msgServer.$onMsg('JOIN', msg => {
-      this.state.virtualOnline =
-        useRoomBaseServer().state.watchInitData.online &&
-        useRoomBaseServer().state.watchInitData.online.num;
-      this.state.virtualHot =
-        useRoomBaseServer().state.watchInitData.pv &&
-        useRoomBaseServer().state.watchInitData.pv.num;
-      this.state.uvHot =
-        useRoomBaseServer().state.watchInitData.pv &&
-        useRoomBaseServer().state.watchInitData.pv.num2;
+      console.log('11111111JOIN', msg)
       this.state.uvOnline = msg.uv;
       if (msg.context.pv > this.state.uvHot) {
         this.state.uvHot = msg.context.pv;
