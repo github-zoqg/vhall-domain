@@ -257,7 +257,6 @@ class InteractiveServer extends BaseServer {
         console.log('[interactive server] auto_speak 0', autoSpeak)
       }
 
-      console.warn('cxs--------', watchInitData.join_info.role_name == 1, !groupInitData.isInGroup)
       // 主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题   无需判断是否为分组活动,原因如下： 若是无延迟活动，设备禁用会让下麦，这时候刷新应能自动上麦的
       if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup) {
         autoSpeak = true
