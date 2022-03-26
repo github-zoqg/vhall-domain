@@ -40,6 +40,11 @@ class MediaCheckServer {
     return VhallPaasSDK.modules.VhallRTC.checkSystemRequirements().then(checkResult => {
       this.state.checkSystemResult = checkResult;
       if (!checkResult.result) {
+        if (this.state.deviceInfo.device_status != 2) {
+          this.state.deviceInfo.device_status = 2
+          this.state.deviceInfo.device_type = this.isMobileDevice() ? 1 : 2
+          this.setDevice({ status: 2 });
+        }
         this.state.isBrowserNotSupport = true;
       }
       return checkResult;
@@ -47,7 +52,7 @@ class MediaCheckServer {
   }
 
   // 获取用户媒体输入许可
-  getMediaInputPermission(options = { isNeedBroadcast: true }) {
+  async getMediaInputPermission(options = { isNeedBroadcast: true }) {
     console.warn('[mediaCheck] 查看是否走入此处 - 勿删 ( wap本机时，本地无法推流，只能查看线上，后续删除 )', navigator.mediaDevices)
     if (navigator.mediaDevices) {
       return navigator.mediaDevices

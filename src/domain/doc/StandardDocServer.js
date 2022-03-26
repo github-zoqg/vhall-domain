@@ -481,7 +481,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
   /**
    * 增加
-   * @param {*} param0 
+   * @param {*} param0
    */
   async addNewFile({ fileType, docId, docType, cid }) {
     const docViewRect = this.getDocViewRect();
@@ -651,7 +651,7 @@ export default class StandardDocServer extends AbstractDocServer {
       await this.domNextTick();
     }
     try {
-      // 注意，注意这里创建文档和白板都没有使用await 
+      // 注意，注意这里创建文档和白板都没有使用await
       // 因为使用await对于文档sdk3.2.0以前的版本,存在问题,这里算是做了兼容性处理
       if (fileType === 'document') {
         this.createDocument(opt);
@@ -979,42 +979,50 @@ export default class StandardDocServer extends AbstractDocServer {
 
     const { isInGroup } = useGroupServer().state.groupInitData
     const isShareScreen = !!useDesktopShareServer().state.localDesktopStreamId
+    const isSpeakOn = useMicServer().getSpeakerStatus()
+    const isInsertFilePushing = useInsertFileServer().state.isInsertFilePushing
+
+    const setChangeElement = useRoomBaseServer().setChangeElement.bind(useRoomBaseServer())
+    const {
+      interactToolStatus: { presentation_screen, is_desktop },
+      watchInitData: { join_info: { third_party_user_id, role_name }, webinar: { type, no_delay_webinar } }
+    } = useRoomBaseServer().state
+
+
     if (isInGroup) {
       if (isShareScreen) {
-        useRoomBaseServer().setChangeElement('doc');
+        setChangeElement('doc');
       } else {
         // 如果在小组内,文档常显，所以小屏显示流画面
-        useRoomBaseServer().setChangeElement('stream-list');
+        setChangeElement('stream-list');
       }
 
     } else {
-      const {
-        interactToolStatus: { presentation_screen, is_desktop },
-        watchInitData: { join_info: { third_party_user_id }, webinar: { type, no_delay_webinar } }
-      } = useRoomBaseServer().state
-
       // 不在小组内且自己是演示者
       if (presentation_screen == third_party_user_id) {
         // 直播状态下，无延迟或上麦是流列表
-        useRoomBaseServer().setChangeElement('stream-list');
+        setChangeElement('stream-list');
 
       } else if (this.state.switchStatus) {
-        if ((useInsertFileServer().state.isInsertFilePushing || isShareScreen || is_desktop == 1) &&
-          !useMicServer().getSpeakerStatus()) {
+        if ((isInsertFilePushing || isShareScreen || is_desktop == 1) && !isSpeakOn) {
           // 如果在插播或者桌面共享中，并且没上麦，文档是小窗，插播是大窗
-          useRoomBaseServer().setChangeElement('doc');
-        } else if (type == 1 && (no_delay_webinar == 1 || useMicServer().getSpeakerStatus())) {
+          setChangeElement('doc');
+        } else if (type == 1 && (no_delay_webinar == 1 || isSpeakOn)) {
           // 直播状态下，无延迟或上麦是流列表
-          useRoomBaseServer().setChangeElement('stream-list');
+          setChangeElement('stream-list');
         } else {
           // 文档如果可见,直接设置 播放器 为小屏
-          useRoomBaseServer().setChangeElement('player');
+          setChangeElement('player');
         }
       } else {
-        if (useMicServer().getSpeakerStatus() && (useInsertFileServer().state.isInsertFilePushing || useDesktopShareServer().state.localDesktopStreamId)) {
-          roomBaseServer.setChangeElement('stream-list');
+        if (isInsertFilePushing || isShareScreen) {
+          if (isSpeakOn) {
+            setChangeElement('stream-list');
+          } else if (role_name != 2) {
+            setChangeElement('stream-list');
+          }
         } else {
-          roomBaseServer.setChangeElement('');
+          setChangeElement('');
 
         }
       }
