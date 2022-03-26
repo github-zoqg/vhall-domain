@@ -334,7 +334,7 @@ export default class StandardDocServer extends AbstractDocServer {
     if (!useRoomBaseServer().state.embedObj.embedVideo) {
       // 回放文档加载完成事件
       this.on(VHDocSDK.Event.VOD_CUEPOINT_LOAD_COMPLETE, async ({ chapters }) => {
-        console.log('[doc]=======回放文档加载完成事件=======', ev);
+        console.log('[doc]=======回放文档加载完成事件=======');
         // 获取回放文档容器数据
         const data = this.getVodAllCids();
         this.state.containerList = data.map(item => {
@@ -480,7 +480,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
   /**
    * 增加
-   * @param {*} param0 
+   * @param {*} param0
    */
   async addNewFile({ fileType, docId, docType, cid }) {
     const docViewRect = this.getDocViewRect();

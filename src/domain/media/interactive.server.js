@@ -257,7 +257,6 @@ class InteractiveServer extends BaseServer {
         console.log('[interactive server] auto_speak 0', autoSpeak)
       }
 
-      console.warn('cxs--------', watchInitData.join_info.role_name == 1, !groupInitData.isInGroup)
       // 主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题   无需判断是否为分组活动,原因如下： 若是无延迟活动，设备禁用会让下麦，这时候刷新应能自动上麦的
       if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup) {
         autoSpeak = true
@@ -424,12 +423,12 @@ class InteractiveServer extends BaseServer {
     });
 
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
-    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, e => {
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, async e => {
       console.log('[interactiveServer]-------本地流断开----', e);
       if (e.data?.streamType != 3) {
-        // 非桌面共享时设置设备不可用  / 若在麦上，下麦( 线上逻辑 )
+        // 非桌面共享时设置设ti备不可用  / 若在麦上，下麦( 线上逻辑 )
+        await useMediaCheckServer().getMediaInputPermission();
         useMicServer().speakOff()
-        useMediaCheckServer().getMediaInputPermission();
       }
       this.$emit('EVENT_STREAM_END', e);
     });
