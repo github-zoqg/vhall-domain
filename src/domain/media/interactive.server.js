@@ -400,6 +400,9 @@ class InteractiveServer extends BaseServer {
       this.$emit('EVENT_REMOTESTREAM_REMOVED', e);
     });
 
+    const msgServer = useMsgServer();
+    const { watchInitData: { join_info: { third_party_user_id } } } = useRoomBaseServer().state;
+
     // 房间信令异常断开事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e => {
       this.$emit('EVENT_ROOM_EXCDISCONNECTED', e);
@@ -424,8 +427,8 @@ class InteractiveServer extends BaseServer {
 
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, async e => {
-      console.log('[interactiveServer]-------本地流断开----', e);
-      if (e.data?.streamType != 3) {
+      console.log('[interactiveServer]-------本地流断开----', third_party_user_id, e);
+      if (e.data?.streamType != 3 && third_party_user_id === e.data?.accountId) {
         // 非桌面共享时设置设ti备不可用  / 若在麦上，下麦( 线上逻辑 )
         await useMediaCheckServer().setDevice({ status: 2, send_msg: 1 }); //send_msg： 传 0 不会发消息，不传或传 1 会发这个消息
         useMicServer().speakOff()
@@ -450,8 +453,6 @@ class InteractiveServer extends BaseServer {
     });
 
     // -------------------------房间业务消息--------------------------------------------
-    const msgServer = useMsgServer();
-    const { watchInitData: { join_info: { third_party_user_id } } } = useRoomBaseServer().state;
 
 
     msgServer.$onMsg('ROOM_MSG', msg => {
