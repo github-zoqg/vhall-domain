@@ -312,6 +312,7 @@ class QuestionnaireServer extends BaseServer {
    */
   checkIconStatus() {
     this.getLastSurvey().then(res => {
+      if (!res?.data) return false
       const questionId = res?.data?.questionId;
       this.state.lastQuestionnaireId = questionId
       if (questionId) {
@@ -333,11 +334,11 @@ class QuestionnaireServer extends BaseServer {
     const { watchInitData, configList } = this.useRoomBaseServer.state;
     const { interact, switch: _switch, webinar } = watchInitData;
     let playback_filling = 0
-    if (webinar.type == 5) {
-      playback_filling = 1
+    if (configList['ui.hide_chat_history'] = 1) {
+      Promise.resolve({})
     } else {
-      if (configList['ui.hide_chat_history'] == 1) {
-        return Promise.resolve({}) // 不调取接口
+      if (webinar.type == 5) {
+        playback_filling = 1
       }
     }
     return questionnaireApi.getLastSurvey({
