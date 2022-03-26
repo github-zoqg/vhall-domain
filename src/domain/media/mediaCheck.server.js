@@ -41,8 +41,6 @@ class MediaCheckServer {
       this.state.checkSystemResult = checkResult;
       if (!checkResult.result) {
         if (this.state.deviceInfo.device_status != 2) {
-          this.state.deviceInfo.device_status = 2
-          this.state.deviceInfo.device_type = this.isMobileDevice() ? 1 : 2
           this.setDevice({ status: 2 });
         }
         this.state.isBrowserNotSupport = true;
@@ -58,9 +56,6 @@ class MediaCheckServer {
       return navigator.mediaDevices
         .getUserMedia({ audio: true, video: true })
         .then(async stream => {
-          // 更新当前用户设备信息
-          this.state.deviceInfo.device_status = 1;
-          this.state.deviceInfo.device_type = this.isMobileDevice() ? 1 : 2
           console.log('[mediaCheck] 查看是否走入此处 - 勿删 ( wap本机时，本地无法推流，只能查看线上，后续删除 )， result:', 1)
           // TODO: 根据参数判断是否发消息同步状态
           this.setDevice({ status: 1, send_msg: Number(options.isNeedBroadcast) });
@@ -72,9 +67,6 @@ class MediaCheckServer {
           });
         })
         .catch(async () => {
-          // 更新当前用户设备信息
-          this.state.deviceInfo.device_status = 2;
-          this.state.deviceInfo.device_type = this.isMobileDevice() ? 1 : 2
           // TODO: 根据参数判断是否发消息同步状态
           console.log('[mediaCheck] 查看是否走入此处 - 勿删 ( wap本机时，本地无法推流，只能查看线上，后续删除 )， result:', 2)
           this.setDevice({ status: 2, send_msg: Number(options.isNeedBroadcast) });
@@ -87,16 +79,22 @@ class MediaCheckServer {
 
   // 设置设备检测状态
   setDevice(data = {}) {
-    const { watchInitData } = useRoomBaseServer().state;
-    const defaultParams = {
-      room_id: watchInitData.interact.room_id,
-      status: 1,
-      type: this.isMobileDevice() ? 1 : 2
-    };
-    const retParams = merge.recursive({}, defaultParams, data);
-    return meeting.setDevice(retParams).then(res => {
-      return res;
-    });
+    return new Promise(resolve => {
+      this.state.deviceInfo.device_status = data.status;
+      // 更新当前用户设备信息
+      this.state.deviceInfo.device_type = this.isMobileDevice() ? 1 : 2
+      const { watchInitData } = useRoomBaseServer().state;
+      const defaultParams = {
+        room_id: watchInitData.interact.room_id,
+        status: 1,
+        type: this.isMobileDevice() ? 1 : 2
+      };
+      const retParams = merge.recursive({}, defaultParams, data);
+      return meeting.setDevice(retParams).then(res => {
+        resolve(res)
+        return res;
+      });
+    })
   }
 
   /**

@@ -427,7 +427,7 @@ class InteractiveServer extends BaseServer {
       console.log('[interactiveServer]-------本地流断开----', e);
       if (e.data?.streamType != 3) {
         // 非桌面共享时设置设ti备不可用  / 若在麦上，下麦( 线上逻辑 )
-        await useMediaCheckServer().getMediaInputPermission();
+        await useMediaCheckServer().setDevice({ status: 2, send_msg: 0 });
         useMicServer().speakOff()
       }
       this.$emit('EVENT_STREAM_END', e);
