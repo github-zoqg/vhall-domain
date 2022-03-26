@@ -457,10 +457,9 @@ class RoomBaseServer extends BaseServer {
   // 获取微信分享信息
   getShareSettingInfo() {
     const params = {
-      webinar_id: this.state.watchInitData.webinar.id,
-      room_id: this.state.watchInitData.interact.room_id
+      webinar_id: this.state.watchInitData.webinar.id
     };
-    return meeting.bindShare(params).then(res => {
+    return meeting.getShareSettingInfo(params).then(res => {
       return res;
     })
   }
