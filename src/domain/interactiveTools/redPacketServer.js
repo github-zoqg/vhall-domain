@@ -10,8 +10,11 @@ const RED_ENVELOPE_PUSH = 'red_envelope_push'; // 红包推送
 class RedPacketServer extends BaseServer {
   constructor(opts = {}) {
     super(opts);
-    this._uuid = '';
+    this._uuid = ''; // 当期那操作的红包
+    this._lastUUid = ''; // 最后一个红包的id(icon)
     this.state = {
+      iconVisible: false, // icon显示
+      dotVisible: false, // dot显示
       info: {}, // 红包信息
       online: 0, // 在线人数
       amount: 0, // 获奖金额
@@ -21,21 +24,48 @@ class RedPacketServer extends BaseServer {
     this.listenMsg(opts);
   }
 
+  initIconStatus() {
+    this.getLatestRedpacketUsage().then(res => {
+      const redPacketInfo = res.data
+      const available = (redPacketInfo.number > redPacketInfo.get_user_count) // 当红包数量大于已领取人数
+      this.state.available = available;
+      if (redPacketInfo.status === 1) {
+        this.state.iconVisible = true;
+        if (available) {
+          this.state.dotVisible = true;
+        }
+      }
+    })
+  }
+
   // 更新红包id
   setUUid(uuid) {
     this._uuid = uuid;
+  }
+
+  getLastUUid() {
+    return this._lastUUid
   }
 
   // 设置红包是否可领取
   setAvailable(available) {
     this.state.available = available;
   }
+
+  // 设置小红点状态
+  setDotVisible(visible) {
+    this.state.dotVisible = visible;
+  }
+
   listenMsg(opts) {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       switch (msg.data.event_type || msg.data.type) {
         case RED_ENVELOPE_OK:
           console.log('红包消息:RED_ENVELOPE_OK')
           this.state.available = true
+          this.state.iconVisible = true
+          this.state.dotVisible = true
+          this._lastUUid = msg.data.red_packet_uuid
           this.$emit(RED_ENVELOPE_OK, msg.data);
           break;
       }
@@ -164,7 +194,12 @@ class RedPacketServer extends BaseServer {
     const { interact } = watchInitData;
     return redPacketApi.getLatestRedpacketUsage({
       room_id: interact.room_id
-    });
+    }).then(res => {
+      if (res.code === 200) {
+        this._lastUUid = res.data.red_packet_uuid
+      }
+      return res
+    })
   }
 }
 

@@ -40,6 +40,11 @@ class MediaCheckServer {
     return VhallPaasSDK.modules.VhallRTC.checkSystemRequirements().then(checkResult => {
       this.state.checkSystemResult = checkResult;
       if (!checkResult.result) {
+        if (this.state.deviceInfo.device_status != 2) {
+          this.state.deviceInfo.device_status = 2
+          this.state.deviceInfo.device_type = this.isMobileDevice() ? 1 : 2
+          this.setDevice({ status: 2 });
+        }
         this.state.isBrowserNotSupport = true;
       }
       return checkResult;
