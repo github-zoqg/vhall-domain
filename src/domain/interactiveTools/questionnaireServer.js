@@ -329,12 +329,20 @@ class QuestionnaireServer extends BaseServer {
   /**
    * 获取活动最后一个问卷
    */
-  getLastSurvey(index = 0) {
-    const { watchInitData } = this.useRoomBaseServer.state;
-    const { interact, switch: _switch } = watchInitData;
+  getLastSurvey() {
+    const { watchInitData, configList } = this.useRoomBaseServer.state;
+    const { interact, switch: _switch, webinar } = watchInitData;
+    let playback_filling = 0
+    if (webinar.type == 5) {
+      playback_filling = 1
+    } else {
+      if (configList['ui.hide_chat_history'] == 1) {
+        return Promise.resolve({}) // 不调取接口
+      }
+    }
     return questionnaireApi.getLastSurvey({
       room_id: interact.room_id,
-      playback_filling: index,
+      playback_filling,
       start_time: _switch.start_time,
       end_time: _switch.end_time
     });
