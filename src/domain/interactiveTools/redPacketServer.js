@@ -22,20 +22,29 @@ class RedPacketServer extends BaseServer {
       available: false // 当前红包是否可领取
     };
     this.listenMsg(opts);
+    useRoomBaseServer().$on('commonConfigRepacketChange', () => {
+      console.log('commonConfigRepacketChange')
+      this.initIconStatus()
+    })
   }
 
   initIconStatus() {
-    this.getLatestRedpacketUsage().then(res => {
-      const redPacketInfo = res.data
-      const available = (redPacketInfo.number > redPacketInfo.get_user_count) // 当红包数量大于已领取人数
+    console.log('initIconStatus,useRoomBaseServer')
+    console.log(useRoomBaseServer().state)
+    const redPacketInfo = useRoomBaseServer().state?.redPacket
+    console.log(JSON.parse(JSON.stringify(redPacketInfo)))
+    if (redPacketInfo) {
+      const hasRest = (parseInt(redPacketInfo.number) > parseInt(redPacketInfo.get_user_count))
+      const available = hasRest && redPacketInfo.is_luck !== 1 // 当已没有剩余红包且自己没领取过了
       this.state.available = available;
-      if (redPacketInfo.status === 1) {
+      if (redPacketInfo.status == 1) {
         this.state.iconVisible = true;
         if (available) {
           this.state.dotVisible = true;
         }
       }
-    })
+      this._lastUUid = redPacketInfo.red_packet_uuid
+    }
   }
 
   // 更新红包id
@@ -50,6 +59,7 @@ class RedPacketServer extends BaseServer {
   // 设置红包是否可领取
   setAvailable(available) {
     this.state.available = available;
+    console.log('setAvailable', available, this.state.available)
   }
 
   // 设置小红点状态
