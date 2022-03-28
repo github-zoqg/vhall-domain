@@ -7,6 +7,9 @@ const msgServer = useMsgServer();
 const roomBaseServer = useRoomBaseServer();
 export default class StandardNoticeServer extends BaseServer {
   constructor() {
+    if (typeof StandardNoticeServer.instance === 'object') {
+      return StandardNoticeServer.instance;
+    }
     super();
 
     this.state = {
@@ -23,7 +26,9 @@ export default class StandardNoticeServer extends BaseServer {
       //总条数
       total: 0
     };
+    StandardNoticeServer.instance = this;
     this.listenMsg();
+    return this;
   }
   /**
    * 获取单实例

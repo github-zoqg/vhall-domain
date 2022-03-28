@@ -4,9 +4,14 @@ import { subscribeApi } from '../../request/index';
 
 class SubscribeServer extends BaseServer {
   constructor() {
+    if (typeof SubscribeServer.instance === 'object') {
+      return SubscribeServer.instance;
+    }
     super();
+    SubscribeServer.instance = this;
     this.state = {};
     this.listenMsg();
+    return this;
   }
   listenMsg() {
     const msgServer = useMsgServer();
