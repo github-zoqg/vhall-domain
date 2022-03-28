@@ -334,11 +334,11 @@ class QuestionnaireServer extends BaseServer {
     const { watchInitData, configList } = this.useRoomBaseServer.state;
     const { interact, switch: _switch, webinar } = watchInitData;
     let playback_filling = 0
-    if (configList['ui.hide_chat_history'] == 1) {
-      Promise.resolve({})
+    if (configList['ui.hide_chat_history'] == 1) { // 打开admin此配置不请求接口
+      return Promise.resolve({})
     } else {
       if (webinar.type == 5) {
-        playback_filling = 1
+        playback_filling = 1 // 回放时取配置了回放填写的问卷
       }
     }
     return questionnaireApi.getLastSurvey({
