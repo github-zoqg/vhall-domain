@@ -925,13 +925,14 @@ class InteractiveServer extends BaseServer {
       this.interactiveInstance.subscribe(options).then(res => {
         this.retrySubScribeNum = 0
         resolve(res)
-      }).catch((e) => {
+      }).catch(async (e) => {
         console.log('[interactiveServer]   订阅失败-----> ', e)
         if (this.retrySubScribeNum > 3) {
           this.retrySubScribeNum = 0
           reject(e)
           return
         }
+        await sleep(500);
         this.retrySubScribeNum++
         this.subscribe(options)
       })

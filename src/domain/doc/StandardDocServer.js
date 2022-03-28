@@ -1043,7 +1043,9 @@ export default class StandardDocServer extends AbstractDocServer {
         }
       } else {
         console.log('----7777--------')
+        // 没有开文档
         if (isInsertFilePushing || isShareScreen) {
+          // 有插播或者桌面共享
           if (isSpeakOn) {
             setChangeElement('stream-list');
           } else if (role_name != 2) {
