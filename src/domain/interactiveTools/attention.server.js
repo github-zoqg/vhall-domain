@@ -7,7 +7,12 @@ import BaseServer from '@/domain/common/base.server.js';
 class AttentionServer extends BaseServer {
   constructor() {
     super();
+    if (typeof AttentionServer.instance === 'object') {
+      return AttentionServer.instance;
+    }
     this.state = {};
+    AttentionServer.instance = this;
+    return this;
   }
 
   // 关注状态

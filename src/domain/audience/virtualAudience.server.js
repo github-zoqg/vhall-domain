@@ -6,9 +6,6 @@ import useMsgServer from '@/domain/common/msg.server.js';
 class VirtualClientStartServer extends BaseServer {
   constructor() {
     super();
-    if (typeof VirtualClientStartServer.instance === 'object') {
-      return VirtualClientStartServer.instance;
-    }
     // this.virtualInstance = null; // 互动实例
     this.state = {
       person: {
@@ -25,6 +22,7 @@ class VirtualClientStartServer extends BaseServer {
       addCount: ''
     };
     this.listenEvent();
+    VirtualClientStartServer.instance = this;
     return this;
   }
   virtualClientStart(data = {}) {
@@ -45,22 +43,17 @@ class VirtualClientStartServer extends BaseServer {
     });
   }
   init() {
-    this.state.virtualOnline =
-      useRoomBaseServer().state.watchInitData.online &&
-      useRoomBaseServer().state.watchInitData.online.num;
-    this.state.virtualHot =
-      useRoomBaseServer().state.watchInitData.pv &&
-      useRoomBaseServer().state.watchInitData.pv.num;
-    this.state.uvHot =
-      useRoomBaseServer().state.watchInitData.pv &&
-      useRoomBaseServer().state.watchInitData.pv.num2;
+    const { online, pv } = useRoomBaseServer().state.watchInitData;
+    this.state.virtualOnline = online && online.num;
+    this.state.virtualHot = pv && pv.num;
+    this.state.uvHot = pv && pv.num2;
   }
   listenEvent() {
     const msgServer = useMsgServer();
     // 加入房间
     msgServer.$onMsg('JOIN', msg => {
-      console.log('11111111JOIN', msg)
       this.state.uvOnline = msg.uv;
+      console.log('11111111JOIN', msg, this.state)
       if (msg.context.pv > this.state.uvHot) {
         this.state.uvHot = msg.context.pv;
       }
@@ -80,5 +73,8 @@ class VirtualClientStartServer extends BaseServer {
   }
 }
 export default function useVirtualAudienceServer() {
+  if (typeof VirtualClientStartServer.instance === 'object') {
+    return VirtualClientStartServer.instance;
+  }
   return new VirtualClientStartServer();
 }
