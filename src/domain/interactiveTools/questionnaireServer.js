@@ -312,6 +312,7 @@ class QuestionnaireServer extends BaseServer {
    */
   checkIconStatus() {
     this.getLastSurvey().then(res => {
+      if (!res?.data) return false
       const questionId = res?.data?.questionId;
       this.state.lastQuestionnaireId = questionId
       if (questionId) {
@@ -329,12 +330,20 @@ class QuestionnaireServer extends BaseServer {
   /**
    * 获取活动最后一个问卷
    */
-  getLastSurvey(index = 0) {
-    const { watchInitData } = this.useRoomBaseServer.state;
-    const { interact, switch: _switch } = watchInitData;
+  getLastSurvey() {
+    const { watchInitData, configList } = this.useRoomBaseServer.state;
+    const { interact, switch: _switch, webinar } = watchInitData;
+    let playback_filling = 0
+    if (configList['ui.hide_chat_history'] = 1) {
+      Promise.resolve({})
+    } else {
+      if (webinar.type == 5) {
+        playback_filling = 1
+      }
+    }
     return questionnaireApi.getLastSurvey({
       room_id: interact.room_id,
-      playback_filling: index,
+      playback_filling,
       start_time: _switch.start_time,
       end_time: _switch.end_time
     });

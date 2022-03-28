@@ -161,7 +161,11 @@ class RedPacketServer extends BaseServer {
         red_packet_uuid: this._uuid
       })
       .then(res => {
-        this.state.amount = res.data.amount;
+        if (res.data?.red_packet) { // 没有抢到红包该接口也返回amount
+          this.state.amount = res.data.amount;
+        } else {
+          this.state.amount = 0;
+        }
         return res;
       });
   }

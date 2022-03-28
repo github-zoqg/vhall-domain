@@ -424,6 +424,7 @@ export default class StandardDocServer extends AbstractDocServer {
       document.getElementById(this.state.currentCid).childNodes.length) {
       try {
         this.setSize(width, height, this.state.currentCid);
+        console.log('[doc] domain resize setSize:', width, '-', height)
       } catch (ex) {
         console.error('[doc] resize setSize:', ex);
       }
@@ -458,10 +459,15 @@ export default class StandardDocServer extends AbstractDocServer {
     // 通知观众可见状态
     this.$emit('dispatch_doc_switch_status', this.state.switchStatus);
 
+
+    // 如果是发起端，主持人正在桌面共享，助理界面优先显示文档
+    if (!this.isWatch() && useRoomBaseServer().state.watchInitData.join_info.role_name == 3 &&
+      useDesktopShareServer().state.localDesktopStreamId && list.length > 0) {
+      useRoomBaseServer().setChangeElement('doc');
+    }
+
     if (useRoomBaseServer().state.clientType != 'send') {
-
       this.resetLayoutByMiniElement()
-
     }
 
     // 小组内是否去显示文档判断根据是否有文档内容
@@ -997,7 +1003,11 @@ export default class StandardDocServer extends AbstractDocServer {
       } else {
         if (isShareScreen) {
           // 未上麦观众应展示文档+桌面共享
-          setChangeElement('doc');
+          if (role_name == 2) {
+            setChangeElement('doc');
+          } else {
+            setChangeElement('stream-list');
+          }
         } else {
           // 如果在小组内,文档常显，所以小屏显示流画面
           setChangeElement('stream-list');
@@ -1011,21 +1021,28 @@ export default class StandardDocServer extends AbstractDocServer {
         setChangeElement('stream-list');
 
       } else if (this.state.switchStatus) {
+        console.log('----11--------')
         if ((isInsertFilePushing || isShareScreen || is_desktop == 1) && !isSpeakOn) {
+          console.log('----22222--------')
           // 如果在插播或者桌面共享中，并且没上麦，文档是小窗，插播是大窗
           if (role_name == 4) {
+            console.log('----33333--------')
             setChangeElement('stream-list')
           } else {
+            console.log('----4444--------')
             setChangeElement('doc');
           }
         } else if (type == 1 && (no_delay_webinar == 1 || isSpeakOn)) {
+          console.log('----555--------')
           // 直播状态下，无延迟或上麦是流列表
           setChangeElement('stream-list');
         } else {
+          console.log('----666--------')
           // 文档如果可见,直接设置 播放器 为小屏
           setChangeElement('player');
         }
       } else {
+        console.log('----7777--------')
         if (isInsertFilePushing || isShareScreen) {
           if (isSpeakOn) {
             setChangeElement('stream-list');
