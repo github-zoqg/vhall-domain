@@ -335,7 +335,7 @@ class QuestionnaireServer extends BaseServer {
     const { interact, switch: _switch, webinar } = watchInitData;
     let playback_filling = 0
     if (configList['ui.hide_chat_history'] = 1) {
-      Promise.resolve({})
+      return Promise.resolve({})
     } else {
       if (webinar.type == 5) {
         playback_filling = 1
