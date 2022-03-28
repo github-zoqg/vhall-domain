@@ -56,9 +56,9 @@ class ChatServer extends BaseServer {
   listenEvents() {
     const msgServer = useMsgServer();
     const groupServer = useGroupServer();
-    const { role_name } = useRoomBaseServer().state.watchInitData.join_info;
     //监听聊天消息
     msgServer.$onMsg('CHAT', rawMsg => {
+      const { role_name } = useRoomBaseServer().state.watchInitData.join_info;
       if (['text', 'image'].includes(rawMsg.data.type)) {
         //表情处理
         rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);

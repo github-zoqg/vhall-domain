@@ -604,10 +604,6 @@ class RoomBaseServer extends BaseServer {
     type == 1 ? this.state.watchInitData.join_info.avatar = info.avatar : this.state.watchInitData.join_info.nickname = info.nick_name;
   }
 
-  // 关闭开屏海报事件
-  screenPostClose(data = {}) {
-    this.$emit('screenPostClose', data);
-  }
 
   getCustomRoleName() {
     return meeting.getCustomRoleName({
