@@ -388,13 +388,15 @@ class InteractiveServer extends BaseServer {
     });
 
     // 远端流离开事件,自己的流删除事件收不到
-    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, async e => {
       console.log('[interactiveServer]--------流退出事件----', e);
+
 
       if (e.data.streamType === 2) {
         let params = {
           streamId: '',
         }
+        // let res = await this.unSubscribeStream(e.data.streamId)
         useMicServer().updateSpeakerByAccountId(e.data.accountId, params)
       }
       this.$emit('EVENT_REMOTESTREAM_REMOVED', e);
