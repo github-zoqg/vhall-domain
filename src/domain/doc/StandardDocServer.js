@@ -1003,7 +1003,11 @@ export default class StandardDocServer extends AbstractDocServer {
       } else {
         if (isShareScreen) {
           // 未上麦观众应展示文档+桌面共享
-          setChangeElement('doc');
+          if (role_name == 2) {
+            setChangeElement('doc');
+          } else {
+            setChangeElement('stream-list');
+          }
         } else {
           // 如果在小组内,文档常显，所以小屏显示流画面
           setChangeElement('stream-list');

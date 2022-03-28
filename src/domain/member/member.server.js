@@ -602,7 +602,7 @@ class MemberServer extends BaseServer {
     const isLive = clientType === 'send';
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
     //必须在主房间
-    if (!isInGroup) return;
+    if (isInGroup) return;
 
     if (isLive) {
       this.state.totalNum = msg.uv - useGroupServer().state.groupedUserList.length;
