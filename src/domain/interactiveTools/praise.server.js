@@ -12,11 +12,16 @@ const roomBaseServer = useRoomBaseServer();
 
 class PraiseServer extends BaseServer {
   constructor() {
+    if (typeof PraiseServer.instance === 'object') {
+      return PraiseServer.instance;
+    }
     super();
     this.state = {
       praiseTotalNum: roomBaseServer.state.priseLike.total
     };
+    PraiseServer.instance = this;
     this.listenMsg();
+    return this;
   }
   listenMsg() {
     // 房间消息
