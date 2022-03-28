@@ -190,6 +190,7 @@ class RedPacketServer extends BaseServer {
     const { interact } = watchInitData;
     return redPacketApi.getRedPacketWinners({
       order: 'created_at',
+      order_type: 'desc',
       room_id: interact.room_id,
       red_packet_uuid: this._uuid,
       ...params
