@@ -121,10 +121,6 @@ class StandardGroupServer extends BaseServer {
   //监听分组相关消息（属于房间消息）
   listenMsg() {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
-      console.log(
-        '[group] --domain ROOM_MSG--房间消息：',
-        `${msg.data.type ? 'type:' : 'event_type'}:${msg.data.type || msg.data.event_type}`
-      );
       switch (msg.data.event_type || msg.data.type) {
         // 直播结束
         case 'live_over':
@@ -234,10 +230,6 @@ class StandardGroupServer extends BaseServer {
             account_id: msg.sender_id,
             ...msg.context
           });
-          console.log({
-            account_id: msg.sender_id,
-            ...msg.context
-          }, '上线人员信息');
         }
         this.handleGroupLeaderBack(msg) // 处理组长回归
       }
@@ -817,7 +809,6 @@ class StandardGroupServer extends BaseServer {
       switch_id: watchInitData.switch.switch_id // 场次ID
     };
     const result = await groupApi.groupWaitList(params);
-    // console.log('[group] domain getWaitingUserList:', result);
     if (result && result.code === 200) {
       this.state.waitingUserList = result.data.list;
     }
@@ -835,7 +826,6 @@ class StandardGroupServer extends BaseServer {
       switch_id: watchInitData.switch.switch_id // 场次ID
     };
     const result = await groupApi.groupListing(params);
-    // console.log('[group] getGroupedUserList result:', result);
     if (result && result.code === 200) {
       this.state.groupedUserList = result.data.list;
     }
@@ -856,7 +846,6 @@ class StandardGroupServer extends BaseServer {
       group_id: groupId
     };
     const result = await groupApi.groupExchange(params);
-    console.log('[group] result', result);
     return result;
   }
 
@@ -873,7 +862,6 @@ class StandardGroupServer extends BaseServer {
       group_id: groupId
     };
     const result = await groupApi.groupDisband(params);
-    console.log('[group] groupDisband result', result);
     return result;
   }
 
@@ -894,7 +882,6 @@ class StandardGroupServer extends BaseServer {
       params.leader_account_id = leaderId
     }
     const result = await groupApi.groupSetLeader(params);
-    console.log('[group] groupSetLeader result', result);
     if (result && result.code === 200) {
       this.getGroupedUserList();
     }
@@ -951,7 +938,6 @@ class StandardGroupServer extends BaseServer {
       group_id: groupId // 小组Id
     };
     const result = await groupApi.groupEnter(params);
-    console.log('[group] groupEnter result', result);
     return result;
   }
 
@@ -966,7 +952,6 @@ class StandardGroupServer extends BaseServer {
       group_id: this.state.groupInitData.group_id // 分组ID
     };
     const result = await groupApi.groupQuit(params);
-    console.log('[group] groupQuit result', result);
     return result;
   }
 
@@ -975,7 +960,6 @@ class StandardGroupServer extends BaseServer {
    */
   async updateGroupInitData() {
     const result = await this.getGroupInfo();
-    console.log('[group] groupInit result:', result);
 
     this.state.groupInitData = (result && result.data) || {};
     if (this.state.groupInitData?.group_id) {
@@ -1012,7 +996,6 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] oldGroupId:', oldGroupId);
     // 如果group_ids包含了之前的分组id，说明当前用户有可能变更了小组
     if (group_ids.includes(oldGroupId)) {
-      console.log('[group] 可能变更了小组');
       // 需要重新获取最新的groupInitData来对比
       await this.updateGroupInitData();
       const newGroupId = Number(this.state.groupInitData.group_id ?? 0);
@@ -1060,7 +1043,6 @@ class StandardGroupServer extends BaseServer {
 
   // 请求协助
   async needHelp() {
-    console.log('[group] groupInitData.group_id:', this.state.groupInitData.group_id);
     const { watchInitData } = useRoomBaseServer().state;
     const params = {
       room_id: watchInitData.interact.room_id, // 主直播房间ID
