@@ -272,7 +272,7 @@ class MsgServer extends BaseServer {
     const defaultContext = {
       nickname: watchInitData.join_info.nickname,
       avatar: watchInitData.join_info.avatar,
-      pv: watchInitData.pv && (watchInitData.pv.num2 || watchInitData.pv.real), // pv
+      pv: watchInitData.pv && (watchInitData.pv.num2 ?? watchInitData.pv.real), // pv
       uv: watchInitData.online && (watchInitData.online.num || watchInitData.online.virtual),
       role_name: watchInitData.join_info.role_name,
       device_type: useMediaCheckServer().state.deviceInfo.device_type, // 设备类型 1手机端 2PC 0未检测
