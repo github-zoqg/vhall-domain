@@ -222,6 +222,10 @@ class MicServer extends BaseServer {
           this.$emit('vrtc_big_screen_set', msg);
           // const str = watchInitData.webinar.mode == 6 ? '主画面' : '主讲人';
           break;
+        // 设置主讲人 补充增加
+        case 'vrtc_speaker_switch':
+          this.$emit('vrtc_speaker_switch', msg)
+          break;
       }
     });
   }

@@ -65,7 +65,6 @@ export default class StandardDocServer extends AbstractDocServer {
   init(customOptions = {}) {
     const defaultOptions = this._getDefaultOptions();
     const options = merge.recursive({}, defaultOptions, customOptions);
-    // console.log('---[doc]------init options:', options);
     // 初始化 passDocInstance
     return this.initialize(options)
       .then(() => {
@@ -198,12 +197,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 所有文档加载完成事件
     this.on(VHDocSDK.Event.ALL_COMPLETE, () => {
-      // if (process.env.NODE_ENV !== 'production') console.debug('所有文档加载完成');
       console.log('[doc]========所有文档加载完成======');
-      // const webinarType = useRoomBaseServer().state.watchInitData.webinar.type;
-      // if (list.includes(this.previewInfo.elId)) this.previewInfo.canOperate = true;
-      // console.log('this.cid:', this.cid);
-      // console.log('this.isFullscreen :', this.isFullscreen);
       this.state.allComplete = true;
       this.state.docLoadComplete = true;
 
@@ -363,7 +357,6 @@ export default class StandardDocServer extends AbstractDocServer {
       });
 
       this.on(VHDocSDK.Event.VOD_TIME_UPDATE, data => {
-        // console.log('[doc] VOD_TIME_UPDATE:', data);
         let isChange = this.state.switchStatus !== data.watchOpen;
         if (this.state.isVodUpdateFirst) {
           this.state.isVodUpdateFirst = false;
@@ -424,7 +417,6 @@ export default class StandardDocServer extends AbstractDocServer {
       document.getElementById(this.state.currentCid).childNodes.length) {
       try {
         this.setSize(width, height, this.state.currentCid);
-        console.log('[doc] domain resize setSize:', width, '-', height)
       } catch (ex) {
         console.error('[doc] resize setSize:', ex);
       }
@@ -454,8 +446,6 @@ export default class StandardDocServer extends AbstractDocServer {
     } else {
       this.state.switchStatus = false;
     }
-    // 观看端(
-    console.log('getContainerList=>switchStatus:', this.state.switchStatus);
     // 通知观众可见状态
     this.$emit('dispatch_doc_switch_status', this.state.switchStatus);
 
@@ -494,17 +484,6 @@ export default class StandardDocServer extends AbstractDocServer {
       return;
     }
     const { width, height } = docViewRect;
-    console.log(
-      '[doc] addNewFile:',
-      JSON.stringify({
-        width,
-        height,
-        fileType,
-        cid,
-        docId,
-        docType
-      })
-    );
     await this.addNewDocumentOrBorad({
       width,
       height,
@@ -638,7 +617,6 @@ export default class StandardDocServer extends AbstractDocServer {
       cid = this.createUUID(fileType);
     }
     let noDispatch = true;
-    // console.log('[doc] noDis:', !this.hasDocPermission())
     noDispatch = !this.hasDocPermission();
     let opt = {
       id: cid,
@@ -722,7 +700,6 @@ export default class StandardDocServer extends AbstractDocServer {
           height: height,
           noDispatch
         };
-        console.log('[doc] opts:', opts);
         await this.createDocument(opts);
       }
     } catch (ex) {
@@ -743,14 +720,12 @@ export default class StandardDocServer extends AbstractDocServer {
     this.state.currentCid = cid;
 
     const activeItem = this.state.containerList.find(item => item.cid == cid);
-    console.log('[doc] activeItem:', activeItem);
     const type = cid.split('-')[0];
     if (type === 'document') {
       this.state.docCid = cid;
     } else {
       this.state.boardCid = cid;
     }
-
   }
 
   /**
@@ -758,7 +733,6 @@ export default class StandardDocServer extends AbstractDocServer {
    */
   getCurrentThumbnailList() {
     const res = this.docInstance.getThumbnailList();
-    console.log('[doc] domain getCurrentThumbnailList res:', res);
     this.state.thumbnailList = res && res[0] ? res[0].list : [];
   }
 
@@ -913,7 +887,6 @@ export default class StandardDocServer extends AbstractDocServer {
   groupReInitDocProcess() {
     return this.init()
       .then(() => {
-        console.log('[doc] domain groupReInitDocProcess');
         this.state.currentCid = ''; //当前正在展示的容器id
         this.state.docCid = ''; // 当前文档容器Id
         this.state.boardCid = ''; // 当前白板容器Id
@@ -993,6 +966,11 @@ export default class StandardDocServer extends AbstractDocServer {
       watchInitData: { join_info: { third_party_user_id, role_name }, webinar: { type, no_delay_webinar } }
     } = useRoomBaseServer().state
 
+    if (this.isWatch() && useRoomBaseServer().state.embedObj?.embedVideo) {
+      // 如果是单视频嵌入的观看端，不应该有文档白板
+      setChangeElement('');
+      return;
+    }
 
 
     if (isInGroup) {
@@ -1021,28 +999,21 @@ export default class StandardDocServer extends AbstractDocServer {
         setChangeElement('stream-list');
 
       } else if (this.state.switchStatus) {
-        console.log('----11--------')
         if ((isInsertFilePushing || isShareScreen || is_desktop == 1) && !isSpeakOn) {
-          console.log('----22222--------')
           // 如果在插播或者桌面共享中，并且没上麦，文档是小窗，插播是大窗
           if (role_name == 4) {
-            console.log('----33333--------')
             setChangeElement('stream-list')
           } else {
-            console.log('----4444--------')
             setChangeElement('doc');
           }
         } else if (type == 1 && (no_delay_webinar == 1 || isSpeakOn)) {
-          console.log('----555--------')
           // 直播状态下，无延迟或上麦是流列表
           setChangeElement('stream-list');
         } else {
-          console.log('----666--------')
           // 文档如果可见,直接设置 播放器 为小屏
           setChangeElement('player');
         }
       } else {
-        console.log('----7777--------')
         // 没有开文档
         if (isInsertFilePushing || isShareScreen) {
           // 有插播或者桌面共享
@@ -1053,7 +1024,6 @@ export default class StandardDocServer extends AbstractDocServer {
           }
         } else {
           setChangeElement('');
-
         }
       }
     }
