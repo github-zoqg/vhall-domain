@@ -1,62 +1,31 @@
-/**
- * 版本处理
- * */
 const fs = require('fs');
 const path = require('path');
 const inquirer = require("inquirer")
 const chalk = require("chalk");
-// const { VERSION } = require('rollup');
-// const { type } = require('os');
 const semver = require('semver')
 const version = require('../package.json').version;
 const pkgPath = path.join(__dirname, '../package.json');
-const versionArray = version.split('.');
-const versionLen = versionArray.length;
 const log = console.log
 
-let isFirstRecursion = true
-
-// 版本号更新
-function generateNewVersion(index) {
-  // 如果是第一次递归，处理低版本号
-  if (isFirstRecursion) {
-    let indexBak = index;
-    while (indexBak < versionLen - 1 && indexBak >= 0) {
-      versionArray[++indexBak] = 0;
-      indexBak++;
-    }
-    isFirstRecursion = false
-  }
-
-  const v = parseInt(versionArray[index]) + 1;
-  if (index > 0 && v > 99) {
-    versionArray[index] = 0;
-    generateNewVersion(index - 1);
-  } else {
-    versionArray[index] = v;
-  }
-
-  // 还原递归标识
-  isFirstRecursion = true;
-  return versionArray.join('.');
-}
-
-// 更新package.json版本号
+/**
+ * 更新 package.json 的 version
+ * @param {*} val 版本号
+ */
 function updateVersion(val) {
   const content = fs.readFileSync(pkgPath, 'utf-8')
   const mathString = content.match(/(?="version": ").*?(?=,)/)
   let result = content.replace(mathString, `"version": "${val}"`);
   fs.writeFileSync(pkgPath, result, 'utf-8')
-  log(`更新version成功${val}`)
+  log(chalk.green('Version update succeeded!'))
 }
 
+/**
+ * 版本更新交互流程
+ */
 async function versionUpdate() {
-  // 最小级别版本更新
-  let patchVersion = generateNewVersion(versionLen - 1);
-  // 第二级别版本更新
-  let minorVersion = generateNewVersion(versionLen - 2);
-  // 最高级别版本更新
-  let majorVersion = generateNewVersion(versionLen - 3);
+  let patchVersion = semver.inc(version, 'patch');
+  let minorVersion = semver.inc(version, 'minor');
+  let majorVersion = semver.inc(version, 'major');
 
   log(`${chalk.white('build')} ${chalk.green('info')} ${chalk.blue('current version')} ${version}`);
 
@@ -74,20 +43,62 @@ async function versionUpdate() {
     default: 0,
   }])
 
-  if (answer.VERSION === 'Custom Version') {
-    const inputCustomVersion = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'CUSTOM_VERSION',
-        message: 'Enter a custom version'
-      }
-    ])
+  let resultVersion = choices[answer.VERSION]
+
+  if (resultVersion === 'Custom Version') {
+    resultVersion = await requestCustomVersion()
   }
-  console.log('答案答案', answer)
-  // 新版本
-  updateVersion(val);
-  return val;
+
+  const isConfirm = await requestVersionConfirm()
+  if (!isConfirm) {
+    process.exit()
+  }
+
+  // 更新版本
+  updateVersion(resultVersion);
+  return resultVersion;
 };
+
+/**
+ * 用户输入自定义版本号
+ * @returns inputCustomVersion 自定义版本号
+ */
+async function requestCustomVersion() {
+  const answer = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'CUSTOM_VERSION',
+      message: 'Enter a custom version'
+    }
+  ])
+
+  const inputCustomVersion = answer.CUSTOM_VERSION
+
+  if (!semver.valid(inputCustomVersion)) {
+    log(chalk.redBright('custom version is invalid! please input again...'))
+    inputCustomVersion = await requestCustomVersion()
+  } else if (semver.gt(version, inputCustomVersion)) {
+    log(chalk.redBright('custom version is invalid! please input a version that geater than old ...'))
+    inputCustomVersion = await requestCustomVersion()
+  }
+
+  return inputCustomVersion
+}
+
+/**
+ * 用户确认更新的版本号
+ * @returns isConfirm
+ */
+async function requestVersionConfirm() {
+  const answer = await inquirer.prompt({
+    type: 'confirm',
+    name: 'CONFIRM_VERSION',
+    message: 'Are you sure you want to build this version?',
+    default: true
+  })
+
+  return answer.CONFIRM_VERSION
+}
 
 versionUpdate()
 
