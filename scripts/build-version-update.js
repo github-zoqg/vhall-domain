@@ -100,6 +100,27 @@ async function requestVersionConfirm() {
   return answer.CONFIRM_VERSION
 }
 
-versionUpdate()
+/**
+ * 确认是否自动更新版本号
+ * @returns CONFIRM_AUTO_UPDATE_VERSION
+ */
+async function requestAutoUpdateVersion() {
+  const answer = await inquirer.prompt({
+    type: 'confirm',
+    name: 'CONFIRM_AUTO_UPDATE_VERSION',
+    message: 'Do you need to update the version number automatically?',
+    default: true
+  })
 
-module.exports = versionUpdate
+  return answer.CONFIRM_AUTO_UPDATE_VERSION
+}
+
+async function start() {
+  const isAutoUpdate = await requestAutoUpdateVersion()
+  if (!isAutoUpdate) {
+    return false
+  }
+  versionUpdate()
+}
+
+start()
