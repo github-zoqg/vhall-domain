@@ -16,7 +16,7 @@ const inputMapList = [
         file: `./dist/${pkg.version}/middle-domain.js`,
         format: 'umd',
         name: 'middleDomain',
-        sourcemap: false
+        sourcemap: true
       }
     ]
   }
