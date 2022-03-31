@@ -93,7 +93,7 @@ async function requestVersionConfirm() {
   const answer = await inquirer.prompt({
     type: 'confirm',
     name: 'CONFIRM_VERSION',
-    message: 'Are you sure you want to build this version?',
+    message: 'Are you confirmed you want to build this version?',
     default: true
   })
 
