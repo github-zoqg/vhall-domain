@@ -51,7 +51,7 @@ async function versionUpdate() {
 
   const isConfirm = await requestVersionConfirm()
   if (!isConfirm) {
-    process.exit()
+    return 'exit'
   }
 
   // 更新版本
@@ -115,12 +115,12 @@ async function requestAutoUpdateVersion() {
   return answer.CONFIRM_AUTO_UPDATE_VERSION
 }
 
-async function start() {
+async function startVersionUpdate() {
   const isAutoUpdate = await requestAutoUpdateVersion()
   if (!isAutoUpdate) {
-    return false
+    return 'exit'
   }
-  versionUpdate()
+  return versionUpdate()
 }
 
-start()
+module.exports = startVersionUpdate
