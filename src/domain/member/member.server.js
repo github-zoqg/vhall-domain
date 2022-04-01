@@ -223,6 +223,7 @@ class MemberServer extends BaseServer {
     //结束讨论
     groupServer.$on('GROUP_SWITCH_END', msg => {
       console.log('【成员列表】结束讨论', msg);
+      this.state.leaderId = '';
       this.$emit('GROUP_SWITCH_END', msg);
     });
 

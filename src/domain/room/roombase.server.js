@@ -85,6 +85,11 @@ class RoomBaseServer extends BaseServer {
     if (['standard', 'embed'].includes(options.clientType) && !options.visitor_id) {
       options.visitor_id = sessionStorage.getItem('visitorId');
     }
+    if (['embed'].includes(options.clientType)) {
+      // v6.5.9新增 - 分组直播是单视频嵌入的时候，不支持。
+      options.embed_type = this.state.embedObj.embedVideo ? 'video' : 'full'
+    }
+
     this.state.clientType = options.clientType;
     this.state.deviceType = options.deviceType;
     return new Promise((resolve, reject) => {
@@ -108,6 +113,9 @@ class RoomBaseServer extends BaseServer {
             // 回放时 不显示推流列表等，所以要把miniElement设置为空
             if (this.state.watchInitData.webinar.type != 1) {
               this.state.miniElement = ''
+            }
+            if (this.state.embedObj.embedVideo) {
+              this.state.watchInitData.webinar.no_delay_webinar = 0
             }
           }
           console.log('watchInitData', res.data);
