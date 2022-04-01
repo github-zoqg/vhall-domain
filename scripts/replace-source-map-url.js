@@ -3,7 +3,7 @@ const fs = require('fs')
 
 function replaceSourceMapUrl(version) {
   // sourcemap url
-  const mapPath = 'https://t-alistatic01.e.vhall.com/common-static/sourcemap'
+  const mapPath = 'https://t-vhallsaas-static.oss-cn-beijing.aliyuncs.com/common-static/sourcemap'
 
   // dist 目录路径
   const distPath = path.join(__dirname, `../dist/${version}`)
