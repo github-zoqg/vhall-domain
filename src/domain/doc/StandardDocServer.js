@@ -966,6 +966,7 @@ export default class StandardDocServer extends AbstractDocServer {
       watchInitData: { join_info: { third_party_user_id, role_name }, webinar: { type, no_delay_webinar } }
     } = useRoomBaseServer().state
 
+    const switchStatus = this.isWatch() ? this.state.switchStatus : this.state.currentCid
     if (this.isWatch() && useRoomBaseServer().state.embedObj?.embedVideo) {
       // 如果是单视频嵌入的观看端，不应该有文档白板
       setChangeElement('');
