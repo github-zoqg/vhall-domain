@@ -1,6 +1,7 @@
 /**
  * 聊天服务
  * */
+import moment from 'moment';
 import BaseServer from '@/domain/common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
@@ -51,7 +52,7 @@ class QaServer extends BaseServer {
         //收到问答
         case this.Events.QA_CREATE:
           //主持人助理嘉宾接收全部问答，观众只接收自己问答
-          if (msg.sender_id == third_party_user_id || role_name != 2) {
+          if (msg.sender_id != third_party_user_id || role_name != 2) {
             msg.data.content = textToEmojiText(msg.data.content);
             this.state.qaList.push(msg.data);
           }
@@ -105,7 +106,12 @@ class QaServer extends BaseServer {
   sendQaMsg(params) {
     const { watchInitData } = useRoomBaseServer().state;
     params.room_id = watchInitData.interact.room_id;
-    return qa.list.sendQaMsg(params);
+    return qa.list.sendQaMsg(params).then(() => {
+      const { nickname, third_party_user_id, avatar, join_id } = watchInitData.join_info
+      this.state.qaList.push(Object.assign(params, { type: 'question', join_id, nick_name: nickname, account_id: third_party_user_id, avatar, id: new Date().getTime(), created_time: moment().format('yyyy-MM-DD HH:mm:ss') }))
+      console.log('this.state.qaList', this.state.qaList)
+    });
+
   }
   // getHistoryQaMsg() {
   //   const { watchInitData } = useRoomBaseServer().state;
