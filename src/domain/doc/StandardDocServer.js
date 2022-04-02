@@ -966,6 +966,7 @@ export default class StandardDocServer extends AbstractDocServer {
       watchInitData: { join_info: { third_party_user_id, role_name }, webinar: { type, no_delay_webinar } }, embedObj
     } = useRoomBaseServer().state
 
+    const switchStatus = this.isWatch() ? this.state.switchStatus : this.state.currentCid
     if (this.isWatch() && useRoomBaseServer().state.embedObj?.embedVideo) {
       // 如果是单视频嵌入的观看端，不应该有文档白板
       setChangeElement('');
@@ -998,7 +999,7 @@ export default class StandardDocServer extends AbstractDocServer {
         // 直播状态下，无延迟或上麦是流列表
         setChangeElement('stream-list');
 
-      } else if (this.state.switchStatus) {
+      } else if (switchStatus) {
         if ((isInsertFilePushing || isShareScreen || is_desktop == 1) && !isSpeakOn) {
           // 如果在插播或者桌面共享中，并且没上麦，文档是小窗，插播是大窗
           if (role_name == 4) {

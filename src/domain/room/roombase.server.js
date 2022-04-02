@@ -109,6 +109,9 @@ class RoomBaseServer extends BaseServer {
             if (this.state.watchInitData.webinar.type != 1) {
               this.state.miniElement = ''
             }
+            if (this.state.embedObj.embedVideo) {
+              this.state.watchInitData.webinar.no_delay_webinar = 0
+            }
           }
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
