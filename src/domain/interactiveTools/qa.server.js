@@ -52,7 +52,7 @@ class QaServer extends BaseServer {
         //收到问答
         case this.Events.QA_CREATE:
           //主持人助理嘉宾接收全部问答，观众只接收自己问答
-          if (msg.sender_id != third_party_user_id || role_name != 2) {
+          if (role_name != 2) {
             msg.data.content = textToEmojiText(msg.data.content);
             this.state.qaList.push(msg.data);
           }
