@@ -1,13 +1,14 @@
 {
   "name": "middle-domain",
-  "version": "1.2.5",
+  "version": "1.2.8",
   "description": "",
   "private": true,
   "main": "dist/lib/middle-domain.js",
   "scripts": {
     "dev": "rollup -c --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "yarn update:version && rollup -c rollup.config.prod.js && yarn update:sourcemap",
+    "build": "node ./scripts/build.js",
+    "build:rollup": "rollup -c rollup.config.prod.js",
     "update:sourcemap": "node ./scripts/replace-source-map-url.js",
     "update:version": "node ./scripts/build-version-update.js",
     "format": "prettier --write './src/**/*.(vue|js|css|less|jsx)'",
