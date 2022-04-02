@@ -1000,7 +1000,7 @@ export default class StandardDocServer extends AbstractDocServer {
         setChangeElement('stream-list');
 
       } else if (switchStatus) {
-        if ((isInsertFilePushing || isShareScreen || is_desktop == 1) && !isSpeakOn) {
+        if ((isShareScreen || is_desktop == 1) && !isSpeakOn) {
           // 如果在插播或者桌面共享中，并且没上麦，文档是小窗，插播是大窗
           if (role_name == 4) {
             setChangeElement('stream-list')
@@ -1014,9 +1014,14 @@ export default class StandardDocServer extends AbstractDocServer {
           // 文档如果可见,直接设置 播放器 为小屏
           setChangeElement('player');
         }
+
+        // 如果开启插播，并且文档可见，小屏一定是文档
+        if (isInsertFilePushing) {
+          setChangeElement('doc');
+        }
       } else {
         // 没有开文档
-        if (isInsertFilePushing || isShareScreen) {
+        if (isShareScreen) {
           // 有插播或者桌面共享
           if (isSpeakOn) {
             setChangeElement('stream-list');
