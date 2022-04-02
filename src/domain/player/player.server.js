@@ -326,6 +326,15 @@ class PlayerServer extends BaseServer {
         defaultDefinition: ''
       }
     };
+    if (!(watchInitData.rebroadcast && watchInitData.rebroadcast.id)) {
+      defaultOptions.otherOption = {
+        vid: watchInitData.report_data.vid, // hostId
+        vfid: watchInitData.report_data.vfid,
+        guid: watchInitData.report_data.guid,
+        biz_id: watchInitData.webinar.id,
+        report_extra: watchInitData.report_data.report_extra
+      }
+    }
     return defaultOptions;
   }
 }
