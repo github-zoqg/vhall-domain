@@ -963,7 +963,7 @@ export default class StandardDocServer extends AbstractDocServer {
     const setChangeElement = useRoomBaseServer().setChangeElement.bind(useRoomBaseServer())
     const {
       interactToolStatus: { presentation_screen, is_desktop },
-      watchInitData: { join_info: { third_party_user_id, role_name }, webinar: { type, no_delay_webinar } }
+      watchInitData: { join_info: { third_party_user_id, role_name }, webinar: { type, no_delay_webinar } }, embedObj
     } = useRoomBaseServer().state
 
     const switchStatus = this.isWatch() ? this.state.switchStatus : this.state.currentCid

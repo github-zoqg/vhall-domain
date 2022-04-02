@@ -203,7 +203,8 @@ class PlayerServer extends BaseServer {
     msgServer.$onMsg('CHAT', msg => {
       if (!msg.data.barrageTxt.includes('<img')) {
         if (this.state.isBarrage) {
-          this.addBarrage(msg.data.barrageTxt)
+          // 表情转化为图片，非文字
+          this.addBarrage(msg.data.text_content)
         }
       }
     });
