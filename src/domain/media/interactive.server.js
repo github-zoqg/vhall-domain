@@ -1033,9 +1033,9 @@ class InteractiveServer extends BaseServer {
         .catch(e => {
           console.error('[interactiveServer]----动态设置旁路主屏幕失败', e);
         });
+    } else {
+      this.setBroadCastScreen()
     }
-
-
   }
 
   // 动态配置指定旁路布局模板
@@ -1059,9 +1059,13 @@ class InteractiveServer extends BaseServer {
 
   // 动态配置旁路主屏
   setBroadCastScreen(streamId) {
+    const speakerList = useMicServer().state.speakerList
+    const mainScreenStream = speakerList.find(item => {
+      return item.accountId === useRoomBaseServer().state.interactToolStatus.main_screen
+    })
     return this.interactiveInstance
       .setBroadCastScreen({
-        mainScreenStreamId: streamId || this.state.localStream.streamId
+        mainScreenStreamId: streamId || (mainScreenStream && mainScreenStream.streamId) || this.state.localStream.streamId
       })
       .catch(async err => {
         // 设置失败重试三次

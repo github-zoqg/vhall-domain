@@ -100,7 +100,7 @@ class RoomBaseServer extends BaseServer {
           // 设置发起端权限
           if (['send', 'record', 'clientEmbed'].includes(options.clientType)) {
             this.state.configList = res.data.permissionKey
-            // 发起端，将多语言缓存清除
+            // 发起端结束直播时，将多语言缓存清除 主要是为了防止测试 在测过程中浏览器缓存不清空，一会登录观看端，一会登录发起端，缓存会翻译发起端，使发起端变成英文
             localStorage.removeItem('lang')
             // 判断是不是第三方推流
             if (res.data.switch && res.data.switch.start_type == 4) {
@@ -150,8 +150,6 @@ class RoomBaseServer extends BaseServer {
 
       } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
         this.state.watchInitData.webinar.type = 3;
-        // 结束直播时，将多语言缓存清除
-        localStorage.removeItem('lang')
         // 结束直播时，将第三方推流标识关闭
         if (this.state.isThirdStream) {
           this.$emit('LIVE_OVER')
