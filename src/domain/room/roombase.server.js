@@ -85,6 +85,11 @@ class RoomBaseServer extends BaseServer {
     if (['standard', 'embed'].includes(options.clientType) && !options.visitor_id) {
       options.visitor_id = sessionStorage.getItem('visitorId');
     }
+    if (['embed'].includes(options.clientType)) {
+      // v6.5.9新增 - 分组直播是单视频嵌入的时候，不支持。
+      options.embed_type = this.state.embedObj.embedVideo ? 'video' : 'full'
+    }
+
     this.state.clientType = options.clientType;
     this.state.deviceType = options.deviceType;
     return new Promise((resolve, reject) => {
