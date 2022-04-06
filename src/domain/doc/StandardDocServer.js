@@ -999,7 +999,7 @@ export default class StandardDocServer extends AbstractDocServer {
         // 直播状态下，无延迟或上麦是流列表
         setChangeElement('stream-list');
 
-      } else if (this.state.switchStatus) {
+      } else if (switchStatus) {
         if ((isShareScreen || is_desktop == 1) && !isSpeakOn) {
           // 如果在插播或者桌面共享中，并且没上麦，文档是小窗，插播是大窗
           if (role_name == 4) {
@@ -1022,7 +1022,7 @@ export default class StandardDocServer extends AbstractDocServer {
       } else {
         // 没有开文档
         if (isShareScreen) {
-          // 有桌面共享
+          // 有插播或者桌面共享
           if (isSpeakOn) {
             setChangeElement('stream-list');
           } else if (role_name != 2) {
