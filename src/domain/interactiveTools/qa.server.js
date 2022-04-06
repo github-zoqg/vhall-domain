@@ -53,9 +53,10 @@ class QaServer extends BaseServer {
         case this.Events.QA_CREATE:
           //主持人助理嘉宾接收全部问答，观众只接收自己问答
           if (role_name != 2) {
-            msg.msgId = msg?.answer?.id || msg.id
+            msg.data.msgId = msg.data?.answer?.id || msg.data.id
             msg.data.content = textToEmojiText(msg.data.content);
             this.state.qaList.push(msg.data);
+            console.log(this.state.qaList)
           }
           this.$emit(this.Events.QA_CREATE, msg);
           break;
@@ -110,6 +111,7 @@ class QaServer extends BaseServer {
     params.room_id = watchInitData.interact.room_id;
     return qa.list.sendQaMsg(params).then(() => {
       const { nickname, third_party_user_id, avatar, join_id } = watchInitData.join_info
+      params.content = textToEmojiText(params.content)
       this.state.qaList.push(Object.assign(params, { type: 'question', join_id, nick_name: nickname, account_id: third_party_user_id, avatar, msgId: new Date().getTime(), created_time: moment().format('yyyy-MM-DD HH:mm:ss') }))
       console.log('this.state.qaList', this.state.qaList)
     });
