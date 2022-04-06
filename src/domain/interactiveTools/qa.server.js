@@ -52,9 +52,11 @@ class QaServer extends BaseServer {
         //收到问答
         case this.Events.QA_CREATE:
           //主持人助理嘉宾接收全部问答，观众只接收自己问答
-          if (msg.sender_id != third_party_user_id || role_name != 2) {
+          if (role_name != 2) {
+            msg.data.msgId = msg.data?.answer?.id || msg.data.id
             msg.data.content = textToEmojiText(msg.data.content);
             this.state.qaList.push(msg.data);
+            console.log(this.state.qaList)
           }
           this.$emit(this.Events.QA_CREATE, msg);
           break;
@@ -67,6 +69,7 @@ class QaServer extends BaseServer {
             role_name == 1
           ) {
             msg.data.content = textToEmojiText(msg.data.content);
+            msg.data.msgId = msg.data?.answer?.id || msg.data.id
             this.state.qaList.push(msg.data);
           }
           this.$emit(this.Events.QA_COMMIT, msg);
@@ -108,7 +111,8 @@ class QaServer extends BaseServer {
     params.room_id = watchInitData.interact.room_id;
     return qa.list.sendQaMsg(params).then(() => {
       const { nickname, third_party_user_id, avatar, join_id } = watchInitData.join_info
-      this.state.qaList.push(Object.assign(params, { type: 'question', join_id, nick_name: nickname, account_id: third_party_user_id, avatar, id: new Date().getTime(), created_time: moment().format('yyyy-MM-DD HH:mm:ss') }))
+      params.content = textToEmojiText(params.content)
+      this.state.qaList.push(Object.assign(params, { type: 'question', join_id, nick_name: nickname, account_id: third_party_user_id, avatar, msgId: new Date().getTime(), created_time: moment().format('yyyy-MM-DD HH:mm:ss') }))
       console.log('this.state.qaList', this.state.qaList)
     });
 
@@ -133,7 +137,7 @@ class QaServer extends BaseServer {
       .then(res => {
         console.warn(res, '历史问答记录');
         const list = res.data.list.map(h => {
-          return { ...h, content: textToEmojiText(h.content) };
+          return { ...h, content: textToEmojiText(h.content), msgId: h?.answer?.id || h.id };
         });
         this.state.qaList.splice(0, 0, ...list)
 
