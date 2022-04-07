@@ -877,6 +877,9 @@ class InteractiveServer extends BaseServer {
 
   // 推送本地流到远端
   publishStream(options = {}) {
+    if (!this.interactiveInstance) {
+      return Promise.reject({ code: '' })
+    }
     return this.interactiveInstance
       .publish({
         streamId: options.streamId || this.state.localStream.streamId
