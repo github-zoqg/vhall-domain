@@ -11,9 +11,7 @@
     "build:rollup": "rollup -c rollup.config.prod.js",
     "update:sourcemap": "node ./scripts/replace-source-map-url.js",
     "update:version": "node ./scripts/build-version-update.js",
-    "format": "prettier --write './src/**/*.(vue|js|css|less|jsx)'",
-    "serve": "http-server -p 10001 ./dist",
-    "preserve": "rollup -c --watch"
+    "format": "prettier --write './src/**/*.(vue|js|css|less|jsx)'"
   },
   "author": "",
   "license": "ISC",
