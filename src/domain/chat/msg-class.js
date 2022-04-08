@@ -32,7 +32,7 @@ export default class Msg {
     this.data.text_content = val;
   }
   //给消息添加图片
-  setImge(imglist) {
+  setImage(imglist) {
     if (imglist.length < 1) {
       this.data.type = 'text';
     } else {
