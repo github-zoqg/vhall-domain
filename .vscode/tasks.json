@@ -3,7 +3,7 @@
   "tasks": [
     {
       "type": "npm",
-      "script": "serve",
+      "script": "dev",
       "problemMatcher": [],
       "label": "domain",
       "group": "build",
