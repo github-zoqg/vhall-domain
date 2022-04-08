@@ -301,9 +301,16 @@ class InteractiveServer extends BaseServer {
     // 2. 如果是房间id发生了变化，需要重新初始化互动sdk
     // 3. 如果是角色发生了变化，需要重新初始化互动sdk
     // 4. 如果销毁互动sdk失败，return false
+    // 5. 嘉宾不重新初始化实例
     if (!this.interactiveInstance) {
       return true;
     }
+
+    const { watchInitData: { join_info: { role_name } } } = useRoomBaseServer().state;
+    if (role_name == 4) {
+      return false;
+    }
+
     if (
       options.roomId !== this.interactiveInstanceOptions.roomId ||
       options.role !== this.interactiveInstanceOptions.role
@@ -424,6 +431,14 @@ class InteractiveServer extends BaseServer {
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
       // 本地推流或订阅远端流异常断开事件
+
+      if (e.data.streamType === 2) {
+        let params = {
+          streamId: '',
+        }
+        // let res = await this.unSubscribeStream(e.data.streamId)
+        useMicServer().updateSpeakerByAccountId(e.data.accountId, params)
+      }
       this.$emit('EVENT_REMOTESTREAM_FAILED', e);
     });
 
@@ -862,6 +877,9 @@ class InteractiveServer extends BaseServer {
 
   // 推送本地流到远端
   publishStream(options = {}) {
+    if (!this.interactiveInstance) {
+      return Promise.reject({ code: '' })
+    }
     return this.interactiveInstance
       .publish({
         streamId: options.streamId || this.state.localStream.streamId
