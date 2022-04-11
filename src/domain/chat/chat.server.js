@@ -270,8 +270,9 @@ class ChatServer extends BaseServer {
   sendMsg = debounce(this.sendChatMsg.bind(this), 300, true);
   //发送聊天消息
   sendChatMsg({ data, context }) {
+    const { role_name } = useRoomBaseServer().state.watchInitData.join_info;
     //判断私聊还是普通消息,私聊不做敏感词限制
-    if (data.target_id || this.checkHasKeyword(data.text_content)) {
+    if (data.target_id || this.checkHasKeyword(data.text_content) || role_name != 2) {
       useMsgServer().sendChatMsg(data, context);
     }
     const msg = Msg._handleGenerateMsg({ data, context })
