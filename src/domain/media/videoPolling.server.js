@@ -15,8 +15,10 @@ class VideoPollingServer extends BaseServer {
       pollingList: [], // 轮询列表
       surplusSpeakCount: 0, // 当前房间剩余麦位
       maxSpeakCount: 0, //最大房间麦位
-      accountId: '', //开启视频轮询者的账户 ID
-      roleName: 1 //开启视频轮询者的角色, 1 主持人， 3 助理； 未开启时为空
+      currentVideoPollingInfo: {
+        accountId: '', //开启视频轮询者的账户 ID
+        roleName: 1 //开启视频轮询者的角色, 1 主持人， 3 助理； 未开启时为空
+      }
     };
     VideoPollingServer.instance = this;
 
@@ -121,7 +123,10 @@ class VideoPollingServer extends BaseServer {
       is_next: 0
     }
     return videoRound.getRoundUsers(defaultParams).then(res => {
-      this.pollingList = res.data.list.map(item => new PollingUser(item))
+      if (res.code === 200 && res.data) {
+        this.pollingList = res.data.list.map(item => new PollingUser(item))
+      }
+      return res
     })
   }
 
@@ -136,8 +141,8 @@ class VideoPollingServer extends BaseServer {
       if (res.code === 200 && res.data) {
         this.state.surplusSpeakCount = res.data.surplus_speak_count;
         this.state.maxSpeakCount = res.data.max_speak_count;
-        this.state.accountId = res.data.account_id;
-        this.state.roleName = res.data.role_name;
+        this.state.currentVideoPollingInfo.accountId = res.data.account_id;
+        this.state.currentVideoPollingInfo.roleName = res.data.role_name;
       }
       return res;
     })
@@ -153,7 +158,7 @@ class VideoPollingServer extends BaseServer {
     const params = merge.recursive(defaultParams, options);
     return videoRound.videoRoundStart(params).then(res => {
       if (res.code === 200 && res.data) {
-        this.state.roleName = res.data.role_name;
+        this.state.currentVideoPollingInfo.roleName = res.data.role_name;
       }
       return res;
     })
