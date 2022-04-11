@@ -5,7 +5,7 @@ import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
 import userMemberServer from '../member/member.server';
 import useGroupServer from '../group/StandardGroupServer';
-import Speaker from './speaker-class';
+import { Speaker } from './class'
 import useInteractiveServer from './interactive.server';
 class MicServer extends BaseServer {
   constructor() {

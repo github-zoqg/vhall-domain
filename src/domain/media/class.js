@@ -1,7 +1,5 @@
 
-import useRoomBaseServer from '../room/roombase.server';
-import useGroupServer from '../group/StandardGroupServer';
-export default class Speaker {
+export class Speaker {
   // audio video   数字1 代表fasle 不禁止
   constructor({ account_id: accountId,
     audio: audioMuted,
@@ -15,7 +13,19 @@ export default class Speaker {
     this.nickname = nickname
     this.streamId = streamId
     this.attributes = {}
-
   }
+}
 
+export class PollingUser {
+  constructor({
+    account_id: accountId,
+    role_name: roleName,
+    nick_name: nickname,
+    streamId = '' }) {
+    this.accountId = accountId
+    this.roleName = roleName
+    this.nickname = nickname
+    this.streamId = streamId
+    this.attributes = {}
+  }
 }
