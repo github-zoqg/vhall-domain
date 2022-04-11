@@ -3,6 +3,7 @@ import useRoomBaseServer from '../room/roombase.server';
 import useInteractiveServer from './interactive.server';
 import videoRound from '../../request/interacts/video-round';
 import { PollingUser } from './class'
+import { merge } from '../../utils';
 
 class VideoPollingServer extends BaseServer {
   constructor() {
@@ -11,7 +12,11 @@ class VideoPollingServer extends BaseServer {
       return VideoPollingServer.instance;
     }
     this.state = {
-      pollingList: [] // 轮询列表
+      pollingList: [], // 轮询列表
+      surplusSpeakCount: 0, // 当前房间剩余麦位
+      maxSpeakCount: 0, //最大房间麦位
+      accountId: '', //开启视频轮询者的账户 ID
+      roleName: 1 //开启视频轮询者的角色, 1 主持人， 3 助理； 未开启时为空
     };
     VideoPollingServer.instance = this;
 
@@ -119,6 +124,41 @@ class VideoPollingServer extends BaseServer {
       this.pollingList = res.data.list.map(item => new PollingUser(item))
     })
   }
+
+  // 获取视频轮训信息
+  getVideoRoundInfo() {
+    const { watchInitData } = useRoomBaseServer().state
+    // 默认查询当前房间当前组的列表
+    let params = {
+      room_id: watchInitData.interact.room_id
+    }
+    return videoRound.getVideoRoundInfo(params).then(res => {
+      if (res.code === 200 && res.data) {
+        this.state.surplusSpeakCount = res.data.surplus_speak_count;
+        this.state.maxSpeakCount = res.data.max_speak_count;
+        this.state.accountId = res.data.account_id;
+        this.state.roleName = res.data.role_name;
+      }
+      return res;
+    })
+  }
+
+  // 开始视频轮训
+  videoRoundStart(options) {
+    const { watchInitData } = useRoomBaseServer().state
+    // 默认参数
+    const defaultParams = {
+      room_id: watchInitData.interact.room_id
+    }
+    const params = merge.recursive(defaultParams, options);
+    return videoRound.videoRoundStart(params).then(res => {
+      if (res.code === 200 && res.data) {
+        this.state.roleName = res.data.role_name;
+      }
+      return res;
+    })
+  }
+
 }
 export default function useVideoPollingServer() {
   return new VideoPollingServer();
