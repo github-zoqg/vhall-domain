@@ -211,8 +211,8 @@ class InteractiveServer extends BaseServer {
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
-    // 如果不是无延迟直播，不需要设置role，默认设为 AUDIENCE
-    if (watchInitData.webinar.no_delay_webinar == 0) {
+    // 如果不是无延迟直播，且当前用户不是主持人，不需要设置role，默认设为 AUDIENCE
+    if (watchInitData.webinar.no_delay_webinar == 0 && watchInitData.join_info.role_name !== 1) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
     const micServer = useMicServer()
@@ -431,6 +431,8 @@ class InteractiveServer extends BaseServer {
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
       // 本地推流或订阅远端流异常断开事件
+      console.log('[interactiveServer]-------流异常事件----', e);
+
 
       if (e.data.streamType === 2) {
         let params = {
