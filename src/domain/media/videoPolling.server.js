@@ -1,6 +1,7 @@
 import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useInteractiveServer from './interactive.server';
+import useMsgServer from '../common/msg.server';
 import videoRound from '../../request/interacts/video-round';
 import { PollingUser } from './class'
 import { merge } from '../../utils';
@@ -48,7 +49,8 @@ class VideoPollingServer extends BaseServer {
    * 注册事件监听
    */
   _addListeners() {
-    const interactiveServer = useInteractiveServer()
+    const interactiveServer = useInteractiveServer();
+    const msgServer = useMsgServer();
     // 流加入
     interactiveServer.$on('EVENT_REMOTESTREAM_ADD', e => {
       if (e.data.streamType === 5) {
@@ -72,6 +74,13 @@ class VideoPollingServer extends BaseServer {
         this.$emit('EVENT_VIDEO_POLLING_STREAM_REMOVED', e);
       }
     })
+
+    // 开启视频轮询
+    msgServer.$onMsg('ROOM_MSG', msg => {
+      if (msg.data.type === 'video_round_start') {
+        this.$emit('VIDEO_POLLING_START', msg);
+      }
+    });
   }
 
   // 获取视频轮询流列表
@@ -133,7 +142,6 @@ class VideoPollingServer extends BaseServer {
   // 获取视频轮训信息
   getVideoRoundInfo() {
     const { watchInitData } = useRoomBaseServer().state
-    // 默认查询当前房间当前组的列表
     let params = {
       room_id: watchInitData.interact.room_id
     }
