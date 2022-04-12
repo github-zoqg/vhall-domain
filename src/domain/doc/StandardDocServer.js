@@ -507,6 +507,7 @@ export default class StandardDocServer extends AbstractDocServer {
       console.error('容器宽高错误', width, height);
       this.setDocLoadComplete();
     }
+    const noDispatch = this.isWatch() ? !this.hasDocPermission() : true;
     try {
       for (const item of this.state.containerList) {
         const fileType = item.is_board === 1 ? 'document' : 'board';
@@ -532,10 +533,13 @@ export default class StandardDocServer extends AbstractDocServer {
           height,
           fileType,
           cid: item.cid,
-          docId: item.docId
+          docId: item.docId,
+          noDispatch
         });
         if (fileType == 'document') {
           this.state.docCid = item.cid;
+          this.state.pageNum = item.show_page + 1;
+          this.state.pageTotal = item.page;
         } else if (fileType == 'board') {
           this.state.boardCid = item.cid;
         }
@@ -568,13 +572,15 @@ export default class StandardDocServer extends AbstractDocServer {
    * @param {String} docType 具体演示文件类型,非必填，1:动态文档，即ppt；2:静态文档,即JPG
    */
   async addNewDocumentOrBorad({ width, height, fileType, cid, docId, docType }) {
+    const noDispatch = this.isWatch() ? !this.hasDocPermission() : false;
     const elId = await this.initDocumentOrBoardContainer({
       width,
       height,
       fileType,
       cid,
       docId,
-      docType
+      docType,
+      noDispatch
     });
     await this.activeContainer(elId);
     if (fileType === 'document') {
@@ -602,13 +608,15 @@ export default class StandardDocServer extends AbstractDocServer {
    * @param {String} cid 容器id，非必填，如果不存在需要调用 createUUID 新建
    * @param {String} docId 具体演示文件id,演示文档时必填，白板为空
    * @param {String} docType 具体演示文件类型,非必填，1:动态文档，即ppt；2:静态文档,即JPG
+   * @param {String} noDispatch false-派发消息，true-不派发消息
    */
   async initDocumentOrBoardContainer({
     width,
     height,
     fileType = 'document',
     cid,
-    docId = ''
+    docId = '',
+    noDispatch = false
   }) {
     if (fileType === 'document' && !docId) {
       throw new Error('required docment param docId');
@@ -616,8 +624,6 @@ export default class StandardDocServer extends AbstractDocServer {
     if (!cid) {
       cid = this.createUUID(fileType);
     }
-    let noDispatch = true;
-    noDispatch = !this.hasDocPermission();
     let opt = {
       id: cid,
       elId: cid, // 创建时，该参数就是cid
@@ -634,14 +640,11 @@ export default class StandardDocServer extends AbstractDocServer {
       await this.domNextTick();
     }
     try {
-      // 注意，注意这里创建文档和白板都没有使用await
-      // 因为使用await对于文档sdk3.2.0以前的版本,存在问题,这里算是做了兼容性处理
       if (fileType === 'document') {
-        this.createDocument(opt);
+        await this.createDocument(opt);
       } else {
-        this.createBoard(opt);
+        await this.createBoard(opt);
       }
-      await this.domNextTick();
     } catch (ex) {
       // 移除失败的容器
       this.state.containerList = this.state.containerList.filter(item => item.cid !== cid);
@@ -664,8 +667,7 @@ export default class StandardDocServer extends AbstractDocServer {
     width,
     height,
     fileType = 'document',
-    docId = '',
-    noDispatch = false
+    docId = ''
   }) {
     console.log('[doc] initContainer ');
     try {
@@ -679,27 +681,20 @@ export default class StandardDocServer extends AbstractDocServer {
         await this.domNextTick();
       }
       let noDispatch = !this.hasDocPermission();
+      const opts = {
+        id: cid,
+        elId: cid,
+        width: width,
+        height: height,
+        noDispatch
+      };
       if (fileType === 'board') {
         this.state.boardCid = cid;
-        const opts = {
-          id: cid,
-          elId: cid,
-          width: width,
-          height: height,
-          noDispatch,
-          backgroundColor: '#FFFFFF'
-        };
+        opts.backgroundColor = '#FFFFFF';
         await this.createBoard(opts);
       } else {
         this.state.docCid = cid;
-        const opts = {
-          id: cid,
-          docId: docId,
-          elId: cid, // div 容器 必须
-          width: width,
-          height: height,
-          noDispatch
-        };
+        opts.docId = docId;
         await this.createDocument(opts);
       }
     } catch (ex) {
