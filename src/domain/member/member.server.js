@@ -1,4 +1,4 @@
-import {im as imRequest} from '@/request/index.js';
+import { im as imRequest } from '@/request/index.js';
 import BaseServer from '@/domain/common/base.server';
 import useRoomBaseServer from "../room/roombase.server";
 import useMsgServer from "../common/msg.server";
@@ -12,8 +12,8 @@ class MemberServer extends BaseServer {
       return MemberServer.instance;
     }
     super();
-    const {roomId = '', roleName, avatar = '', join_info = {}} = useRoomBaseServer().state.watchInitData;
-    const {groupInitData = {}, clientType = ''} = useRoomBaseServer().state;
+    const { roomId = '', roleName, avatar = '', join_info = {} } = useRoomBaseServer().state.watchInitData;
+    const { groupInitData = {}, clientType = '' } = useRoomBaseServer().state;
     const isLive = clientType === 'send';
     const userId = join_info.third_party_user_id;
 
@@ -48,6 +48,8 @@ class MemberServer extends BaseServer {
       handsUpTimerMap: {},
       //记录一下上一个成功下麦消息的人员id
       lastTargetId: '',
+      // 是否是在视频轮询中
+      isVideoPolling: false
     };
 
     // this.listenEvents();
@@ -106,18 +108,18 @@ class MemberServer extends BaseServer {
       const type = msg.data.event_type || msg.data.type || '';
       switch (type) {
         case 'disable':
-          this._changeUserStatus(msg.data.target_id, this.state.onlineUsers, {is_banned: 1});
-          this._changeUserStatus(msg.data.target_id, this.state.limitedUsers, {is_banned: 1});
-          this._changeUserStatus(msg.data.target_id, this.state.applyUsers, {is_banned: 1});
+          this._changeUserStatus(msg.data.target_id, this.state.onlineUsers, { is_banned: 1 });
+          this._changeUserStatus(msg.data.target_id, this.state.limitedUsers, { is_banned: 1 });
+          this._changeUserStatus(msg.data.target_id, this.state.applyUsers, { is_banned: 1 });
           // 禁言并且是举手列表
           if (this.state.tabIndex === 2) {
             this._deleteUser(msg.data.target_id, this.state.applyUsers);
           }
           break;
         case 'permit':
-          this._changeUserStatus(msg.data.target_id, this.state.onlineUsers, {is_banned: 0});
-          this._changeUserStatus(msg.data.target_id, this.state.limitedUsers, {is_banned: 0});
-          this._changeUserStatus(msg.data.target_id, this.state.applyUsers, {is_banned: 0});
+          this._changeUserStatus(msg.data.target_id, this.state.onlineUsers, { is_banned: 0 });
+          this._changeUserStatus(msg.data.target_id, this.state.limitedUsers, { is_banned: 0 });
+          this._changeUserStatus(msg.data.target_id, this.state.applyUsers, { is_banned: 0 });
           this.state.limitedUsers.forEach((item, index) => {
             if (item.account_id == msg.data.target_id) {
               this.state.limitedUsers.splice(index, 1);
@@ -131,7 +133,7 @@ class MemberServer extends BaseServer {
 
     //房间消息监听
     useMsgServer().$onMsg('ROOM_MSG', rawMsg => {
-      const {clientType = ''} = useRoomBaseServer().state;
+      const { clientType = '' } = useRoomBaseServer().state;
       const isLive = clientType === 'send';
       let msg = Object.assign({}, rawMsg);
       if (Object.prototype.toString.call(msg.data) !== '[object Object]') {
@@ -241,7 +243,7 @@ class MemberServer extends BaseServer {
     //频道变更-开始讨论，视图处理
     // 切换组长(组长变更)
     groupServer.$on('GROUP_LEADER_CHANGE', msg => {
-      const {clientType = ''} = useRoomBaseServer().state;
+      const { clientType = '' } = useRoomBaseServer().state;
       if (clientType === 'send' && !this.state.isInGroup) {
         return;
       }
@@ -251,7 +253,7 @@ class MemberServer extends BaseServer {
 
     // 主持人进入退出小组 消息监听
     groupServer.$on('GROUP_MANAGER_ENTER', msg => {
-      const {clientType = ''} = useRoomBaseServer().state;
+      const { clientType = '' } = useRoomBaseServer().state;
       if (clientType !== 'send') {
         return;
       }
@@ -260,7 +262,7 @@ class MemberServer extends BaseServer {
 
     //频道变更-开始讨论
     groupServer.$on('ROOM_CHANNEL_CHANGE', msg => {
-      const {clientType = ''} = useRoomBaseServer().state;
+      const { clientType = '' } = useRoomBaseServer().state;
       if (clientType === 'send') {
         return;
       }
@@ -271,14 +273,14 @@ class MemberServer extends BaseServer {
 
   //处理用户加入房间
   _handleUserJoinRoom(msg) {
-    const {clientType = '', watchInitData = {}} = useRoomBaseServer().state;
-    const {join_info = {}} = watchInitData;
+    const { clientType = '', watchInitData = {} } = useRoomBaseServer().state;
+    const { join_info = {} } = watchInitData;
     const userId = join_info.third_party_user_id;
     const isLive = clientType === 'send';
     console.log(isLive, 'isLive-------------------');
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
     try {
-      const {context} = msg;
+      const { context } = msg;
       //如果上线的人是自己，不做操作
       if (isLive && msg.sender_id == userId) {
         return;
@@ -407,7 +409,7 @@ class MemberServer extends BaseServer {
 
   //用户离开房间
   _handleUserLeaveRoom(msg) {
-    const {clientType = ''} = useRoomBaseServer().state;
+    const { clientType = '' } = useRoomBaseServer().state;
     const isLive = clientType === 'send';
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
     // 如果是聊天审核,不做任何操作
@@ -433,8 +435,8 @@ class MemberServer extends BaseServer {
 
   //用户申请上麦
   _handleApplyConnect(msg) {
-    const {watchInitData = {}} = useRoomBaseServer().state;
-    const {join_info = {}} = watchInitData;
+    const { watchInitData = {} } = useRoomBaseServer().state;
+    const { join_info = {} } = watchInitData;
     const userId = join_info.third_party_user_id;
     //举手tab的小红点
     if (this.state.tabIndex !== 2) {
@@ -454,7 +456,7 @@ class MemberServer extends BaseServer {
       role_name: msg.data.room_role
     };
 
-    const {member_info = {is_apply: 1}} = msg.data;
+    const { member_info = { is_apply: 1 } } = msg.data;
     user = Object.assign(user, member_info);
     this.state.applyUsers.unshift(user);
     // 去重
@@ -471,22 +473,22 @@ class MemberServer extends BaseServer {
     this.state.handsUpTimerMap[user.account_id] = setTimeout(() => {
       this.state.handsUpTimerMap[user.account_id] && clearTimeout(this.state.handsUpTimerMap[user.account_id]);
       delete this.state.handsUpTimerMap[user.account_id];
-      this._changeUserStatus(user.account_id, this.state.onlineUsers, {is_apply: 0});
+      this._changeUserStatus(user.account_id, this.state.onlineUsers, { is_apply: 0 });
       this.state.applyUsers = this.state.applyUsers.filter(u => u.account_id !== user.account_id);
       if (!this.state.applyUsers.length) {
         this.state.raiseHandTip = false;
-        this.$emit('UPDATE_TAB_TIPS', {visible: false});
+        this.$emit('UPDATE_TAB_TIPS', { visible: false });
       }
     }, 30000);
 
     //通知更新menu tab栏小红点显示状态
-    this.$emit('UPDATE_TAB_TIPS', {visible: true});
+    this.$emit('UPDATE_TAB_TIPS', { visible: true });
 
   }
 
   //用户取消上麦
   _handleCancelApplyConnect(msg) {
-    const {member_info = {is_apply: 0}} = msg.data;
+    const { member_info = { is_apply: 0 } } = msg.data;
     //发起端举手提示
     this.state.raiseHandTip = false;
     this._deleteUser(msg.data.room_join_id, this.state.applyUsers);
@@ -498,19 +500,19 @@ class MemberServer extends BaseServer {
 
   //同意了用户上麦
   _handleAgreeApplyConnect(msg) {
-    const {clientType = ''} = useRoomBaseServer().state;
+    const { clientType = '' } = useRoomBaseServer().state;
     const isLive = clientType === 'send';
     if (isLive) {
       this.state.raiseHandTip = false;
       return;
     }
-    this._changeUserStatus(msg.room_join_id, this.state.onlineUsers, {is_apply: 0, is_speak: 1});
+    this._changeUserStatus(msg.room_join_id, this.state.onlineUsers, { is_apply: 0, is_speak: 1 });
   }
 
   //用户上麦成功
   _handleSuccessConnect(msg) {
     const userId = useRoomBaseServer().state?.watchInitData?.join_info?.third_party_user_id;
-    const {member_info = {is_apply: 0, is_speak: 1}} = msg.data;
+    const { member_info = { is_apply: 0, is_speak: 1 } } = msg.data;
     this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
     //对在线的人员排序一下
     this.state.onlineUsers = this._sortUsers(this.state.onlineUsers);
@@ -542,11 +544,11 @@ class MemberServer extends BaseServer {
 
   //互动连麦断开成功 todo 视图需要改造
   _handleSuccessDisconnect(msg) {
-    const {watchInitData = {}} = useRoomBaseServer().state;
-    const {join_info = {}} = watchInitData;
+    const { watchInitData = {} } = useRoomBaseServer().state;
+    const { join_info = {} } = watchInitData;
     const userId = join_info.third_party_user_id;
 
-    this._changeUserStatus(msg.data.target_id, this.state.onlineUsers, {is_speak: 0, is_apply: 0});
+    this._changeUserStatus(msg.data.target_id, this.state.onlineUsers, { is_speak: 0, is_apply: 0 });
 
     if (msg.data.target_id == userId) {
       this.$emit('vrtc_disconnect_success', msg);
@@ -576,7 +578,7 @@ class MemberServer extends BaseServer {
 
   //设备检测
   _handleDeviceCheck(msg) {
-    const {member_info = {}} = msg.data;
+    const { member_info = {} } = msg.data;
     this._changeUserStatus(msg.data.room_join_id, this.state.onlineUsers, member_info);
   }
 
@@ -597,8 +599,8 @@ class MemberServer extends BaseServer {
 
   //主房间人员变动
   _handleMainRoomJoinChange(msg) {
-    const {clientType = '', watchInitData = {}} = useRoomBaseServer().state;
-    const {join_info = {}} = watchInitData;
+    const { clientType = '', watchInitData = {} } = useRoomBaseServer().state;
+    const { join_info = {} } = watchInitData;
     const userId = join_info.third_party_user_id;
     const isLive = clientType === 'send';
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
@@ -637,7 +639,7 @@ class MemberServer extends BaseServer {
 
   //演示权限变更
   _handlePresentationPermissionChange(msg) {
-    this._changeUserStatus(msg.sender_id, this.state.onlineUsers, {is_speak: 1});
+    this._changeUserStatus(msg.sender_id, this.state.onlineUsers, { is_speak: 1 });
   }
 
   //下麦成功
@@ -647,8 +649,8 @@ class MemberServer extends BaseServer {
 
   //处理分组人员信息变更
   _handleSetUserJoinInfo(msg) {
-    const {watchInitData = {}} = useRoomBaseServer().state;
-    const {join_info = {}} = watchInitData;
+    const { watchInitData = {} } = useRoomBaseServer().state;
+    const { join_info = {} } = watchInitData;
     const userId = join_info.third_party_user_id;
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
 
@@ -691,8 +693,8 @@ class MemberServer extends BaseServer {
 
   //处理分组内踢出
   _handleGroupKicked(msg) {
-    const {clientType = '', watchInitData = {}} = useRoomBaseServer().state;
-    const {join_info = {}} = watchInitData;
+    const { clientType = '', watchInitData = {} } = useRoomBaseServer().state;
+    const { join_info = {} } = watchInitData;
     const userId = join_info.third_party_user_id;
     const isLive = clientType === 'send';
     const isInGroup = useGroupServer().state.groupInitData.isInGroup;
@@ -797,8 +799,8 @@ class MemberServer extends BaseServer {
 
   //获取受限人员列表
   async getLimitUserList() {
-    const {watchInitData = {}} = useRoomBaseServer().state;
-    const {interact = {}} = watchInitData;
+    const { watchInitData = {} } = useRoomBaseServer().state;
+    const { interact = {} } = watchInitData;
     const roomId = interact.room_id;
     const data = {
       room_id: roomId,
@@ -807,7 +809,7 @@ class MemberServer extends BaseServer {
     };
     try {
       let bannedList = await this.getMutedUserList(data);
-      let kickedList = useGroupServer().state.groupInitData.isInGroup ? {data: {list: []}} : await this.getKickedUserList(data);
+      let kickedList = useGroupServer().state.groupInitData.isInGroup ? { data: { list: [] } } : await this.getKickedUserList(data);
       bannedList = bannedList?.data?.list || [];
       kickedList = kickedList?.data?.list || [];
       const list = bannedList.concat(kickedList);
@@ -896,6 +898,7 @@ class MemberServer extends BaseServer {
     let assistant = []; // 助理
     let onMicAudience = []; // 上麦观众
     let downMicAudience = []; // 普通观众
+    let pollingAudience = []; // 正在视频轮询的观众
     const leader = []; // 组长
     list.forEach(item => {
       const role = Number(item.role_name)
@@ -907,7 +910,12 @@ class MemberServer extends BaseServer {
 
         // 观众
         case 2:
-          item.is_speak ? onMicAudience.push(item) : downMicAudience.push(item);
+          // 如果是在视频轮询的观众
+          if (this.state.isVideoPolling && item.isPolling) {
+            pollingAudience.push(item);
+          } else {
+            item.is_speak ? onMicAudience.push(item) : downMicAudience.push(item);
+          }
           break;
         // 组长
         case 20:
@@ -931,7 +939,11 @@ class MemberServer extends BaseServer {
     if (downMicAudience.length > 200) {
       downMicAudience = downMicAudience.slice(-200);
     }
-    return host.concat(onMicGuest, downMicGuest, assistant, leader, onMicAudience, downMicAudience);
+    if (!this.state.isVideoPolling) {
+      return host.concat(onMicGuest, downMicGuest, assistant, leader, onMicAudience, downMicAudience);
+    } else {
+      return pollingAudience.concat(onMicAudience, downMicAudience)
+    }
   }
 
 }
