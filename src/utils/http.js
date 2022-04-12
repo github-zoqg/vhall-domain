@@ -71,6 +71,14 @@ service.interceptors.request.use(
         config.data = qs.stringify(config.data);
       }
 
+      // get 请求处理通用请求体
+      if (config.method == 'get') {
+        config.params = {
+          ...COMMON_BODY,
+          ...config.params
+        }
+      }
+
     }
 
     // console.log('---请求拦截----', config);

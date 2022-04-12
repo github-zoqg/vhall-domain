@@ -272,7 +272,7 @@ class ChatServer extends BaseServer {
   sendChatMsg({ data, context }) {
     const { role_name } = useRoomBaseServer().state.watchInitData.join_info;
     //判断私聊还是普通消息,私聊不做敏感词限制
-    if (data.target_id || role_name != 2) {
+    if (data.target_id || role_name != 2 || this.checkHasKeyword(data.text_content)) {
       useMsgServer().sendChatMsg(data, context);
     }
     const msg = Msg._handleGenerateMsg({ data, context })
