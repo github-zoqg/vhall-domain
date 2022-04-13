@@ -71,7 +71,6 @@ export default class StandardDocServer extends AbstractDocServer {
         // 实例化PaaS文档成功
         // 初始化事件
         this._initEvent();
-
         const { watchInitData } = useRoomBaseServer().state;
         if (watchInitData.join_info.role_name == 3) {
           this.setRole(VHDocSDK.RoleType.ASSISTANT);
@@ -82,8 +81,8 @@ export default class StandardDocServer extends AbstractDocServer {
         }
         if (watchInitData?.rebroadcast?.channel_id) {
           // 直播中旁路频道
-          // this.docServer.setAccountId({ accountId: this.accountId + '7890' });
-          this.setRole(VHDocSDK.RoleType.GUEST);
+          this.setRelay(true); // 转播中
+          this.setRole(VHDocSDK.RoleType.SPECTATOR);
           this.setPlayMode(VHDocSDK.PlayMode.FLV);
         }
       })
@@ -882,33 +881,38 @@ export default class StandardDocServer extends AbstractDocServer {
   groupReInitDocProcess() {
     return this.init()
       .then(() => {
-        this.state.currentCid = ''; //当前正在展示的容器id
-        this.state.docCid = ''; // 当前文档容器Id
-        this.state.boardCid = ''; // 当前白板容器Id
-        this.state.containerList = []; // 动态容器列表
-
-        this.state.pageTotal = 1; //总页数
-        this.state.pageNum = 1; // 当前页码
-
-        this.state.allComplete = false;
-        this.state.docLoadComplete = true; // 文档是否加载完成
-
-        this.state.thumbnailList = []; // 缩略图列表
-
-        // 观众是否可见
-        if (useRoomBaseServer().state.interactToolStatus.is_open_switch == 1
-          && useGroupServer().state.groupInitData.isInGroup) {
-          this.state.switchStatus = true; // 在小组中,文档始终可见
-        } else {
-          this.state.switchStatus = false; // 默认不可见
-        }
-
+        // 重置数据
+        this.resetState();
         // 注意这里用true
         this.state.isChannelChanged = true;
       })
       .catch(ex => {
         console.error('[doc] groupReInitDocProcess error:', ex);
       });
+  }
+
+  // 重置state数据
+  resetState() {
+    this.state.currentCid = ''; //当前正在展示的容器id
+    this.state.docCid = ''; // 当前文档容器Id
+    this.state.boardCid = ''; // 当前白板容器Id
+    this.state.containerList = []; // 动态容器列表
+
+    this.state.pageTotal = 1; //总页数
+    this.state.pageNum = 1; // 当前页码
+
+    this.state.allComplete = false;
+    this.state.docLoadComplete = true; // 文档是否加载完成
+
+    this.state.thumbnailList = []; // 缩略图列表
+
+    // 观众是否可见
+    if (useRoomBaseServer().state.interactToolStatus.is_open_switch == 1
+      && useGroupServer().state.groupInitData.isInGroup) {
+      this.state.switchStatus = true; // 在小组中,文档始终可见
+    } else {
+      this.state.switchStatus = false; // 默认不可见
+    }
   }
 
   async domNextTick() {
@@ -922,6 +926,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
   // 设置文档操作权限
   _setDocPermisson() {
+    console.log('[doc] ======_setDocPermisson======');
     const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
     if (
@@ -933,12 +938,15 @@ export default class StandardDocServer extends AbstractDocServer {
       // 在小组内有要是权限，或者在主直播间有演示权限
       // 设置文档操作权限为主人
       this.setRole(VHDocSDK.RoleType.HOST);
+      console.log('[doc] ======HOST======');
     } else {
       if (watchInitData.join_info.role_name == 3) {
         this.setRole(VHDocSDK.RoleType.ASSISTANT);
+        console.log('[doc] ======ASSISTANT======');
       } else {
         // 设置文档操作权限为观众
         this.setRole(VHDocSDK.RoleType.SPECTATOR);
+        console.log('[doc] ======SPECTATOR======');
       }
     }
 
