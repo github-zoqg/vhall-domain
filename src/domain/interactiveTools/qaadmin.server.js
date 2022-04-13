@@ -48,10 +48,10 @@ class QaAdminServer extends BaseServer {
         exactSearch3: '' // 未处理检索
       },
       List: [
-        { text: '未回复', count: 0 },
-        { text: '直播中回答', count: 0 },
-        { text: '文字回复', count: 0 },
-        { text: '不处理', count: 0 }
+        { text: '未回复', count: 0, page: 1 },
+        { text: '直播中回答', count: 0, page: 1 },
+        { text: '文字回复', count: 0, page: 1 },
+        { text: '不处理', count: 0, page: 1 }
       ],
       baseObj: {}, //主办方信息
       awaitList: [], // 待处理
@@ -60,7 +60,8 @@ class QaAdminServer extends BaseServer {
       noDealList: [], // 不处理
       activeObj: {}, // 当前正在展示的信息
       onlyChatMess: {}, // 当前私聊对象
-      priteChatList: [] // 私聊列表
+      priteChatList: [], // 私聊列表
+      pageSize: 20
     };
 
     this.chatInstance = null; // 聊天实例
@@ -82,10 +83,13 @@ class QaAdminServer extends BaseServer {
       const msgData = msg.data
       if (msgData.type == 'question_answer_create') {
         // 发起端收到消息
-        msgData.user_id = msgData.account_id
-        msgData.content = emojiToText(msgData.content);
-        this.state.awaitList.push(msgData);
-        this.state.List[0].count = this.state.awaitList.length;
+        const { count, page } = this.state.List[0]
+        if (count < this.state.pageSize * page) {
+          msgData.user_id = msgData.account_id
+          msgData.content = emojiToText(msgData.content);
+          this.state.awaitList.push(msgData);
+        }
+        this.state.List[0].count++;
       }
     });
   }
@@ -206,7 +210,7 @@ class QaAdminServer extends BaseServer {
               this.state.awaitList = res.data.list;
               this.state.List[0].count = res.data.total;
               if (this.state.activeIndex == 0) {
-                this.state.activeObj.count = res.data.total;
+                this.state.List[this.state.activeIndex].count = res.data.total;
               }
               break;
             case 1:
@@ -214,14 +218,14 @@ class QaAdminServer extends BaseServer {
               this.state.noDealList = res.data.list;
               this.state.List[3].count = res.data.total;
               if (this.state.activeIndex == 3) {
-                this.state.activeObj.count = res.data.total;
+                this.state.List[this.state.activeIndex].count = res.data.total;
               }
               break;
             case 2:
               this.state.audioList = res.data.list;
               this.state.List[1].count = res.data.total;
               if (this.state.activeIndex == 1) {
-                this.state.activeObj.count = res.data.total;
+                this.state.List[this.state.activeIndex].count = res.data.total;
               }
               break;
           }
@@ -250,7 +254,7 @@ class QaAdminServer extends BaseServer {
         this.state.textDealList = res.data.list;
         this.state.List[2].count = res.data.total;
         if (this.state.activeIndex == 2) {
-          this.state.activeObj.count = res.data.total;
+          this.state.List[2].count = res.data.total;
         }
       }
       return res;
