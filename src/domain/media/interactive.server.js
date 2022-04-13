@@ -57,7 +57,7 @@ class InteractiveServer extends BaseServer {
   async init(customOptions = {}) {
 
     // 是否需要初始化互动
-    if (!this._isNeedInteractive()) return Promise.resolve();
+    if (!this._isNeedInteractive(customOptions)) return Promise.resolve();
 
     // 这里判断上麦角色以及是否自动上麦
     const defaultOptions = await this._getDefaultOptions();
@@ -126,18 +126,19 @@ class InteractiveServer extends BaseServer {
   /**
    * 判断是否需要初始化互动实例
    */
-  _isNeedInteractive() {
+  _isNeedInteractive(options) {
     const { watchInitData } = useRoomBaseServer().state;
     const { isSpeakOn } = useMicServer().state;
 
     // 1. 非观众需要初始化互动
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动
+    // 4. 开启视频轮巡需要初始化互动
     return (
       watchInitData.join_info.role_name != 2 ||
       watchInitData.webinar.no_delay_webinar == 1 ||
-      isSpeakOn
-    );
+      isSpeakOn || options?.videoPolling
+    )
   }
 
   /**
@@ -586,7 +587,7 @@ class InteractiveServer extends BaseServer {
         VhallRTC[options.profile] ||
         VhallRTC[interactToolStatus.definition] ||
         VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
-      streamType: 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。
+      streamType: options.streamType || 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享，5为视频轮巡。
       attributes: JSON.stringify({
         roleName: roleName,
         accountId: watchInitData.join_info.third_party_user_id,
