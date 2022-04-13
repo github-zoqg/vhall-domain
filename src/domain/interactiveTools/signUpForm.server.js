@@ -1,4 +1,4 @@
-import {signUpFormApi, meeting, wechatApi} from "../../request";
+import { signUpFormApi, meeting, wechatApi } from "../../request";
 
 class SignUpFormServer {
   constructor() {
