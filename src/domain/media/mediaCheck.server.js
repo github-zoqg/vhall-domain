@@ -36,7 +36,7 @@ class MediaCheckServer {
   }
 
   // 检查当前浏览器支持性
-  checkSystemRequirements() {
+  async checkSystemRequirements() {
     return VhallPaasSDK.modules.VhallRTC.checkSystemRequirements().then(checkResult => {
       this.state.checkSystemResult = checkResult;
       if (!checkResult.result) {
@@ -72,7 +72,7 @@ class MediaCheckServer {
           this.setDevice({ status: 2, send_msg: Number(options.isNeedBroadcast) });
         });
     } else {
-      this.checkSystemRequirements()
+      await this.checkSystemRequirements()
     }
     return Promise.resolve(false);
   }
