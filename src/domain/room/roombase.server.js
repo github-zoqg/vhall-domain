@@ -16,7 +16,8 @@ const liveType = new Map([
   ['embed', 'initEmbeddedReceiveLive'], //嵌入直播
   ['clientEmbed', 'clientEmbed'], //客户端嵌入直播
   ['sdk', 'initSdkReceiveLive'], //sdk直播
-  ['record', 'initRecordVideo'] //录制
+  ['record', 'initRecordVideo'], //录制
+  ['sendYun', 'initSendLiveYun'] //云导播推流页面初始化
 ]);
 class RoomBaseServer extends BaseServer {
   constructor() {
@@ -77,7 +78,7 @@ class RoomBaseServer extends BaseServer {
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
     if (
-      !['send', 'standard', 'embed', 'sdk', 'record', 'clientEmbed'].includes(options.clientType)
+      !['send', 'standard', 'embed', 'sdk', 'record', 'clientEmbed', 'sendYun'].includes(options.clientType)
     ) {
       throw new Error('不合法的客户端类型');
     }

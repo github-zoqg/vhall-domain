@@ -12,6 +12,16 @@ function initSendLive(params) {
   });
 }
 
+// 发起端云导播推流页面初始化
+function initSendLiveYun(params) {
+  const url = meetingApiList['initSendLiveYun ']['v3'];
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
+
 // 客户端嵌入-发起端初始化
 function clientEmbed(params) {
   const url = env.meeting === 'v3' ? '/v3/webinars/live/client-init' : '';
@@ -316,6 +326,7 @@ const getCustomRoleName = (data) => {
 };
 const meeting = {
   initSendLive,
+  initSendLiveYun,
   initStandardReceiveLive,
   clientEmbed,
   initEmbeddedReceiveLive,
