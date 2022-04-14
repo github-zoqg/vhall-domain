@@ -137,7 +137,7 @@ class VideoPollingServer extends BaseServer {
       if (res.code === 200 && res.data) {
         this.state.pollingList = res.data.list.map(item => new PollingUser(item))
         this.state.isAutoPolling = Boolean(res.data.is_auto);
-        this.state.downTime = res.data.is_auto;
+        this.state.downTime = res.data.interval;
       }
       return res
     })
