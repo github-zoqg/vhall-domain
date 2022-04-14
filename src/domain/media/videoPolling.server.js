@@ -172,6 +172,25 @@ class VideoPollingServer extends BaseServer {
     })
   }
 
+  // 结束视频轮巡videoRoundEnd
+  videoRoundEnd() {
+    const { watchInitData } = useRoomBaseServer().state
+    let params = {
+      room_id: watchInitData.interact.room_id
+    }
+    return videoRound.videoRoundEnd(params).then(res => {
+      // 重置
+      if (res.code === 200 && res.data) {
+        this.state.surplusSpeakCount = 0;
+        this.state.maxSpeakCount = 0;
+        this.state.currentVideoPollingInfo.accountId = '';
+        this.state.currentVideoPollingInfo.roleName = '';
+      }
+      return res;
+    })
+  }
+
+
 }
 export default function useVideoPollingServer() {
   return new VideoPollingServer();
