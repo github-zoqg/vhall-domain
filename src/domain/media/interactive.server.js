@@ -588,6 +588,11 @@ class InteractiveServer extends BaseServer {
         VhallRTC[interactToolStatus.definition] ||
         VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
       streamType: options.streamType || 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享，5为视频轮巡。
+      mixOption: {
+        // 选填，指定此本地流的音频和视频是否加入旁路混流。支持版本：2.3.2及以上。
+        mixVideo: options.streamType === 5 ? false : true, // 视频是否加入旁路混流
+        mixAudio: options.streamType === 5 ? false : true // 音频是否加入旁路混流
+      },
       attributes: JSON.stringify({
         roleName: roleName,
         accountId: watchInitData.join_info.third_party_user_id,
