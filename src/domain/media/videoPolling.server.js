@@ -2,6 +2,7 @@ import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useInteractiveServer from './interactive.server';
 import useMsgServer from '../common/msg.server';
+import userMemberServer from '../member/member.server';
 import videoRound from '../../request/interacts/video-round';
 import { PollingUser } from './class'
 import { merge } from '../../utils';
@@ -188,6 +189,30 @@ class VideoPollingServer extends BaseServer {
       }
       return res;
     })
+  }
+
+  // 根据轮询列表更新在线列表的状态
+  updateOnlineUsers() {
+    const memberServer = userMemberServer()
+    let onlineUsers = memberServer.state.onlineUsers
+    if (onlineUsers && onlineUsers.length) {
+      onlineUsers = onlineUsers.map(item => {
+        item = {
+          ...item,
+          isPolling: 0
+        }
+        this.state.pollingList.some(elem => {
+          if (elem.accountId == item.account_id) {
+            item = {
+              ...item,
+              isPolling: 1
+            }
+          }
+        })
+        return item
+      })
+    }
+    memberServer.state.onlineUsers = memberServer._sortUsers(onlineUsers)
   }
 
 
