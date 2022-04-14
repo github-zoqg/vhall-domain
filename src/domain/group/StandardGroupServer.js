@@ -121,6 +121,7 @@ class StandardGroupServer extends BaseServer {
   //监听分组相关消息（属于房间消息）
   listenMsg() {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
+      console.log('[group]====', msg.data.event_type || msg.data.type, "===")
       switch (msg.data.event_type || msg.data.type) {
         // 直播结束
         case 'live_over':
@@ -621,6 +622,7 @@ class StandardGroupServer extends BaseServer {
 
   //【组长变更/组长更改】消息处理
   async msgdoForGroupLeaderChange(msg) {
+    console.log('[group] msgdoForGroupLeaderChange msg:', msg);
     const { join_info } = useRoomBaseServer().state.watchInitData
     if (msg.data.group_id == this.state.groupInitData.group_id) {
       // 在一个组里面，需要更新小组数据
