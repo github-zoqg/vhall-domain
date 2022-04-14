@@ -6,6 +6,8 @@ import useDocServer from '../doc/doc.server';
 import { group as groupApi } from '../../request/index.js';
 import { isPc } from '@/utils/index.js';
 import useMicServer from '../media/mic.server';
+import { sleep } from '../../utils';
+
 
 /**
  * 标准分组直播场景下的分组相关服务
@@ -365,6 +367,16 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] 开始讨论，isInGroup ', this.state.groupInitData.isInGroup);
     console.log('[group] 开始讨论，groupSpeakerlist ', JSON.stringify(this.state.groupInitData.speaker_list));
 
+
+    //   开始讨论时
+    // 1、msgServer groupChat初始化之前，可能会有组内成员先上麦，而其他成员收不到消息的情况
+    //所以先保证组长上麦，其他组员保证能获取到组长画面
+    // 2、还有一种情况，组内成员互动重新初始化之前，可能会有流加入订阅时没有互动实例而报错，所以在订阅前需等待互动实例完成
+    const { isInGroup, join_role } = this.state.groupInitData
+    if (isInGroup && join_role != 20) {
+      await sleep(1000)
+      await this.updateGroupInitData();
+    }
     // 开始讨论但不在分组中，不需要发消息，直接 return
     if (!this.state.groupInitData.isInGroup) {
       // 在主房间的人更新主房间的互动工具状态，，更新主房间上麦列表
@@ -400,14 +412,7 @@ class StandardGroupServer extends BaseServer {
     await useInteractiveServer().init()
 
 
-    //   开始讨论时
-    // 1、msgServer groupChat初始化之前，可能会有 组员上麦消息遗漏
-    // 2、组内成员互动重新初始化之前，可能会有流加入订阅时没有互动实例而报错
-    setTimeout(async () => {
-      await this.updateGroupInitData();
-      useMicServer().updateSpeakerList()
-      useMicServer().updateSpeakerListByStreams()
-    }, 2000)
+
     // 处理文档channel切换逻辑
     useDocServer().groupReInitDocProcess();
 

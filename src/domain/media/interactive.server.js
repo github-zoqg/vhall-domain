@@ -273,6 +273,7 @@ class InteractiveServer extends BaseServer {
       if (res.code == 200) {
 
         // 记录状态，在收到 vrtc_connect_success 消息后不再次初始化互动
+        // 收到消息执行可能比 收到响应赋值 autoSpeak为true快，造成初始化2次互动，需要在收到消息执行时，延迟执行
         this.state.autoSpeak = true
 
         return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
@@ -946,7 +947,7 @@ class InteractiveServer extends BaseServer {
         this.retrySubScribeNum = 0
         resolve(res)
       }).catch(async (e) => {
-        console.log('[interactiveServer]   订阅失败-----> ', e)
+        console.log('[interactiveServer]   订阅失败-----> ', e, options)
         if (this.retrySubScribeNum > 3) {
           this.retrySubScribeNum = 0
           reject(e)
