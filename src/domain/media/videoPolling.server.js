@@ -17,6 +17,8 @@ class VideoPollingServer extends BaseServer {
       pollingList: [], // 轮询列表
       surplusSpeakCount: 0, // 当前房间剩余麦位
       maxSpeakCount: 0, //最大房间麦位
+      isAutoPolling: false, //是否是自动轮巡
+      downTime: 600,
       currentVideoPollingInfo: {
         accountId: '', //开启视频轮询者的账户 ID
         roleName: 1 //开启视频轮询者的角色, 1 主持人， 3 助理； 未开启时为空
@@ -135,6 +137,8 @@ class VideoPollingServer extends BaseServer {
     return videoRound.getRoundUsers(resultParams).then(res => {
       if (res.code === 200 && res.data) {
         this.state.pollingList = res.data.list.map(item => new PollingUser(item))
+        this.state.isAutoPolling = Boolean(res.data.is_auto);
+        this.state.downTime = res.data.interval;
       }
       return res
     })
