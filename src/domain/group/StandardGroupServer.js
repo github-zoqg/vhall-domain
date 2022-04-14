@@ -362,6 +362,9 @@ class StandardGroupServer extends BaseServer {
 
     // 更新个人所在小组信息
     await this.updateGroupInitData();
+    console.log('[group] 开始讨论，isInGroup ', this.state.groupInitData.isInGroup);
+    console.log('[group] 开始讨论，groupSpeakerlist ', JSON.stringify(this.state.groupInitData.speaker_list));
+
     // 开始讨论但不在分组中，不需要发消息，直接 return
     if (!this.state.groupInitData.isInGroup) {
       // 在主房间的人更新主房间的互动工具状态，，更新主房间上麦列表
@@ -373,6 +376,7 @@ class StandardGroupServer extends BaseServer {
 
     // 进入小组中的人更新小组上麦列表
     useMicServer().updateSpeakerList()
+    console.log('[group] 开始讨论，updateSpeakerList ', JSON.stringify(useMicServer().state.speakerList));
 
     //----------------------------------
     // this.handleResetInteractiveTools();
@@ -395,6 +399,15 @@ class StandardGroupServer extends BaseServer {
     // 处理分组下互动sdk切换channel
     await useInteractiveServer().init()
 
+
+    //   开始讨论时
+    // 1、msgServer groupChat初始化之前，可能会有 组员上麦消息遗漏
+    // 2、组内成员互动重新初始化之前，可能会有流加入订阅时没有互动实例而报错
+    setTimeout(async () => {
+      await this.updateGroupInitData();
+      useMicServer().updateSpeakerList()
+      useMicServer().updateSpeakerListByStreams()
+    }, 2000)
     // 处理文档channel切换逻辑
     useDocServer().groupReInitDocProcess();
 

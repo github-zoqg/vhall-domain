@@ -95,7 +95,6 @@ class RedPacketServer extends BaseServer {
     }
     if (opts?.mode === 'watch') {
       useMsgServer().$onMsg('ROOM_MSG', msg => {
-        console.log('红包消息:', msg)
         switch (msg.data.event_type || msg.data.type) {
           case RED_ENVELOPE_PUSH: // 红包推送消息
             console.log('红包消息:RED_ENVELOPE_PUSH')

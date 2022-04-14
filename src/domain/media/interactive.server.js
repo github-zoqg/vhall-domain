@@ -339,6 +339,7 @@ class InteractiveServer extends BaseServer {
         // 在这清空所有streamId会导致出现网络异常占位图
         useMicServer().removeAllApeakerStreamId()
         this._clearLocalStream()
+        this.abortStreams = []
       }).then(() => {
         console.log('[interactiveServer]----互动sdk销毁成功');
 
@@ -477,7 +478,6 @@ class InteractiveServer extends BaseServer {
     msgServer.$onMsg('ROOM_MSG', msg => {
       const { speakerList } = useMicServer().state
       const localSpeaker = speakerList.find(speaker => speaker.accountId == third_party_user_id)
-      console.log(`[interactiveServer]----消息监听----：msgType:${msg.data.type}`)
       if (
         msg.data.type == 'vrtc_frames_forbid' && // 业务关闭摄像头消息
         msg.data.target_id == localSpeaker.accountId

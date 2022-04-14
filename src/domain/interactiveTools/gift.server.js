@@ -35,7 +35,6 @@ class giftsServer extends BaseServer {
         temp.data = JSON.parse(temp.data);
         temp.context = JSON.parse(temp.context);
       }
-      console.log('domain giftsServer---------->', temp);
 
       const { type = '' } = temp.data || {};
       switch (type) {

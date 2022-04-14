@@ -70,7 +70,6 @@ class RebroadCastServer extends BaseServer {
         msg.context = JSON.parse(msg.context);
       }
 
-      console.log('domain rebroadcastServer websocket msg:', msg);
       const { type = '' } = msg.data || {};
 
       switch (type) {
