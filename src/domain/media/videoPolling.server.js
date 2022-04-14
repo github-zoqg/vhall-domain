@@ -124,16 +124,16 @@ class VideoPollingServer extends BaseServer {
   }
 
   // 获取当前轮询人列表
-  getVideoRoundUsers(params) {
+  getVideoRoundUsers(params = {}) {
     const { watchInitData } = useRoomBaseServer().state
     // 默认查询当前房间当前组的列表
-    const defaultParams = params || {
-      room_id: watchInitData.interact.room_id,
-      is_next: 0
+    const resultParams = {
+      room_id: params.room_id || watchInitData.interact.room_id,
+      is_next: params.is_next || 0
     }
-    return videoRound.getRoundUsers(defaultParams).then(res => {
+    return videoRound.getRoundUsers(resultParams).then(res => {
       if (res.code === 200 && res.data) {
-        this.pollingList = res.data.list.map(item => new PollingUser(item))
+        this.state.pollingList = res.data.list.map(item => new PollingUser(item))
       }
       return res
     })
