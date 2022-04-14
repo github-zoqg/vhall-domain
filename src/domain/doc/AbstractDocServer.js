@@ -499,6 +499,16 @@ export default class AbstractDocServer extends BaseServer {
   }
 
   /**
+   * 是否在转播
+   * @param {Boolean} isRelay true:转播，false-非转播
+   * @returns 
+   */
+  @checkDocInstance()
+  setRelay(isRelay = true) {
+    return this.docInstance.setRelay(isRelay);
+  };
+
+  /**
    * 设置用户角色， sdk会根据用户角色进行权限设置
    * @param {Enum} role
    * VHDocSDK.RoleType.HOST	演讲人	编辑、翻页、缩放
