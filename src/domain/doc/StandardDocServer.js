@@ -926,7 +926,8 @@ export default class StandardDocServer extends AbstractDocServer {
 
   // 设置文档操作权限
   _setDocPermisson() {
-    console.log('[doc] ======_setDocPermisson======');
+    // 分组直播预约页的时候还没有加载文档sdk，VHDocSDK还不存在，但是有些消息的逻辑会调用此方法
+    if (!window.VHDocSDK) return;
     const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
     if (
@@ -938,15 +939,12 @@ export default class StandardDocServer extends AbstractDocServer {
       // 在小组内有要是权限，或者在主直播间有演示权限
       // 设置文档操作权限为主人
       this.setRole(VHDocSDK.RoleType.HOST);
-      console.log('[doc] ======HOST======');
     } else {
       if (watchInitData.join_info.role_name == 3) {
         this.setRole(VHDocSDK.RoleType.ASSISTANT);
-        console.log('[doc] ======ASSISTANT======');
       } else {
         // 设置文档操作权限为观众
         this.setRole(VHDocSDK.RoleType.SPECTATOR);
-        console.log('[doc] ======SPECTATOR======');
       }
     }
 
