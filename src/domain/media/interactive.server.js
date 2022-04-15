@@ -212,7 +212,7 @@ class InteractiveServer extends BaseServer {
     }
 
     // 如果不是无延迟直播，且当前用户不是主持人，不需要设置role，默认设为 AUDIENCE
-    if (watchInitData.webinar.no_delay_webinar == 0 && watchInitData.join_info.role_name !== 1) {
+    if (watchInitData.webinar.no_delay_webinar == 0) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
     const micServer = useMicServer()
