@@ -139,7 +139,7 @@ class QaServer extends BaseServer {
         const list = res.data.list.map(h => {
           return { ...h, content: textToEmojiText(h.content), msgId: h?.answer?.id || h.id };
         });
-        this.state.qaList.splice(0, 0, ...list)
+        this.state.qaList.splice(0, this.state.qaList.length, ...list)
 
       });
   }
