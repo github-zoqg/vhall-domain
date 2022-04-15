@@ -488,12 +488,23 @@ export default class AbstractDocServer extends BaseServer {
     return this.docInstance.loadDoc({ id, docId, docType });
   }
 
-  // TODO 没明白
+  /**
+   * 在收到开始直播（live_start）消息后调用
+   * 用于记录流和文档的开始时间点，便于在后面回放功能中使用
+   * @param {*} val 1
+   * @param {*} type 2互动直播，1其它直播
+   * @returns 
+   */
+  @checkDocInstance()
   start(val, type) {
     return this.docInstance.start(val, type);
   }
 
-  // TODO 没明白
+  /**
+   * 在调用start方法后调用
+   * 用于补充直播开始前打开的文档等消息，确保回放中文档数据的完整
+   */
+  @checkDocInstance()
   republish() {
     return this.docInstance.republish();
   }

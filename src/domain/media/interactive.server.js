@@ -212,7 +212,7 @@ class InteractiveServer extends BaseServer {
     }
 
     // 如果不是无延迟直播，且当前用户不是主持人，不需要设置role，默认设为 AUDIENCE
-    if (watchInitData.webinar.no_delay_webinar == 0 && watchInitData.join_info.role_name !== 1) {
+    if (watchInitData.webinar.no_delay_webinar == 0) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
     const micServer = useMicServer()
@@ -273,6 +273,7 @@ class InteractiveServer extends BaseServer {
       if (res.code == 200) {
 
         // 记录状态，在收到 vrtc_connect_success 消息后不再次初始化互动
+        // 收到消息执行可能比 收到响应赋值 autoSpeak为true快，造成初始化2次互动，需要在收到消息执行时，延迟执行
         this.state.autoSpeak = true
 
         return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
@@ -339,6 +340,7 @@ class InteractiveServer extends BaseServer {
         // 在这清空所有streamId会导致出现网络异常占位图
         useMicServer().removeAllApeakerStreamId()
         this._clearLocalStream()
+        this.abortStreams = []
       }).then(() => {
         console.log('[interactiveServer]----互动sdk销毁成功');
 
@@ -477,7 +479,6 @@ class InteractiveServer extends BaseServer {
     msgServer.$onMsg('ROOM_MSG', msg => {
       const { speakerList } = useMicServer().state
       const localSpeaker = speakerList.find(speaker => speaker.accountId == third_party_user_id)
-      console.log(`[interactiveServer]----消息监听----：msgType:${msg.data.type}`)
       if (
         msg.data.type == 'vrtc_frames_forbid' && // 业务关闭摄像头消息
         msg.data.target_id == localSpeaker.accountId
@@ -946,7 +947,7 @@ class InteractiveServer extends BaseServer {
         this.retrySubScribeNum = 0
         resolve(res)
       }).catch(async (e) => {
-        console.log('[interactiveServer]   订阅失败-----> ', e)
+        console.log('[interactiveServer]   订阅失败-----> ', e, options)
         if (this.retrySubScribeNum > 3) {
           this.retrySubScribeNum = 0
           reject(e)

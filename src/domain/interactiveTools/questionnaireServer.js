@@ -44,7 +44,6 @@ class QuestionnaireServer extends BaseServer {
       this.initLiveEvent();
     }
     useMsgServer().$onMsg('ROOM_MSG', async msg => {
-      console.log('问卷server监听', msg);
       switch (msg.data.event_type || msg.data.type) {
         case QUESTIONNAIRE_PUSH:
           console.log('问卷消息', msg);

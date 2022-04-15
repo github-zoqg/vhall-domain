@@ -26,7 +26,6 @@ class LotteryServer extends BaseServer {
   listenMsg() {
     console.log('监听了 抽奖消息')
     useMsgServer().$onMsg('ROOM_MSG', msg => {
-      console.log('抽奖消息:', msg)
       switch (msg.data.event_type || msg.data.type) {
         //【分组创建/新增完成】
         case this.Events.LOTTERY_PUSH:
