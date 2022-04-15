@@ -109,6 +109,7 @@ class StandardGroupServer extends BaseServer {
    * @returns
    */
   async init() {
+    this.initGroupInitData()
     await this.updateGroupInitData()
   }
 
@@ -973,6 +974,18 @@ class StandardGroupServer extends BaseServer {
     };
     const result = await groupApi.groupQuit(params);
     return result;
+  }
+
+  /**
+   * 初始化groupInitData数据
+   */
+  initGroupInitData() {
+    const { interactToolStatus } = useRoomBaseServer().state
+    this.state.groupInitData = {
+      ...this.state.groupInitData,
+      group_id: interactToolStatus.group_id,
+      join_role: interactToolStatus.join_role
+    }
   }
 
   /**
