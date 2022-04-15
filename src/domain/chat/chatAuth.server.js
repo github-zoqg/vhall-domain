@@ -1,7 +1,7 @@
-import {im as iMRequest, qa as qARequest} from '@/request/index.js';
+import { im as iMRequest, qa as qARequest } from '@/request/index.js';
 import BaseServer from '@/domain/common/base.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
-import {Domain} from '@/domain';
+import { Domain } from '@/domain';
 import VhallPaasSDK from '@/sdk/index.js';
 //消息服务
 const msgServer = useMsgServer();
@@ -197,7 +197,7 @@ class ChatAuthServer extends BaseServer {
         console.warn('获取到的关键信息点---', res.data);
         //保存一份活动信息
         this.state.watchInitData = Object.assign(res.data || {});
-        const {interact = {}, join_info = {}, webinar = {}} = res.data || {};
+        const { interact = {}, join_info = {}, webinar = {} } = res.data || {};
         this.state.roomInfo.room_id = interact.room_id;
         this.state.roomInfo.vss_token = interact.paas_access_token;
         this.state.operatorId = join_info.third_party_user_id;
@@ -237,7 +237,7 @@ class ChatAuthServer extends BaseServer {
 
     const customChatInstance = new Promise((resolve, reject) => {
       VhallPaasSDK.modules.VhallChat.createInstance(
-        Object.assign({}, options, {channelId: ['ck_', options.channelId].join('')}),
+        Object.assign({}, options, { channelId: ['ck_', options.channelId].join('') }),
         event => {
           // 互动实例
           this.customChatInstance = event.message;
@@ -278,7 +278,7 @@ class ChatAuthServer extends BaseServer {
    * 获取未审核的列表
    * */
   fetchChatMessageList() {
-    const {baseChanelInfo = {}} = this.state || {};
+    const { baseChanelInfo = {} } = this.state || {};
     const params = Object.assign({}, baseChanelInfo);
     this.state.auditList = [];
     let tempItem = {};
@@ -325,7 +325,7 @@ class ChatAuthServer extends BaseServer {
    * 获取已通过审核的列表
    * */
   fetchPassedMessageList(params = {}) {
-    const {baseChanelInfo = {}, createTime = ''} = this.state;
+    const { baseChanelInfo = {}, createTime = '' } = this.state;
     const defaultParams = {
       ...baseChanelInfo,
       msg_type: 'image,text,link,video,voice',
@@ -342,8 +342,8 @@ class ChatAuthServer extends BaseServer {
    * 获取已禁言的用户列表
    * */
   fetchMutedUserList(params = {}) {
-    const {roomInfo = {}} = this.state;
-    const requestParams = Object.assign({}, {...roomInfo}, params);
+    const { roomInfo = {} } = this.state;
+    const requestParams = Object.assign({}, { ...roomInfo }, params);
     return this.getBannedList(requestParams).then(res => {
       this.state.mutedList = res.data.list || [];
       this.state.mutedNum = res.data.total || 0;
@@ -354,8 +354,8 @@ class ChatAuthServer extends BaseServer {
    * 获取已踢出的用户列表
    * */
   fetchKickedUserList(params = {}) {
-    const {roomInfo = {}} = this.state;
-    const requestParams = Object.assign({}, {...roomInfo}, params);
+    const { roomInfo = {} } = this.state;
+    const requestParams = Object.assign({}, { ...roomInfo }, params);
     return this.getKickedList(requestParams).then(res => {
       this.state.kickedList = res.data.list || [];
       this.state.kickedNum = res.data.total || 0;
