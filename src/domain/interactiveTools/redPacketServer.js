@@ -143,6 +143,8 @@ class RedPacketServer extends BaseServer {
         this.state.status = res.data.status;
         if (res.data.amount) {
           this.state.amount = res.data.amount;
+        } else {
+          this.state.amount = 0;
         }
         return res;
       });
