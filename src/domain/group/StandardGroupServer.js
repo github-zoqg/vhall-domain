@@ -47,7 +47,9 @@ class StandardGroupServer extends BaseServer {
       // 待分配人员列表
       waitingUserList: [],
       // 已分组人员列表
-      groupedUserList: []
+      groupedUserList: [],
+      // 组长列表
+      // groupLeaderList:[]
     };
 
     this.EVENT_TYPE = {
@@ -209,6 +211,7 @@ class StandardGroupServer extends BaseServer {
 
     useMsgServer().$onMsg('JOIN', msg => {
       // 加入房间
+      console.log('[group] domain 加入房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
         if (msg.context.groupInitData.group_id) {
           for (let item of this.state.groupedUserList) {
@@ -235,6 +238,7 @@ class StandardGroupServer extends BaseServer {
             ...msg.context
           });
         }
+        console.log('[group] 处理组长回归');
         this.handleGroupLeaderBack(msg) // 处理组长回归
       }
     });
@@ -242,10 +246,16 @@ class StandardGroupServer extends BaseServer {
       // 离开房间
       console.log('[group] domain 离开房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
+
+        //  离开前是否是组长
+        let isLeader = false;
         this.state.groupedUserList.forEach((item, index) => {
           if (item.group_joins.length != 0) {
             item.group_joins.forEach((ITEM, ind) => {
               if (msg.sender_id == ITEM.account_id) {
+                if (item.join_role == 20) {
+                  isLeader = true;
+                }
                 item.group_joins.splice(ind, 1);
               }
             });
@@ -256,8 +266,10 @@ class StandardGroupServer extends BaseServer {
             this.state.waitingUserList.splice(index, 1);
           }
         });
-
-        this.handleGroupLeaderLeave(msg) // 处理组长离开
+        if (isLeader) {
+          // 处理组长离开
+          this.handleGroupLeaderLeave(msg)
+        }
       }
     });
   }
@@ -412,8 +424,6 @@ class StandardGroupServer extends BaseServer {
 
     // 处理分组下互动sdk切换channel
     await useInteractiveServer().init()
-
-
 
     // 处理文档channel切换逻辑
     useDocServer().groupReInitDocProcess();
@@ -978,6 +988,8 @@ class StandardGroupServer extends BaseServer {
 
   /**
    * 初始化groupInitData数据
+   * 未开启讨论时，发起端的分组状态要保持，存在有group_id，但是isInGroup=false的情况
+   * 所以判断在不在小组中只能通过isInGroup字段判断
    */
   initGroupInitData() {
     const { interactToolStatus } = useRoomBaseServer().state
@@ -994,12 +1006,14 @@ class StandardGroupServer extends BaseServer {
   async updateGroupInitData() {
     const result = await this.getGroupInfo();
 
-    this.state.groupInitData = (result && result.data) || {};
-    if (this.state.groupInitData?.group_id) {
+    this.state.groupInitData = (result && result.data && {
+      ...result.data,
+      ...this.state.groupInitData
+    }) || {};
+    if (result.data?.group_id) {
       this.state.groupInitData.isInGroup = true;
     } else {
       this.state.groupInitData.isInGroup = false;
-      // return Promise.reject(res)
     }
     return Promise.resolve()
   }
@@ -1103,17 +1117,6 @@ class StandardGroupServer extends BaseServer {
    */
   handleGroupLeaderLeave(msg) {
     if (useRoomBaseServer().state.clientType !== 'send') return;
-
-    let [groupId, leader] = [null, null]
-    for (const group of this.state.groupedUserList) {
-      const target = group.group_joins.find(user => user.account_id === msg.sender_id)
-      if (target) {
-        groupId = group.id
-        leader = target
-        break;
-      }
-    }
-    if (!leader) return;
 
     const TIMEOUT = 15 * 1000; // 15秒
     const timer = setTimeout(() => {
