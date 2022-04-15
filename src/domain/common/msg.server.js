@@ -123,7 +123,7 @@ class MsgServer extends BaseServer {
         console.log('消息转换错误：', ex);
         return;
       }
-      console.log('msg消息', eventType, msg);
+      console.log('msg消息', eventType, msg.data.type, msg);
       //判断房间id 该消息属于当前所在房间才处理回调
       if (this.curMsgInstance.channelId == msg.channel) {
         fn(msg);
