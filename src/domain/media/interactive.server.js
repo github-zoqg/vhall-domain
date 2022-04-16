@@ -211,7 +211,7 @@ class InteractiveServer extends BaseServer {
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
-    // 如果不是无延迟直播，且当前用户不是主持人，不需要设置role，默认设为 AUDIENCE
+    // 如果不是无延迟直播，不需要设置role，默认设为 AUDIENCE
     if (watchInitData.webinar.no_delay_webinar == 0) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
@@ -220,7 +220,6 @@ class InteractiveServer extends BaseServer {
 
     // 自动上麦 + 未开启禁言 + 未开启全体禁言 + 不是因为被下麦或者手动下麦去初始化互动
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
-    console.log('初始化连麦----2-2-2-2-2-2-2--2-', groupInitData)
     console.table([
       { name: 'device_status', val: useMediaCheckServer().state.deviceInfo.device_status },
       { name: 'auto_speak', val: interactToolStatus.auto_speak },
@@ -257,8 +256,8 @@ class InteractiveServer extends BaseServer {
         console.log('[interactive server] auto_speak 0', autoSpeak)
       }
 
-      // 主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题   无需判断是否为分组活动,原因如下： 若是无延迟活动，设备禁用会让下麦，这时候刷新应能自动上麦的
-      if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup) {
+      // 非无延迟（即分组互动）+主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题   无需判断是否为分组活动,原因如下： 若是无延迟活动，设备禁用会让下麦，这时候刷新应能自动上麦的
+      if (watchInitData.webinar.mode !== 3 && !autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup) {
         autoSpeak = true
       }
     }
