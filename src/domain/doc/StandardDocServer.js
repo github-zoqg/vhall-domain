@@ -158,47 +158,43 @@ export default class StandardDocServer extends AbstractDocServer {
     });
 
     useMsgServer().$onMsg('ROOM_MSG', async (msg) => {
-      switch (msg.data.event_type || msg.data.type) {
+      const msgType = msg.data.event_type || msg.data.type;
+      if (msgType === 'live_start') {
         // 直播开始
-        case 'live_start': {
-          console.log('live_start domain');
-          const { watchInitData } = useRoomBaseServer().state;
-          if (watchInitData.join_info.role_name == 1) {
-            this.start(1, watchInitData.webinar.mode == 3 ? 2 : 1);
-            setTimeout(() => {
-              // 补发消息
-              this.republish();
-            }, 100);
-          }
-
-          this.$emit('live_start');
-          break;
+        console.log('live_start domain');
+        const { watchInitData } = useRoomBaseServer().state;
+        if (watchInitData.join_info.role_name == 1) {
+          this.start(1, watchInitData.webinar.mode == 3 ? 2 : 1);
+          setTimeout(() => {
+            // 补发消息
+            this.republish();
+          }, 100);
         }
-        // 直播结束
-        case 'live_over':
-          console.log('live_over domain');
-          console.log('[doc] 直播结束，删除所有容器');
-          // 删除所有容器, 该方法包含重置观众不可见的逻辑
-          this.resetContainer();
+        this.$emit('live_start');
 
-          // 还原
-          this.state.currentCid = ''; //当前正在展示的容器id
-          this.state.docCid = ''; // 当前文档容器Id
-          this.state.boardCid = ''; // 当前白板容器Id
-          this.state.containerList = []; // 动态容器列表
-          this.state.pageTotal = 1; //总页数
-          this.state.pageNum = 1; // 当前页码Ï
-          this.state.allComplete = true;
-          this.state.docLoadComplete = true; // 文档是否加载完成
-          this.state.thumbnailList = []; // 缩略图列表
-          this.state.switchStatus = false; // 观众是否可见
+      } else if (msgType === 'live_over' || (msgType === 'group_switch_end' && msg.data.over_live === 1)) {
+        // 直播结束（包括分组直播的结束）
+        console.log('live_over domain');
+        // 删除所有容器, 该方法包含重置观众不可见的逻辑
+        this.resetContainer();
 
-          const { watchInitData } = useRoomBaseServer().state;
-          if (watchInitData.join_info.role_name == 1) {
-            this.start(2, watchInitData.webinar.mode == 3 ? 2 : 1);
-          }
-          this.$emit('live_over');
-          break;
+        // 还原
+        this.state.currentCid = ''; //当前正在展示的容器id
+        this.state.docCid = ''; // 当前文档容器Id
+        this.state.boardCid = ''; // 当前白板容器Id
+        this.state.containerList = []; // 动态容器列表
+        this.state.pageTotal = 1; //总页数
+        this.state.pageNum = 1; // 当前页码Ï
+        this.state.allComplete = true;
+        this.state.docLoadComplete = true; // 文档是否加载完成
+        this.state.thumbnailList = []; // 缩略图列表
+        this.state.switchStatus = false; // 观众是否可见
+
+        const { watchInitData } = useRoomBaseServer().state;
+        if (watchInitData.join_info.role_name == 1) {
+          this.start(2, watchInitData.webinar.mode == 3 ? 2 : 1);
+        }
+        this.$emit('live_over');
       }
     })
 
