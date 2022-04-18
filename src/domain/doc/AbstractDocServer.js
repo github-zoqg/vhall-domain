@@ -488,15 +488,36 @@ export default class AbstractDocServer extends BaseServer {
     return this.docInstance.loadDoc({ id, docId, docType });
   }
 
-  // TODO 没明白
+  /**
+   * 在收到开始/结束直播（live_start/live_over）消息后调用
+   * 用于记录流和文档的开始/结束时间点，便于在后面回放功能中使用
+   * @param {Number} val 1-开始直播，2-结束直播
+   * @param {Number} type 2-互动直播，1-其它直播
+   * @returns 
+   */
+  @checkDocInstance()
   start(val, type) {
     return this.docInstance.start(val, type);
   }
 
-  // TODO 没明白
+  /**
+   * 在调用开始直播start方法后调用
+   * 用于补发直播开始前打开的文档等消息，确保回放中文档数据的完整
+   */
+  @checkDocInstance()
   republish() {
     return this.docInstance.republish();
   }
+
+  /**
+   * 是否在转播
+   * @param {Boolean} isRelay true:转播，false-非转播
+   * @returns 
+   */
+  @checkDocInstance()
+  setRelay(isRelay = true) {
+    return this.docInstance.setRelay(isRelay);
+  };
 
   /**
    * 设置用户角色， sdk会根据用户角色进行权限设置

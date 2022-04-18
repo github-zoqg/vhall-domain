@@ -221,7 +221,6 @@ class InteractiveServer extends BaseServer {
 
     // 自动上麦 + 未开启禁言 + 未开启全体禁言 + 不是因为被下麦或者手动下麦去初始化互动
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
-    console.log('初始化连麦----2-2-2-2-2-2-2--2-', groupInitData)
     console.table([
       { name: 'device_status', val: useMediaCheckServer().state.deviceInfo.device_status },
       { name: 'auto_speak', val: interactToolStatus.auto_speak },
@@ -258,8 +257,8 @@ class InteractiveServer extends BaseServer {
         console.log('[interactive server] auto_speak 0', autoSpeak)
       }
 
-      // 主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题   无需判断是否为分组活动,原因如下： 若是无延迟活动，设备禁用会让下麦，这时候刷新应能自动上麦的
-      if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup) {
+      // 主持人 + 当前主讲师是主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题   无需判断是否为分组活动,原因如下： 若是无延迟活动，设备禁用会让下麦，这时候刷新应能自动上麦的
+      if (!autoSpeak && watchInitData.join_info.role_name == 1 && interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id && !groupInitData.isInGroup) {
         autoSpeak = true
       }
     }
@@ -274,6 +273,7 @@ class InteractiveServer extends BaseServer {
       if (res.code == 200) {
 
         // 记录状态，在收到 vrtc_connect_success 消息后不再次初始化互动
+        // 收到消息执行可能比 收到响应赋值 autoSpeak为true快，造成初始化2次互动，需要在收到消息执行时，延迟执行
         this.state.autoSpeak = true
 
         return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
@@ -340,6 +340,7 @@ class InteractiveServer extends BaseServer {
         // 在这清空所有streamId会导致出现网络异常占位图
         useMicServer().removeAllApeakerStreamId()
         this._clearLocalStream()
+        this.abortStreams = []
       }).then(() => {
         console.log('[interactiveServer]----互动sdk销毁成功');
 
@@ -432,6 +433,8 @@ class InteractiveServer extends BaseServer {
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
       // 本地推流或订阅远端流异常断开事件
+      console.log('[interactiveServer]-------流异常事件----', e);
+
 
       if (e.data.streamType === 2) {
         let params = {
@@ -476,7 +479,6 @@ class InteractiveServer extends BaseServer {
     msgServer.$onMsg('ROOM_MSG', msg => {
       const { speakerList } = useMicServer().state
       const localSpeaker = speakerList.find(speaker => speaker.accountId == third_party_user_id)
-      console.log(`[interactiveServer]----消息监听----：msgType:${msg.data.type}`)
       if (
         msg.data.type == 'vrtc_frames_forbid' && // 业务关闭摄像头消息
         msg.data.target_id == localSpeaker.accountId
@@ -950,7 +952,7 @@ class InteractiveServer extends BaseServer {
         this.retrySubScribeNum = 0
         resolve(res)
       }).catch(async (e) => {
-        console.log('[interactiveServer]   订阅失败-----> ', e)
+        console.log('[interactiveServer]   订阅失败-----> ', e, options)
         if (this.retrySubScribeNum > 3) {
           this.retrySubScribeNum = 0
           reject(e)

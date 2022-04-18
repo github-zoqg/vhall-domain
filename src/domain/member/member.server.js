@@ -177,9 +177,6 @@ class MemberServer extends BaseServer {
         case 'room_kickout_cancel':
           this.$emit(type, msg);
           break;
-        case 'vrtc_disconnect_presentation_success':
-          this._handleUserEndPresentation(msg);
-          break;
         case 'main_room_join_change':
           this._handleMainRoomJoinChange(msg);
           break;
@@ -191,10 +188,6 @@ class MemberServer extends BaseServer {
           break;
         case 'vrtc_connect_presentation_success':
           !isLive && this._handlePresentationPermissionChange(msg);
-          break;
-        case 'room_vrtc_disconnect_success':
-          //下麦成功
-          !isLive && this._handleRoomDisconnectSuccess(msg);
           break;
         case 'group_switch_start':
           this.$emit(type, msg);
@@ -452,12 +445,14 @@ class MemberServer extends BaseServer {
       avatar: msg.data.avatar,
       device_status: msg.data.device_status,
       device_type: msg.data.device_type,
-      nickname: msg.data.nick_name,
+      nickname: msg.data.nick_name || msg.data.nickname,
       role_name: msg.data.room_role
     };
 
     const { member_info = { is_apply: 1 } } = msg.data;
     user = Object.assign(user, member_info);
+    //派发申请上麦事件
+    this.$emit('vrtc_connect_apply', msg);
     this.state.applyUsers.unshift(user);
     // 去重
     this.state.applyUsers = this.uniqBy(this.state.applyUsers, 'account_id');
@@ -542,7 +537,7 @@ class MemberServer extends BaseServer {
     this.$emit('vrtc_connect_invite_refused', msg);
   }
 
-  //互动连麦断开成功 todo 视图需要改造
+  //互动连麦断开成功
   _handleSuccessDisconnect(msg) {
     const { watchInitData = {} } = useRoomBaseServer().state;
     const { join_info = {} } = watchInitData;
@@ -588,13 +583,7 @@ class MemberServer extends BaseServer {
     this._deleteUser(msg.accountId, this.state.applyUsers);
     //更新一下在线人数
     this.state.totalNum = this.state.onlineUsers.length;
-    //todo 确认下这里是否可以不重新请求，直接将该人员更改相应状态放入受限制人员列表
     this.getLimitUserList();
-  }
-
-  //用户主动结束演示
-  _handleUserEndPresentation(msg) {
-    console.log(msg, '用户主动结束了演示---------');
   }
 
   //主房间人员变动
@@ -640,11 +629,6 @@ class MemberServer extends BaseServer {
   //演示权限变更
   _handlePresentationPermissionChange(msg) {
     this._changeUserStatus(msg.sender_id, this.state.onlineUsers, { is_speak: 1 });
-  }
-
-  //下麦成功
-  _handleRoomDisconnectSuccess(msg) {
-    console.log(msg, '下麦成功--------------');
   }
 
   //处理分组人员信息变更
@@ -721,7 +705,7 @@ class MemberServer extends BaseServer {
 
   }
 
-  //todo 临时放这里，都迁移好了测试无误放utils里
+  //去重
   uniqBy(list = [], uniqKey = '') {
     const mapObj = new Map();
     return list.filter(item => !mapObj.has(item[uniqKey]) && mapObj.set(item[uniqKey], 1));
@@ -729,13 +713,11 @@ class MemberServer extends BaseServer {
 
   //更新人员的一些属性
   _changeUserStatus(accountId = '', list = [], obj = {}) {
-    console.log('更改成员属性', accountId, list, obj);
     const item = list.find(item => item.account_id === accountId);
     if (!item) {
       return;
     }
     Object.assign(item || {}, obj);
-    console.log(this.state.onlineUsers, '更改后的成员列表');
   }
 
   //查找用户在数组里的索引号

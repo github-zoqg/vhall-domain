@@ -65,8 +65,10 @@ class MicServer extends BaseServer {
   // 通过accountId来更新speaker
   updateSpeakerByAccountId(accountId, params) {
 
+    console.log('[mic server] updateSpeakerByAccountId', accountId)
     this.state.speakerList = this.state.speakerList.map(speaker => {
       if (speaker.accountId == accountId) {
+        console.log('[mic server] speaker', speaker)
         return Object.assign(speaker, params)
       } else {
         return speaker
@@ -84,8 +86,11 @@ class MicServer extends BaseServer {
     //   console.error('上麦用户不存在streamId')
     //   return
     // }
+    console.log('[mic server] updateSpeakerByStreamId', streamId)
+
     this.state.speakerList = this.state.speakerList.map(speaker => {
       if (speaker.streamId == streamId) {
+        console.log('[mic server] speaker', speaker)
         return Object.assign(speaker, params)
       } else {
         return speaker
@@ -106,17 +111,27 @@ class MicServer extends BaseServer {
     })
   }
 
+  //   开始讨论时
+  // 1、msgServer groupChat初始化之前，可能会有 组员上麦消息遗漏
+  // 2、组内成员互动重新初始化之前，可能会有流加入订阅时没有互动实例而报错
+  updateSpeakerListByStreams() {
+    if (useInteractiveServer().interactiveInstance) {
+      const streams = useInteractiveServer().getRoomStreams()
+      this.state.speakerList.forEach(speaker => {
+        const stream = streams.find(item => item.accountId == speaker.accountId)
+        if (stream) {
+          speaker.streamId = stream.streamId
+        }
+      })
+
+    }
+  }
+
 
   _initEventListeners() {
     const msgServer = useMsgServer();
     msgServer.$onMsg('ROOM_MSG', msg => {
       const { join_info } = useRoomBaseServer().state.watchInitData;
-      console.log(
-        '----连麦服务----房间消息',
-        this.state.isSpeakOn,
-        msg.data.receive_account_id,
-        join_info.third_party_user_id
-      );
       switch (msg.data.type) {
         // 开启允许举手
         case 'live_over':

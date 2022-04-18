@@ -4,8 +4,10 @@ import useInteractiveServer from '../media/interactive.server';
 import useMsgServer from '../common/msg.server';
 import useDocServer from '../doc/doc.server';
 import { group as groupApi } from '../../request/index.js';
-import { isPc, sleep } from '@/utils/index.js';
+import { isPc } from '@/utils/index.js';
 import useMicServer from '../media/mic.server';
+import { sleep } from '../../utils';
+
 
 /**
  * 标准分组直播场景下的分组相关服务
@@ -45,7 +47,9 @@ class StandardGroupServer extends BaseServer {
       // 待分配人员列表
       waitingUserList: [],
       // 已分组人员列表
-      groupedUserList: []
+      groupedUserList: [],
+      // 组长列表
+      // groupLeaderList:[]
     };
 
     this.EVENT_TYPE = {
@@ -107,6 +111,7 @@ class StandardGroupServer extends BaseServer {
    * @returns
    */
   async init() {
+    this.initGroupInitData()
     await this.updateGroupInitData()
   }
 
@@ -121,6 +126,7 @@ class StandardGroupServer extends BaseServer {
   //监听分组相关消息（属于房间消息）
   listenMsg() {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
+      console.log('[group]====', msg.data.event_type || msg.data.type, "===")
       switch (msg.data.event_type || msg.data.type) {
         // 直播结束
         case 'live_over':
@@ -205,6 +211,7 @@ class StandardGroupServer extends BaseServer {
 
     useMsgServer().$onMsg('JOIN', msg => {
       // 加入房间
+      console.log('[group] domain 加入房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
         if (msg.context.groupInitData.group_id) {
           for (let item of this.state.groupedUserList) {
@@ -231,6 +238,7 @@ class StandardGroupServer extends BaseServer {
             ...msg.context
           });
         }
+        console.log('[group] 处理组长回归');
         this.handleGroupLeaderBack(msg) // 处理组长回归
       }
     });
@@ -238,10 +246,16 @@ class StandardGroupServer extends BaseServer {
       // 离开房间
       console.log('[group] domain 离开房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
+
+        //  离开前是否是组长
+        let isLeader = false;
         this.state.groupedUserList.forEach((item, index) => {
           if (item.group_joins.length != 0) {
             item.group_joins.forEach((ITEM, ind) => {
               if (msg.sender_id == ITEM.account_id) {
+                if (item.join_role == 20) {
+                  isLeader = true;
+                }
                 item.group_joins.splice(ind, 1);
               }
             });
@@ -252,8 +266,10 @@ class StandardGroupServer extends BaseServer {
             this.state.waitingUserList.splice(index, 1);
           }
         });
-
-        this.handleGroupLeaderLeave(msg) // 处理组长离开
+        if (isLeader) {
+          // 处理组长离开
+          this.handleGroupLeaderLeave(msg)
+        }
       }
     });
   }
@@ -362,6 +378,19 @@ class StandardGroupServer extends BaseServer {
 
     // 更新个人所在小组信息
     await this.updateGroupInitData();
+    console.log('[group] 开始讨论，isInGroup ', this.state.groupInitData.isInGroup);
+    console.log('[group] 开始讨论，groupSpeakerlist ', JSON.stringify(this.state.groupInitData.speaker_list));
+
+
+    //   开始讨论时
+    // 1、msgServer groupChat初始化之前，可能会有组内成员先上麦，而其他成员收不到消息的情况
+    //所以先保证组长上麦，其他组员保证能获取到组长画面
+    // 2、还有一种情况，组内成员互动重新初始化之前，可能会有流加入订阅时没有互动实例而报错，所以在订阅前需等待互动实例完成
+    const { isInGroup, join_role } = this.state.groupInitData
+    if (isInGroup && join_role != 20) {
+      await sleep(1000)
+      await this.updateGroupInitData();
+    }
     // 开始讨论但不在分组中，不需要发消息，直接 return
     if (!this.state.groupInitData.isInGroup) {
       // 在主房间的人更新主房间的互动工具状态，，更新主房间上麦列表
@@ -373,6 +402,7 @@ class StandardGroupServer extends BaseServer {
 
     // 进入小组中的人更新小组上麦列表
     useMicServer().updateSpeakerList()
+    console.log('[group] 开始讨论，updateSpeakerList ', JSON.stringify(useMicServer().state.speakerList));
 
     //----------------------------------
     // this.handleResetInteractiveTools();
@@ -621,6 +651,7 @@ class StandardGroupServer extends BaseServer {
 
   //【组长变更/组长更改】消息处理
   async msgdoForGroupLeaderChange(msg) {
+    console.log('[group] msgdoForGroupLeaderChange msg:', msg);
     const { join_info } = useRoomBaseServer().state.watchInitData
     if (msg.data.group_id == this.state.groupInitData.group_id) {
       // 在一个组里面，需要更新小组数据
@@ -956,17 +987,33 @@ class StandardGroupServer extends BaseServer {
   }
 
   /**
+   * 初始化groupInitData数据
+   * 未开启讨论时，发起端的分组状态要保持，存在有group_id，但是isInGroup=false的情况
+   * 所以判断在不在小组中只能通过isInGroup字段判断
+   */
+  initGroupInitData() {
+    const { interactToolStatus } = useRoomBaseServer().state
+    this.state.groupInitData = {
+      ...this.state.groupInitData,
+      group_id: interactToolStatus.group_id,
+      join_role: interactToolStatus.join_role
+    }
+  }
+
+  /**
    * 更新GroupInitData数据
    */
   async updateGroupInitData() {
     const result = await this.getGroupInfo();
 
-    this.state.groupInitData = (result && result.data) || {};
-    if (this.state.groupInitData?.group_id) {
+    this.state.groupInitData = (result && result.data && {
+      ...result.data,
+      ...this.state.groupInitData
+    }) || {};
+    if (result.data?.group_id) {
       this.state.groupInitData.isInGroup = true;
     } else {
       this.state.groupInitData.isInGroup = false;
-      // return Promise.reject(res)
     }
     return Promise.resolve()
   }
@@ -1070,17 +1117,6 @@ class StandardGroupServer extends BaseServer {
    */
   handleGroupLeaderLeave(msg) {
     if (useRoomBaseServer().state.clientType !== 'send') return;
-
-    let [groupId, leader] = [null, null]
-    for (const group of this.state.groupedUserList) {
-      const target = group.group_joins.find(user => user.account_id === msg.sender_id)
-      if (target) {
-        groupId = group.id
-        leader = target
-        break;
-      }
-    }
-    if (!leader) return;
 
     const TIMEOUT = 15 * 1000; // 15秒
     const timer = setTimeout(() => {
