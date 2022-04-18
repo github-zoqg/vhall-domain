@@ -159,12 +159,26 @@ export default class StandardDocServer extends AbstractDocServer {
 
     useMsgServer().$onMsg('ROOM_MSG', async (msg) => {
       switch (msg.data.event_type || msg.data.type) {
+        // 直播开始
+        case 'live_start': {
+          console.log('live_start domain');
+          const { watchInitData } = useRoomBaseServer().state;
+          if (watchInitData.join_info.role_name == 1) {
+            this.start(1, watchInitData.webinar.mode == 3 ? 2 : 1);
+            setTimeout(() => {
+              // 补发消息
+              this.republish();
+            }, 100);
+          }
+
+          this.$emit('live_start');
+          break;
+        }
         // 直播结束
         case 'live_over':
+          console.log('live_over domain');
           console.log('[doc] 直播结束，删除所有容器');
-          // 观众不可见
-          this.switchOffContainer()
-          // 删除所有容器
+          // 删除所有容器, 该方法包含重置观众不可见的逻辑
           this.resetContainer();
 
           // 还原
@@ -178,6 +192,12 @@ export default class StandardDocServer extends AbstractDocServer {
           this.state.docLoadComplete = true; // 文档是否加载完成
           this.state.thumbnailList = []; // 缩略图列表
           this.state.switchStatus = false; // 观众是否可见
+
+          const { watchInitData } = useRoomBaseServer().state;
+          if (watchInitData.join_info.role_name == 1) {
+            this.start(2, watchInitData.webinar.mode == 3 ? 2 : 1);
+          }
+          this.$emit('live_over');
           break;
       }
     })
