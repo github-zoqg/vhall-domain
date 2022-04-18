@@ -942,7 +942,10 @@ class MemberServer extends BaseServer {
     if (!this.state.isVideoPolling) {
       return host.concat(onMicGuest, downMicGuest, assistant, leader, onMicAudience, downMicAudience);
     } else {
-      return pollingAudience.concat(onMicAudience, downMicAudience)
+      let resultAudience = pollingAudience.concat(onMicAudience, downMicAudience)
+      // 过滤掉手机端用户
+      resultAudience = resultAudience.filter(item => item.device_type != 1)
+      return resultAudience
     }
   }
 
