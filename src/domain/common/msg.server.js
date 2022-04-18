@@ -126,7 +126,11 @@ class MsgServer extends BaseServer {
       console.log('msg消息', eventType, msg.data.type, msg);
       //判断房间id 该消息属于当前所在房间才处理回调
       if (this.curMsgInstance.channelId == msg.channel) {
-        fn(msg);
+        try {
+          fn(msg);
+        } catch (e) {
+          console.error(e)
+        }
       }
     };
     // 'room';
