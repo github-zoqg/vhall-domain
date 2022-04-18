@@ -85,6 +85,11 @@ class RoomBaseServer extends BaseServer {
     if (['standard', 'embed'].includes(options.clientType) && !options.visitor_id) {
       options.visitor_id = sessionStorage.getItem('visitorId');
     }
+    if (['embed'].includes(options.clientType)) {
+      // v6.5.9新增 - 分组直播是单视频嵌入的时候，不支持。
+      options.embed_type = this.state.embedObj.embedVideo ? 'video' : 'full'
+    }
+
     this.state.clientType = options.clientType;
     this.state.deviceType = options.deviceType;
     return new Promise((resolve, reject) => {
@@ -95,7 +100,7 @@ class RoomBaseServer extends BaseServer {
           // 设置发起端权限
           if (['send', 'record', 'clientEmbed'].includes(options.clientType)) {
             this.state.configList = res.data.permissionKey
-            // 发起端，将多语言缓存清除
+            // 发起端结束直播时，将多语言缓存清除 主要是为了防止测试 在测过程中浏览器缓存不清空，一会登录观看端，一会登录发起端，缓存会翻译发起端，使发起端变成英文
             localStorage.removeItem('lang')
             // 判断是不是第三方推流
             if (res.data.switch && res.data.switch.start_type == 4) {
@@ -108,6 +113,9 @@ class RoomBaseServer extends BaseServer {
             // 回放时 不显示推流列表等，所以要把miniElement设置为空
             if (this.state.watchInitData.webinar.type != 1) {
               this.state.miniElement = ''
+            }
+            if (this.state.embedObj.embedVideo) {
+              this.state.watchInitData.webinar.no_delay_webinar = 0
             }
           }
           console.log('watchInitData', res.data);
@@ -142,8 +150,11 @@ class RoomBaseServer extends BaseServer {
 
       } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
         this.state.watchInitData.webinar.type = 3;
-        // 结束直播时，将多语言缓存清除
-        localStorage.removeItem('lang')
+        // 把演示人、主讲人、主屏人都设置成主持人
+        this.state.interactToolStatus.presentation_screen = this.state.watchInitData.webinar.userinfo.user_id;
+        this.state.interactToolStatus.doc_permission = this.state.watchInitData.webinar.userinfo.user_id;
+        this.state.interactToolStatus.main_screen = this.state.watchInitData.webinar.userinfo.user_id;
+
         // 结束直播时，将第三方推流标识关闭
         if (this.state.isThirdStream) {
           this.$emit('LIVE_OVER')

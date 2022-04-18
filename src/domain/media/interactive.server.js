@@ -220,7 +220,6 @@ class InteractiveServer extends BaseServer {
 
     // 自动上麦 + 未开启禁言 + 未开启全体禁言 + 不是因为被下麦或者手动下麦去初始化互动
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
-    console.log('初始化连麦----2-2-2-2-2-2-2--2-', groupInitData)
     console.table([
       { name: 'device_status', val: useMediaCheckServer().state.deviceInfo.device_status },
       { name: 'auto_speak', val: interactToolStatus.auto_speak },
@@ -257,8 +256,8 @@ class InteractiveServer extends BaseServer {
         console.log('[interactive server] auto_speak 0', autoSpeak)
       }
 
-      // 主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题   无需判断是否为分组活动,原因如下： 若是无延迟活动，设备禁用会让下麦，这时候刷新应能自动上麦的
-      if (!autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup) {
+      // 主持人 + 当前主讲师是主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题   无需判断是否为分组活动,原因如下： 若是无延迟活动，设备禁用会让下麦，这时候刷新应能自动上麦的
+      if (!autoSpeak && watchInitData.join_info.role_name == 1 && interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id && !groupInitData.isInGroup) {
         autoSpeak = true
       }
     }
@@ -273,6 +272,7 @@ class InteractiveServer extends BaseServer {
       if (res.code == 200) {
 
         // 记录状态，在收到 vrtc_connect_success 消息后不再次初始化互动
+        // 收到消息执行可能比 收到响应赋值 autoSpeak为true快，造成初始化2次互动，需要在收到消息执行时，延迟执行
         this.state.autoSpeak = true
 
         return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
@@ -301,9 +301,16 @@ class InteractiveServer extends BaseServer {
     // 2. 如果是房间id发生了变化，需要重新初始化互动sdk
     // 3. 如果是角色发生了变化，需要重新初始化互动sdk
     // 4. 如果销毁互动sdk失败，return false
+    // 5. 嘉宾不重新初始化实例
     if (!this.interactiveInstance) {
       return true;
     }
+
+    const { watchInitData: { join_info: { role_name } } } = useRoomBaseServer().state;
+    if (role_name == 4) {
+      return false;
+    }
+
     if (
       options.roomId !== this.interactiveInstanceOptions.roomId ||
       options.role !== this.interactiveInstanceOptions.role
@@ -332,6 +339,7 @@ class InteractiveServer extends BaseServer {
         // 在这清空所有streamId会导致出现网络异常占位图
         useMicServer().removeAllApeakerStreamId()
         this._clearLocalStream()
+        this.abortStreams = []
       }).then(() => {
         console.log('[interactiveServer]----互动sdk销毁成功');
 
@@ -424,6 +432,16 @@ class InteractiveServer extends BaseServer {
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
       // 本地推流或订阅远端流异常断开事件
+      console.log('[interactiveServer]-------流异常事件----', e);
+
+
+      if (e.data.streamType === 2) {
+        let params = {
+          streamId: '',
+        }
+        // let res = await this.unSubscribeStream(e.data.streamId)
+        useMicServer().updateSpeakerByAccountId(e.data.accountId, params)
+      }
       this.$emit('EVENT_REMOTESTREAM_FAILED', e);
     });
 
@@ -460,7 +478,6 @@ class InteractiveServer extends BaseServer {
     msgServer.$onMsg('ROOM_MSG', msg => {
       const { speakerList } = useMicServer().state
       const localSpeaker = speakerList.find(speaker => speaker.accountId == third_party_user_id)
-      console.log(`[interactiveServer]----消息监听----：msgType:${msg.data.type}`)
       if (
         msg.data.type == 'vrtc_frames_forbid' && // 业务关闭摄像头消息
         msg.data.target_id == localSpeaker.accountId
@@ -862,6 +879,9 @@ class InteractiveServer extends BaseServer {
 
   // 推送本地流到远端
   publishStream(options = {}) {
+    if (!this.interactiveInstance) {
+      return Promise.reject({ code: '' })
+    }
     return this.interactiveInstance
       .publish({
         streamId: options.streamId || this.state.localStream.streamId
@@ -926,7 +946,7 @@ class InteractiveServer extends BaseServer {
         this.retrySubScribeNum = 0
         resolve(res)
       }).catch(async (e) => {
-        console.log('[interactiveServer]   订阅失败-----> ', e)
+        console.log('[interactiveServer]   订阅失败-----> ', e, options)
         if (this.retrySubScribeNum > 3) {
           this.retrySubScribeNum = 0
           reject(e)
@@ -1015,6 +1035,21 @@ class InteractiveServer extends BaseServer {
 
     const stream = this.getDesktopAndIntercutInfo();
 
+
+
+    // 如果有桌面共享或插播
+    if (stream) {
+      await this.setBroadCastScreen(stream.streamId)
+        .then(() => {
+          console.log('[interactiveServer]----动态设置旁路主屏幕成功', stream.streamId);
+        })
+        .catch(e => {
+          console.error('[interactiveServer]----动态设置旁路主屏幕失败', e);
+        });
+    } else {
+      await this.setBroadCastScreen()
+    }
+
     if (stream) {
       // 一人铺满布局
       await this.setBroadCastLayout({ layout: VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 });
@@ -1023,18 +1058,6 @@ class InteractiveServer extends BaseServer {
       const adaptiveLayoutMode = VhallRTC[useMediaSettingServer().state.layout];
       await this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode });
     }
-
-    // 如果有桌面共享或插播
-    if (stream) {
-      this.setBroadCastScreen(stream.streamId)
-        .then(() => {
-          console.log('[interactiveServer]----动态设置旁路主屏幕成功', stream.streamId);
-        })
-        .catch(e => {
-          console.error('[interactiveServer]----动态设置旁路主屏幕失败', e);
-        });
-    }
-
 
   }
 
@@ -1059,9 +1082,14 @@ class InteractiveServer extends BaseServer {
 
   // 动态配置旁路主屏
   setBroadCastScreen(streamId) {
+    console.log('动态配置旁路主屏', streamId)
+    const speakerList = useMicServer().state.speakerList
+    const mainScreenStream = speakerList.find(item => {
+      return item.accountId === useRoomBaseServer().state.interactToolStatus.main_screen
+    })
     return this.interactiveInstance
       .setBroadCastScreen({
-        mainScreenStreamId: streamId || this.state.localStream.streamId
+        mainScreenStreamId: streamId || (mainScreenStream && mainScreenStream.streamId) || this.state.localStream.streamId
       })
       .catch(async err => {
         // 设置失败重试三次

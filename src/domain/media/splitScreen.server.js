@@ -1,6 +1,7 @@
 import useInteractiveServer from './interactive.server';
 import BaseServer from '../common/base.server';
 import useMicServer from './mic.server';
+import useDesktopShareServer from './desktopShare.server';
 class SplitScreenServer extends BaseServer {
   constructor() {
     super();
@@ -53,6 +54,7 @@ class SplitScreenServer extends BaseServer {
       }, this.curOrigin)
       // 分屏页面消息监听
       this.initSplitscreenPostMsgEvent()
+      this.addDesktopShareEvent()
       return Promise.resolve()
     } else {
       // 如果不是分屏页面
@@ -329,6 +331,21 @@ class SplitScreenServer extends BaseServer {
     })
   }
 
+  // 开启分屏之后桌面共享对应的旁路设置由分屏页面接管
+  addDesktopShareEvent() {
+    const desktopScreenServer = useDesktopShareServer()
+    const interactiveServer = useInteractiveServer()
+    desktopScreenServer.$on('screen_stream_add', async () => {
+      const param = {
+        adaptiveLayoutMode: VhallRTC[sessionStorage.getItem('layout')]
+      };
+      await interactiveServer.setBroadCastAdaptiveLayoutMode(param);
+      interactiveServer.resetLayout();
+    });
+    desktopScreenServer.$on('EVENT_STREAM_END', () => {
+      interactiveServer.resetLayout();
+    });
+  }
 }
 export default function useSplitScreenServer() {
   return new SplitScreenServer();
