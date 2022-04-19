@@ -213,7 +213,7 @@ class StandardGroupServer extends BaseServer {
       // 加入房间
       console.log('[group] domain 加入房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
-        if (msg.context.groupInitData.group_id) {
+        if (msg.context.groupInitData && msg.context.groupInitData.group_id) {
           for (let item of this.state.groupedUserList) {
             if (item.id == msg.context.groupInitData.group_id) {
               const obj = item.group_joins.find(item => item.account_id == msg.sender_id);

@@ -158,27 +158,43 @@ export default class StandardDocServer extends AbstractDocServer {
     });
 
     useMsgServer().$onMsg('ROOM_MSG', async (msg) => {
-      switch (msg.data.event_type || msg.data.type) {
-        // 直播结束
-        case 'live_over':
-          console.log('[doc] 直播结束，删除所有容器');
-          // 观众不可见
-          this.switchOffContainer()
-          // 删除所有容器
-          this.resetContainer();
+      const msgType = msg.data.event_type || msg.data.type;
+      if (msgType === 'live_start') {
+        // 直播开始
+        console.log('live_start domain');
+        const { watchInitData } = useRoomBaseServer().state;
+        if (watchInitData.join_info.role_name == 1) {
+          this.start(1, watchInitData.webinar.mode == 3 ? 2 : 1);
+          setTimeout(() => {
+            // 补发消息
+            this.republish();
+          }, 100);
+        }
+        this.$emit('live_start');
 
-          // 还原
-          this.state.currentCid = ''; //当前正在展示的容器id
-          this.state.docCid = ''; // 当前文档容器Id
-          this.state.boardCid = ''; // 当前白板容器Id
-          this.state.containerList = []; // 动态容器列表
-          this.state.pageTotal = 1; //总页数
-          this.state.pageNum = 1; // 当前页码Ï
-          this.state.allComplete = true;
-          this.state.docLoadComplete = true; // 文档是否加载完成
-          this.state.thumbnailList = []; // 缩略图列表
-          this.state.switchStatus = false; // 观众是否可见
-          break;
+      } else if (msgType === 'live_over' || (msgType === 'group_switch_end' && msg.data.over_live === 1)) {
+        // 直播结束（包括分组直播的结束）
+        console.log('live_over domain');
+        // 删除所有容器, 该方法包含重置观众不可见的逻辑
+        this.resetContainer();
+
+        // 还原
+        this.state.currentCid = ''; //当前正在展示的容器id
+        this.state.docCid = ''; // 当前文档容器Id
+        this.state.boardCid = ''; // 当前白板容器Id
+        this.state.containerList = []; // 动态容器列表
+        this.state.pageTotal = 1; //总页数
+        this.state.pageNum = 1; // 当前页码Ï
+        this.state.allComplete = true;
+        this.state.docLoadComplete = true; // 文档是否加载完成
+        this.state.thumbnailList = []; // 缩略图列表
+        this.state.switchStatus = false; // 观众是否可见
+
+        const { watchInitData } = useRoomBaseServer().state;
+        if (watchInitData.join_info.role_name == 1) {
+          this.start(2, watchInitData.webinar.mode == 3 ? 2 : 1);
+        }
+        this.$emit('live_over');
       }
     })
 
@@ -251,13 +267,15 @@ export default class StandardDocServer extends AbstractDocServer {
       console.log('[doc]========创建容器========', data);
       const { watchInitData } = useRoomBaseServer().state;
       if (watchInitData.join_info.role_name != 1 && watchInitData.webinar.type != 1) {
+        // 如果不是主持人并且未开播，则不处理
         return;
       }
       if (typeof this.getDocViewRect === 'function') {
         const { width, height } = this.getDocViewRect();
         const { docId, id, type } = data;
         if (width > 0 && height > 0 && this.state.containerList.findIndex(item => item.cid == data.id) == -1) {
-          this.addNewDocumentOrBorad({ width, height, fileType: type, cid: id, docId });
+          console.log('======CREATE_CONTAINER 设置  docId= ');
+          this.addNewDocumentOrBorad({ width, height, fileType: type, cid: id });
         }
       }
       this.$emit('dispatch_doc_create_container', data);
@@ -265,7 +283,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 删除文档
     this.on(VHDocSDK.Event.DELETE_CONTAINER, data => {
-      console.log('doc]========删除容器========', data);
+      console.log('[doc]========删除容器========', data);
       if (data && data.id) {
         this.destroyContainer(data.id);
         const idx = this.state.containerList.findIndex((item) => item.cid == data.id);
@@ -278,7 +296,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 选中容器
     this.on(VHDocSDK.Event.SELECT_CONTAINER, data => {
-      console.log('[doc]========选中容器========');
+      console.log('[doc]========选中容器========', data);
       const { watchInitData } = useRoomBaseServer().state;
       if (watchInitData.join_info.role_name != 1 && watchInitData.webinar.type != 1) {
         return;
@@ -582,7 +600,7 @@ export default class StandardDocServer extends AbstractDocServer {
       noDispatch
     });
     await this.activeContainer(elId);
-    if (fileType === 'document') {
+    if (fileType === 'document' && docId) {
       const { status, status_jpeg, slideIndex, slidesTotal, converted_page, converted_page_jpeg } =
         await this.loadDoc({
           id: elId,
@@ -617,9 +635,6 @@ export default class StandardDocServer extends AbstractDocServer {
     docId = '',
     noDispatch = false
   }) {
-    if (fileType === 'document' && !docId) {
-      throw new Error('required docment param docId');
-    }
     if (!cid) {
       cid = this.createUUID(fileType);
     }
