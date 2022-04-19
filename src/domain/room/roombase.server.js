@@ -142,6 +142,12 @@ class RoomBaseServer extends BaseServer {
           if (this.state.isThirdStream) {
             this.$emit('LIVE_START')
           }
+          // 初始化播放器
+          if (msg.data.switch_type != 1 && this.state.watchInitData.join_info.role_name == 3 && this.state.watchInitData.webinar.no_delay_webinar != 1) {
+            this.$emit('LIVE_BROADCAST_START', {
+              start_type: msg.data.switch_type
+            })
+          }
         }
 
         // 消息中未提供开播时间字段 start_time
@@ -157,7 +163,6 @@ class RoomBaseServer extends BaseServer {
 
         // 结束直播时，将第三方推流标识关闭
         if (this.state.isThirdStream) {
-          this.$emit('LIVE_OVER')
           this.state.isThirdStream = false;
         }
 
@@ -233,9 +238,13 @@ class RoomBaseServer extends BaseServer {
 
   // 设置转播信息
   setRebroadcastInfo(data) {
-    this.state.watchInitData.rebroadcast = {
+    const obj = {
       ...this.state.watchInitData.rebroadcast,
-      ...data
+      ...data,
+    }
+    this.state.watchInitData.rebroadcast = {
+      ...obj,
+      isRebroadcasting: Boolean(this.state.watchInitData.rebroadcast.id)
     };
   }
 
