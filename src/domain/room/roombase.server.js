@@ -95,8 +95,13 @@ class RoomBaseServer extends BaseServer {
     return new Promise((resolve, reject) => {
       meeting[liveType.get(options.clientType)](options).then(res => {
         if (res.code === 200) {
-          // debugger
           this.state.watchInitData = res.data;
+
+          // 设置转发初始值(初始化数据实体)
+          if (this.state.watchInitData?.rebroadcast) {
+            this.setRebroadcastInfo(this.state.watchInitData.rebroadcast)
+          }
+
           // 设置发起端权限
           if (['send', 'record', 'clientEmbed'].includes(options.clientType)) {
             this.state.configList = res.data.permissionKey
@@ -242,9 +247,15 @@ class RoomBaseServer extends BaseServer {
       ...this.state.watchInitData.rebroadcast,
       ...data,
     }
+
+    // 衍生值
+    const byProductData = {
+      isRebroadcasting: Boolean(this.state.watchInitData.rebroadcast.id)
+    }
+
     this.state.watchInitData.rebroadcast = {
       ...obj,
-      isRebroadcasting: Boolean(this.state.watchInitData.rebroadcast.id)
+      ...byProductData
     };
   }
 
