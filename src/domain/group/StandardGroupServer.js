@@ -111,8 +111,15 @@ class StandardGroupServer extends BaseServer {
    * @returns
    */
   async init() {
-    this.initGroupInitData()
+    // 初始化groupInitData数据
+    // 未开启讨论时，发起端的分组状态要保持，存在有group_id，但是isInGroup=false的情况
+    // 所以判断在不在小组中只能通过isInGroup字段判断
     await this.updateGroupInitData()
+    const { interactToolStatus } = useRoomBaseServer().state;
+    if (!this.state.groupInitData.group_id && interactToolStatus.group_id) {
+      this.state.groupInitData.group_id = interactToolStatus.group_id;
+      this.state.groupInitData.join_role = interactToolStatus.join_role;
+    }
   }
 
   async getGroupInfo() {
@@ -699,7 +706,6 @@ class StandardGroupServer extends BaseServer {
       this.state.groupInitData.isInGroup &&
       msg.data.target_id == join_info.third_party_user_id
     ) {
-
       // 后端踢出后会检测有没有在麦上，在麦上会派发下麦消息，初始化互动在下麦消息执行
       let isNeedInteractiveInit = true
       if (useMicServer().getSpeakerStatus()) {
@@ -986,30 +992,18 @@ class StandardGroupServer extends BaseServer {
     return result;
   }
 
-  /**
-   * 初始化groupInitData数据
-   * 未开启讨论时，发起端的分组状态要保持，存在有group_id，但是isInGroup=false的情况
-   * 所以判断在不在小组中只能通过isInGroup字段判断
-   */
-  initGroupInitData() {
-    const { interactToolStatus } = useRoomBaseServer().state
-    this.state.groupInitData = {
-      ...this.state.groupInitData,
-      group_id: interactToolStatus.group_id,
-      join_role: interactToolStatus.join_role
-    }
-  }
+
 
   /**
    * 更新GroupInitData数据
    */
   async updateGroupInitData() {
     const result = await this.getGroupInfo();
-
-    this.state.groupInitData = (result && result.data && {
-      ...result.data,
-      ...this.state.groupInitData
-    }) || {};
+    this.state.groupInitData = (result && result.data) || {};
+    // this.state.groupInitData = (result && result.data && {
+    //   ...result.data,
+    //   ...this.state.groupInitData
+    // }) || {};
     if (result.data?.group_id) {
       this.state.groupInitData.isInGroup = true;
     } else {
