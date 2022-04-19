@@ -706,7 +706,6 @@ class StandardGroupServer extends BaseServer {
       this.state.groupInitData.isInGroup &&
       msg.data.target_id == join_info.third_party_user_id
     ) {
-      console.log('[group]hi执行----')
       // 后端踢出后会检测有没有在麦上，在麦上会派发下麦消息，初始化互动在下麦消息执行
       let isNeedInteractiveInit = true
       if (useMicServer().getSpeakerStatus()) {
@@ -739,8 +738,6 @@ class StandardGroupServer extends BaseServer {
 
       // 处理文档channel切换逻辑
       useDocServer().groupReInitDocProcess();
-    } else {
-      console.log('[group]不hi执行----')
     }
     this.$emit(this.EVENT_TYPE.ROOM_GROUP_KICKOUT, msg);
   }
@@ -1034,7 +1031,6 @@ class StandardGroupServer extends BaseServer {
   async getGroupJoinChangeInfo(group_ids) {
     console.log('[group]小组切换 group_ids:', group_ids);
     // 备份之前的小组信息
-    console.log('oldGroupInitData:', JSON.stringify(this.state.groupInitData));
     const oldGroupInitData = JSON.parse(JSON.stringify(this.state.groupInitData));
     // 之前的分组id
     const oldGroupId = Number(oldGroupInitData.group_id ?? 0);
@@ -1043,7 +1039,6 @@ class StandardGroupServer extends BaseServer {
     if (group_ids.includes(oldGroupId)) {
       // 需要重新获取最新的groupInitData来对比
       await this.updateGroupInitData();
-      console.log('oldGroupInitData:', JSON.stringify(this.state.groupInitData));
       const newGroupId = Number(this.state.groupInitData.group_id ?? 0);
       console.log('[group] newGroupId:', newGroupId);
       if (oldGroupId != newGroupId) {
