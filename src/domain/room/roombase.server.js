@@ -155,6 +155,7 @@ class RoomBaseServer extends BaseServer {
               start_type: msg.data.switch_type
             })
           }
+          this.state.isThirdStream = this.state.watchInitData.switch.start_type === 4
         }
         if (msg.data.switch_type != 1 && this.state.watchInitData.join_info.role_name == 3) {
           this.state.isThirdpartyInitiated = true
