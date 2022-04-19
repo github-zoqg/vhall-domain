@@ -124,7 +124,7 @@ class RoomBaseServer extends BaseServer {
               this.state.watchInitData.webinar.no_delay_webinar = 0
             }
           }
-          this.state.isThirdpartyInitiated = [0, 1, '0', '1'].includes(res.data.switch.start_type)
+          this.state.isThirdpartyInitiated = ![0, 1, '0', '1'].includes(res.data.switch.start_type)
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
           sessionStorage.setItem('visitorId', res.data.visitor_id);
