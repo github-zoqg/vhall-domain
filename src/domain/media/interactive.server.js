@@ -127,17 +127,22 @@ class InteractiveServer extends BaseServer {
    * 判断是否需要初始化互动实例
    */
   _isNeedInteractive() {
-    const { watchInitData } = useRoomBaseServer().state;
+    const { watchInitData, isThirdpartyInitiated } = useRoomBaseServer().state;
     const { isSpeakOn } = useMicServer().state;
-
-    // 1. 非观众需要初始化互动
+    // 1. 非观众需要初始化互动 
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动
-    return (
-      watchInitData.join_info.role_name != 2 ||
-      watchInitData.webinar.no_delay_webinar == 1 ||
-      isSpeakOn
-    );
+    // 4. 非网页发起 ------->   优先级最高      
+    if (isThirdpartyInitiated) {
+      // 非网页发起时，不用初始化
+      return false
+    } else {
+      return (
+        watchInitData.join_info.role_name != 2 ||
+        watchInitData.webinar.no_delay_webinar == 1 ||
+        isSpeakOn
+      );
+    }
   }
 
   /**
@@ -256,8 +261,8 @@ class InteractiveServer extends BaseServer {
         console.log('[interactive server] auto_speak 0', autoSpeak)
       }
 
-      // 非无延迟（即分组互动）+主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题   无需判断是否为分组活动,原因如下： 若是无延迟活动，设备禁用会让下麦，这时候刷新应能自动上麦的
-      if (watchInitData.webinar.mode !== 3 && !autoSpeak && watchInitData.join_info.role_name == 1 && !groupInitData.isInGroup) {
+      // 主持人 + 当前主讲师是主持人 + 不在小组内 不受autospeak影响    fix: 助理解散小组后，主持人回到主直播间受autospeak影响不上麦及推流问题   无需判断是否为分组活动,原因如下： 若是无延迟活动，设备禁用会让下麦，这时候刷新应能自动上麦的
+      if (!autoSpeak && watchInitData.join_info.role_name == 1 && interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id && !groupInitData.isInGroup) {
         autoSpeak = true
       }
     }
