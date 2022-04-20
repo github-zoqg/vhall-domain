@@ -105,7 +105,7 @@ class RoomBaseServer extends BaseServer {
           }
 
           // 设置发起端权限
-          if (['send', 'record', 'clientEmbed'].includes(options.clientType)) {
+          if (['send', 'record', 'clientEmbed', 'sendYun'].includes(options.clientType)) {
             this.state.configList = res.data.permissionKey
             // 发起端结束直播时，将多语言缓存清除 主要是为了防止测试 在测过程中浏览器缓存不清空，一会登录观看端，一会登录发起端，缓存会翻译发起端，使发起端变成英文
             localStorage.removeItem('lang')
@@ -651,6 +651,13 @@ class RoomBaseServer extends BaseServer {
         this.state.customRoleName[3] = res.data.assistant_name
         this.state.customRoleName[4] = res.data.guest_name
       }
+    })
+  }
+
+  // 获取云导播台是否有流
+  getStreamStatus() {
+    return meeting.getCustomRoleName({
+      webinar_id: this.state.watchInitData.webinar && this.state.watchInitData.webinar.id,
     })
   }
 }

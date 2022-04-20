@@ -35,7 +35,11 @@ export const meetingApiList = {
   },
   initSendLiveYun: {
     v3: "/v3/webinars/live/director-seat-init",
-    middle: "/v4/meeting/live/init"
+    middle: ""
+  },
+  getStreamStatus: {
+    v3: "/v3/webinars/director/get-stream-status",
+    middle: ""
   },
 }
 

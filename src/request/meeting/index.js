@@ -14,7 +14,17 @@ function initSendLive(params) {
 
 // 发起端云导播推流页面初始化
 function initSendLiveYun(params) {
-  const url = meetingApiList['initSendLiveYun ']['v3'];
+  const url = meetingApiList['initSendLiveYun']['v3'];
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
+
+// 发起端获取云导播台是否有流
+function getStreamStatus(params) {
+  const url = meetingApiList['getStreamStatus']['v3'];
   return request({
     url,
     method: 'POST',
@@ -327,6 +337,7 @@ const getCustomRoleName = (data) => {
 const meeting = {
   initSendLive,
   initSendLiveYun,
+  getStreamStatus,
   initStandardReceiveLive,
   clientEmbed,
   initEmbeddedReceiveLive,
