@@ -78,10 +78,16 @@ class VideoPollingServer extends BaseServer {
       }
     })
 
-    // 开启视频轮询
+    // 开启视频轮巡
     msgServer.$onMsg('ROOM_MSG', msg => {
       if (msg.data.type === 'video_round_start') {
         this.$emit('VIDEO_POLLING_START', msg);
+      }
+      if (msg.data.type === 'video_round_users') {
+        this.$emit('VIDEO_POLLING_UPDATE', msg); // 更新轮训用户列表
+      }
+      if (msg.data.type === 'video_round_end') {
+        this.$emit('VIDEO_POLLING_END', msg) // 轮训结束
       }
     });
   }

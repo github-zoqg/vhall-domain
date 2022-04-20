@@ -126,7 +126,7 @@ class InteractiveServer extends BaseServer {
   /**
    * 判断是否需要初始化互动实例
    */
-  _isNeedInteractive() {
+  _isNeedInteractive(options) {
     const { watchInitData, isThirdpartyInitiated } = useRoomBaseServer().state;
     const { isSpeakOn } = useMicServer().state;
     // 1. 非观众需要初始化互动
