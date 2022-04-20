@@ -89,6 +89,11 @@ class RebroadCastServer extends BaseServer {
           });
           this.$emit('live_broadcast_stop');
           break;
+        case 'live_over':
+          roomBaseServer.setRebroadcastInfo({
+            id: '',
+            channel_id: ''
+          });
         default:
           break;
       }

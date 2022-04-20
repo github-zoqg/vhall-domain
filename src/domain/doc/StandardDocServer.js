@@ -267,13 +267,15 @@ export default class StandardDocServer extends AbstractDocServer {
       console.log('[doc]========创建容器========', data);
       const { watchInitData } = useRoomBaseServer().state;
       if (watchInitData.join_info.role_name != 1 && watchInitData.webinar.type != 1) {
+        // 如果不是主持人并且未开播，则不处理
         return;
       }
       if (typeof this.getDocViewRect === 'function') {
         const { width, height } = this.getDocViewRect();
         const { docId, id, type } = data;
         if (width > 0 && height > 0 && this.state.containerList.findIndex(item => item.cid == data.id) == -1) {
-          this.addNewDocumentOrBorad({ width, height, fileType: type, cid: id, docId });
+          console.log('======CREATE_CONTAINER 设置  docId= ');
+          this.addNewDocumentOrBorad({ width, height, fileType: type, cid: id });
         }
       }
       this.$emit('dispatch_doc_create_container', data);
@@ -281,7 +283,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 删除文档
     this.on(VHDocSDK.Event.DELETE_CONTAINER, data => {
-      console.log('doc]========删除容器========', data);
+      console.log('[doc]========删除容器========', data);
       if (data && data.id) {
         this.destroyContainer(data.id);
         const idx = this.state.containerList.findIndex((item) => item.cid == data.id);
@@ -294,7 +296,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 选中容器
     this.on(VHDocSDK.Event.SELECT_CONTAINER, data => {
-      console.log('[doc]========选中容器========');
+      console.log('[doc]========选中容器========', data);
       const { watchInitData } = useRoomBaseServer().state;
       if (watchInitData.join_info.role_name != 1 && watchInitData.webinar.type != 1) {
         return;
@@ -598,7 +600,7 @@ export default class StandardDocServer extends AbstractDocServer {
       noDispatch
     });
     await this.activeContainer(elId);
-    if (fileType === 'document') {
+    if (fileType === 'document' && docId) {
       const { status, status_jpeg, slideIndex, slidesTotal, converted_page, converted_page_jpeg } =
         await this.loadDoc({
           id: elId,
@@ -633,9 +635,6 @@ export default class StandardDocServer extends AbstractDocServer {
     docId = '',
     noDispatch = false
   }) {
-    if (fileType === 'document' && !docId) {
-      throw new Error('required docment param docId');
-    }
     if (!cid) {
       cid = this.createUUID(fileType);
     }
