@@ -132,10 +132,9 @@ class InteractiveServer extends BaseServer {
     // 1. 非观众需要初始化互动
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动
-    // 4. 非网页发起 ------->   优先级最高
+    // 4. 非网页发起 + 助理------->   优先级最高
     // 5. 开启视频轮巡需要初始化互动
-    console.warn('结论----', isThirdpartyInitiated);
-    if (isThirdpartyInitiated) {
+    if (watchInitData.join_info.role_name == 3 && isThirdpartyInitiated) {
       // 非网页发起时，不用初始化
       return false
     } else {
