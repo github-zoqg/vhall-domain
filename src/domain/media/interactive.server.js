@@ -12,6 +12,7 @@ import useMediaSettingServer from './mediaSetting.server';
 import useDesktopShareServer from './desktopShare.server';
 import useChatServer from '../chat/chat.server'
 import useInsertFileServer from './insertFile.server';
+import useVideoPollingServer from './videoPolling.server';
 class InteractiveServer extends BaseServer {
   constructor() {
     super();
@@ -594,12 +595,7 @@ class InteractiveServer extends BaseServer {
         VhallRTC[options.profile] ||
         VhallRTC[interactToolStatus.definition] ||
         VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
-      streamType: options.streamType || 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享，5为视频轮巡。
-      mixOption: {
-        // 选填，指定此本地流的音频和视频是否加入旁路混流。支持版本：2.3.2及以上。
-        mixVideo: options.streamType === 5 ? false : true, // 视频是否加入旁路混流
-        mixAudio: options.streamType === 5 ? false : true // 音频是否加入旁路混流
-      },
+      streamType: 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享，5为视频轮巡。
       attributes: JSON.stringify({
         roleName: roleName,
         accountId: watchInitData.join_info.third_party_user_id,
@@ -632,6 +628,57 @@ class InteractiveServer extends BaseServer {
 
     return this.createLocalStream(params).then(data => {
       this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
+      return data
+    }).catch(e => {
+      return Promise.reject(e)
+    })
+  }
+
+  /**
+   * 创建视频轮巡视频流
+   * @param {Object} options
+   * @return {Promise}
+   */
+  createVideoPollingStream(options = {}) {
+    const { watchInitData } = useRoomBaseServer().state;
+
+    const { interactToolStatus } = useRoomBaseServer().state;
+
+    const roleName = watchInitData.join_info.role_name
+
+    let defaultOptions = {
+      videoNode: options.videoNode, // 必填，传入本地视频显示容器ID
+      audio: true, // 选填，是否采集音频设备，默认为true
+      video: watchInitData.webinar.mode != 1, // 选填，是否采集视频设备，默认为true
+      audioDevice: options.audioDevice || sessionStorage.getItem('selectedAudioDeviceId'), // 选填，指定的音频设备id，默认为系统缺省
+      videoDevice:
+        watchInitData.webinar.mode != 1
+          ? options.videoDevice || sessionStorage.getItem('selectedVideoDeviceId')
+          : null, // 选填，指定的视频设备id，默认为系统缺省
+      profile:
+        VhallRTC[this.getVideoProfile()] ||
+        VhallRTC[options.profile] ||
+        VhallRTC[interactToolStatus.definition] ||
+        VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
+      streamType: 5, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享，5为视频轮巡。
+      mixOption: {
+        // 选填，指定此本地流的音频和视频是否加入旁路混流。支持版本：2.3.2及以上。
+        mixVideo: false, // 视频是否加入旁路混流
+        mixAudio: false  // 音频是否加入旁路混流
+      },
+      attributes: JSON.stringify({
+        roleName: roleName,
+        accountId: watchInitData.join_info.third_party_user_id,
+        nickname: watchInitData.join_info.nickname,
+        nickName: watchInitData.join_info.nickname, // app端字段不统一，过渡方案，待字段统一后可删除
+        role: roleName, // app端字段不统一，过渡方案，待字段统一后可删除
+      }) //选填，自定义信息，支持字符串类型
+    };
+
+    const params = merge.recursive({}, defaultOptions, options);
+
+    return this.createLocalStream(params).then(data => {
+      useVideoPollingServer().setlocalPollingInfo(data)
       return data
     }).catch(e => {
       return Promise.reject(e)

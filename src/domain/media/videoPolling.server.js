@@ -22,7 +22,9 @@ class VideoPollingServer extends BaseServer {
       currentVideoPollingInfo: {
         accountId: '', //开启视频轮询者的账户 ID
         roleName: 1 //开启视频轮询者的角色, 1 主持人， 3 助理； 未开启时为空
-      }
+      },
+      isPolling: false, // 当前观众是否在轮巡列表中
+      localPollinger: {} // 当前轮训人的流信息
     };
     VideoPollingServer.instance = this;
 
@@ -30,10 +32,15 @@ class VideoPollingServer extends BaseServer {
   }
 
   // 初始化视频轮询互动实例
-  async init() {
-    await this.getVideoRoundUsers()
-    await this.initInteractiveInstance()
-    this._addListeners()
+  async init(options = {}) {
+    console.log('options.isWatch', options.isWatch)
+    if (options.isWatch) {
+      await this.getVideoRoundUsers()
+    } else {
+      await this.getVideoRoundUsers()
+      await this.initInteractiveInstance()
+      this._addListeners()
+    }
   }
 
   // 初始化互动实例
@@ -47,6 +54,11 @@ class VideoPollingServer extends BaseServer {
       this.updateVideoPollingStreams(event)
       return event
     })
+  }
+
+  // 设置当前轮训人的流信息
+  setlocalPollingInfo(data) {
+    this.state.localPollinger = data
   }
 
   /**
@@ -85,9 +97,16 @@ class VideoPollingServer extends BaseServer {
         this.$emit('VIDEO_POLLING_START', msg);
       }
       if (msg.data.type === 'video_round_users') {
+        const { join_info } = useRoomBaseServer().state.watchInitData;
+        if (msg.data?.uids.includes(join_info.third_party_user_id)) {
+          this.state.isPolling = true
+        } else {
+          this.state.isPolling = false
+        }
         this.$emit('VIDEO_POLLING_UPDATE', msg); // 更新轮训用户列表
       }
       if (msg.data.type === 'video_round_end') {
+        this.state.isPolling = false
         this.$emit('VIDEO_POLLING_END', msg) // 轮训结束
       }
     });
@@ -142,10 +161,11 @@ class VideoPollingServer extends BaseServer {
       is_next: params.is_next || 0
     }
     return videoRound.getRoundUsers(resultParams).then(res => {
-      if (res.code === 200 && res.data) {
+      if (res.code === 200 && res.data.list) {
         this.state.pollingList = res.data.list.map(item => new PollingUser(item))
         this.state.isAutoPolling = Boolean(res.data.is_auto);
         this.state.downTime = res.data.interval;
+        this.state.isPolling = res.data.list.some(el => { return el.account_id == watchInitData?.join_info?.third_party_user_id })
       }
       return res
     })
