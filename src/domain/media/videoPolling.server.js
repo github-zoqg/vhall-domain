@@ -33,6 +33,7 @@ class VideoPollingServer extends BaseServer {
   async init() {
     await this.getVideoRoundUsers()
     await this.initInteractiveInstance()
+    this._addListeners()
   }
 
   // 初始化互动实例
