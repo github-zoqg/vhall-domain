@@ -89,6 +89,8 @@ class StandardGroupServer extends BaseServer {
       MAIN_ROOM_JOIN_CHANGE: 'MAIN_ROOM_JOIN_CHANGE',
       // 主持人/助理进入与退出小组
       GROUP_MANAGER_ENTER: 'GROUP_MANAGER_ENTER',
+      // 重新导入
+      GROUP_PRESET_IMPORT: 'GROUP_PRESET_IMPORT',
     };
 
     this.groupLeaderLeaveMap = new Map()
@@ -121,11 +123,26 @@ class StandardGroupServer extends BaseServer {
       this.state.groupInitData.join_role = interactToolStatus.join_role;
     }
   }
+  /**
+   * 分组讨论重新导入
+   * @returns 
+   */
+  async groupPresetImport() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const params = {
+      room_id: watchInitData.interact.room_id, // 主直播房间ID
+      switch_id: watchInitData.switch.switch_id, // 场次ID,
+      webinar_id: watchInitData.webinar.id
+    };
+    return await groupApi.groupPresetImport(params);
+  }
 
   async getGroupInfo() {
     const { watchInitData } = useRoomBaseServer().state;
     const params = {
-      room_id: watchInitData.interact.room_id // 主直播房间ID
+      room_id: watchInitData.interact.room_id, // 主直播房间ID
+      switch_id: watchInitData.switch.switch_id, // 场次ID,
+      webinar_id: watchInitData.webinar.id
     };
     return await groupApi.groupInit(params);
   }
@@ -824,13 +841,14 @@ class StandardGroupServer extends BaseServer {
    * @param {String} way 分组方式，1=随机分配|2=手动分配
    * @returns
    */
-  async groupCreate({ number, way = 1 }) {
+  async groupCreate({ number, way = 1, webinar_id }) {
     const { watchInitData } = useRoomBaseServer().state;
     const params = {
       room_id: watchInitData.interact.room_id, // 主直播房间ID
       switch_id: watchInitData.switch.switch_id, // 场次ID
       number: number + '', // 转字符串
-      way: way + '' // 转字符串
+      way: way + '', // 转字符串
+      webinar_id: webinar_id + ''//活动id
     };
     const result = await groupApi.groupCreate(params);
     return result;
