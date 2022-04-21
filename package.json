@@ -55,6 +55,7 @@
   },
   "dependencies": {
     "axios": "^0.25.0",
+    "core-js": "3",
     "merge": "^2.1.1"
   }
 }

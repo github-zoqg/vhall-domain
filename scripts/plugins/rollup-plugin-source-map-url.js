@@ -16,7 +16,6 @@ function sourceMapUrl(userOptions = {}) {
     name: "rollup-plugin-source-map-url",
     // hook
     writeBundle(options, bundle, isWrite) {
-      console.log('====writeBundle=====')
       if (options.sourcemap !== true) {
         // 必须开启了sourcemap，且不是inline模式
         return;
