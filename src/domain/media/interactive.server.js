@@ -74,19 +74,9 @@ class InteractiveServer extends BaseServer {
     console.log('%cVHALL-DOMAIN-互动初始化参数', 'color:blue', options);
 
     return new Promise((resolve, reject) => {
-      VhallPaasSDK.modules.VhallRTC.createInstance(
+      this.createInteractiveInstance(
         options,
         event => {
-
-
-          // 互动实例
-          this.interactiveInstance = event.vhallrtc;
-          // 是否有互动实例置为true
-          this.state.isInstanceInit = true
-          console.log('%c[interactive server] 初始化互动实例完成', 'color:#0000FF', event)
-
-          this._addListeners();
-
           let streams = event.currentStreams.filter(stream => {
             try {
               if (stream.attributes && typeof stream.attributes == 'string') {
@@ -121,6 +111,29 @@ class InteractiveServer extends BaseServer {
         }
       );
     });
+  }
+
+  /**
+   * 创建互动实例
+   * @param {Object} options 创建实例的参数
+   * @param {Function} success 创建成功的回调函数
+   * @param {Function} fail 创建失败的回调函数
+   * @returns
+   */
+  createInteractiveInstance(options, success, fail) {
+    return VhallPaasSDK.modules.VhallRTC.createInstance(
+      options,
+      event => {
+        // 互动实例
+        this.interactiveInstance = event.vhallrtc;
+        // 是否有互动实例置为true
+        this.state.isInstanceInit = true
+        console.log('%c[interactive server] 初始化互动实例完成', 'color:#0000FF', event)
+
+        this._addListeners();
+        success && success(event)
+      }),
+      error => { fail && fail(error) }
   }
 
 

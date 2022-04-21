@@ -44,16 +44,41 @@ class VideoPollingServer extends BaseServer {
   }
 
   // 初始化互动实例
-  initInteractiveInstance() {
+  initInteractiveInstance(customOptions) {
     const interactiveServer = useInteractiveServer()
-    const { join_info } = useRoomBaseServer().state.watchInitData
+    const { watchInitData } = useRoomBaseServer().state
 
-    return interactiveServer.init({
-      accountId: join_info.third_party_user_id + '_video_polling'
-    }).then(event => {
-      this.updateVideoPollingStreams(event)
-      return event
-    })
+    const defaultOptions = {
+      appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
+      inavId: watchInitData.interact.inav_id, // 互动房间ID，必填
+      roomId: watchInitData.interact.room_id, // 如需开启旁路，必填。
+      accountId: watchInitData.join_info.third_party_user_id + '_video_polling', // 第三方用户ID，必填
+      token: watchInitData.interact.paas_access_token, // access_token，必填
+      mode:
+        watchInitData.webinar.no_delay_webinar == 1
+          ? VhallRTC.MODE_LIVE
+          : VhallRTC.MODE_RTC, //应用场景模式，选填，可选值参考下文【应用场景类型】。支持版本：2.3.1及以上。
+      role: VhallRTC.ROLE_AUDIENCE, //用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
+      attributes: '', // String 类型
+      autoStartBroadcast: false, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
+      otherOption: watchInitData.report_data
+    };
+    const options = merge.recursive({}, defaultOptions, customOptions);
+
+    console.log('%cVHALL-DOMAIN-互动初始化参数', 'color:blue', options);
+
+    return new Promise((resolve, reject) => {
+      interactiveServer.createInteractiveInstance(
+        options,
+        event => {
+          this.updateVideoPollingStreams(event)
+          resolve(event);
+        },
+        error => {
+          reject(error);
+        }
+      );
+    });
   }
 
   // 设置当前轮训人的流信息
