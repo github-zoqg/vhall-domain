@@ -63,7 +63,8 @@ class RoomBaseServer extends BaseServer {
         lang: 'zh',
         langList: []
       },
-      customRoleName: {}
+      customRoleName: {},
+      isThirdpartyInitiated: false // 是否第三方发起
     };
     RoomBaseServer.instance = this;
     return this;
@@ -123,6 +124,7 @@ class RoomBaseServer extends BaseServer {
               this.state.watchInitData.webinar.no_delay_webinar = 0
             }
           }
+          this.state.isThirdpartyInitiated = ![0, 1, '0', '1'].includes(res.data.switch.start_type)
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
           sessionStorage.setItem('visitorId', res.data.visitor_id);
@@ -153,6 +155,10 @@ class RoomBaseServer extends BaseServer {
               start_type: msg.data.switch_type
             })
           }
+          this.state.isThirdStream = this.state.watchInitData.switch.start_type === 4
+        }
+        if (msg.data.switch_type != 1 && this.state.watchInitData.join_info.role_name == 3) {
+          this.state.isThirdpartyInitiated = true
         }
 
         // 消息中未提供开播时间字段 start_time
