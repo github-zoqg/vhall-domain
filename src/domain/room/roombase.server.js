@@ -63,7 +63,8 @@ class RoomBaseServer extends BaseServer {
         lang: 'zh',
         langList: []
       },
-      customRoleName: {}
+      customRoleName: {},
+      isThirdpartyInitiated: false // 是否第三方发起
     };
     RoomBaseServer.instance = this;
     return this;
@@ -95,12 +96,17 @@ class RoomBaseServer extends BaseServer {
     return new Promise((resolve, reject) => {
       meeting[liveType.get(options.clientType)](options).then(res => {
         if (res.code === 200) {
-          // debugger
           this.state.watchInitData = res.data;
+
+          // 设置转发初始值(初始化数据实体)
+          if (this.state.watchInitData?.rebroadcast) {
+            this.setRebroadcastInfo(this.state.watchInitData.rebroadcast)
+          }
+
           // 设置发起端权限
           if (['send', 'record', 'clientEmbed'].includes(options.clientType)) {
             this.state.configList = res.data.permissionKey
-            // 发起端，将多语言缓存清除
+            // 发起端结束直播时，将多语言缓存清除 主要是为了防止测试 在测过程中浏览器缓存不清空，一会登录观看端，一会登录发起端，缓存会翻译发起端，使发起端变成英文
             localStorage.removeItem('lang')
             // 判断是不是第三方推流
             if (res.data.switch && res.data.switch.start_type == 4) {
@@ -118,6 +124,7 @@ class RoomBaseServer extends BaseServer {
               this.state.watchInitData.webinar.no_delay_webinar = 0
             }
           }
+          this.state.isThirdpartyInitiated = ![0, 1, '0', '1'].includes(res.data.switch.start_type)
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
           sessionStorage.setItem('visitorId', res.data.visitor_id);
@@ -142,6 +149,16 @@ class RoomBaseServer extends BaseServer {
           if (this.state.isThirdStream) {
             this.$emit('LIVE_START')
           }
+          // 初始化播放器
+          if (msg.data.switch_type != 1 && this.state.watchInitData.join_info.role_name == 3 && this.state.watchInitData.webinar.no_delay_webinar != 1) {
+            this.$emit('LIVE_BROADCAST_START', {
+              start_type: msg.data.switch_type
+            })
+          }
+          this.state.isThirdStream = this.state.watchInitData.switch.start_type === 4
+        }
+        if (msg.data.switch_type != 1 && this.state.watchInitData.join_info.role_name == 3) {
+          this.state.isThirdpartyInitiated = true
         }
 
         // 消息中未提供开播时间字段 start_time
@@ -150,11 +167,13 @@ class RoomBaseServer extends BaseServer {
 
       } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
         this.state.watchInitData.webinar.type = 3;
-        // 结束直播时，将多语言缓存清除
-        localStorage.removeItem('lang')
+        // 把演示人、主讲人、主屏人都设置成主持人
+        this.state.interactToolStatus.presentation_screen = this.state.watchInitData.webinar.userinfo.user_id;
+        this.state.interactToolStatus.doc_permission = this.state.watchInitData.webinar.userinfo.user_id;
+        this.state.interactToolStatus.main_screen = this.state.watchInitData.webinar.userinfo.user_id;
+
         // 结束直播时，将第三方推流标识关闭
         if (this.state.isThirdStream) {
-          this.$emit('LIVE_OVER')
           this.state.isThirdStream = false;
         }
 
@@ -230,9 +249,19 @@ class RoomBaseServer extends BaseServer {
 
   // 设置转播信息
   setRebroadcastInfo(data) {
-    this.state.watchInitData.rebroadcast = {
+    const obj = {
       ...this.state.watchInitData.rebroadcast,
-      ...data
+      ...data,
+    }
+
+    // 衍生值
+    const byProductData = {
+      isRebroadcasting: Boolean(this.state.watchInitData.rebroadcast.id)
+    }
+
+    this.state.watchInitData.rebroadcast = {
+      ...obj,
+      ...byProductData
     };
   }
 

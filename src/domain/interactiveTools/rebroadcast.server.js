@@ -70,7 +70,6 @@ class RebroadCastServer extends BaseServer {
         msg.context = JSON.parse(msg.context);
       }
 
-      console.log('domain rebroadcastServer websocket msg:', msg);
       const { type = '' } = msg.data || {};
 
       switch (type) {
@@ -90,6 +89,11 @@ class RebroadCastServer extends BaseServer {
           });
           this.$emit('live_broadcast_stop');
           break;
+        case 'live_over':
+          roomBaseServer.setRebroadcastInfo({
+            id: '',
+            channel_id: ''
+          });
         default:
           break;
       }

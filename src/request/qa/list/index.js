@@ -7,7 +7,7 @@ function initChatMess(params) {
   const url = env.qa === 'v3' ? '/v3/webinars/live/get-connect' : '';
   return request({
     url: url,
-    method: 'POST',
+    method: 'GET',
     params: params
   });
 }

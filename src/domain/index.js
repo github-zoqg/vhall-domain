@@ -55,6 +55,7 @@ import useSubjectServer from '@/domain/brand/subject.server';
 import useRedPacketServer from '@/domain/interactiveTools/redPacketServer.js';
 
 import useSplitScreenServer from '@/domain/media/splitScreen.server';
+import useVideoPollingServer from '@/domain/media/videoPolling.server';
 
 import useHomepageServer from '@/domain/brand/homepage.server';
 
@@ -165,6 +166,7 @@ export {
   useRedPacketServer,
   useKeyLoginServer,
   useSplitScreenServer,
+  useVideoPollingServer,
   useHomepageServer,
   useRecommendServer,
   useZIndexServer

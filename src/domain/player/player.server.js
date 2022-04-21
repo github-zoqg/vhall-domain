@@ -2,6 +2,7 @@ import VhallPaasSDK from '@/sdk/index.js';
 import BaseServer from '@/domain/common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useMsgServer from '@/domain/common/msg.server.js';
+import { textToEmojiText } from '@/utils/emoji';
 import { player } from '../../request/index';
 import { merge } from '../../utils';
 class PlayerServer extends BaseServer {
@@ -201,9 +202,12 @@ class PlayerServer extends BaseServer {
     const roomBaseServer = useRoomBaseServer()
     // 弹幕
     msgServer.$onMsg('CHAT', msg => {
-      if (!msg.data.barrageTxt.includes('<img')) {
-        if (this.state.isBarrage) {
-          this.addBarrage(msg.data.barrageTxt)
+      // msg.data.target_id: 不能是私聊，只有聊天输入的信息才是弹幕
+      if (this.state.isBarrage && !msg.data.target_id) {
+        // 表情转化为图片，非文字
+        if (msg.data.type == 'text') {
+          //表情处理
+          this.addBarrage(textToEmojiText(msg.data.barrageTxt))
         }
       }
     });
@@ -325,6 +329,15 @@ class PlayerServer extends BaseServer {
         defaultDefinition: ''
       }
     };
+    if (!(watchInitData.rebroadcast && watchInitData.rebroadcast.id)) {
+      defaultOptions.otherOption = {
+        vid: watchInitData.report_data.vid, // hostId
+        vfid: watchInitData.report_data.vfid,
+        guid: watchInitData.report_data.guid,
+        biz_id: watchInitData.webinar.id,
+        report_extra: watchInitData.report_data.report_extra
+      }
+    }
     return defaultOptions;
   }
 }
