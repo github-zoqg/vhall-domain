@@ -661,9 +661,9 @@ class InteractiveServer extends BaseServer {
 
     let defaultOptions = {
       videoNode: options.videoNode, // 必填，传入本地视频显示容器ID
-      audio: true, // 选填，是否采集音频设备，默认为true
+      audio: false, // 选填，是否采集音频设备，默认为true
       video: watchInitData.webinar.mode != 1, // 选填，是否采集视频设备，默认为true
-      audioDevice: options.audioDevice || sessionStorage.getItem('selectedAudioDeviceId'), // 选填，指定的音频设备id，默认为系统缺省
+      // audioDevice: options.audioDevice || sessionStorage.getItem('selectedAudioDeviceId'), // 选填，指定的音频设备id，默认为系统缺省
       videoDevice:
         watchInitData.webinar.mode != 1
           ? options.videoDevice || sessionStorage.getItem('selectedVideoDeviceId')
