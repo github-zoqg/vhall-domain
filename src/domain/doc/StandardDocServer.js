@@ -726,15 +726,19 @@ export default class StandardDocServer extends AbstractDocServer {
   activeContainer(cid) {
     console.log('[doc] activeContainer cid:', cid);
     this.selectContainer(cid, !this.hasDocPermission());
-    this.state.currentCid = cid;
-
-    const activeItem = this.state.containerList.find(item => item.cid == cid);
     const type = cid.split('-')[0];
     if (type === 'document') {
       this.state.docCid = cid;
     } else {
       this.state.boardCid = cid;
+      if (!this.state.currentCid) {
+        // 解决主持人开了白板进行插播时，嘉宾、助理端刷新后小屏白板展示不全问题
+        setTimeout(() => {
+          this.resize();
+        })
+      }
     }
+    this.state.currentCid = cid;
   }
 
   /**
