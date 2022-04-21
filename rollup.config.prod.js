@@ -15,7 +15,7 @@ import sourceMapUrl from './scripts/plugins/rollup-plugin-source-map-url';
 import copy from 'rollup-plugin-copy'
 const pkg = require('./package.json');
 
-const inputMapList = [
+export default [
   {
     input: 'src/index.js',
     output: [
@@ -24,46 +24,48 @@ const inputMapList = [
         format: 'umd',
         name: 'middleDomain',
         sourcemap: true,
-        globals: {}
-      }
-    ]
-  }
-];
-const pluginsConfig = [
-  clear({
-    targets: ['dist']
-  }),
-  babel({
-    exclude: 'node_modules/**'
-  }),
-  nodeResolve(),
-  commonjs(),
-  uglify(),
-  alias({
-    entries: [{ find: '@', replacement: path.resolve('./src') }]
-  }),
-  replace({
-    preventAssignment: true,
-    __VERSION__: pkg.version
-  }),
-  sourceMapUrl({
-    publicPath: 'https://t-vhallsaas-static.oss-cn-beijing.aliyuncs.com/common-static/sourcemap/middle-domain/1.3.15/'
-  }),
-  copy({
-    targets: [
-      {
-        src: `./dist/${pkg.version}/middle-domain.js`,
-        dest: `./dist/cloud/${pkg.version}/`
-      },
-      {
-        src: `./dist/${pkg.version}/middle-domain.js.map`,
-        dest: `./dist/sourcemap/${pkg.version}/`
+        // rollup通过`external` + `output.globals`来标记外部依赖
+        globals: {
+          moment: 'moment'
+        }
       }
     ],
-    hook: 'writeBundle',
-    verbose: true
-  })
+    // 第三方库通过外链引入
+    external: ['moment'],
+    // 插件
+    plugins: [
+      clear({
+        targets: ['dist']
+      }),
+      babel({
+        exclude: 'node_modules/**'
+      }),
+      nodeResolve(),
+      commonjs(),
+      uglify(),
+      alias({
+        entries: [{ find: '@', replacement: path.resolve('./src') }]
+      }),
+      replace({
+        preventAssignment: true,
+        __VERSION__: pkg.version
+      }),
+      sourceMapUrl({
+        publicPath: 'https://t-vhallsaas-static.oss-cn-beijing.aliyuncs.com/common-static/sourcemap/middle-domain/1.3.15/'
+      }),
+      copy({
+        targets: [
+          {
+            src: `./dist/${pkg.version}/middle-domain.js`,
+            dest: `./dist/cloud/${pkg.version}/`
+          },
+          {
+            src: `./dist/${pkg.version}/middle-domain.js.map`,
+            dest: `./dist/sourcemap/${pkg.version}/`
+          }
+        ],
+        hook: 'writeBundle',
+        verbose: true
+      })]
+  }
 ];
-
-const buildConfig = inputMapList.map(item => Object.assign({}, item, { plugins: pluginsConfig }));
-export default buildConfig;
