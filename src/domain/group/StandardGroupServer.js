@@ -44,6 +44,8 @@ class StandardGroupServer extends BaseServer {
       },
       // 分组讨论操作面板是否显示
       panelShow: false,
+      //是否白名单预分组
+      presetWay: false,
       // 待分配人员列表
       waitingUserList: [],
       // 已分组人员列表
@@ -866,6 +868,7 @@ class StandardGroupServer extends BaseServer {
     const result = await groupApi.groupWaitList(params);
     if (result && result.code === 200) {
       this.state.waitingUserList = result.data.list;
+      this.state.presetWay = result.data.preset_way
     }
     return result;
   }
