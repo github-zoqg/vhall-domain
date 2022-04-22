@@ -1,5 +1,7 @@
 const fs = require('fs')
 const path = require('path')
+const url = require('url');
+
 /**
  * 修改js文件中的sourceMappingURL的路径
  * @param {Object} userOptions 
@@ -25,9 +27,17 @@ function sourceMapUrl(userOptions = {}) {
       const mapFilePath = path.join(__dirname, options.file + '.map');
       if (fs.existsSync(jsFilePath) && fs.existsSync(mapFilePath)) {
         const sourcemapFile = path.basename(mapFilePath);
-        const mapPath = path.join(userOptions.publicPath, sourcemapFile);
+        let mapUrl = '';
+        if (/^(http\:|https\:|\/\/)[\S\s]*/.test(userOptions.publicPath.toUpperCase())) {
+          // URL处理
+          mapUrl = userOptions.publicPath.endsWith('/') ? `${userOptions.publicPath}${sourcemapFile}`
+            : `${userOptions.publicPath}/${sourcemapFile}`;
+        } else {
+          // 普通路径处理
+          mapUrl = path.join(userOptions.publicPath, sourcemapFile);
+        }
         let content = fs.readFileSync(jsFilePath, 'utf-8');
-        content = content.replace(/sourceMappingURL=.*\.map/, `sourceMappingURL=${mapPath}`)
+        content = content.replace(/sourceMappingURL=.*\.map/, `sourceMappingURL=${mapUrl}`)
         fs.writeFileSync(jsFilePath, content, 'utf-8');
       }
     }

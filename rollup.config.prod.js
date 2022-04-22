@@ -32,6 +32,14 @@ export default [
     ],
     // 第三方库通过外链引入
     external: ['moment'],
+    // 警告处理
+    onwarn: function (warning, rollupWarn) {
+      if (warning.code === 'CIRCULAR_DEPENDENCY') {
+        // 不显示循环依赖的警告
+        return;
+      }
+      rollupWarn(warning)
+    },
     // 插件
     plugins: [
       clear({
@@ -51,7 +59,7 @@ export default [
         __VERSION__: pkg.version
       }),
       sourceMapUrl({
-        publicPath: 'https://t-vhallsaas-static.oss-cn-beijing.aliyuncs.com/common-static/sourcemap/middle-domain/1.3.15/'
+        publicPath: `//t-vhallsaas-static.oss-cn-beijing.aliyuncs.com/common-static/sourcemap/middle-domain/${pkg.version}`
       }),
       copy({
         targets: [
