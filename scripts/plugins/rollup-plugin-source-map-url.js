@@ -1,6 +1,10 @@
-const fs = require('fs')
-const path = require('path')
-const url = require('url');
+/**
+ * Created by yangxy on 2022/04/21.
+ * 自定义rollup插件
+ * 插件的作用是：在编译完成后修改js文件中的sourceMappingURL的路径
+ */
+const fs = require('fs');
+const path = require('path');
 
 /**
  * 修改js文件中的sourceMappingURL的路径
