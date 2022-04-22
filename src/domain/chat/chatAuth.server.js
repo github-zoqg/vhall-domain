@@ -102,7 +102,7 @@ class ChatAuthServer extends BaseServer {
           this.state.mutedList = this.state.mutedList.filter(item => {
             return item.account_id !== temp.data.target_id;
           });
-          this.state.mutedNum--;
+          this.state.mutedNum = this.state.mutedList.length;
           break;
         default:
           break;
@@ -121,13 +121,10 @@ class ChatAuthServer extends BaseServer {
           this.operateUser(temp.data.target_id, type);
           break;
         case 'room_kickout_cancel':
-          if (type === 'room_kickout_cancel') {
-            this.state.kickedList = this.state.kickedList.filter(item => {
-              return item.account_id !== temp.data.target_id;
-            });
-            this.state.kickedNum--;
-            return;
-          }
+          this.state.kickedList = this.state.kickedList.filter(item => {
+            return item.account_id !== temp.data.target_id;
+          });
+          this.state.kickedNum = this.state.kickedList.length;
           break;
       }
 
