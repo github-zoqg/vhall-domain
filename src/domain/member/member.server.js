@@ -48,6 +48,8 @@ class MemberServer extends BaseServer {
       handsUpTimerMap: {},
       //记录一下上一个成功下麦消息的人员id
       lastTargetId: '',
+      // 是否是在视频轮询中
+      isVideoPolling: false
     };
 
     // this.listenEvents();
@@ -878,6 +880,7 @@ class MemberServer extends BaseServer {
     let assistant = []; // 助理
     let onMicAudience = []; // 上麦观众
     let downMicAudience = []; // 普通观众
+    let pollingAudience = []; // 正在视频轮询的观众
     const leader = []; // 组长
     list.forEach(item => {
       const role = Number(item.role_name)
@@ -889,7 +892,12 @@ class MemberServer extends BaseServer {
 
         // 观众
         case 2:
-          item.is_speak ? onMicAudience.push(item) : downMicAudience.push(item);
+          // 如果是在视频轮询的观众
+          if (this.state.isVideoPolling && item.isPolling) {
+            pollingAudience.push(item);
+          } else {
+            item.is_speak ? onMicAudience.push(item) : downMicAudience.push(item);
+          }
           break;
         // 组长
         case 20:
@@ -913,7 +921,14 @@ class MemberServer extends BaseServer {
     if (downMicAudience.length > 200) {
       downMicAudience = downMicAudience.slice(-200);
     }
-    return host.concat(onMicGuest, downMicGuest, assistant, leader, onMicAudience, downMicAudience);
+    if (!this.state.isVideoPolling) {
+      return host.concat(onMicGuest, downMicGuest, assistant, leader, onMicAudience, downMicAudience);
+    } else {
+      let resultAudience = pollingAudience.concat(onMicAudience, downMicAudience)
+      // 过滤掉手机端用户
+      resultAudience = resultAudience.filter(item => item.device_type != 1)
+      return resultAudience
+    }
   }
 
 }
