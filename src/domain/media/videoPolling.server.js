@@ -121,6 +121,10 @@ class VideoPollingServer extends BaseServer {
       if (msg.data.type === 'video_round_start') {
         this.$emit('VIDEO_POLLING_START', msg);
       }
+      // 直播结束，视频轮巡墙关闭
+      if (msg.data.type === 'live_over') {
+        this.$emit('VIDEO_POLLING_OVER', msg);
+      }
       if (msg.data.type === 'video_round_users') {
         const { join_info } = useRoomBaseServer().state.watchInitData;
         if (msg.data?.uids.includes(join_info.third_party_user_id)) {
