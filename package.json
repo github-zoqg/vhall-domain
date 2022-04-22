@@ -7,10 +7,10 @@
   "scripts": {
     "dev": "rollup -c --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "node ./scripts/build.js",
+    "build:test": "node ./scripts/build.js --mode=test",
+    "build:prod": "node ./scripts/build.js --mode=production",
     "build:rollup": "rollup -c rollup.config.prod.js",
-    "update:sourcemap": "node ./scripts/replace-source-map-url.js",
-    "update:version": "node ./scripts/build-version-update.js",
+    "update:version": "node ./scripts/update-version.js serve",
     "format": "prettier --write './src/**/*.(vue|js|css|less|jsx)'"
   },
   "author": "",
@@ -35,7 +35,9 @@
     "prettier": "^2.5.1",
     "rollup": "^2.58.0",
     "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-clear": "^2.0.7",
     "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-hot": "^0.1.1",
     "rollup-plugin-serve": "^1.1.0",
     "rollup-plugin-uglify": "^6.0.4",
@@ -53,6 +55,7 @@
   },
   "dependencies": {
     "axios": "^0.25.0",
+    "core-js": "3",
     "merge": "^2.1.1"
   }
 }
