@@ -12,6 +12,7 @@ import useMediaSettingServer from './mediaSetting.server';
 import useDesktopShareServer from './desktopShare.server';
 import useChatServer from '../chat/chat.server'
 import useInsertFileServer from './insertFile.server';
+import useVideoPollingServer from './videoPolling.server';
 class InteractiveServer extends BaseServer {
   constructor() {
     super();
@@ -57,7 +58,7 @@ class InteractiveServer extends BaseServer {
   async init(customOptions = {}) {
 
     // 是否需要初始化互动
-    if (!this._isNeedInteractive()) return Promise.resolve();
+    if (!this._isNeedInteractive(customOptions)) return Promise.resolve();
 
     // 这里判断上麦角色以及是否自动上麦
     const defaultOptions = await this._getDefaultOptions();
@@ -73,19 +74,9 @@ class InteractiveServer extends BaseServer {
     console.log('%cVHALL-DOMAIN-互动初始化参数', 'color:blue', options);
 
     return new Promise((resolve, reject) => {
-      VhallPaasSDK.modules.VhallRTC.createInstance(
+      this.createInteractiveInstance(
         options,
         event => {
-
-
-          // 互动实例
-          this.interactiveInstance = event.vhallrtc;
-          // 是否有互动实例置为true
-          this.state.isInstanceInit = true
-          console.log('%c[interactive server] 初始化互动实例完成', 'color:#0000FF', event)
-
-          this._addListeners();
-
           let streams = event.currentStreams.filter(stream => {
             try {
               if (stream.attributes && typeof stream.attributes == 'string') {
@@ -122,17 +113,41 @@ class InteractiveServer extends BaseServer {
     });
   }
 
+  /**
+   * 创建互动实例
+   * @param {Object} options 创建实例的参数
+   * @param {Function} success 创建成功的回调函数
+   * @param {Function} fail 创建失败的回调函数
+   * @returns
+   */
+  createInteractiveInstance(options, success, fail) {
+    return VhallPaasSDK.modules.VhallRTC.createInstance(
+      options,
+      event => {
+        // 互动实例
+        this.interactiveInstance = event.vhallrtc;
+        // 是否有互动实例置为true
+        this.state.isInstanceInit = true
+        console.log('%c[interactive server] 初始化互动实例完成', 'color:#0000FF', event)
+
+        this._addListeners();
+        success && success(event)
+      }),
+      error => { fail && fail(error) }
+  }
+
 
   /**
    * 判断是否需要初始化互动实例
    */
-  _isNeedInteractive() {
+  _isNeedInteractive(options) {
     const { watchInitData, isThirdpartyInitiated } = useRoomBaseServer().state;
     const { isSpeakOn } = useMicServer().state;
-    // 1. 非观众需要初始化互动 
+    // 1. 非观众需要初始化互动
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动
-    // 4. 非网页发起 + 助理------->   优先级最高    
+    // 4. 非网页发起 + 助理------->   优先级最高
+    // 5. 开启视频轮巡需要初始化互动
     if (watchInitData.join_info.role_name == 3 && isThirdpartyInitiated) {
       // 非网页发起时，不用初始化
       return false
@@ -140,7 +155,7 @@ class InteractiveServer extends BaseServer {
       return (
         watchInitData.join_info.role_name != 2 ||
         watchInitData.webinar.no_delay_webinar == 1 ||
-        isSpeakOn
+        isSpeakOn || options?.videoPolling
       );
     }
   }
@@ -593,7 +608,7 @@ class InteractiveServer extends BaseServer {
         VhallRTC[options.profile] ||
         VhallRTC[interactToolStatus.definition] ||
         VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
-      streamType: 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。
+      streamType: 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享，5为视频轮巡。
       attributes: JSON.stringify({
         roleName: roleName,
         accountId: watchInitData.join_info.third_party_user_id,
@@ -626,6 +641,57 @@ class InteractiveServer extends BaseServer {
 
     return this.createLocalStream(params).then(data => {
       this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
+      return data
+    }).catch(e => {
+      return Promise.reject(e)
+    })
+  }
+
+  /**
+   * 创建视频轮巡视频流
+   * @param {Object} options
+   * @return {Promise}
+   */
+  createVideoPollingStream(options = {}) {
+    const { watchInitData } = useRoomBaseServer().state;
+
+    const { interactToolStatus } = useRoomBaseServer().state;
+
+    const roleName = watchInitData.join_info.role_name
+
+    let defaultOptions = {
+      videoNode: options.videoNode, // 必填，传入本地视频显示容器ID
+      audio: false, // 选填，是否采集音频设备，默认为true
+      video: watchInitData.webinar.mode != 1, // 选填，是否采集视频设备，默认为true
+      // audioDevice: options.audioDevice || sessionStorage.getItem('selectedAudioDeviceId'), // 选填，指定的音频设备id，默认为系统缺省
+      videoDevice:
+        watchInitData.webinar.mode != 1
+          ? options.videoDevice || sessionStorage.getItem('selectedVideoDeviceId')
+          : null, // 选填，指定的视频设备id，默认为系统缺省
+      profile:
+        VhallRTC[this.getVideoProfile()] ||
+        VhallRTC[options.profile] ||
+        VhallRTC[interactToolStatus.definition] ||
+        VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
+      streamType: 5, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享，5为视频轮巡。
+      mixOption: {
+        // 选填，指定此本地流的音频和视频是否加入旁路混流。支持版本：2.3.2及以上。
+        mixVideo: false, // 视频是否加入旁路混流
+        mixAudio: false  // 音频是否加入旁路混流
+      },
+      attributes: JSON.stringify({
+        roleName: roleName,
+        accountId: watchInitData.join_info.third_party_user_id,
+        nickname: watchInitData.join_info.nickname,
+        nickName: watchInitData.join_info.nickname, // app端字段不统一，过渡方案，待字段统一后可删除
+        role: roleName, // app端字段不统一，过渡方案，待字段统一后可删除
+      }) //选填，自定义信息，支持字符串类型
+    };
+
+    const params = merge.recursive({}, defaultOptions, options);
+
+    return this.createLocalStream(params).then(data => {
+      useVideoPollingServer().setlocalPollingInfo(data)
       return data
     }).catch(e => {
       return Promise.reject(e)
