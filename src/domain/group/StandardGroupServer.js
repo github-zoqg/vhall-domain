@@ -868,7 +868,6 @@ class StandardGroupServer extends BaseServer {
     const result = await groupApi.groupWaitList(params);
     if (result && result.code === 200) {
       this.state.waitingUserList = result.data.list;
-      this.state.presetWay = result.data.preset_way
     }
     return result;
   }
@@ -886,6 +885,7 @@ class StandardGroupServer extends BaseServer {
     const result = await groupApi.groupListing(params);
     if (result && result.code === 200) {
       this.state.groupedUserList = result.data.list;
+      this.state.presetWay = result.data.preset_way
     }
     return result;
   }
