@@ -61,7 +61,7 @@ class InteractiveServer extends BaseServer {
     if (!this._isNeedInteractive(customOptions)) return Promise.resolve();
 
     // 这里判断上麦角色以及是否自动上麦
-    const defaultOptions = await this._getDefaultOptions();
+    const defaultOptions = await this._getDefaultOptions(customOptions);
     const options = merge.recursive({}, defaultOptions, customOptions);
 
     // 根据roomId和role判断是否需要销毁实例重新初始化
@@ -163,7 +163,7 @@ class InteractiveServer extends BaseServer {
   /**
    * 获取默认初始化参数
    */
-  async _getDefaultOptions() {
+  async _getDefaultOptions(options) {
     const { watchInitData } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
 
@@ -177,7 +177,7 @@ class InteractiveServer extends BaseServer {
       : watchInitData.interact.paas_access_token;
 
     // 获取互动实例角色
-    const role = await this._getInteractiveRole();
+    const role = await this._getInteractiveRole(options);
 
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
@@ -217,14 +217,14 @@ class InteractiveServer extends BaseServer {
    * 获取初始化互动sdk实例的角色
    * @returns {String}}
    */
-  async _getInteractiveRole() {
+  async _getInteractiveRole(opts) {
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state
 
 
     // 如果在麦上，设为 HOST
-    if (useMicServer().getSpeakerStatus()) {
-      if (useMediaCheckServer().state.deviceInfo.device_status === 2) {
+    if (useMicServer().getSpeakerStatus() || opts.videoPolling) {
+      if (useMediaCheckServer().state.deviceInfo.device_status === 2 && !opts.videoPolling) {
         // 若设备为2   不允许则直接下麦
         await useMicServer().speakOff()
       }
