@@ -2,6 +2,7 @@ import useInteractiveServer from './interactive.server';
 import BaseServer from '../common/base.server';
 import useMicServer from './mic.server';
 import useDesktopShareServer from './desktopShare.server';
+import useRoomBaseServer from '../room/roombase.server';
 class SplitScreenServer extends BaseServer {
   constructor() {
     super();
@@ -236,6 +237,10 @@ class SplitScreenServer extends BaseServer {
     // 监听上麦流列表信息更新事件,通知主页面上麦流列表信息更新(开启分屏之后,主页面将不能自主更新上麦流列表信息)
     micServer.$on('INTERACTIVE_REMOTE_STREAMS_UPDATE', speakerList => {
       console.log('-----splitScreen--------远端流列表更新----', speakerList)
+      // 如果直播已结束，不更新上麦列表
+      if (useRoomBaseServer().state.watchInitData.webinar.type == 3) {
+        return
+      }
       const speakerListCopy = [...speakerList]
       // 由于 stream 对象太大了,postMessage发不过去,而且这个东西没用,所以删掉
       speakerListCopy.forEach(item => {
