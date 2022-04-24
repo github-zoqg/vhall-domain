@@ -32,17 +32,17 @@ cLog(info(`│${text2.padBoth(36)}│`));
 cLog(info('└────────────────────────────────────┘'));
 
 // 版本限制，是否需要待讨论？暂时取消
-// if (args.env === 'production') {
-//   if (!/^\d+(\.\d+){2}$/.test(currentVersion)) {
-//     cLog(chalk.redBright(`production 环境的版本号必须是 x.y.z 形式，请修改后再试\n`));
-//     process.exit(0);
-//   }
-// } else if (args.env === 'test') {
-//   if (!/^\d+(\.\d+){2}(\-)\w+$/.test(currentVersion)) {
-//     cLog(chalk.redBright(`test 环境的版本号必须是 x.y.z-w 形式，请修改后再试\n`));
-//     process.exit(0);
-//   }
-// }
+if (args.env === 'production') {
+  if (!/^\d+(\.\d+){2}$/.test(currentVersion)) {
+    cLog(chalk.redBright(`production 环境的版本号必须是 x.y.z 形式，请修改后再试\n`));
+    process.exit(0);
+  }
+} else if (args.env === 'test') {
+  if (!/^\d+(\.\d+){2}(\-)\w+$/.test(currentVersion)) {
+    cLog(chalk.redBright(`test 环境的版本号必须是 x.y.z-w 形式，请修改后再试\n`));
+    process.exit(0);
+  }
+}
 
 // 开始构建
 cLog(chalk.green.bold('\nstart build...'))
