@@ -32,7 +32,7 @@ function sourceMapUrl(userOptions = {}) {
       if (fs.existsSync(jsFilePath) && fs.existsSync(mapFilePath)) {
         const sourcemapFile = path.basename(mapFilePath);
         let mapUrl = '';
-        if (/^(http\:|https\:|\/\/)[\S\s]*/.test(userOptions.publicPath.toUpperCase())) {
+        if (/^(http\:|https\:|\/\/)[\S\s]*/.test(userOptions.publicPath.toLowerCase())) {
           // URL处理
           mapUrl = userOptions.publicPath.endsWith('/') ? `${userOptions.publicPath}${sourcemapFile}`
             : `${userOptions.publicPath}/${sourcemapFile}`;

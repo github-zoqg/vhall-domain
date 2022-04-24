@@ -61,7 +61,7 @@ export function getBuildConfig(env) {
       }),
       replace({
         preventAssignment: true,
-        __VERSION__: version
+        __VERSION__: JSON.stringify(version),
       }),
       sourceMapUrl({
         publicPath: `https://t-vhallsaas-static.oss-cn-beijing.aliyuncs.com/common-static/sourcemap/${env}/middle-domain/${version}`
