@@ -3,6 +3,7 @@
  * 项目编译脚本
  * 区分测试环境和正式环境，接入jenkins使用
  */
+const path = require('path');
 const chalk = require('chalk');
 const { execSync } = require('child_process');
 const pkg = require('../package.json');
@@ -78,10 +79,10 @@ cLog(info('└──────────────────────
 
   if (args.env === 'production') {
     // 生产环境 
-    execSync(`rollup -c rollup.config.prod.js`)
+    execSync(`node_modules${path.sep}.bin${path.sep}rollup -c rollup.config.prod.js`)
   } else if (args.env === 'test') {
     // 测试环境
-    execSync(`rollup -c rollup.config.test.js`)
+    execSync(`node_modules${path.sep}.bin${path.sep}rollup -c rollup.config.test.js`)
   }
   cLog(chalk.green.bold(`\nbuild domain version ${currentVersion} successfully\n`));
 })();
