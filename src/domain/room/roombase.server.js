@@ -167,6 +167,7 @@ class RoomBaseServer extends BaseServer {
         // 结束直播时，将第三方推流标识关闭
         if (this.state.isThirdStream) {
           this.state.isThirdStream = false;
+          this.state.interactToolStatus.start_type = 1;
         }
 
       }
