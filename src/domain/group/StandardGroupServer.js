@@ -218,6 +218,11 @@ class StandardGroupServer extends BaseServer {
 
     useMsgServer().$onMsg('JOIN', msg => {
       // 加入房间
+      const { watchInitData } = useRoomBaseServer().state;
+      //非分组直播不处理
+      if (watchInitData?.webinar?.mode != 6) {
+        return
+      }
       console.log('[group] domain 加入房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
         if (msg.context.groupInitData && msg.context.groupInitData.group_id) {
@@ -239,6 +244,10 @@ class StandardGroupServer extends BaseServer {
         } else {
           if (msg.context.role_name != 2) {
             return;
+          }
+          const obj = this.state.waitingUserList.find(item => item.account_id == msg.sender_id);
+          if (obj) {
+            return
           }
           this.state.waitingUserList.push({
             account_id: msg.sender_id,
