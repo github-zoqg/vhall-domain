@@ -129,10 +129,10 @@ class InteractiveServer extends BaseServer {
   _isNeedInteractive() {
     const { watchInitData, isThirdpartyInitiated } = useRoomBaseServer().state;
     const { isSpeakOn } = useMicServer().state;
-    // 1. 非观众需要初始化互动 
+    // 1. 非观众需要初始化互动
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动
-    // 4. 非网页发起 + 助理------->   优先级最高    
+    // 4. 非网页发起 + 助理------->   优先级最高
     if (watchInitData.join_info.role_name == 3 && isThirdpartyInitiated) {
       // 非网页发起时，不用初始化
       return false
@@ -454,9 +454,13 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, async e => {
       console.log('[interactiveServer]-------本地流断开----', third_party_user_id, e);
       if (e.data?.streamType != 3 && third_party_user_id === e.data?.accountId) {
-        // 非桌面共享时设置设ti备不可用  / 若在麦上，下麦( 线上逻辑 )
-        await useMediaCheckServer().setDevice({ status: 2, send_msg: 1 }); //send_msg： 传 0 不会发消息，不传或传 1 会发这个消息
-        useMicServer().speakOff()
+        // 分屏页面关闭的时候会触发这个事件导致嘉宾设备状态错误，所以加一个延时器，关闭页面的时候不处理
+        setTimeout(async () => {
+          // ddddd参数是为了查日志的参数，临时用，不影响功能
+          // 非桌面共享时设置设ti备不可用  / 若在麦上，下麦( 线上逻辑 )
+          await useMediaCheckServer().setDevice({ status: 2, send_msg: 1, ddddd: '本地流采集停止事件' }); //send_msg： 传 0 不会发消息，不传或传 1 会发这个消息
+          useMicServer().speakOff()
+        }, 1000)
       }
       this.$emit('EVENT_STREAM_END', e);
     });
