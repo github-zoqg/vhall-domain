@@ -64,7 +64,8 @@ class RoomBaseServer extends BaseServer {
         lang: 'zh',
         langList: []
       },
-      customRoleName: {}
+      customRoleName: {},
+      director_stream: 0
     };
     RoomBaseServer.instance = this;
     return this;
@@ -188,7 +189,7 @@ class RoomBaseServer extends BaseServer {
         // 云导播台有流消息
         case 'director_stream':
           console.log('director_stream', msg);
-          this.$emit('director_stream', msg)
+          this.state.director_stream = msg.data.status
       }
     });
     // 单点登录逻辑
@@ -655,6 +656,8 @@ class RoomBaseServer extends BaseServer {
   getStreamStatus() {
     return meeting.getStreamStatus({
       webinar_id: this.state.watchInitData.webinar && this.state.watchInitData.webinar.id,
+    }).then(res => {
+      this.state.director_stream = res.data.director_stream
     })
   }
 }
