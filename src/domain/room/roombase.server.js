@@ -121,7 +121,7 @@ class RoomBaseServer extends BaseServer {
             }
           }
           // 判断是不是第三方推流
-          this.state.isThirdStream = ![0, 1, '0', '1'].includes(res.data.switch.start_type)
+          res.data.switch && (this.state.isThirdStream = ![0, 1, '0', '1'].includes(res.data.switch.start_type))
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
           sessionStorage.setItem('visitorId', res.data.visitor_id);
@@ -185,6 +185,10 @@ class RoomBaseServer extends BaseServer {
           if (msg.data.target_id == this.state.watchInitData.join_info.third_party_user_id) {
             this.$emit('ROOM_KICKOUT')
           }
+        // 云导播台有流消息
+        case 'director_stream':
+          console.log('director_stream', msg);
+          this.$emit('director_stream', msg)
       }
     });
     // 单点登录逻辑
@@ -649,7 +653,7 @@ class RoomBaseServer extends BaseServer {
 
   // 获取云导播台是否有流
   getStreamStatus() {
-    return meeting.getCustomRoleName({
+    return meeting.getStreamStatus({
       webinar_id: this.state.watchInitData.webinar && this.state.watchInitData.webinar.id,
     })
   }

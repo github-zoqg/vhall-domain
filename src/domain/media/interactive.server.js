@@ -1330,7 +1330,7 @@ class InteractiveServer extends BaseServer {
     const { watchInitData } = useRoomBaseServer().state;
 
     // 获取互动实例角色
-    const role = await this._getInteractiveRole();
+    const role = "administrator";
 
     const options = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
@@ -1339,29 +1339,26 @@ class InteractiveServer extends BaseServer {
       accountId: watchInitData.join_info.third_party_user_id, // 第三方用户ID，必填
 
       token: watchInitData.interact.paas_access_token, // access_token，必填
-      mode:
-        watchInitData.webinar.no_delay_webinar == 1
-          ? VhallPaasSDK.modules.VhallRTC.MODE_LIVE
-          : VhallPaasSDK.modules.VhallRTC.MODE_RTC, //应用场景模式，选填，可选值参考下文【应用场景类型】。支持版本：2.3.1及以上。
+      // mode:
+      //   watchInitData.webinar.no_delay_webinar == 1
+      //     ? VhallPaasSDK.modules.VhallRTC.MODE_LIVE
+      //     : VhallPaasSDK.modules.VhallRTC.MODE_RTC, //应用场景模式，选填，可选值参考下文【应用场景类型】。支持版本：2.3.1及以上。
       role, //用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
       attributes: '', // String 类型
-      autoStartBroadcast: watchInitData.join_info.role_name == 1, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
-      broadcastConfig:
-        watchInitData.join_info.role_name == 1
-          ? {
-            adaptiveLayoutMode:
-              VhallRTC[sessionStorage.getItem('layout')] ||
-              VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
-            profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
-            paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
-            precastPic: false, // 选填，当旁路布局模板未填满时，剩余的窗格默认会填充系统默认小人图标。可配置是否显示此图标。
-            border: {
-              // 旁路边框属性
-              width: 2,
-              color: '0x1a1a1a'
-            }
-          }
-          : {}, // 自动旁路   开启旁路直播方法所需参数
+      autoStartBroadcast: true, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
+      broadcastConfig: {
+        adaptiveLayoutMode:
+          VhallRTC[sessionStorage.getItem('layout')] ||
+          VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
+        profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
+        paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
+        precastPic: false, // 选填，当旁路布局模板未填满时，剩余的窗格默认会填充系统默认小人图标。可配置是否显示此图标。
+        border: {
+          // 旁路边框属性
+          width: 2,
+          color: '0x1a1a1a'
+        }
+      },
       otherOption: watchInitData.report_data
     }
 
