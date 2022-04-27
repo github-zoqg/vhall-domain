@@ -974,7 +974,6 @@ export default class StandardDocServer extends AbstractDocServer {
    * 处理观看端布局
    */
   resetLayoutByMiniElement() {
-
     const { isInGroup } = useGroupServer().state.groupInitData
     const isShareScreen = !!useDesktopShareServer().state.localDesktopStreamId
     const isSpeakOn = useMicServer().getSpeakerStatus()
@@ -1047,6 +1046,8 @@ export default class StandardDocServer extends AbstractDocServer {
             setChangeElement('stream-list');
           } else if (role_name != 2) {
             setChangeElement('stream-list');
+          } else {
+            setChangeElement('')
           }
         } else {
           setChangeElement('');
