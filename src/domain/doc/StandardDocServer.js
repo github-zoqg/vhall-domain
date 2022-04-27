@@ -1046,8 +1046,6 @@ export default class StandardDocServer extends AbstractDocServer {
             setChangeElement('stream-list');
           } else if (role_name != 2) {
             setChangeElement('stream-list');
-          } else {
-            setChangeElement('')
           }
         } else {
           setChangeElement('');
