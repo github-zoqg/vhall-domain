@@ -120,7 +120,9 @@ class RoomBaseServer extends BaseServer {
             }
           }
           // 判断是不是第三方推流
-          this.state.isThirdStream = ![0, 1, '0', '1'].includes(res.data.switch.start_type)
+          if (res.data.switch && res.data.switch.start_type == 4) {
+            this.state.isThirdStream = true;
+          }
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
           sessionStorage.setItem('visitorId', res.data.visitor_id);
