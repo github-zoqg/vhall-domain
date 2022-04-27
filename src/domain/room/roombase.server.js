@@ -97,7 +97,6 @@ class RoomBaseServer extends BaseServer {
       meeting[liveType.get(options.clientType)](options).then(res => {
         if (res.code === 200) {
           this.state.watchInitData = res.data;
-
           // 设置转发初始值(初始化数据实体)
           if (this.state.watchInitData?.rebroadcast) {
             this.setRebroadcastInfo(this.state.watchInitData.rebroadcast)
@@ -128,6 +127,10 @@ class RoomBaseServer extends BaseServer {
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
           sessionStorage.setItem('visitorId', res.data.visitor_id);
+          // 解决多个主持人同时在线问题
+          if (!!res.data.visitor_id) {
+            sessionStorage.setItem('visitorId_home', res.data.visitor_id);
+          }
           this.addListeners();
           resolve(res);
         } else {
