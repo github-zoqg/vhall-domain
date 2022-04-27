@@ -416,8 +416,8 @@ class InteractiveServer extends BaseServer {
     });
 
     const msgServer = useMsgServer();
-    const { watchInitData: { join_info: { third_party_user_id } } } = useRoomBaseServer().state;
-
+    const { watchInitData } = useRoomBaseServer().state;
+    const third_party_user_id = watchInitData?.join_info?.third_party_user_id
     // 房间信令异常断开事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e => {
       this.$emit('EVENT_ROOM_EXCDISCONNECTED', e);
@@ -454,13 +454,12 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, async e => {
       console.log('[interactiveServer]-------本地流断开----', third_party_user_id, e);
       if (e.data?.streamType != 3 && third_party_user_id === e.data?.accountId) {
-        // 分屏页面关闭的时候会触发这个事件导致嘉宾设备状态错误，所以加一个延时器，关闭页面的时候不处理
-        setTimeout(async () => {
-          // ddddd参数是为了查日志的参数，临时用，不影响功能
-          // 非桌面共享时设置设ti备不可用  / 若在麦上，下麦( 线上逻辑 )
-          await useMediaCheckServer().setDevice({ status: 2, send_msg: 1, ddddd: '本地流采集停止事件' }); //send_msg： 传 0 不会发消息，不传或传 1 会发这个消息
+        // 非桌面共享时设置设ti备不可用  / 若在麦上，下麦( 线上逻辑 )
+        await useMediaCheckServer().setDevice({ status: 2, send_msg: 1 }); //send_msg： 传 0 不会发消息，不传或传 1 会发这个消息
+        // 2:视频直播，无下麦操作
+        if (watchInitData.webinar.mode != 2) {
           useMicServer().speakOff()
-        }, 1000)
+        }
       }
       this.$emit('EVENT_STREAM_END', e);
     });
@@ -468,6 +467,7 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e => {
       // 本地流视频发送帧率异常事件
       console.error(e)
+      this.$emit('EVENT_STREAM_STUNK', e);
       // this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e);
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e => {
