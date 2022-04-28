@@ -137,7 +137,7 @@ class InteractiveServer extends BaseServer {
     if (watchInitData.join_info.role_name == 3) {
       //start_type  1-web（默认）， 2-app，3-sdk，4-推拉流，5-定时，6-admin后台， 7-第三方OpenApi，8-windows客户端    0是未开播
       if ([2, 8].includes(+watchInitData.switch.start_type)) {
-        // 客户端、APP 助理默认都是旁路流  -- 和产品确认 
+        // 客户端、APP 助理默认都是旁路流  -- 和产品确认
         if (watchInitData.webinar.no_delay_webinar == 1) {
           // 若是无延迟活动，则订阅
           return true
@@ -429,7 +429,8 @@ class InteractiveServer extends BaseServer {
     });
 
     const msgServer = useMsgServer();
-    const { watchInitData: { join_info: { third_party_user_id } } } = useRoomBaseServer().state;
+    const { watchInitData } = useRoomBaseServer().state;
+    const third_party_user_id = watchInitData?.join_info?.third_party_user_id;
     // 房间信令异常断开事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_ROOM_EXCDISCONNECTED, e => {
       this.$emit('EVENT_ROOM_EXCDISCONNECTED', e);
@@ -468,14 +469,18 @@ class InteractiveServer extends BaseServer {
       if (e.data?.streamType != 3 && third_party_user_id === e.data?.accountId) {
         // 非桌面共享时设置设ti备不可用  / 若在麦上，下麦( 线上逻辑 )
         await useMediaCheckServer().setDevice({ status: 2, send_msg: 1 }); //send_msg： 传 0 不会发消息，不传或传 1 会发这个消息
-        useMicServer().speakOff()
+        // 2:视频直播，无下麦操作
+        if (watchInitData.webinar.mode != 2) {
+          useMicServer().speakOff()
+        }
       }
       this.$emit('EVENT_STREAM_END', e);
     });
 
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e => {
       // 本地流视频发送帧率异常事件
-      console.error(e)
+      console.log('EVENT_STREAM_STUNK_MSG', e)
+      this.$emit('EVENT_STREAM_STUNK', e);
       // this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e);
     });
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e => {
