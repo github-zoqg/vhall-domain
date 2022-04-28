@@ -140,24 +140,14 @@ class InteractiveServer extends BaseServer {
   /**
    * 判断是否需要初始化互动实例
    */
-<<<<<<< HEAD
-  _isNeedInteractive(options) {
-    const { watchInitData, isThirdpartyInitiated } = useRoomBaseServer().state;
-=======
   _isNeedInteractive() {
     const { watchInitData, isThirdStream } = useRoomBaseServer().state;
->>>>>>> upstream/main331
     const { isSpeakOn } = useMicServer().state;
     // 1. 非观众需要初始化互动
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动
     // 4. 非网页发起 + 助理------->   优先级最高
-<<<<<<< HEAD
-    // 5. 开启视频轮巡需要初始化互动
-    if (watchInitData.join_info.role_name == 3 && isThirdpartyInitiated) {
-=======
     if (watchInitData.join_info.role_name == 3 && isThirdStream) {
->>>>>>> upstream/main331
       // 非网页发起时，不用初始化
       return false
     } else {
