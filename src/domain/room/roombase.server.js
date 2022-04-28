@@ -660,6 +660,17 @@ class RoomBaseServer extends BaseServer {
       this.state.director_stream = res.data.director_stream
     })
   }
+
+  // 获取云导播机位是否占用
+  selectSeat(params) {
+    return meeting.selectSeat(params).then(res => {
+      if (res.code == 200) {
+        return true
+      } else {
+        return false
+      }
+    })
+  }
 }
 
 export default function useRoomBaseServer() {

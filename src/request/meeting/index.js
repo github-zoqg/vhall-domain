@@ -32,6 +32,14 @@ function getStreamStatus(params) {
   });
 }
 
+function selectSeat(params = {}) {
+  return request({
+    url: meetingApiList.selectSeat['v3'],
+    method: 'POST',
+    data: params
+  });
+}
+
 // 客户端嵌入-发起端初始化
 function clientEmbed(params) {
   const url = env.meeting === 'v3' ? '/v3/webinars/live/client-init' : '';
@@ -338,6 +346,7 @@ const meeting = {
   initSendLive,
   initSendLiveYun,
   getStreamStatus,
+  selectSeat,
   initStandardReceiveLive,
   clientEmbed,
   initEmbeddedReceiveLive,

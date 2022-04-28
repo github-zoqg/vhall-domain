@@ -41,6 +41,10 @@ export const meetingApiList = {
     v3: "/v3/webinars/director/get-stream-status",
     middle: ""
   },
+  selectSeat: {
+    v3: "/v3/webinars/director/select-seat",
+    middle: ""
+  },
 }
 
 export const roomApiList = {
