@@ -1,40 +1,40 @@
-import $http from '@/utils/http.js'
-import contextServer from "@/domain/common/context.server.js"
+import request from '@/utils/http.js';
+import useRoomBaseServer from '@/domain/room/roombase.server';
 
 // 获取插播文件列表
 const getInsertFileList = (params = {}) => {
-    const { state } = contextServer.get('roomBaseServer')
+  const { watchInitData } = useRoomBaseServer().state;
 
-    const retParmams = {
-        webinar_id: params.webinarId || state.watchInitData.webinar.id,
-        is_no_check: params.is_no_check || 1,
-        pos: params.pos || 0,
-        limit: params.limit || 10,
-        get_no_trans: params.get_no_trans || 1,
-    }
-    if (params.name) {
-        retParmams.name = params.name
-    }
+  const retParmams = {
+    webinar_id: params.webinar_id || watchInitData.webinar.id,
+    is_no_check: params.is_no_check || 1,
+    pos: params.pos || 0,
+    limit: params.limit || 10,
+    get_no_trans: params.get_no_trans || 1
+  };
+  if (params.name) {
+    retParmams.name = params.name;
+  }
 
-    return $http({
-        url: '/v3/webinars/waiting-file/get-list',
-        type: 'POST',
-        data: retParmams
-    })
-}
+  return request({
+    url: '/v3/webinars/waiting-file/get-list',
+    method: 'POST',
+    data: retParmams
+  });
+};
 
 // 删除插播文件
 const deleteInsertFile = (params = {}) => {
-    return $http({
-        url: '/v3/webinars/waiting-file/deletes',
-        type: 'POST',
-        data: params
-    })
-}
+  return request({
+    url: '/v3/webinars/waiting-file/deletes',
+    method: 'POST',
+    data: params
+  });
+};
 
 const insertFile = {
-    getInsertFileList,
-    deleteInsertFile
-}
+  getInsertFileList,
+  deleteInsertFile
+};
 
-export default insertFile
+export default insertFile;

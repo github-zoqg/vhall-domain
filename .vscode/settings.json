@@ -1,0 +1,83 @@
+{
+  // "[dart]": {},
+  // 配置语言的文件关联
+  // "files.associations": {
+  //   "*.vue": "vue",
+  //   "*.wpy": "vue",
+  //   "*.wxss": "css",
+  //   "*.less": "less",
+  //   "*.tpl": "vue",
+  //   "*.md@xxx": "markdown",
+  //   "*.wxml": "html",
+  //   "*.cjson": "jsonc",
+  //   "*.wxs": "javascript"
+  // },
+  //是否自动换行
+  "editor.wordWrap": "on",
+  //关闭迷你图快速预览
+  "editor.minimap.enabled": false,
+  //关闭rg.exe进程（吃CPU）
+  "search.followSymlinks": false,
+  //开启行数提示
+  "editor.lineNumbers": "on",
+  //开启自动显示建议
+  "editor.quickSuggestions": {
+    "other": true, //在字符串和注释外启用快速建议
+    "comments": true, //在注释内启用快速建议
+    "strings": true //在字符串内启用快速建议
+  },
+  // 打开文件时，是否基于文件内容自动检测TabSize和InsertSpaces
+  "editor.detectIndentation": false,
+  // 一个Tab(制表符)等于的空格数
+  "editor.tabSize": 2,
+  // 按Tab键时插入空格
+  "editor.insertSpaces": true,
+  // 所有语言
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // prettier不能格式化vue文件template 所以使用js-beautify-html格式化
+  "vetur.format.defaultFormatter.html": "js-beautify-html",
+  //js-beautify-html格式化配置，属性强制换行
+  "vetur.format.defaultFormatterOptions": {
+    // https://github.com/vuejs/vetur/blob/master/server/src/modes/template/services/htmlFormat.ts#L79
+    // 配置不能和prettier的配置冲突，eslint校验的时候采用的prettier的风格
+    "js-beautify-html": {
+      // 给js-beautify-html设置属性隔断
+      "wrap_line_length": 180, //换行长度
+      // 属性换行
+      // 对属性进行换行。
+      // - auto: 仅在超出行长度时才对属性进行换行。
+      // - force: 对除第一个属性外的其他每个属性进行换行。
+      // - force-aligned: 对除第一个属性外的其他每个属性进行换行，并保持对齐。
+      // - force-expand-multiline: 对每个属性进行换行。
+      // - aligned-multiple: 当超出折行长度时，将属性进行垂直对齐。
+      "wrap_attributes": "force"
+    }
+  },
+  "eslint.validate": [
+    "html",
+    "vue",
+    "vue-html",
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  // 在保存时格式化文件。格式化程序必须可用
+  "editor.formatOnSave": true,
+  // 在保存运行时代码
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true, //使用eslint校验文件
+    "source.fixAll.stylelint": true // 我们没有使用stylelint
+  },
+  // 重命名或移动文件时自动更新导入路径
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  // 默认行尾换行符
+  "files.eol": "\n",
+  "path-intellisense.mappings": {
+    "@": "${workspaceRoot}/src"
+  },
+  "i18n-ally.localesPaths": ["src/packages/locales"],
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  }
+}
