@@ -132,10 +132,23 @@ class InteractiveServer extends BaseServer {
     // 1. 非观众需要初始化互动
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动
-    // 4. 非网页发起 + 助理------->   优先级最高
-    if (watchInitData.join_info.role_name == 3 && isThirdStream) {
-      // 非网页发起时，不用初始化
-      return false
+
+    // 助理条件较多，单独判断
+    if (watchInitData.join_info.role_name == 3) {
+      //start_type  1-web（默认）， 2-app，3-sdk，4-推拉流，5-定时，6-admin后台， 7-第三方OpenApi，8-windows客户端    0是未开播
+      if ([2, 8].includes(+watchInitData.switch.start_type)) {
+        // 客户端、APP 助理默认都是旁路流  -- 和产品确认 
+        if (watchInitData.webinar.no_delay_webinar == 1) {
+          // 若是无延迟活动，则订阅
+          return true
+        }
+        return false
+      } else if (+watchInitData.switch.start_type == 4) {
+        // 网页第三方  全是旁路，不初始化互动
+        return false
+      } else {
+        return true
+      }
     } else {
       return (
         watchInitData.join_info.role_name != 2 ||
