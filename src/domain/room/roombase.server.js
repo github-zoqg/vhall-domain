@@ -293,6 +293,24 @@ class RoomBaseServer extends BaseServer {
     });
   }
 
+  // 获取观看协议状态查询
+  getAgreementStatus() {
+    const webinarId = this.state.watchInitData?.webinar?.id
+    return meeting.restrictions({ webinar_id: webinarId })
+  }
+
+  // 同意条款
+  agreeWitthTerms(params = {}) {
+    const webinarId = this.state.watchInitData?.webinar?.id
+    const visitorId = sessionStorage.getItem('visitorId') || ''
+    return meeting.setUserAgree({
+      webinar_id: webinarId,
+      visitor_id: visitorId,
+      email: params.email || '',
+      third_user_id: params.third_user_id || ''
+    })
+  }
+
   //获取多语言配置
   getLangList(params) {
     return meeting.getLangList({ webinar_id: params || this.state.watchInitData.webinar.id }).then(res => {
