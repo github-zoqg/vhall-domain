@@ -40,12 +40,13 @@ cLog(info('└──────────────────────
   let url = getUrl(env);
   const { status, errMsg } = await checkRes(`${url}?t=${Date.now()}`);
   if (status < 0) {
-    if (status === -2) {
-      cLog(chalk.redBright(`请求资源异常: ${url}`));
+    if (status === -1) {
+      cLog(chalk.redBright(`资源访问存在异常:${url}`))
       cLog(chalk.redBright(errMsg));
       cLog();
     } else {
-      cLog(chalk.redBright(`访问资源出现错误: ${url}`));
+      cLog(chalk.redBright('访问资源出现错误,请检查'))
+      cLog(chalk.redBright(`→ ${url}\n`))
     }
     process.exit(1);
   }
@@ -57,6 +58,7 @@ cLog(info('└──────────────────────
     cLog(chalk.redBright('2）采用覆盖模式构建.\n'));
     process.exit(1);
   }
+
   // 版本限制，是否需要待讨论？暂时取消
   // if (args.env === 'production') {
   //   if (!/^\d+(\.\d+){2}$/.test(currentVersion)) {
@@ -77,16 +79,20 @@ cLog(info('└──────────────────────
     cLog(chalk.hex('#F4A460')('warning: 本次构建成功后将会覆盖原有资源，你有可能需要刷新CDN缓存~\n'));
   }
 
-  if (args.env === 'production') {
-    // 生产环境 
-    execSync(`node_modules${path.sep}.bin${path.sep}rollup -c rollup.config.prod.js`)
-  } else if (args.env === 'test') {
-    // 测试环境
-    execSync(`node_modules${path.sep}.bin${path.sep}rollup -c rollup.config.test.js`)
+  try {
+    if (args.env === 'production') {
+      // 生产环境 
+      execSync(`node_modules${path.sep}.bin${path.sep}rollup -c rollup.config.prod.js`)
+    } else if (args.env === 'test') {
+      // 测试环境
+      execSync(`node_modules${path.sep}.bin${path.sep}rollup -c rollup.config.test.js`)
+    }
+    cLog(chalk.green.bold(`\nbuild domain version ${currentVersion} successfully\n`));
+  } catch (ex) {
+    cLog(chalk.redBright(ex));
+    process.exit(1);
   }
-  cLog(chalk.green.bold(`\nbuild domain version ${currentVersion} successfully\n`));
 })();
-
 
 function getUrl(env) {
   return env === 'production' ?

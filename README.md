@@ -102,11 +102,16 @@ npm run dev
 ```shell
 
 ## jenkins持续集成（运维支持）
-yarn build:test  #测试环境执行命令构建
-yarn build:prod  #生产环境执行命令构建
+node scripts/build.js build --env=${env} --cover=${cover}
+> 其中：${env} 表示构建环境，可选production:生产环境， test:测试环境
+       ${cover} 表示是否覆盖当前存在的版本，true:是，false:否
 # 运维自动化构建，编译后会拷贝dist/cloud 和dist/sourcemap 两个目录下的文件到oss指定位置。
 
-#也可以本地构建后拷贝相应的文件到oss上
+
+# 其它
+yarn build:test  #测试环境执行不覆盖命令构建
+yarn build:prod  #生产环境执行不覆盖命令构建
+yarn build:rollup  #生产环境执行不限制命令构建
 
 ```
 
