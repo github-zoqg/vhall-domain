@@ -96,7 +96,6 @@ class RoomBaseServer extends BaseServer {
       meeting[liveType.get(options.clientType)](options).then(res => {
         if (res.code === 200) {
           this.state.watchInitData = res.data;
-
           // 设置转发初始值(初始化数据实体)
           if (this.state.watchInitData?.rebroadcast) {
             this.setRebroadcastInfo(this.state.watchInitData.rebroadcast)
@@ -126,6 +125,10 @@ class RoomBaseServer extends BaseServer {
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
           sessionStorage.setItem('visitorId', res.data.visitor_id);
+          // 解决多个主持人同时在线问题
+          if (!!res.data.visitor_id) {
+            sessionStorage.setItem('visitorId_home', res.data.visitor_id);
+          }
           this.addListeners();
           resolve(res);
         } else {
@@ -291,6 +294,24 @@ class RoomBaseServer extends BaseServer {
       }
       return res;
     });
+  }
+
+  // 获取观看协议状态查询
+  getAgreementStatus() {
+    const webinarId = this.state.watchInitData?.webinar?.id
+    return meeting.restrictions({ webinar_id: webinarId })
+  }
+
+  // 同意条款
+  agreeWitthTerms(params = {}) {
+    const webinarId = this.state.watchInitData?.webinar?.id
+    const visitorId = sessionStorage.getItem('visitorId') || ''
+    return meeting.setUserAgree({
+      webinar_id: webinarId,
+      visitor_id: visitorId,
+      email: params.email || '',
+      third_user_id: params.third_user_id || ''
+    })
   }
 
   //获取多语言配置
