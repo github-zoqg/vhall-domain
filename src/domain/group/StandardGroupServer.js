@@ -149,6 +149,21 @@ class StandardGroupServer extends BaseServer {
     return await groupApi.groupInit(params);
   }
 
+  /**
+   * 
+   * @returns 
+   */
+  async initPresetGroup() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const params = {
+      room_id: watchInitData.interact.room_id, // 主直播房间ID
+      switch_id: watchInitData.switch.switch_id, // 场次ID,
+      webinar_id: watchInitData.webinar.id
+    };
+    const result = await groupApi.initPresetGroup(params);
+    return result;
+  }
+
   //监听分组相关消息（属于房间消息）
   listenMsg() {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
@@ -1012,7 +1027,6 @@ class StandardGroupServer extends BaseServer {
     const result = await groupApi.groupQuit(params);
     return result;
   }
-
 
 
   /**
