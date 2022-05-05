@@ -548,7 +548,7 @@ class StandardGroupServer extends BaseServer {
       ]);
     }
 
-    if (useRoomBaseServer().state.interactToolStatus.is_open_switch != 1 || this.state.presetWay) {
+    if (useRoomBaseServer().state.interactToolStatus.is_open_switch != 1) {
       console.log('[group] 未开启讨论，不处理分组切换逻辑。');
       if (clientType === 'send') {
         this.$emit(this.EVENT_TYPE.GROUP_JOIN_CHANGE, msg);
