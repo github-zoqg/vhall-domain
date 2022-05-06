@@ -124,6 +124,24 @@ const getConfigList = (params = {}) => {
   });
 };
 
+const restrictions = (params = {}) => {
+  let url = '/v3/interacts/agreement/get-agreement'
+  return request({
+    url,
+    method: 'GET',
+    params
+  })
+}
+
+// 同意观看限制
+const setUserAgree = params => {
+  return request({
+    url: '/v3/interacts/agreement/set-user-agree',
+    method: 'POST',
+    data: params
+  })
+}
+
 //获取活动多语言配置信息
 const getLangList = (params = {}) => {
   return request({
@@ -345,7 +363,9 @@ const meeting = {
   bindShare,
   getShareSettingInfo,
   wechatShare,
-  getCustomRoleName
+  getCustomRoleName,
+  restrictions,
+  setUserAgree
 };
 
 export default meeting;
