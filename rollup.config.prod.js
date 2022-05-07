@@ -51,7 +51,7 @@ export default [
         __VERSION__: pkg.version
       }),
       sourceMapUrl({
-        publicPath: 'https://t-vhallsaas-static.oss-cn-beijing.aliyuncs.com/common-static/sourcemap/middle-domain/1.3.15/'
+        publicPath: `https://t-vhallsaas-static.oss-cn-beijing.aliyuncs.com/common-static/sourcemap/middle-domain/${pkg.version}/`
       }),
       copy({
         targets: [
