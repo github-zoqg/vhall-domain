@@ -113,13 +113,11 @@ class RedPacketServer extends BaseServer {
   /**
    * @description 获取在线人数
    */
-  getOnline() {
+  getRedpacketTotal() {
     const { watchInitData } = useRoomBaseServer().state;
     const { interact } = watchInitData;
-    return chatApi.getOnlineList({
-      room_id: interact.room_id,
-      pos: 0,
-      limit: 1 // 只需要取总数  不需要列表
+    return redPacketApi.getRedpacketTotal({
+      room_id: interact.room_id
     }).then(res => {
       this.state.online = res.data.total;
       return res
