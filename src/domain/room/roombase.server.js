@@ -314,6 +314,29 @@ class RoomBaseServer extends BaseServer {
     })
   }
 
+  // 获取视频论巡权限
+  // TODO: 后续观看端统一处理配置项权限之后，这个就不用了
+  getVideoPollingConfig() {
+    const defaultParams = {
+      webinar_id: this.state.watchInitData.webinar && this.state.watchInitData.webinar.id,
+      webinar_user_id: this.state.watchInitData.webinar && this.state.watchInitData.webinar.userinfo.user_id,
+      scene_id: 1
+    };
+    return meeting.getConfigList(defaultParams).then(res => {
+      if (res.code == 200) {
+        const configList = JSON.parse(res.data.permissions);
+        for (let key in configList) {
+          if (key === 'video_polling') {
+            this.state.configList = {
+              ...this.state.configList,
+              video_polling: Number(configList[key])
+            }
+          }
+        }
+      }
+    });
+  }
+
   //获取多语言配置
   getLangList(params) {
     return meeting.getLangList({ webinar_id: params || this.state.watchInitData.webinar.id }).then(res => {
