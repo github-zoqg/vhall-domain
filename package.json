@@ -1,13 +1,14 @@
 {
   "name": "middle-domain",
-  "version": "1.3.28",
+  "version": "1.3.32",
   "description": "",
   "private": true,
   "main": "dist/lib/middle-domain.js",
   "scripts": {
     "dev": "rollup -c --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c rollup.config.prod.js",
+    "build:test": "node ./scripts/build.js --env=test",
+    "build:prod": "node ./scripts/build.js --env=production",
     "build:rollup": "rollup -c rollup.config.prod.js",
     "update:version": "node ./scripts/update-version.js serve",
     "format": "prettier --write './src/**/*.(vue|js|css|less|jsx)'"
