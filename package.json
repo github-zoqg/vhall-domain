@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "rollup -c --watch",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c rollup.config.prod.js",
+    "build:test": "node ./scripts/build.js --env=test",
+    "build:prod": "node ./scripts/build.js --env=production",
     "build:rollup": "rollup -c rollup.config.prod.js",
     "update:version": "node ./scripts/update-version.js serve",
     "format": "prettier --write './src/**/*.(vue|js|css|less|jsx)'"
