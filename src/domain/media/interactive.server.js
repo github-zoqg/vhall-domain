@@ -500,48 +500,51 @@ class InteractiveServer extends BaseServer {
     msgServer.$onMsg('ROOM_MSG', msg => {
       const { speakerList } = useMicServer().state
       const localSpeaker = speakerList.find(speaker => speaker.accountId == third_party_user_id)
-      if (
-        msg.data.type == 'vrtc_frames_forbid' && // 业务关闭摄像头消息
-        msg.data.target_id == localSpeaker.accountId
-      ) {
-        // 本地流关闭视频
-        this.muteVideo({
-          streamId: localSpeaker.streamId,
-          isMute: true
-        });
-        // 业务消息不需要透传到ui层,ui层通过远端流音视频状态改变事件更新ui状态
-        this.$emit('vrtc_frames_forbid', msg)
-      } else if (
-        msg.data.type == 'vrtc_frames_display' && // 业务开启摄像头消息
-        msg.data.target_id == localSpeaker.accountId
-      ) {
-        // 本地流开启视频
-        this.muteVideo({
-          streamId: localSpeaker.streamId,
-          isMute: false
-        });
-        this.$emit('vrtc_frames_display', msg);
-      } else if (
-        msg.data.type == 'vrtc_mute' && // 业务关闭麦克风消息
-        msg.data.target_id == localSpeaker.accountId
-      ) {
-        // 本地流关闭音频
-        this.muteAudio({
-          streamId: localSpeaker.streamId,
-          isMute: true
-        });
-        this.$emit('vrtc_mute', msg);
-      } else if (
-        msg.data.type == 'vrtc_mute_cancel' && // 业务开启麦克风消息
-        msg.data.target_id == localSpeaker.accountId
-      ) {
-        // 本地流开启音频
-        this.muteAudio({
-          streamId: localSpeaker.streamId,
-          isMute: false
-        });
-        this.$emit('vrtc_mute_cancel', msg);
-      } else if (msg.data.type === 'live_over') {
+      if (localSpeaker) {
+        if (
+          msg.data.type == 'vrtc_frames_forbid' && // 业务关闭摄像头消息
+          msg.data.target_id == localSpeaker.accountId
+        ) {
+          // 本地流关闭视频
+          this.muteVideo({
+            streamId: localSpeaker.streamId,
+            isMute: true
+          });
+          // 业务消息不需要透传到ui层,ui层通过远端流音视频状态改变事件更新ui状态
+          this.$emit('vrtc_frames_forbid', msg)
+        } else if (
+          msg.data.type == 'vrtc_frames_display' && // 业务开启摄像头消息
+          msg.data.target_id == localSpeaker.accountId
+        ) {
+          // 本地流开启视频
+          this.muteVideo({
+            streamId: localSpeaker.streamId,
+            isMute: false
+          });
+          this.$emit('vrtc_frames_display', msg);
+        } else if (
+          msg.data.type == 'vrtc_mute' && // 业务关闭麦克风消息
+          msg.data.target_id == localSpeaker.accountId
+        ) {
+          // 本地流关闭音频
+          this.muteAudio({
+            streamId: localSpeaker.streamId,
+            isMute: true
+          });
+          this.$emit('vrtc_mute', msg);
+        } else if (
+          msg.data.type == 'vrtc_mute_cancel' && // 业务开启麦克风消息
+          msg.data.target_id == localSpeaker.accountId
+        ) {
+          // 本地流开启音频
+          this.muteAudio({
+            streamId: localSpeaker.streamId,
+            isMute: false
+          });
+          this.$emit('vrtc_mute_cancel', msg);
+        }
+      }
+      if (msg.data.type === 'live_over') {
         // 直播结束
         this.setStreamListHeightInWatch(0);
         this.$emit('live_over')
