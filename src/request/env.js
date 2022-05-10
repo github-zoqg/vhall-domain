@@ -76,3 +76,19 @@ export const roomSubjectApiList = {
     middle: "/v4/room-subject/subject/info"
   }
 }
+
+// 视频轮询 api
+export const videoRoundApiList = {
+  videoRoundInfo: {
+    v3: "/v3/interacts/video-round/info",
+  },
+  videoRoundStart: {
+    v3: '/v3/interacts/video-round/start'
+  },
+  videoRoundEnd: {
+    v3: '/v3/interacts/video-round/end'
+  },
+  videoRoundGetUsers: {
+    v3: '/v3/interacts/video-round/get-round-users'
+  }
+}
