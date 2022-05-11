@@ -12,8 +12,9 @@
       "@babel/preset-env",
       {
         "targets": {
-          "browsers": ["> 5%", "last 2 versions", "not ie <= 8", "safari >= 7"]
+          "browsers": ["> 1%", "last 2 versions", "not ie <= 8", "safari >= 7", "not dead"]
         },
+        // usage 会根据配置的浏览器兼容，以及你代码中用到的 API 来进行 polyfill，实现了按需添加。
         "useBuiltIns": "usage",
         "corejs": 3
       }
