@@ -18,7 +18,8 @@ class QuestionnaireServer extends BaseServer {
     this.state = {
       iconVisible: false, // icon 是否显示
       dotVisible: false, // 小红点是否显示
-      lastQuestionnaireId: '' // 最后一个问卷id
+      lastQuestionnaireId: '', // 最后一个问卷id
+      QuestionList: null
     }
   }
 
@@ -283,6 +284,7 @@ class QuestionnaireServer extends BaseServer {
     const { watchInitData } = this.useRoomBaseServer.state;
     const { webinar, interact, join_info } = watchInitData;
     return questionnaireApi.createLiveQuestion({
+      alias: data.alias,
       title: data.title,
       survey_id: data.id,
       description: data.description,
@@ -351,6 +353,20 @@ class QuestionnaireServer extends BaseServer {
   // 小红点
   setDotVisible(visivle) {
     this.state.dotVisible = visivle
+  }
+
+  //活动问卷历史列表
+  getSurveyList() {
+    const { watchInitData } = this.useRoomBaseServer.state;
+    return questionnaireApi.getSurveyList({
+      room_id: watchInitData.interact.room_id,
+      webinar_id: watchInitData.webinar.id,
+    }).then(res => {
+      if (res.code == 200) {
+        this.state.QuestionList = res.data
+        return res.data
+      }
+    });
   }
 }
 
