@@ -97,9 +97,9 @@ class QaServer extends BaseServer {
     console.log(msg.data.target_id, '-', watchInitData.join_info.third_party_user_id);
     return msg.data.target_id == watchInitData.join_info.third_party_user_id;
   }
-  qaEnable() {
+  qaEnable(params) {
     const { watchInitData } = useRoomBaseServer().state;
-    return qa.list.qaEnable({ room_id: watchInitData.interact.room_id });
+    return qa.list.qaEnable({ room_id: watchInitData.interact.room_id, name: params.name });
   }
 
   qaDisable() {
