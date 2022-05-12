@@ -283,6 +283,7 @@ class QuestionnaireServer extends BaseServer {
     const { watchInitData } = this.useRoomBaseServer.state;
     const { webinar, interact, join_info } = watchInitData;
     return questionnaireApi.createLiveQuestion({
+      alias: data.alias,
       title: data.title,
       survey_id: data.id,
       description: data.description,
