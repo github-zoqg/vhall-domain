@@ -469,7 +469,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 如果是发起端，主持人正在桌面共享，助理界面优先显示文档
     if (!this.isWatch() && useRoomBaseServer().state.watchInitData.join_info.role_name == 3 &&
-      useDesktopShareServer().state.localDesktopStreamId && list.length > 0) {
+      useDesktopShareServer().state.localDesktopStreamId) {
       useRoomBaseServer().setChangeElement('doc');
     }
 
@@ -992,9 +992,9 @@ export default class StandardDocServer extends AbstractDocServer {
       return;
     }
 
-
+    // 小组内
     if (isInGroup) {
-      // 小组内文档常显，
+      // 小组内文档常显
       if (isSpeakOn) {
         // 上麦观众房间内不管有没有桌面共享，小屏都显示组长画面
         setChangeElement('stream-list');
@@ -1011,13 +1011,14 @@ export default class StandardDocServer extends AbstractDocServer {
           setChangeElement('stream-list');
         }
       }
+    }
 
-    } else {
+    // 非小组
+    if (!isInGroup) {
       // 不在小组内且自己是演示者
       if (presentation_screen == third_party_user_id) {
         // 直播状态下，无延迟或上麦是流列表
         setChangeElement('stream-list');
-
       } else if (switchStatus) {
         if ((isShareScreen || is_desktop == 1) && !isSpeakOn) {
           // 如果在插播或者桌面共享中，并且没上麦，文档是小窗，插播是大窗
@@ -1044,8 +1045,12 @@ export default class StandardDocServer extends AbstractDocServer {
           // 有插播或者桌面共享
           if (isSpeakOn) {
             setChangeElement('stream-list');
+          } else if (role_name == 3) {
+            setChangeElement('doc');
           } else if (role_name != 2) {
             setChangeElement('stream-list');
+          } else {
+            setChangeElement('')
           }
         } else {
           setChangeElement('');
