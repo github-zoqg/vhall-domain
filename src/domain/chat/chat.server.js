@@ -35,8 +35,8 @@ class ChatServer extends BaseServer {
       //全体禁言状态下各模块生效信息
       allBannedModuleList: {
         chat_status: interactToolStatus.chat_status == 1 ? true : false, //1生效 0不生效
-        qa_status: interactToolStatus.chat_status == 1 ? true : false, //1生效 0不生效
-        private_chat_status: interactToolStatus.chat_status == 1 ? true : false //1生效 0不生效
+        qa_status: interactToolStatus.qa_status == 1 ? true : false, //1生效 0不生效
+        private_chat_status: interactToolStatus.private_chat_status == 1 ? true : false //1生效 0不生效
       },
       limit: 10,
       curMsg: null,//当前正在编辑的消息
@@ -124,14 +124,14 @@ class ChatServer extends BaseServer {
         if (role_name == 2) {
           useMicServer().speakOff();
         }
-        this.$emit('allBanned', this.state.allBanned);
+        this.$emit('allBanned', this.state.allBanned, rawMsg.data);
 
       }
       // 关闭全体禁言
       if (rawMsg.data.type === 'permit_all') {
         this.setLocalAllBanned(false)
         this.setAllBannedModuleList(rawMsg.data);
-        this.$emit('allBanned', this.state.allBanned);
+        this.$emit('allBanned', this.state.allBanned, rawMsg.data);
       }
     });
     msgServer.$onMsg('ROOM_MSG', rawMsg => {
