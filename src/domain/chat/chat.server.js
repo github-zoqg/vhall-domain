@@ -32,6 +32,12 @@ class ChatServer extends BaseServer {
       banned: groupInitData.isInGroup ? (groupInitData.is_banned == 1 ? true : false) : (interactToolStatus.is_banned == 1 ? true : false), //1禁言 0取消禁言
       //当前频道全部禁言状态
       allBanned: groupInitData.isInGroup ? false : (interactToolStatus.all_banned == 1 ? true : false), //1禁言 0取消禁言
+      //全体禁言状态下各模块生效信息
+      allBannedModuleList: {
+        chat_status: interactToolStatus.chat_status == 1 ? true : false, //1生效 0不生效
+        qa_status: interactToolStatus.chat_status == 1 ? true : false, //1生效 0不生效
+        private_chat_status: interactToolStatus.chat_status == 1 ? true : false //1生效 0不生效
+      },
       limit: 10,
       curMsg: null,//当前正在编辑的消息
       prevTime: '',//用来记录每条消息的上一条消息发送的时间
@@ -114,6 +120,7 @@ class ChatServer extends BaseServer {
       // 开启全体禁言
       if (rawMsg.data.type === 'disable_all') {
         this.setLocalAllBanned(true)
+        this.setAllBannedModuleList(rawMsg.data);
         if (role_name == 2) {
           useMicServer().speakOff();
         }
@@ -123,6 +130,7 @@ class ChatServer extends BaseServer {
       // 关闭全体禁言
       if (rawMsg.data.type === 'permit_all') {
         this.setLocalAllBanned(false)
+        this.setAllBannedModuleList(rawMsg.data);
         this.$emit('allBanned', this.state.allBanned);
       }
     });
@@ -348,6 +356,13 @@ class ChatServer extends BaseServer {
   //设置本地全员禁言状态
   setLocalAllBanned(flag) {
     this.state.allBanned = flag
+  }
+  //设置全体禁言状态下各模块生效状态
+  setAllBannedModuleList(data) {
+    const { chat_status, qa_status, private_chat_status } = data;
+    this.state.allBannedModuleList.chat_status = chat_status;
+    this.state.allBannedModuleList.qa_status = qa_status;
+    this.state.allBannedModuleList.private_chat_status = private_chat_status;
   }
   /**
    * 禁言/取消禁言
