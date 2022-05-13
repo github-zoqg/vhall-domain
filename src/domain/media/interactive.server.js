@@ -141,32 +141,28 @@ class InteractiveServer extends BaseServer {
    * 判断是否需要初始化互动实例
    */
   _isNeedInteractive(options) {
-    const { watchInitData, isThirdStream } = useRoomBaseServer().state;
+    const { watchInitData } = useRoomBaseServer().state;
     const { isSpeakOn } = useMicServer().state;
     // 1. 非观众需要初始化互动
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动
 
     // 助理条件较多，单独判断
-    // if (watchInitData.join_info.role_name == 3) {
-    //   //start_type  1-web（默认）， 2-app，3-sdk，4-推拉流，5-定时，6-admin后台， 7-第三方OpenApi，8-windows客户端    0是未开播
-    //   if ([2, 8].includes(+watchInitData.switch.start_type)) {
-    //     // 客户端、APP 助理默认都是旁路流  -- 和产品确认
-    //     if (watchInitData.webinar.no_delay_webinar == 1) {
-    //       // 若是无延迟活动，则订阅
-    //       return true
-    //     }
-    //     return false
-    //   } else if (+watchInitData.switch.start_type == 4) {
-    //     // 网页第三方  全是旁路，不初始化互动
-    //     return false
-    //   } else {
-    //     return true
-    //   }
-    // } 
-    if (watchInitData.join_info.role_name == 3 && isThirdStream) {
-      // 非网页发起时，不用初始化
-      return false
+    if (watchInitData.join_info.role_name == 3) {
+      //start_type  1-web（默认）， 2-app，3-sdk，4-推拉流，5-定时，6-admin后台， 7-第三方OpenApi，8-windows客户端    0是未开播
+      if ([2, 8].includes(+watchInitData.switch.start_type)) {
+        // 客户端、APP 助理默认都是旁路流  -- 和产品确认
+        if (watchInitData.webinar.no_delay_webinar == 1) {
+          // 若是无延迟活动，则订阅
+          return true
+        }
+        return false
+      } else if (+watchInitData.switch.start_type == 4) {
+        // 网页第三方  全是旁路，不初始化互动
+        return false
+      } else {
+        return true
+      }
     } else {
       return (
         watchInitData.join_info.role_name != 2 ||
@@ -518,48 +514,51 @@ class InteractiveServer extends BaseServer {
     msgServer.$onMsg('ROOM_MSG', msg => {
       const { speakerList } = useMicServer().state
       const localSpeaker = speakerList.find(speaker => speaker.accountId == third_party_user_id)
-      if (
-        msg.data.type == 'vrtc_frames_forbid' && // 业务关闭摄像头消息
-        msg.data.target_id == localSpeaker.accountId
-      ) {
-        // 本地流关闭视频
-        this.muteVideo({
-          streamId: localSpeaker.streamId,
-          isMute: true
-        });
-        // 业务消息不需要透传到ui层,ui层通过远端流音视频状态改变事件更新ui状态
-        this.$emit('vrtc_frames_forbid', msg)
-      } else if (
-        msg.data.type == 'vrtc_frames_display' && // 业务开启摄像头消息
-        msg.data.target_id == localSpeaker.accountId
-      ) {
-        // 本地流开启视频
-        this.muteVideo({
-          streamId: localSpeaker.streamId,
-          isMute: false
-        });
-        this.$emit('vrtc_frames_display', msg);
-      } else if (
-        msg.data.type == 'vrtc_mute' && // 业务关闭麦克风消息
-        msg.data.target_id == localSpeaker.accountId
-      ) {
-        // 本地流关闭音频
-        this.muteAudio({
-          streamId: localSpeaker.streamId,
-          isMute: true
-        });
-        this.$emit('vrtc_mute', msg);
-      } else if (
-        msg.data.type == 'vrtc_mute_cancel' && // 业务开启麦克风消息
-        msg.data.target_id == localSpeaker.accountId
-      ) {
-        // 本地流开启音频
-        this.muteAudio({
-          streamId: localSpeaker.streamId,
-          isMute: false
-        });
-        this.$emit('vrtc_mute_cancel', msg);
-      } else if (msg.data.type === 'live_over') {
+      if (localSpeaker) {
+        if (
+          msg.data.type == 'vrtc_frames_forbid' && // 业务关闭摄像头消息
+          msg.data.target_id == localSpeaker.accountId
+        ) {
+          // 本地流关闭视频
+          this.muteVideo({
+            streamId: localSpeaker.streamId,
+            isMute: true
+          });
+          // 业务消息不需要透传到ui层,ui层通过远端流音视频状态改变事件更新ui状态
+          this.$emit('vrtc_frames_forbid', msg)
+        } else if (
+          msg.data.type == 'vrtc_frames_display' && // 业务开启摄像头消息
+          msg.data.target_id == localSpeaker.accountId
+        ) {
+          // 本地流开启视频
+          this.muteVideo({
+            streamId: localSpeaker.streamId,
+            isMute: false
+          });
+          this.$emit('vrtc_frames_display', msg);
+        } else if (
+          msg.data.type == 'vrtc_mute' && // 业务关闭麦克风消息
+          msg.data.target_id == localSpeaker.accountId
+        ) {
+          // 本地流关闭音频
+          this.muteAudio({
+            streamId: localSpeaker.streamId,
+            isMute: true
+          });
+          this.$emit('vrtc_mute', msg);
+        } else if (
+          msg.data.type == 'vrtc_mute_cancel' && // 业务开启麦克风消息
+          msg.data.target_id == localSpeaker.accountId
+        ) {
+          // 本地流开启音频
+          this.muteAudio({
+            streamId: localSpeaker.streamId,
+            isMute: false
+          });
+          this.$emit('vrtc_mute_cancel', msg);
+        }
+      }
+      if (msg.data.type === 'live_over') {
         // 直播结束
         this.setStreamListHeightInWatch(0);
         this.$emit('live_over')
