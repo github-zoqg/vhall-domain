@@ -60,6 +60,28 @@ const groupEndDiscussion = (params = {}) => {
   });
 };
 
+// TODO:暂停讨论的接口替换
+// 暂停讨论
+const groupPauseDiscussion = (params = {}) => {
+  const url = env.group === 'v3' ? '/v3/interacts/group-switch/end' : ''; // TODO 补充v4接口
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
+
+// TODO:继续讨论的接口替换
+// 继续讨论
+const groupContinueDiscussion = (params = {}) => {
+  const url = env.group === 'v3' ? '/v3/interacts/group-switch/end' : ''; // TODO 补充v4接口
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
+
 // 获取分组待分配用户列表
 const groupWaitList = (params = {}) => {
   const url = env.group === 'v3' ? '/v3/interacts/group-join/wait-listing' : ''; // TODO 补充v4接口
@@ -157,6 +179,8 @@ export default {
   groupDisband,
   groupStartDiscussion,
   groupEndDiscussion,
+  groupPauseDiscussion,
+  groupContinueDiscussion,
   groupWaitList,
   groupListing,
   groupEnter,
