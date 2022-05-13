@@ -56,7 +56,6 @@ class MediaCheckServer {
       return navigator.mediaDevices
         .getUserMedia({ audio: true, video: true })
         .then(async stream => {
-          console.log('[mediaCheck] 查看是否走入此处 - 勿删 ( wap本机时，本地无法推流，只能查看线上，后续删除 )， result:', 1)
           // TODO: 根据参数判断是否发消息同步状态
           this.setDevice({ status: 1, send_msg: Number(options.isNeedBroadcast) });
           stream.getTracks().forEach(trackInput => {
@@ -65,11 +64,13 @@ class MediaCheckServer {
               trackInput.stop();
             })
           });
+          return Promise.resolve(true)
         })
-        .catch(async () => {
+        .catch(async (err) => {
           // TODO: 根据参数判断是否发消息同步状态
-          console.log('[mediaCheck] 查看是否走入此处 - 勿删 ( wap本机时，本地无法推流，只能查看线上，后续删除 )， result:', 2)
+          console.log('[mediaCheck] 查看是否走入此处 - 勿删 ( wap本机时，本地无法推流，只能查看线上，后续删除 )， result:', 2, err)
           this.setDevice({ status: 2, send_msg: Number(options.isNeedBroadcast) });
+          return Promise.resolve(false)
         });
     } else {
       await this.checkSystemRequirements()
