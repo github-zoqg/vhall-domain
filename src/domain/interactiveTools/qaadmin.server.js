@@ -298,6 +298,41 @@ class QaAdminServer extends BaseServer {
     });
   }
 
+  getQuestionAnswer(params = {}) {
+    // const queryStatusList = [0, 3, 1, 2]; //当前数组对应查询类型为 ['未回复', '已回复', '不处理', '在直播中回答']  => params.status 即是 当前数组值传入
+    return qa.list.getTextReply(params).then(res => {
+      if (res.code == 200) {
+        try {
+          res.data.list.forEach(item => {
+            if (item.content) {
+              item.content = textToEmojiText(item.content);
+            }
+          });
+        } catch (error) {
+          console.warn(error, '聊天消息过滤错误');
+        }
+        if (params.status === 1) {
+          // 不处理 noDealList
+          this.state.List[2].count = res.data.total;
+          this.state.noDealList = res.data.list;
+        } else if (params.status === 2) {
+          // 直播间回复 audioList
+          this.state.List[3].count = res.data.total;
+          this.state.audioList = res.data.list;
+        } else if (params.status === 3) {
+          // 已回复 textDealList
+          this.state.List[1].count = res.data.total;
+          this.state.textDealList = QaAdminServer._defaultCheckStatusByList(res.data.list, this.state.questionIds)
+        } else {
+          // 待处理 awaitList
+          this.state.List[0].count = res.data.total;
+          this.state.awaitList = QaAdminServer._defaultCheckStatusByList(res.data.list, this.state.questionIds)
+        }
+      }
+      return res;
+    });
+  }
+
   // 撤销回复
   revokeReply(params = {}) {
     return qa.list.revokeReply(params).then(res => {
