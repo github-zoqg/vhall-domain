@@ -180,11 +180,14 @@ class QaAdminServer extends BaseServer {
     });
   }
 
+  // 主持人答复观众的提问
   replyUserQuestion(params = {}) {
     console.log('qa domain replyUserQuestion-------->', params, this.state.awaitList);
     return qa.list.replyUserQuestion(params).then(res => {
       if (res.code == 200) {
+        // params.type：回复类型-消息类型，1-忽略；2-转给主持人即语音回复；3-文字回复。
         if (params.type == 1) {
+          // 未回复消息列表总数-1 & 当前数据移除，不处理列表总数+1
           this.state.List[0].count--;
           if (this.state.List[0].count <= 0) {
             this.state.List[0].count = 0;
@@ -193,6 +196,7 @@ class QaAdminServer extends BaseServer {
           let questionIndex = QaAdminServer._findMsgItemByList(this.state.awaitList, params.question_id);
           this.state.awaitList.splice(questionIndex, 1);
         } else if (params.type == 2) {
+          // 未回复消息列表总数-1 & 当前数据移除，直播中回答总数+1
           if (this.state.List[0].count == 0) {
             this.state.List[0].count = 0;
           } else {
@@ -202,6 +206,7 @@ class QaAdminServer extends BaseServer {
           this.state.awaitList.splice(questionIndex, 1);
           this.state.List[3].count++;
         } else if (params.type == 3) {
+          // 文字回复
           this.state.textDialogStatus = false;
           if (this.state.activeIndex != 1) {
             if (this.state.sendMessage.activeDom == 0) {
@@ -298,11 +303,48 @@ class QaAdminServer extends BaseServer {
     });
   }
 
+  getQuestionAnswer(params = {}) {
+    // const queryStatusList = [0, 3, 1, 2]; //当前数组对应查询类型为 ['未回复', '已回复', '不处理', '在直播中回答']  => params.status 即是 当前数组值传入
+    return qa.list.getTextReply(params).then(res => {
+      if (res.code == 200) {
+        try {
+          res.data.list.forEach(item => {
+            if (item.content) {
+              item.content = textToEmojiText(item.content);
+            }
+          });
+        } catch (error) {
+          console.warn(error, '聊天消息过滤错误');
+        }
+        if (params.status === 1) {
+          // 不处理 noDealList
+          this.state.List[2].count = res.data.total;
+          this.state.noDealList = res.data.list;
+        } else if (params.status === 2) {
+          // 直播间回复 audioList
+          this.state.List[3].count = res.data.total;
+          this.state.audioList = res.data.list;
+        } else if (params.status === 3) {
+          // 已回复 textDealList
+          this.state.List[1].count = res.data.total;
+          this.state.textDealList = QaAdminServer._defaultCheckStatusByList(res.data.list, this.state.questionIds)
+        } else {
+          // 待处理 awaitList
+          this.state.List[0].count = res.data.total;
+          this.state.awaitList = QaAdminServer._defaultCheckStatusByList(res.data.list, this.state.questionIds)
+        }
+      }
+      return res;
+    });
+  }
+
   // 撤销回复
   revokeReply(params = {}) {
     return qa.list.revokeReply(params).then(res => {
       if (res.code == 200) {
-        this.state.textDealList[params.father_index].answer[params.index].is_backout = 1;
+        // 撤销回复后，修改对应集合的数据状态
+        const listNames = ['awaitList', 'textDealList', 'noDealList', 'audioList']
+        this.state[listNames[this.state.activeIndex]][params.father_index].answer[params.index].is_backout = 1;
       }
       return res;
     });
