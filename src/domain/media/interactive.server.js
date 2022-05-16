@@ -1369,6 +1369,8 @@ class InteractiveServer extends BaseServer {
         event => {
           // 互动实例
           this.interactiveInstance = event.vhallrtc;
+          this._addListeners();
+
           // 是否有互动实例置为true
           this.state.isInstanceInit = true
           console.log('%c[interactive server] 云导播初始化互动实例完成', 'color:#0000FF', event)
