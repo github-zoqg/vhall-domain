@@ -60,10 +60,9 @@ const groupEndDiscussion = (params = {}) => {
   });
 };
 
-// TODO:暂停讨论的接口替换
 // 暂停讨论
 const groupPauseDiscussion = (params = {}) => {
-  const url = env.group === 'v3' ? '/v3/interacts/group-switch/end' : ''; // TODO 补充v4接口
+  const url = env.group === 'v3' ? '/v3/interacts/group-switch/stop' : ''; // TODO 补充v4接口
   return request({
     url,
     method: 'POST',
@@ -71,10 +70,9 @@ const groupPauseDiscussion = (params = {}) => {
   });
 }
 
-// TODO:继续讨论的接口替换
 // 继续讨论
-const groupContinueDiscussion = (params = {}) => {
-  const url = env.group === 'v3' ? '/v3/interacts/group-switch/end' : ''; // TODO 补充v4接口
+const groupProceedDiscussion = (params = {}) => {
+  const url = env.group === 'v3' ? '/v3/interacts/group-switch/proceed' : ''; // TODO 补充v4接口
   return request({
     url,
     method: 'POST',
@@ -180,7 +178,7 @@ export default {
   groupStartDiscussion,
   groupEndDiscussion,
   groupPauseDiscussion,
-  groupContinueDiscussion,
+  groupProceedDiscussion,
   groupWaitList,
   groupListing,
   groupEnter,

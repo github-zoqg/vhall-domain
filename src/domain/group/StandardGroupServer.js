@@ -989,6 +989,23 @@ class StandardGroupServer extends BaseServer {
   }
 
   /**
+   * TODO:消息类型注明
+   * 继续讨论
+   * 该操作执行成功，所有端会收到 event_type === 'group_switch_end'的消息
+   * 和type==='main_room_join_change'的消息
+   * @returns
+   */
+  async proceedDiscussion() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const params = {
+      room_id: watchInitData.interact.room_id, // 主直播房间ID
+      switch_id: watchInitData.switch.switch_id // 场次ID
+    };
+    const result = await groupApi.groupPauseDiscussion(params);
+    return result;
+  }
+
+  /**
    * 主持人、助理进入小组
    * 该操作执行成功，所有端会收到两个消息：
    * type === 'group_join_change' 小组讨论使用消息
