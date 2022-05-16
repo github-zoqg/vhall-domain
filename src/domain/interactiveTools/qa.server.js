@@ -28,7 +28,8 @@ class QaServer extends BaseServer {
     QA_CLOSE: 'question_answer_close',
     QA_CREATE: 'question_answer_create',
     QA_COMMIT: 'question_answer_commit',
-    QA_BACKOUT: 'question_answer_backout'
+    QA_BACKOUT: 'question_answer_backout',
+    QA_SET: "question_answer_set"//设置问答名称
   };
   //setSate
   setState(key, value) {
@@ -82,7 +83,8 @@ class QaServer extends BaseServer {
           this.state.qaList.splice(backIndex, 1)
           this.$emit(this.Events.QA_BACKOUT, msg);
           break;
-
+        case this.Events.QA_SET:
+          this.$emit(this.Events.QA_SET, msg);
       }
     });
   }
