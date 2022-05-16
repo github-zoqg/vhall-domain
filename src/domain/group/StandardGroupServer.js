@@ -44,6 +44,8 @@ class StandardGroupServer extends BaseServer {
       },
       // 分组讨论操作面板是否显示
       panelShow: false,
+      //是否白名单预分组
+      presetWay: false,
       // 待分配人员列表
       waitingUserList: [],
       // 已分组人员列表
@@ -89,6 +91,8 @@ class StandardGroupServer extends BaseServer {
       MAIN_ROOM_JOIN_CHANGE: 'MAIN_ROOM_JOIN_CHANGE',
       // 主持人/助理进入与退出小组
       GROUP_MANAGER_ENTER: 'GROUP_MANAGER_ENTER',
+      // 重新导入
+      GROUP_PRESET_IMPORT: 'GROUP_PRESET_IMPORT',
     };
 
     this.groupLeaderLeaveMap = new Map()
@@ -121,13 +125,43 @@ class StandardGroupServer extends BaseServer {
       this.state.groupInitData.join_role = interactToolStatus.join_role;
     }
   }
+  /**
+   * 分组讨论重新导入
+   * @returns 
+   */
+  async groupPresetImport() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const params = {
+      room_id: watchInitData.interact.room_id, // 主直播房间ID
+      switch_id: watchInitData.switch.switch_id, // 场次ID,
+      webinar_id: watchInitData.webinar.id
+    };
+    return await groupApi.groupPresetImport(params);
+  }
 
   async getGroupInfo() {
     const { watchInitData } = useRoomBaseServer().state;
     const params = {
-      room_id: watchInitData.interact.room_id // 主直播房间ID
+      room_id: watchInitData.interact.room_id, // 主直播房间ID
+      switch_id: watchInitData.switch.switch_id, // 场次ID,
+      webinar_id: watchInitData.webinar.id
     };
     return await groupApi.groupInit(params);
+  }
+
+  /**
+   * 
+   * @returns 
+   */
+  async initPresetGroup() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const params = {
+      room_id: watchInitData.interact.room_id, // 主直播房间ID
+      switch_id: watchInitData.switch.switch_id, // 场次ID,
+      webinar_id: watchInitData.webinar.id
+    };
+    const result = await groupApi.initPresetGroup(params);
+    return result;
   }
 
   //监听分组相关消息（属于房间消息）
@@ -833,13 +867,14 @@ class StandardGroupServer extends BaseServer {
    * @param {String} way 分组方式，1=随机分配|2=手动分配
    * @returns
    */
-  async groupCreate({ number, way = 1 }) {
+  async groupCreate({ number, way = 1, webinar_id }) {
     const { watchInitData } = useRoomBaseServer().state;
     const params = {
       room_id: watchInitData.interact.room_id, // 主直播房间ID
       switch_id: watchInitData.switch.switch_id, // 场次ID
       number: number + '', // 转字符串
-      way: way + '' // 转字符串
+      way: way + '', // 转字符串
+      webinar_id: webinar_id + ''//活动id
     };
     const result = await groupApi.groupCreate(params);
     return result;
@@ -874,6 +909,7 @@ class StandardGroupServer extends BaseServer {
     const result = await groupApi.groupListing(params);
     if (result && result.code === 200) {
       this.state.groupedUserList = result.data.list;
+      this.state.presetWay = result.data.preset_way
     }
     return result;
   }
@@ -1034,7 +1070,6 @@ class StandardGroupServer extends BaseServer {
     const result = await groupApi.groupQuit(params);
     return result;
   }
-
 
 
   /**
