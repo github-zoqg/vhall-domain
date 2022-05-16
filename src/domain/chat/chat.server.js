@@ -147,6 +147,14 @@ class ChatServer extends BaseServer {
       if (rawMsg.data.type === 'room_kickout' && this.isMyMsg(rawMsg)) {
         this.$emit('roomKickout');
       }
+      if (rawMsg.data.type == "live_over") {
+        this.state.allBanned = false;
+        this.setAllBannedModuleList({
+          chat_status: 1,
+          qa_status: 1,
+          private_chat_status: 1
+        })
+      }
     });
     //接收频道变更通知
     msgServer.$on(msgServer.EVENT_TYPE.CHANNEL_CHANGE, () => {
@@ -360,9 +368,9 @@ class ChatServer extends BaseServer {
   //设置全体禁言状态下各模块生效状态
   setAllBannedModuleList(data) {
     const { chat_status, qa_status, private_chat_status } = data;
-    this.state.allBannedModuleList.chat_status = chat_status;
-    this.state.allBannedModuleList.qa_status = qa_status;
-    this.state.allBannedModuleList.private_chat_status = private_chat_status;
+    this.state.allBannedModuleList.chat_status = chat_status == 1 ? true : false;
+    this.state.allBannedModuleList.qa_status = qa_status == 1 ? true : false;
+    this.state.allBannedModuleList.private_chat_status = private_chat_status == 1 ? true : false;
   }
   /**
    * 禁言/取消禁言
