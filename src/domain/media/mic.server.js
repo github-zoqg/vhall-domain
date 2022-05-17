@@ -30,7 +30,7 @@ class MicServer extends BaseServer {
   }
   // 更新上麦列表,接口更新时调用
   updateSpeakerList() {
-    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+    const { interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state
 
     let speakerList = interactToolStatus.speaker_list || []

@@ -271,7 +271,7 @@ class MemberServer extends BaseServer {
     const userId = join_info.third_party_user_id;
     const isLive = clientType === 'send';
     console.log(isLive, 'isLive-------------------');
-    const isInGroup = useGroupServer().state.groupInitData.isInGroup;
+    const { isInGroup, switch_status } = useGroupServer().state.groupInitData;
     try {
       const { context } = msg;
       //如果上线的人是自己，不做操作
@@ -294,7 +294,7 @@ class MemberServer extends BaseServer {
       //发起端
       if (isLive) {
         const groupUsersNumber = useGroupServer().state.groupedUserList.length || 0;
-        const fixedNum = [1, 2, '1', '2'].includes(useRoomBaseServer().state.interactToolStatus.is_open_switch) ? groupUsersNumber : 0;
+        const fixedNum = switch_status == 1 ? groupUsersNumber : 0;
         this.state.totalNum = isInGroup ? msg.uv : msg.uv - fixedNum;
         //人员信息基础模板
         let user = {
@@ -404,14 +404,14 @@ class MemberServer extends BaseServer {
   _handleUserLeaveRoom(msg) {
     const { clientType = '' } = useRoomBaseServer().state;
     const isLive = clientType === 'send';
-    const isInGroup = useGroupServer().state.groupInitData.isInGroup;
+    const { isInGroup, switch_status } = useGroupServer().state.groupInitData;
     // 如果是聊天审核,不做任何操作
     if (msg.context.isAuthChat) {
       return;
     }
     //todo 这里可能会改成，请求一下分组的接口，拿到分组的实际人数，因为分组Server的list这时候可能还在请求
     const groupUserNum = useGroupServer().state.groupedUserList.length >= 1 ? useGroupServer().state.groupedUserList.length - 1 : 0;
-    const fixedNum = ([1, 2, '1', '2'].includes(useRoomBaseServer().state.interactToolStatus.is_open_switch) ? groupUserNum : 0);
+    const fixedNum = (switch_status == 1 ? groupUserNum : 0);
     if (isLive) {
       this.state.totalNum = isInGroup ? msg.uv : msg.uv - fixedNum;
     } else {

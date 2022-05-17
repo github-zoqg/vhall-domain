@@ -11,16 +11,6 @@ const groupInit = (params = {}) => {
   });
 };
 
-//预分组小组初始化
-const initPresetGroup = (params = {}) => {
-  const url = env.group === 'v3' ? '/v3/interacts/group/init-preset-group' : '';
-  return request({
-    url,
-    method: 'POST',
-    data: params
-  });
-};
-
 //重新导入
 const groupPresetImport = (params = {}) => {
   const url = env.group === 'v3' ? '/v3/interacts/group/preset-import' : '';
@@ -192,7 +182,6 @@ const groupHelp = (params = {}) => {
 
 export default {
   groupInit,
-  initPresetGroup,
   groupCreate,
   groupSetLeader,
   groupDisband,
