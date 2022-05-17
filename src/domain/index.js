@@ -30,7 +30,7 @@ import useKeyLoginServer from '@/domain/keyLogin/keyLogin.server.js';
 import useCustomMenuServer from '@/domain/brand/customMenu.server';
 
 import useRebroadcastServer from '@/domain/interactiveTools/rebroadcast.server';
-import useZIndexServer from '@/domain/interactiveTools/ZIndexServer.js';
+import useZIndexServer from '@/domain/interactiveTools/zindexServer.js';
 
 // 问答关联
 import useQaAdminServer from '@/domain/interactiveTools/qaadmin.server.js';
@@ -55,6 +55,7 @@ import useSubjectServer from '@/domain/brand/subject.server';
 import useRedPacketServer from '@/domain/interactiveTools/redPacketServer.js';
 
 import useSplitScreenServer from '@/domain/media/splitScreen.server';
+import useVideoPollingServer from '@/domain/media/videoPolling.server';
 
 import useHomepageServer from '@/domain/brand/homepage.server';
 
@@ -165,6 +166,7 @@ export {
   useRedPacketServer,
   useKeyLoginServer,
   useSplitScreenServer,
+  useVideoPollingServer,
   useHomepageServer,
   useRecommendServer,
   useZIndexServer

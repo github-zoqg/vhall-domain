@@ -45,10 +45,20 @@ const getLatestRedpacketUsage = params => {
   });
 };
 
+// 获取红包总人数
+const getRedpacketTotal = params => {
+  return request('/v3/interacts/chat-user/get-online-count', {
+    method: 'POST',
+    data: params
+  });
+};
+
+
 export default {
   createRedpacket,
   getRedPacketInfo,
   openRedpacket,
   getRedPacketWinners,
-  getLatestRedpacketUsage
+  getLatestRedpacketUsage,
+  getRedpacketTotal
 };

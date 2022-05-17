@@ -98,7 +98,6 @@ class RoomBaseServer extends BaseServer {
       meeting[liveType.get(options.clientType)](options).then(res => {
         if (res.code === 200) {
           this.state.watchInitData = res.data;
-
           // 设置转发初始值(初始化数据实体)
           if (this.state.watchInitData?.rebroadcast) {
             this.setRebroadcastInfo(this.state.watchInitData.rebroadcast)
@@ -122,10 +121,16 @@ class RoomBaseServer extends BaseServer {
             }
           }
           // 判断是不是第三方推流
-          res.data.switch && (this.state.isThirdStream = ![0, 1, '0', '1'].includes(res.data.switch.start_type))
+          if (res.data.switch && res.data.switch.start_type == 4) {
+            this.state.isThirdStream = true;
+          }
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
           sessionStorage.setItem('visitorId', res.data.visitor_id);
+          // 解决多个主持人同时在线问题
+          if (!!res.data.visitor_id) {
+            sessionStorage.setItem('visitorId_home', res.data.visitor_id);
+          }
           this.addListeners();
           resolve(res);
         } else {
@@ -169,6 +174,7 @@ class RoomBaseServer extends BaseServer {
         // 结束直播时，将第三方推流标识关闭
         if (this.state.isThirdStream) {
           this.state.isThirdStream = false;
+          this.state.interactToolStatus.start_type = 1;
         }
 
       }
@@ -293,6 +299,47 @@ class RoomBaseServer extends BaseServer {
         this.state.configList = configList
       }
       return res;
+    });
+  }
+
+  // 获取观看协议状态查询
+  getAgreementStatus() {
+    const webinarId = this.state.watchInitData?.webinar?.id
+    return meeting.restrictions({ webinar_id: webinarId })
+  }
+
+  // 同意条款
+  agreeWitthTerms(params = {}) {
+    const webinarId = this.state.watchInitData?.webinar?.id
+    const visitorId = sessionStorage.getItem('visitorId') || ''
+    return meeting.setUserAgree({
+      webinar_id: webinarId,
+      visitor_id: visitorId,
+      email: params.email || '',
+      third_user_id: params.third_user_id || ''
+    })
+  }
+
+  // 获取视频论巡权限
+  // TODO: 后续观看端统一处理配置项权限之后，这个就不用了
+  getVideoPollingConfig() {
+    const defaultParams = {
+      webinar_id: this.state.watchInitData.webinar && this.state.watchInitData.webinar.id,
+      webinar_user_id: this.state.watchInitData.webinar && this.state.watchInitData.webinar.userinfo.user_id,
+      scene_id: 1
+    };
+    return meeting.getConfigList(defaultParams).then(res => {
+      if (res.code == 200) {
+        const configList = JSON.parse(res.data.permissions);
+        for (let key in configList) {
+          if (key === 'video_polling') {
+            this.state.configList = {
+              ...this.state.configList,
+              video_polling: Number(configList[key])
+            }
+          }
+        }
+      }
     });
   }
 
