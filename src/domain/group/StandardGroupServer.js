@@ -4,7 +4,7 @@ import useInteractiveServer from '../media/interactive.server';
 import useMsgServer from '../common/msg.server';
 import useDocServer from '../doc/doc.server';
 import { group as groupApi } from '../../request/index.js';
-import { isPc } from '@/utils/index.js';
+import { isPc, merge } from '@/utils/index.js';
 import useMicServer from '../media/mic.server';
 import { sleep } from '../../utils';
 
