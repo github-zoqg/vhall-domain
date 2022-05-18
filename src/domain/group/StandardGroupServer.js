@@ -182,6 +182,10 @@ class StandardGroupServer extends BaseServer {
         case 'group_switch_end':
           this.msgdoForGroupSwitchEnd(msg);
           break;
+        //暂停讨论
+        case 'group_switch_stop':
+          this.msgdoForGroupSwitchEnd(msg, { isSwitchEnd: false });
+          break;
         //小组被解散
         case 'group_disband':
           this.msgdoForGroupDisband(msg);
@@ -471,24 +475,28 @@ class StandardGroupServer extends BaseServer {
     this.$emit(this.EVENT_TYPE.GROUP_SWITCH_START, msg);
   }
 
-  //【结束讨论】
-  async msgdoForGroupSwitchEnd(msg) {
+  //【结束/暂停讨论】
+  async msgdoForGroupSwitchEnd(msg, options = { isSwitchEnd: true }) {
     // 如果没有结束讨论，直接结束了直播，就return;
     if (msg.data.over_live) return;
 
     const roomBaseServer = useRoomBaseServer()
     console.log('[group] domain group_switch_end', msg);
     // 设置开始为未讨论状态
-    this.setGroupInitData('switch_status', 0);
+    this.setGroupInitData('switch_status', options.isSwitchEnd ? 0 : 3);
     // 主持人是否在小组内
     roomBaseServer.setInavToolStatus('is_host_in_group', 0);
-    // 重置分配人员列表
-    this.state.waitingUserList = [];
-    this.state.groupedUserList = [];
 
-    if (roomBaseServer.state.clientType === 'send') {
-      //主持端
-      this.state.panelShow = false;
+    // 如果是结束直播
+    if (options.isSwitchEnd) {
+      // 重置分配人员列表
+      this.state.waitingUserList = [];
+      this.state.groupedUserList = [];
+
+      if (roomBaseServer.state.clientType === 'send') {
+        //主持端
+        this.state.panelShow = false;
+      }
     }
 
     // 结束讨论但不在分组中，不需要发消息，直接 return
@@ -1025,7 +1033,7 @@ class StandardGroupServer extends BaseServer {
       room_id: watchInitData.interact.room_id, // 主直播房间ID
       switch_id: watchInitData.switch.switch_id // 场次ID
     };
-    const result = await groupApi.groupPauseDiscussion(params);
+    const result = await groupApi.groupProceedDiscussion(params);
     return result;
   }
 
@@ -1121,22 +1129,6 @@ class StandardGroupServer extends BaseServer {
       from: oldGroupId,
       to: oldGroupId
     };
-  }
-
-  // 分组直播，进出子房间需要在主房间发消息，维护主房间 online-list
-  sendMainRoomJoinChangeMsg(options = { isJoinMainRoom: false, isBanned: false }) {
-    const { watchInitData } = useRoomBaseServer().state;
-    var isPcClient = isPc();
-    const body = {
-      type: 'main_room_join_change',
-      nickname: watchInitData.join_info.nickname,
-      accountId: watchInitData.join_info.third_party_user_id,
-      isJoinMainRoom: options.isJoinMainRoom,
-      role_name: watchInitData.join_info.role_name,
-      device_type: isPcClient ? '2' : '1',
-      isBanned: options.isBanned
-    };
-    useMsgServer().sendMainRoomMsg(JSON.stringify(body));
   }
 
   // 设置主讲人（邀请演示）
