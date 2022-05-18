@@ -242,7 +242,7 @@ class InteractiveServer extends BaseServer {
         // 若设备为2   不允许则直接下麦
         await useMicServer().speakOff()
       }
-      if (useMediaCheckServer().state.deviceInfo.device_status == 0) {
+      if (useMediaCheckServer().state.deviceInfo.device_status == 0 && !opts.videoPolling) {
         let _flag = await useMediaCheckServer().getMediaInputPermission({ isNeedBroadcast: false })
         if (!_flag) {
           await useMicServer().speakOff()
