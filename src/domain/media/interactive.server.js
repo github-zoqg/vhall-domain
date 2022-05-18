@@ -167,6 +167,7 @@ class InteractiveServer extends BaseServer {
       return (
         watchInitData.join_info.role_name != 2 ||
         watchInitData.webinar.no_delay_webinar == 1 ||
+        watchInitData.webinar.mode == 6 ||
         isSpeakOn || options?.videoPolling
       );
     }
@@ -191,6 +192,8 @@ class InteractiveServer extends BaseServer {
     // 获取互动实例角色
     const role = await this._getInteractiveRole(options);
 
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
+
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
       inavId, // 互动房间ID，必填
@@ -203,9 +206,9 @@ class InteractiveServer extends BaseServer {
           : VhallPaasSDK.modules.VhallRTC.MODE_RTC, //应用场景模式，选填，可选值参考下文【应用场景类型】。支持版本：2.3.1及以上。
       role, //用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
       attributes: '', // String 类型
-      autoStartBroadcast: watchInitData.join_info.role_name == 1, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
+      autoStartBroadcast: watchInitData.join_info.role_name == 1 || isGroupLeader, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
       broadcastConfig:
-        watchInitData.join_info.role_name == 1
+        watchInitData.join_info.role_name == 1 || isGroupLeader
           ? {
             adaptiveLayoutMode:
               VhallRTC[sessionStorage.getItem('layout')] ||
@@ -222,6 +225,7 @@ class InteractiveServer extends BaseServer {
           : {}, // 自动旁路   开启旁路直播方法所需参数
       otherOption: watchInitData.report_data
     };
+    console.log('初始化互动options', defaultOptions)
     return defaultOptions;
   }
 
