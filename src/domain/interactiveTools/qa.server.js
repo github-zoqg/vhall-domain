@@ -82,7 +82,9 @@ class QaServer extends BaseServer {
           this.state.qaList.splice(backIndex, 1)
           this.$emit(this.Events.QA_BACKOUT, msg);
           break;
-
+        case "live_start":
+          this.state.qaList.splice(0)
+          break;
       }
     });
   }
