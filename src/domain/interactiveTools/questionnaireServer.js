@@ -19,7 +19,8 @@ class QuestionnaireServer extends BaseServer {
       iconVisible: false, // icon 是否显示
       dotVisible: false, // 小红点是否显示
       lastQuestionnaireId: '', // 最后一个问卷id
-      QuestionList: null
+      QuestionList: null,
+      alias: ''
     }
   }
 
@@ -64,6 +65,7 @@ class QuestionnaireServer extends BaseServer {
     });
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.UPDATE, async data => {
       const extension = JSON.parse(data.extension);
+      data.alias = this.state.alias;
       const relt = await this.editQuestionnaire(data, extension.playback_filling);
       this.$emit(VHall_Questionnaire_Const.EVENT.UPDATE, relt, data);
     });
@@ -388,6 +390,11 @@ class QuestionnaireServer extends BaseServer {
         return res.data
       }
     });
+  }
+
+  // 设置问卷别名
+  setAlias(data) {
+    this.state.alias = data
   }
 }
 
