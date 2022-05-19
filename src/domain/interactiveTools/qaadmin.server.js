@@ -227,6 +227,9 @@ class QaAdminServer extends BaseServer {
           }
         } else {
         }
+      } else if (res.code === 513123) {
+        // 异常情况下，关闭弹出框
+        this.state.textDialogStatus = false
       }
       return res;
     });
@@ -602,6 +605,11 @@ class QaAdminServer extends BaseServer {
       }
       return res;
     });
+  }
+
+  // 关闭弹出框
+  closeTextDialogStatus() {
+    this.state.textDialogStatus = false
   }
 }
 
