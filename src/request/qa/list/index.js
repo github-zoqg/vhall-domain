@@ -137,6 +137,16 @@ const setRankList = (params = {}) => {
   });
 };
 
+// [发起端] 获取已设定的问答名称
+const getQaShowName = (params = {}) => {
+  const url = env.qa === 'v3' ? '/v3/interacts/qa/get-info' : '';
+  return request({
+    url: url,
+    method: 'POST',
+    data: params
+  });
+};
+
 export default {
   initChatMess,
   qaEnable,
@@ -151,5 +161,6 @@ export default {
   revokeReply,
   chatPrivateGetRankList,
   chatPrivateGetList,
-  setRankList
+  setRankList,
+  getQaShowName
 };
