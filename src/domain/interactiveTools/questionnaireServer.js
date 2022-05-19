@@ -135,7 +135,8 @@ class QuestionnaireServer extends BaseServer {
     return new Promise((resolve, reject) => {
       questionnaireApi.publishQuestionnaire({
         room_id: interact.room_id,
-        survey_id: surveyId
+        survey_id: surveyId,
+        switch_id: watchInitData.switch.switch_id
       }).then(res => {
         if (res.code === 200) {
           // 防止首次推送后没有发布
@@ -384,6 +385,7 @@ class QuestionnaireServer extends BaseServer {
     return questionnaireApi.getSurveyList({
       room_id: watchInitData.interact.room_id,
       webinar_id: watchInitData.webinar.id,
+      switch_id: watchInitData.switch.switch_id
     }).then(res => {
       if (res.code == 200) {
         this.state.QuestionList = res.data
