@@ -149,6 +149,15 @@ class QaServer extends BaseServer {
 
       });
   }
+
+  // [发起端] 获取已设定的问答名称
+  getQaName() {
+    const { watchInitData } = useRoomBaseServer().state;
+    return qa.list.getQaShowName({
+      webinar_id: watchInitData.webinar.id
+    })
+  }
+
 }
 
 export default function useQaServer() {
