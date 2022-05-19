@@ -309,6 +309,7 @@ class InteractiveServer extends BaseServer {
       let currentMaxOnMicNums = watchInitData.webinar?.inav_num || 1
       let currentOnMicNums = 0
       groupInitData.isInGroup ? currentOnMicNums = groupInitData.speaker_list?.length : currentOnMicNums = interactToolStatus.speaker_list?.length
+      console.log(`[interactiveServer]----currentOnMicNums: ${currentOnMicNums}---currentMaxOnMicNums: ${currentMaxOnMicNums}`)
       if (currentOnMicNums >= currentMaxOnMicNums) {
         if (watchInitData.join_info.role_name != 2) {
           return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
@@ -328,7 +329,10 @@ class InteractiveServer extends BaseServer {
       // 依据V7.1.2需求   将wap的分组活动自动上麦逻辑移至platform侧    分组活动 + wap + 自动上麦 + 观众 + 未超出最大上麦人数
       if (watchInitData.webinar.mode == 6 && useMsgServer().isMobileDevice() && watchInitData.join_info.role_name == 2) {
         this.state.mobileOnWheat = true // platform侧依据此进行加载初始化互动实例并上麦
-        return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE
+        // 此处增加device_status 原因：分组直播中，切换wap观众小组，若是设备可用的时候，还是需要调用上麦接口的
+        if (device_status != 1) {
+          return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE
+        }
       }
       // 调上麦接口判断当前人是否可以上麦
       const res = await micServer.userSpeakOn();
