@@ -150,7 +150,7 @@ class QaServer extends BaseServer {
   getQaName() {
     const { watchInitData } = useRoomBaseServer().state;
     return qa.list.getQaShowName({
-      webinar_id: watchInitData.webinar_id
+      webinar_id: watchInitData.webinar.id
     })
   }
 
