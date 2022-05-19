@@ -33,7 +33,9 @@ class InteractiveServer extends BaseServer {
       streamListHeightInWatch: 0, // PC观看端流列表高度
       fullScreenType: false, // wap 全屏状态
       defaultStreamBg: false, //开始推流到成功期间展示默认图
-      showPlayIcon: false // 展示播放按钮
+      showPlayIcon: false, // 展示播放按钮
+      mobileOnWheat: false, // V7.1.2版本需求，将wap的自动上麦操作移至platform层
+      mediaPermissionDenied: false // V7.1.2版本需求   分组活动+开启自动上麦，pc端观众，默认自动上麦
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
@@ -240,6 +242,12 @@ class InteractiveServer extends BaseServer {
         // 若设备为2   不允许则直接下麦
         await useMicServer().speakOff()
       }
+      if (useMediaCheckServer().state.deviceInfo.device_status == 0 && !opts.videoPolling) {
+        let _flag = await useMediaCheckServer().getMediaInputPermission({ isNeedBroadcast: false })
+        if (!_flag) {
+          await useMicServer().speakOff()
+        }
+      }
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
@@ -266,7 +274,8 @@ class InteractiveServer extends BaseServer {
 
     // 记录状态，初始化互动时为false,调用speakOn成功后 设置为true
     this.state.autoSpeak = false
-    if ((useMediaCheckServer().state.deviceInfo.device_status === 1)) {
+    let device_status = useMediaCheckServer().state.deviceInfo.device_status
+    if ((+device_status != 2)) {
       if (interactToolStatus.auto_speak == 1) {
         if (groupInitData.isInGroup) {
           autoSpeak =
@@ -295,8 +304,32 @@ class InteractiveServer extends BaseServer {
     }
 
 
-
     if (autoSpeak) {
+      // 获取当前最大上麦人数currentMaxOnMicNums 和 当前的在麦人数currentOnMicNums    在麦人数>=最大上麦人数，则不再调用上麦接口
+      let currentMaxOnMicNums = watchInitData.webinar?.inav_num || 1
+      let currentOnMicNums = 0
+      groupInitData.isInGroup ? currentOnMicNums = groupInitData.speaker_list?.length : currentOnMicNums = interactToolStatus.speaker_list?.length
+      if (currentOnMicNums >= currentMaxOnMicNums) {
+        if (watchInitData.join_info.role_name != 2) {
+          return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
+        }
+        return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE
+      }
+
+      // 依据V7.1.2需求   分组活动 + pc端 + 观众 + 未超出最大上麦人数 => 获取设备权限
+      if (watchInitData.webinar.mode == 6 && !useMsgServer().isMobileDevice() && watchInitData.join_info.role_name == 2) {
+        let _flag = await useMediaCheckServer().getMediaInputPermission({ isNeedBroadcast: false })
+        if (!_flag) {
+          this.state.mediaPermissionDenied = true
+          return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE
+        }
+      }
+
+      // 依据V7.1.2需求   将wap的分组活动自动上麦逻辑移至platform侧    分组活动 + wap + 自动上麦 + 观众 + 未超出最大上麦人数
+      if (watchInitData.webinar.mode == 6 && useMsgServer().isMobileDevice() && watchInitData.join_info.role_name == 2) {
+        this.state.mobileOnWheat = true // platform侧依据此进行加载初始化互动实例并上麦
+        return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE
+      }
       // 调上麦接口判断当前人是否可以上麦
       const res = await micServer.userSpeakOn();
       console.log('[interactiveServer]----上麦接口响应', res)
@@ -308,11 +341,6 @@ class InteractiveServer extends BaseServer {
         this.state.autoSpeak = true
 
         return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
-      } else if (res.code == '513025') {
-        // 由于调用上麦是在互动服务内，异常时，无法提示，  直接派发的话，业务未初始化，故延迟500
-        setTimeout(() => {
-          this.$emit('SPEAKON_FAILED', res)
-        }, 500);
       }
     } else {
       micServer.setSpeakOffToInit(false)
