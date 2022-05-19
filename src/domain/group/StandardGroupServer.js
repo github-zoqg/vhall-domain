@@ -178,6 +178,10 @@ class StandardGroupServer extends BaseServer {
         case 'group_switch_start':
           this.msgdoForGroupSwitchStart(msg);
           break;
+        //继续讨论
+        case 'group_switch_proceed':
+          this.msgdoForGroupSwitchStart(msg, { isSwitchStart: false });
+          break;
         //结束讨论
         case 'group_switch_end':
           this.msgdoForGroupSwitchEnd(msg);
@@ -411,12 +415,12 @@ class StandardGroupServer extends BaseServer {
   }
 
   /**
-   * //【开启讨论/开始讨论】
+   * //【开启讨论/开始讨论/继续讨论】
    * @param {*} msg
    * @notes 发起端、接收端 广播
    * @returns
    */
-  async msgdoForGroupSwitchStart(msg) {
+  async msgdoForGroupSwitchStart(msg, options = { isSwitchStart: true }) {
     console.log('[group] domain group_switch_start', msg);
     // 更新个人所在小组信息
     await this.updateGroupInitData();
@@ -465,7 +469,7 @@ class StandardGroupServer extends BaseServer {
     this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
     // 处理分组下互动sdk切换channel
-    await useInteractiveServer().init()
+    await useInteractiveServer().init(options)
 
     // 处理文档channel切换逻辑
     useDocServer().groupReInitDocProcess();
