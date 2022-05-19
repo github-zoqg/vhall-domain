@@ -382,6 +382,7 @@ class QuestionnaireServer extends BaseServer {
     return questionnaireApi.getSurveyList({
       room_id: watchInitData.interact.room_id,
       webinar_id: watchInitData.webinar.id,
+      switch_id: watchInitData.switch.switch_id
     }).then(res => {
       if (res.code == 200) {
         this.state.QuestionList = res.data
