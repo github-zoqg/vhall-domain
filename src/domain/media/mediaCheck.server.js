@@ -93,7 +93,6 @@ class MediaCheckServer {
       const retParams = merge.recursive({}, defaultParams, data);
       return meeting.setDevice(retParams).then(res => {
         resolve(res)
-        console.warn('cxs----3')
         return Promise.reject(false);
       });
     })
