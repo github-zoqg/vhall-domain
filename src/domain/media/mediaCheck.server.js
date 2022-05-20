@@ -57,7 +57,7 @@ class MediaCheckServer {
         .getUserMedia({ audio: true, video: true })
         .then(async stream => {
           // TODO: 根据参数判断是否发消息同步状态
-          this.setDevice({ status: 1, send_msg: Number(options.isNeedBroadcast) });
+          await this.setDevice({ status: 1, send_msg: Number(options.isNeedBroadcast) });
           stream.getTracks().forEach(trackInput => {
             // 增加异步停止track stop       进行尝试解决 ID1004170 问题
             setTimeout(() => {
@@ -69,7 +69,7 @@ class MediaCheckServer {
         .catch(async (err) => {
           // TODO: 根据参数判断是否发消息同步状态
           console.log('%c [mediaCheck] 获取权限失败:', 'color: pink', err)
-          this.setDevice({ status: 2, send_msg: Number(options.isNeedBroadcast) });
+          await this.setDevice({ status: 2, send_msg: Number(options.isNeedBroadcast) });
           return Promise.resolve(false)
         });
     } else {
