@@ -85,6 +85,10 @@ class QaServer extends BaseServer {
           break;
         case this.Events.QA_SET:
           this.$emit(this.Events.QA_SET, msg);
+          break;
+        case "live_start":
+          this.state.qaList.splice(0)
+          break;
       }
     });
   }

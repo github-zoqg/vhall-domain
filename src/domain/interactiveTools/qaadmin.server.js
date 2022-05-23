@@ -93,7 +93,10 @@ class QaAdminServer extends BaseServer {
           this.state.awaitList.push(msgData);
         }
         this.state.List[0].count++;
+      } else if (msgData.type == 'question_answer_open' || msgData.type == 'question_answer_close' || msgData.type == 'question_answer_set') {
+        this.state.qaName = msgData.name
       }
+
     });
   }
 
