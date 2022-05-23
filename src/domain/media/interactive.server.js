@@ -33,10 +33,12 @@ class InteractiveServer extends BaseServer {
       streamListHeightInWatch: 0, // PC观看端流列表高度
       fullScreenType: false, // wap 全屏状态
       defaultStreamBg: false, //开始推流到成功期间展示默认图
-      showPlayIcon: false // 展示播放按钮
+      showPlayIcon: false, // 展示播放按钮
+      isGroupDiscuss: false // 分组是否继续讨论
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
+      PROCEED_DISCUSSION: 'PROCEED_DISCUSSION' // 分组初始化继续讨论事件
     }
 
     this.abortStreams = []  // 自动播放失败的订阅流
@@ -102,7 +104,9 @@ class InteractiveServer extends BaseServer {
 
             useMicServer().updateSpeakerByAccountId(stream.accountId, stream)
           })
-
+          if (this.state.isGroupDiscuss) {
+            this.$emit(this.EVENT_TYPE.PROCEED_DISCUSSION)
+          }
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
           resolve(event);
         },
@@ -236,13 +240,21 @@ class InteractiveServer extends BaseServer {
   async _getInteractiveRole(opts) {
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state
+    const micServer = useMicServer()
+    const chatServer = useChatServer()
 
 
     // 如果在麦上，设为 HOST
-    if (useMicServer().getSpeakerStatus() || opts.videoPolling) {
+    if (micServer.getSpeakerStatus() || opts.videoPolling) {
       if (useMediaCheckServer().state.deviceInfo.device_status === 2 && !opts.videoPolling) {
         // 若设备为2   不允许则直接下麦
-        await useMicServer().speakOff()
+        await micServer.speakOff()
+      } else {
+        if (!opts?.isSwitchStart && micServer.getSpeakerStatus()) {
+          this.state.isGroupDiscuss = true
+        } else {
+          this.state.isGroupDiscuss = false
+        }
       }
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
@@ -251,8 +263,6 @@ class InteractiveServer extends BaseServer {
     if (watchInitData.webinar.no_delay_webinar == 0) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
-    const micServer = useMicServer()
-    const chatServer = useChatServer()
 
     // 自动上麦 + 未开启禁言 + 未开启全体禁言 + 不是因为被下麦或者手动下麦去初始化互动
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
