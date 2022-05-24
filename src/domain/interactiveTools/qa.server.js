@@ -28,7 +28,8 @@ class QaServer extends BaseServer {
     QA_CLOSE: 'question_answer_close',
     QA_CREATE: 'question_answer_create',
     QA_COMMIT: 'question_answer_commit',
-    QA_BACKOUT: 'question_answer_backout'
+    QA_BACKOUT: 'question_answer_backout',
+    QA_SET: "question_answer_set"//设置问答名称
   };
   //setSate
   setState(key, value) {
@@ -82,7 +83,9 @@ class QaServer extends BaseServer {
           this.state.qaList.splice(backIndex, 1)
           this.$emit(this.Events.QA_BACKOUT, msg);
           break;
-
+        case this.Events.QA_SET:
+          this.$emit(this.Events.QA_SET, msg);
+          break;
       }
     });
   }
@@ -97,9 +100,9 @@ class QaServer extends BaseServer {
     console.log(msg.data.target_id, '-', watchInitData.join_info.third_party_user_id);
     return msg.data.target_id == watchInitData.join_info.third_party_user_id;
   }
-  qaEnable() {
+  qaEnable(params) {
     const { watchInitData } = useRoomBaseServer().state;
-    return qa.list.qaEnable({ room_id: watchInitData.interact.room_id });
+    return qa.list.qaEnable({ room_id: watchInitData.interact.room_id, name: params.name });
   }
 
   qaDisable() {
@@ -143,6 +146,15 @@ class QaServer extends BaseServer {
 
       });
   }
+
+  // [发起端] 获取已设定的问答名称
+  getQaName() {
+    const { watchInitData } = useRoomBaseServer().state;
+    return qa.list.getQaShowName({
+      webinar_id: watchInitData.webinar.id
+    })
+  }
+
 }
 
 export default function useQaServer() {
