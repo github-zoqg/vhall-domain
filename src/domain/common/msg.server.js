@@ -126,7 +126,11 @@ class MsgServer extends BaseServer {
       console.log('msg消息', eventType, msg.data.type, msg);
       //判断房间id 该消息属于当前所在房间才处理回调
       if (this.curMsgInstance.channelId == msg.channel) {
-        fn(msg);
+        try {
+          fn(msg);
+        } catch (e) {
+          console.error(e)
+        }
       }
     };
     // 'room';
@@ -275,7 +279,7 @@ class MsgServer extends BaseServer {
       pv: watchInitData.pv && (watchInitData.pv.num2 ?? watchInitData.pv.real), // pv
       uv: watchInitData.online && (watchInitData.online.num || watchInitData.online.virtual),
       role_name: watchInitData.join_info.role_name,
-      device_type: useMediaCheckServer().state.deviceInfo.device_type, // 设备类型 1手机端 2PC 0未检测
+      device_type: this.isMobileDevice() ? 1 : 2, // 设备类型 1手机端 2PC 0未检测
       device_status: useMediaCheckServer().state.deviceInfo.device_status, // 设备状态  0未检测 1可以上麦 2不可以上麦
       audience: roomBaseServerState.clientType !== 'send',
       kick_id: sessionStorage.getItem('kickId'),
@@ -309,7 +313,7 @@ class MsgServer extends BaseServer {
       pv: watchInitData.pv.num2 || watchInitData.pv.real, // pv
       uv: watchInitData.online.num || watchInitData.online.virtual,
       role_name: watchInitData.join_info.role_name,
-      device_type: useMediaCheckServer().state.deviceInfo.device_type, // 设备类型 1手机端 2PC 0未检测
+      device_type: this.isMobileDevice() ? 1 : 2, // 设备类型 1手机端 2PC 0未检测
       device_status: useMediaCheckServer().state.deviceInfo.device_status, // 设备状态  0未检测 1可以上麦 2不可以上麦
       watch_type: isPcClient ? '1' : '2', // 1 pc  2 h5  3 app  4 是客户端
       audience: roomBaseServerState.clientType !== 'send', //是不是观众
@@ -377,6 +381,12 @@ class MsgServer extends BaseServer {
   // 获取当前子房间初始化参数
   getCurrentGroupMsgInitOptions() {
     return JSON.parse(JSON.stringify(this.state.groupMsgSdkInitOptions));
+  }
+
+  // 单视频嵌入页面，不会加载互动sdk，但是需要判断是否是手机端
+  // 所以设备检测需要去除对互动 sdk 的依赖
+  isMobileDevice() {
+    return !!/Android|webOS|iPhone|iPad|iPod|BB10|BlackBerry|IEMobile|Opera Mini|Mobile|mobile/i.test(window.navigator.userAgent || "")
   }
 }
 export default function useMsgServer() {
