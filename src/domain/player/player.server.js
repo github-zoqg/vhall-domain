@@ -16,8 +16,7 @@ class PlayerServer extends BaseServer {
         markPoints: [],
         isBarrage: false,
         type: 'live', // live or vod
-        voice: 60,
-        isSmallPlayer: false
+        voice: 60
       };
       return this;
     }
@@ -32,7 +31,8 @@ class PlayerServer extends BaseServer {
       markPoints: [],
       isBarrage: false,
       type: 'live', // live or vod
-      voice: 60
+      voice: 60,
+      isSmallPlayer: false
     };
 
     PlayerServer.instance = this;
