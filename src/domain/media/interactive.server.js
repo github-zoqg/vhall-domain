@@ -151,8 +151,7 @@ class InteractiveServer extends BaseServer {
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动
 
-    const isMobile = useMediaCheckServer().isMobileDevice()
-    if (!isMobile && watchInitData.join_info.role_name == 2 && (watchInitData.webinar.no_delay_webinar == 1 || watchInitData.webinar.mode == 6) && !options?.videoPolling) {
+    if (watchInitData.join_info.role_name == 2 && (watchInitData.webinar.no_delay_webinar == 1 || watchInitData.webinar.mode == 6) && !options?.videoPolling) {
       const res = await useMediaCheckServer().checkSystemRequirements()
       const supperSdk = res?.result || false;
       console.log('是否支持SDK', supperSdk)
