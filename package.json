@@ -1,6 +1,6 @@
 {
   "name": "middle-domain",
-  "version": "7.2.3-test_zt-beta1",
+  "version": "7.2.3-test_zt-beta2",
   "description": "",
   "private": true,
   "main": "dist/lib/middle-domain.js",
