@@ -141,6 +141,19 @@ class ChatServer extends BaseServer {
       if (rawMsg.data.type === 'room_kickout' && this.isMyMsg(rawMsg)) {
         this.$emit('roomKickout');
       }
+      if (rawMsg.data.type == "live_over") {
+        this.state.allBanned = false;
+        this.setAllBannedModuleList({
+          chat_status: 1,
+          qa_status: 1,
+          private_chat_status: 1
+        })
+      }
+      //重新开播清空聊天列表
+      if (rawMsg.data.type == "live_start") {
+        this.state.chatList.splice(0, this.state.chatList.length);
+        this.state.pos = 0;
+      }
     });
     //接收频道变更通知
     msgServer.$on(msgServer.EVENT_TYPE.CHANNEL_CHANGE, () => {
