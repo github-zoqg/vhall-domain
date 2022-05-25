@@ -86,6 +86,10 @@ class Domain {
     return Promise.all(taskList).then(res => {
       //触发所有注册的依赖passsdk和房间初始化的回调
       // Dep.expenseDep(INIT_DOMAIN, res);
+      // 初始化日志上报
+      if (options.devLogOptions) {
+        this.initVhallReportForDev(options.devLogOptions)
+      }
       return this;
     });
   }
@@ -109,8 +113,12 @@ class Domain {
   }
 
   // 初始化数据上报, 客户需要的统计数据
-  initVhallReport(reportOptions, logOptions) {
+  initVhallReport(reportOptions) {
     window.vhallReport = new VhallReport(reportOptions);
+  }
+
+  // 开发日志上报
+  initVhallReportForDev(logOptions) {
     window.vhallLog = ITextbookLog(logOptions);
   }
 
