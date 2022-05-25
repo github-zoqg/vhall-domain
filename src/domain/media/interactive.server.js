@@ -250,7 +250,7 @@ class InteractiveServer extends BaseServer {
         // 若设备为2   不允许则直接下麦
         await micServer.speakOff()
       } else {
-        if (!opts?.isSwitchStart && micServer.getSpeakerStatus()) {
+        if (opts.hasOwnProperty('isSwitchStart') && !opts.isSwitchStart && micServer.getSpeakerStatus()) {
           this.state.isGroupDiscuss = true
         } else {
           this.state.isGroupDiscuss = false
@@ -1132,10 +1132,36 @@ class InteractiveServer extends BaseServer {
   // 重新旁路布局
   async resetLayout() {
     const role_name = useRoomBaseServer().state.watchInitData.join_info.role_name;
-    if (role_name != 1) return;
-
-    const isInGroup = useGroupServer().state.groupInitData.isInGroup;
-    if (isInGroup) return;
+    const { watchInitData } = useRoomBaseServer().state;
+    const third_party_user_id = watchInitData?.join_info?.third_party_user_id;
+    const { interactToolStatus } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state
+    // 当前演示者或当前主讲人可重新旁路布局
+    let allow = false
+    if (groupInitData.isInGroup) {
+      if (groupInitData.presentation_screen && groupInitData.presentation_screen == third_party_user_id) {
+        allow = true
+      } else {
+        allow = false
+      }
+      if (groupInitData.doc_permission == third_party_user_id) {
+        allow = true
+      }
+    } else {
+      if (interactToolStatus.presentation_screen && interactToolStatus.presentation_screen == third_party_user_id) {
+        allow = true
+      } else {
+        allow = false
+      }
+      if (interactToolStatus.doc_permission == third_party_user_id) {
+        allow = true
+      }
+    }
+    if (role_name == 1) {
+      allow = true;
+    }
+    console.log('重新旁路布局-resetLayout-1-1-1-1', allow)
+    if (!allow) return;
 
     const stream = this.getDesktopAndIntercutInfo();
 
