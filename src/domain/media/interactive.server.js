@@ -34,7 +34,8 @@ class InteractiveServer extends BaseServer {
       fullScreenType: false, // wap 全屏状态
       defaultStreamBg: false, //开始推流到成功期间展示默认图
       showPlayIcon: false, // 展示播放按钮
-      isGroupDiscuss: false // 分组是否继续讨论
+      isGroupDiscuss: false, // 分组是否继续讨论
+      mainStreamId: null // 当前主屏的流id
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
@@ -1139,23 +1140,9 @@ class InteractiveServer extends BaseServer {
     // 当前演示者或当前主讲人可重新旁路布局
     let allow = false
     if (groupInitData.isInGroup) {
-      if (groupInitData.presentation_screen && groupInitData.presentation_screen == third_party_user_id) {
-        allow = true
-      } else {
-        allow = false
-      }
-      if (groupInitData.doc_permission == third_party_user_id) {
-        allow = true
-      }
+      allow = (groupInitData.presentation_screen && groupInitData.presentation_screen == third_party_user_id) || (groupInitData.doc_permission && groupInitData.doc_permission == third_party_user_id)
     } else {
-      if (interactToolStatus.presentation_screen && interactToolStatus.presentation_screen == third_party_user_id) {
-        allow = true
-      } else {
-        allow = false
-      }
-      if (interactToolStatus.doc_permission == third_party_user_id) {
-        allow = true
-      }
+      allow = (interactToolStatus.presentation_screen && interactToolStatus.presentation_screen == third_party_user_id) || (interactToolStatus.doc_permission && interactToolStatus.doc_permission == third_party_user_id)
     }
     if (role_name == 1) {
       allow = true;
@@ -1217,9 +1204,12 @@ class InteractiveServer extends BaseServer {
     const mainScreenStream = speakerList.find(item => {
       return item.accountId === useRoomBaseServer().state.interactToolStatus.main_screen
     })
+    const mainScreenStreamId = streamId || (mainScreenStream && mainScreenStream.streamId) || this.state.localStream.streamId
+    if (mainScreenStreamId == this.state.mainStreamId) return Promise.resolve();
     return this.interactiveInstance
-      .setBroadCastScreen({
-        mainScreenStreamId: streamId || (mainScreenStream && mainScreenStream.streamId) || this.state.localStream.streamId
+      .setBroadCastScreen({ mainScreenStreamId }).then(res => {
+        console.log('动态配置旁路主屏-success', res)
+        this.state.mainStreamId = mainScreenStreamId
       })
       .catch(async err => {
         // 设置失败重试三次
