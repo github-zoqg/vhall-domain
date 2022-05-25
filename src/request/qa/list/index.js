@@ -87,7 +87,7 @@ const chatPrivateSendMessage = (params = {}) => {
   });
 };
 
-// 文字回复---私密
+// 文字回复---私密 or [发起端]获取消息及其回复列表
 const getTextReply = (params = {}) => {
   const url = env.qa === 'v3' ? '/v3/interacts/qa/get-answer-list' : '';
   return request({
@@ -137,6 +137,36 @@ const setRankList = (params = {}) => {
   });
 };
 
+// [发起端]批量更新问题状态
+const updateBatchStatus = (params = {}) => {
+  const url = env.qa === 'v3' ? '/v3/interacts/qa/batch-update-status' : '';
+  return request({
+    url: url,
+    method: 'POST',
+    data: params
+  });
+};
+
+// [发起端]批量删除问题及回复
+const delQaAndAnswerMulti = (params = {}) => {
+  const url = env.qa === 'v3' ? '/v3/interacts/qa/batch-delete-question-and-answer' : '';
+  return request({
+    url: url,
+    method: 'POST',
+    data: params
+  });
+};
+
+// [发起端]修改问答显示名称
+const updateQaShowName = (params = {}) => {
+  const url = env.qa === 'v3' ? '/v3/interacts/qa/set-name' : '';
+  return request({
+    url: url,
+    method: 'POST',
+    data: params
+  });
+};
+
 // [发起端] 获取已设定的问答名称
 const getQaShowName = (params = {}) => {
   const url = env.qa === 'v3' ? '/v3/interacts/qa/get-info' : '';
@@ -162,5 +192,8 @@ export default {
   chatPrivateGetRankList,
   chatPrivateGetList,
   setRankList,
+  updateBatchStatus,
+  delQaAndAnswerMulti,
+  updateQaShowName,
   getQaShowName
 };
