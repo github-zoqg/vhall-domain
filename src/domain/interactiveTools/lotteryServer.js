@@ -161,7 +161,7 @@ class LotteryServer extends BaseServer {
       if (list.length) {
         this.state.iconVisible = true // 有历史抽奖显示icon
         const lastLottery = list[0] // 倒序排列
-        const winLotteryList = list.filter(lot => lot.win === 1 && lot.take_award === 0) // 中奖且未领奖
+        const winLotteryList = list.filter(lot => lot.win === 1 && lot.take_award === 0 && lot.need_take_award === 1) // 中奖且必须领奖,未领奖
         this.state.docVisible = (lastLottery.lottery_status === 0 || winLotteryList.length)
       } else {
         this.state.docVisible = false
