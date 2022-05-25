@@ -84,7 +84,7 @@ class ChatServer extends BaseServer {
         !this.isSelfMsg(rawMsg) && this.state.chatList.push(msg);
         this.state.prevTime = msg.sendTime;
         //消息过多时丢掉
-        if (this.state.chatList.length > 100000) {
+        if (this.state.chatList.length > 20000) {
           this.state.chatList.splice(0, 5000)
         }
         this.pos++;
