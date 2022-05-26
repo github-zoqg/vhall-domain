@@ -1,5 +1,6 @@
 import { mountSDK } from '@/utils/loader.js';
 import passSdk from './lib/pass-sdk.js';
+import saasSdk from './lib/saas-sdk.js';
 class VhallPaasSDK {
   static loadStatus = 'loading';
   //初始化成功回调
@@ -9,12 +10,12 @@ class VhallPaasSDK {
   static modules = {};
   //加载pass-sdk
   static init(options = { plugins: [] }) {
-    this.loadSdk(options.plugins);
+    this.loadSdk(['report', 'base', ...options.plugins]);
     return this;
   }
   static async loadSdk(plugins) {
-    const sdklist = ['report', 'base', ...plugins].map(item => {
-      return mountSDK(passSdk[item]);
+    const sdklist = [...plugins].map(item => {
+      return mountSDK(passSdk[item] || saasSdk[item]);
     });
     try {
       const loadres = await Promise.all(sdklist);

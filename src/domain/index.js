@@ -81,17 +81,13 @@ class Domain {
     if (options.isNotInitRoom) {
       taskList = [this.paasSdkInit(options.plugins)];
     } else {
-      taskList = [this.paasSdkInit(options.plugins), this.initRoom(options.initRoom)];
+      taskList = [this.paasSdkInit(options.plugins), this.initRoom(options.initRoom, options.devLogOptions)];
     }
     return Promise.all(taskList).then(res => {
       //触发所有注册的依赖passsdk和房间初始化的回调
       // Dep.expenseDep(INIT_DOMAIN, res);
-      // 初始化日志上报
-      if (options.devLogOptions) {
-        this.initVhallReportForDev(options.devLogOptions)
-      }
       return this;
-    });
+    })
   }
 
   // 加载paasSdk
@@ -107,9 +103,14 @@ class Domain {
   }
 
   //初始化房间信息
-  initRoom(options) {
+  async initRoom(roomInitOptions, devLogOptions) {
+    await VhallPaasSDK.loadSdk(['report'])
+    // 初始化日志上报
+    if (devLogOptions) {
+      this.initVhallReportForDev(devLogOptions)
+    }
     const roomBaseServer = useRoomBaseServer();
-    return roomBaseServer.initLive(options);
+    return roomBaseServer.initLive(roomInitOptions);
   }
 
   // 初始化数据上报, 客户需要的统计数据
