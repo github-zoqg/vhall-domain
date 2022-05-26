@@ -33,6 +33,18 @@ export const meetingApiList = {
     v3: "/v3/webinars/live/init",
     middle: "/v4/meeting/live/init"
   },
+  initSendLiveYun: {
+    v3: "/v3/webinars/live/director-seat-init",
+    middle: ""
+  },
+  getStreamStatus: {
+    v3: "/v3/webinars/director/get-stream-status",
+    middle: ""
+  },
+  selectSeat: {
+    v3: "/v3/webinars/director/select-seat",
+    middle: ""
+  },
 }
 
 export const roomApiList = {
