@@ -1,5 +1,5 @@
 import { mountSDK } from '@/utils/loader.js';
-import passSdk from './lib/paas-sdk.js';
+import paasSdk from './lib/paas-sdk.js';
 class VhallPaasSDK {
   static loadStatus = 'loading';
   //初始化成功回调
