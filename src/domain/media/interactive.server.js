@@ -33,8 +33,7 @@ class InteractiveServer extends BaseServer {
       streamListHeightInWatch: 0, // PC观看端流列表高度
       fullScreenType: false, // wap 全屏状态
       defaultStreamBg: false, //开始推流到成功期间展示默认图
-      showPlayIcon: false, // 展示播放按钮
-      initInteractiveFailed: false // 初始化互动是否失败
+      showPlayIcon: false // 展示播放按钮
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
@@ -59,9 +58,7 @@ class InteractiveServer extends BaseServer {
   async init(customOptions = {}) {
 
     // 是否需要初始化互动
-    const isNeedInit = await this._isNeedInteractive(customOptions);
-    if (!isNeedInit) return Promise.resolve();
-
+    if (!this._isNeedInteractive(customOptions)) return Promise.resolve();
     // 这里判断上麦角色以及是否自动上麦
     const defaultOptions = await this._getDefaultOptions(customOptions);
     const options = merge.recursive({}, defaultOptions, customOptions);
@@ -109,7 +106,6 @@ class InteractiveServer extends BaseServer {
           resolve(event);
         },
         error => {
-          this.state.initInteractiveFailed = true
           reject(error);
         }
       );
@@ -143,7 +139,7 @@ class InteractiveServer extends BaseServer {
   /**
    * 判断是否需要初始化互动实例
    */
-  async _isNeedInteractive(options) {
+  _isNeedInteractive(options) {
     const { watchInitData } = useRoomBaseServer().state;
     const { isSpeakOn } = useMicServer().state;
     // 0. 观众，浏览器不支持SDK 不初始化互动，直接走旁路
@@ -151,17 +147,6 @@ class InteractiveServer extends BaseServer {
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动
 
-    if (watchInitData.join_info.role_name == 2 && (watchInitData.webinar.no_delay_webinar == 1 || watchInitData.webinar.mode == 6) && !options?.videoPolling) {
-      const res = await useMediaCheckServer().checkSystemRequirements()
-      const supperSdk = res?.result || false;
-      console.log('是否支持SDK', supperSdk)
-      if (!supperSdk) {
-        this.state.initInteractiveFailed = true
-        return supperSdk
-      } else {
-        this.state.initInteractiveFailed = false
-      }
-    }
     // 助理条件较多，单独判断
     if (watchInitData.join_info.role_name == 3) {
       //start_type  1-web（默认）， 2-app，3-sdk，4-推拉流，5-定时，6-admin后台， 7-第三方OpenApi，8-windows客户端    0是未开播
