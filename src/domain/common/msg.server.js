@@ -282,7 +282,7 @@ class MsgServer extends BaseServer {
       device_type: this.isMobileDevice() ? 1 : 2, // 设备类型 1手机端 2PC 0未检测
       device_status: useMediaCheckServer().state.deviceInfo.device_status, // 设备状态  0未检测 1可以上麦 2不可以上麦
       audience: roomBaseServerState.clientType !== 'send',
-      kick_id: sessionStorage.getItem('kickId'),
+      kick_id: sessionStorage.getItem('kickId') || '', // 如果为null传空字符串是为了解决ios客户端崩溃的问题。客户端升级6.4.0版本之后，该字段将无须前端再做兼容
       kick_mark: `${randomNumGenerator()}${watchInitData.webinar.id}`,
       is_banned: interactToolStatus.is_banned,
       privacies: watchInitData.join_info.privacies || '',
