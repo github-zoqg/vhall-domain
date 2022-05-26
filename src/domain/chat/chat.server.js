@@ -157,11 +157,6 @@ class ChatServer extends BaseServer {
           private_chat_status: 1
         })
       }
-      //重新开播清空聊天列表
-      if (rawMsg.data.type == "live_start") {
-        this.state.chatList.splice(0, this.state.chatList.length);
-        this.state.pos = 0;
-      }
     });
     //接收频道变更通知
     msgServer.$on(msgServer.EVENT_TYPE.CHANNEL_CHANGE, () => {
@@ -471,6 +466,10 @@ class ChatServer extends BaseServer {
         this.state.privateChatList.splice(0, 0, ...list)
       }
     });
+  }
+  //设置当前server属性
+  setState(key, value) {
+    this.state[key] = value
   }
 }
 
