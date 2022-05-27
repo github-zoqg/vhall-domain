@@ -99,6 +99,15 @@ const getLastSurvey = params => {
   });
 };
 
+// 获取问卷列表
+const getSurveyList = params => {
+  return request({
+    url: '/v3/vss/survey/get-webinar-history-survey',
+    method: 'POST',
+    params
+  });
+};
+
 export default {
   queryQuestionnaireList,
   copyMainQuestionnaire,
@@ -110,5 +119,6 @@ export default {
   editQuestionnaire,
   submitQuestionnaire,
   checkAnswerStatus,
+  getSurveyList,
   getLastSurvey
 };
