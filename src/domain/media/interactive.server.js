@@ -35,7 +35,8 @@ class InteractiveServer extends BaseServer {
       defaultStreamBg: false, //开始推流到成功期间展示默认图
       showPlayIcon: false, // 展示播放按钮
       mobileOnWheat: false, // V7.1.2版本需求，将wap的自动上麦操作移至platform层
-      mediaPermissionDenied: false // V7.1.2版本需求   分组活动+开启自动上麦，pc端观众，默认自动上麦
+      mediaPermissionDenied: false, // V7.1.2版本需求   分组活动+开启自动上麦，pc端观众，默认自动上麦
+      initInteractiveFailed: false // 初始化互动是否失败
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
@@ -60,8 +61,8 @@ class InteractiveServer extends BaseServer {
   async init(customOptions = {}) {
 
     // 是否需要初始化互动
-    if (!this._isNeedInteractive(customOptions)) return Promise.resolve();
-
+    const isNeedInit = await this._isNeedInteractive(customOptions);
+    if (!isNeedInit) return Promise.resolve();
     // 这里判断上麦角色以及是否自动上麦
     const defaultOptions = await this._getDefaultOptions(customOptions);
     const options = merge.recursive({}, defaultOptions, customOptions);
@@ -109,6 +110,7 @@ class InteractiveServer extends BaseServer {
           resolve(event);
         },
         error => {
+          this.state.initInteractiveFailed = true
           reject(error);
         }
       );
@@ -142,12 +144,24 @@ class InteractiveServer extends BaseServer {
   /**
    * 判断是否需要初始化互动实例
    */
-  _isNeedInteractive(options) {
+  async _isNeedInteractive(options) {
     const { watchInitData } = useRoomBaseServer().state;
     const { isSpeakOn } = useMicServer().state;
     // 1. 非观众需要初始化互动
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动
+
+    if (watchInitData.join_info.role_name == 2 && (watchInitData.webinar.no_delay_webinar == 1 || watchInitData.webinar.mode == 6) && !options?.videoPolling) {
+      const res = await useMediaCheckServer().checkSystemRequirements()
+      const supperSdk = res?.result || false;
+      console.log('是否支持SDK', supperSdk)
+      if (!supperSdk) {
+        this.state.initInteractiveFailed = true
+        return supperSdk
+      } else {
+        this.state.initInteractiveFailed = false
+      }
+    }
 
     // 助理条件较多，单独判断
     if (watchInitData.join_info.role_name == 3) {
