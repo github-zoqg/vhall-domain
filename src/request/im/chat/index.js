@@ -5,7 +5,10 @@ import env from '../../env';
  * 获取历史聊天消息
  * */
 function getChatList(params = {}) {
-  const url = env.imChat === 'v3' ? '/v3/interacts/chat/latest-list' : '/v4/im-chat/chat/get-list';
+  let url = env.imChat === 'v3' ? '/v3/interacts/chat/latest-list' : '/v4/im-chat/chat/get-list';
+  if (params.pos != 0) {
+    url = '/v3/interacts/chat/get-list'
+  }
   return request({
     url,
     method: 'POST',
