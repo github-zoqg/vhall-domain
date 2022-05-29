@@ -33,6 +33,18 @@ export const meetingApiList = {
     v3: "/v3/webinars/live/init",
     middle: "/v4/meeting/live/init"
   },
+  initSendLiveYun: {
+    v3: "/v3/webinars/live/director-seat-init",
+    middle: ""
+  },
+  getStreamStatus: {
+    v3: "/v3/webinars/director/get-stream-status",
+    middle: ""
+  },
+  selectSeat: {
+    v3: "/v3/webinars/director/select-seat",
+    middle: ""
+  },
 }
 
 export const roomApiList = {
@@ -74,5 +86,21 @@ export const roomSubjectApiList = {
   getSubjectInfo: {
     v3: "/v3/webinars/subject/info",
     middle: "/v4/room-subject/subject/info"
+  }
+}
+
+// 视频轮询 api
+export const videoRoundApiList = {
+  videoRoundInfo: {
+    v3: "/v3/interacts/video-round/info",
+  },
+  videoRoundStart: {
+    v3: '/v3/interacts/video-round/start'
+  },
+  videoRoundEnd: {
+    v3: '/v3/interacts/video-round/end'
+  },
+  videoRoundGetUsers: {
+    v3: '/v3/interacts/video-round/get-round-users'
   }
 }

@@ -16,7 +16,8 @@ const liveType = new Map([
   ['embed', 'initEmbeddedReceiveLive'], //嵌入直播
   ['clientEmbed', 'clientEmbed'], //客户端嵌入直播
   ['sdk', 'initSdkReceiveLive'], //sdk直播
-  ['record', 'initRecordVideo'] //录制
+  ['record', 'initRecordVideo'], //录制
+  ['sendYun', 'initSendLiveYun'] //云导播推流页面初始化
 ]);
 class RoomBaseServer extends BaseServer {
   constructor() {
@@ -63,7 +64,8 @@ class RoomBaseServer extends BaseServer {
         lang: 'zh',
         langList: []
       },
-      customRoleName: {}
+      customRoleName: {},
+      director_stream: 0
     };
     RoomBaseServer.instance = this;
     return this;
@@ -77,7 +79,7 @@ class RoomBaseServer extends BaseServer {
   // 初始化房间信息,包含发起/观看(嵌入/标品)
   initLive(options) {
     if (
-      !['send', 'standard', 'embed', 'sdk', 'record', 'clientEmbed'].includes(options.clientType)
+      !['send', 'standard', 'embed', 'sdk', 'record', 'clientEmbed', 'sendYun'].includes(options.clientType)
     ) {
       throw new Error('不合法的客户端类型');
     }
@@ -96,14 +98,13 @@ class RoomBaseServer extends BaseServer {
       meeting[liveType.get(options.clientType)](options).then(res => {
         if (res.code === 200) {
           this.state.watchInitData = res.data;
-
           // 设置转发初始值(初始化数据实体)
           if (this.state.watchInitData?.rebroadcast) {
             this.setRebroadcastInfo(this.state.watchInitData.rebroadcast)
           }
 
           // 设置发起端权限
-          if (['send', 'record', 'clientEmbed'].includes(options.clientType)) {
+          if (['send', 'record', 'clientEmbed', 'sendYun'].includes(options.clientType)) {
             this.state.configList = res.data.permissionKey
             // 发起端结束直播时，将多语言缓存清除 主要是为了防止测试 在测过程中浏览器缓存不清空，一会登录观看端，一会登录发起端，缓存会翻译发起端，使发起端变成英文
             localStorage.removeItem('lang')
@@ -126,6 +127,10 @@ class RoomBaseServer extends BaseServer {
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
           sessionStorage.setItem('visitorId', res.data.visitor_id);
+          // 解决多个主持人同时在线问题
+          if (!!res.data.visitor_id) {
+            sessionStorage.setItem('visitorId_home', res.data.visitor_id);
+          }
           this.addListeners();
           resolve(res);
         } else {
@@ -187,6 +192,10 @@ class RoomBaseServer extends BaseServer {
           if (msg.data.target_id == this.state.watchInitData.join_info.third_party_user_id) {
             this.$emit('ROOM_KICKOUT')
           }
+        // 云导播台有流消息
+        case 'director_stream':
+          console.log('director_stream', msg);
+          this.state.director_stream = msg.data.status
       }
     });
     // 单点登录逻辑
@@ -290,6 +299,47 @@ class RoomBaseServer extends BaseServer {
         this.state.configList = configList
       }
       return res;
+    });
+  }
+
+  // 获取观看协议状态查询
+  getAgreementStatus() {
+    const webinarId = this.state.watchInitData?.webinar?.id
+    return meeting.restrictions({ webinar_id: webinarId })
+  }
+
+  // 同意条款
+  agreeWitthTerms(params = {}) {
+    const webinarId = this.state.watchInitData?.webinar?.id
+    const visitorId = sessionStorage.getItem('visitorId') || ''
+    return meeting.setUserAgree({
+      webinar_id: webinarId,
+      visitor_id: visitorId,
+      email: params.email || '',
+      third_user_id: params.third_user_id || ''
+    })
+  }
+
+  // 获取视频论巡权限
+  // TODO: 后续观看端统一处理配置项权限之后，这个就不用了
+  getVideoPollingConfig() {
+    const defaultParams = {
+      webinar_id: this.state.watchInitData.webinar && this.state.watchInitData.webinar.id,
+      webinar_user_id: this.state.watchInitData.webinar && this.state.watchInitData.webinar.userinfo.user_id,
+      scene_id: 1
+    };
+    return meeting.getConfigList(defaultParams).then(res => {
+      if (res.code == 200) {
+        const configList = JSON.parse(res.data.permissions);
+        for (let key in configList) {
+          if (key === 'video_polling') {
+            this.state.configList = {
+              ...this.state.configList,
+              video_polling: Number(configList[key])
+            }
+          }
+        }
+      }
     });
   }
 
@@ -645,6 +695,26 @@ class RoomBaseServer extends BaseServer {
         this.state.customRoleName[1] = res.data.host_name;
         this.state.customRoleName[3] = res.data.assistant_name
         this.state.customRoleName[4] = res.data.guest_name
+      }
+    })
+  }
+
+  // 获取云导播台是否有流
+  getStreamStatus() {
+    return meeting.getStreamStatus({
+      webinar_id: this.state.watchInitData.webinar && this.state.watchInitData.webinar.id,
+    }).then(res => {
+      this.state.director_stream = res.data.director_stream
+    })
+  }
+
+  // 获取云导播机位是否占用
+  selectSeat(params) {
+    return meeting.selectSeat(params).then(res => {
+      if (res.code == 200) {
+        return true
+      } else {
+        return false
       }
     })
   }

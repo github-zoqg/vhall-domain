@@ -32,10 +32,17 @@ class ChatServer extends BaseServer {
       banned: groupInitData.isInGroup ? (groupInitData.is_banned == 1 ? true : false) : (interactToolStatus.is_banned == 1 ? true : false), //1禁言 0取消禁言
       //当前频道全部禁言状态
       allBanned: groupInitData.isInGroup ? false : (interactToolStatus.all_banned == 1 ? true : false), //1禁言 0取消禁言
+      //全体禁言状态下各模块生效信息
+      allBannedModuleList: {
+        chat_status: interactToolStatus.chat_status == 1 ? true : false, //1生效 0不生效
+        qa_status: interactToolStatus.qa_status == 1 ? true : false, //1生效 0不生效
+        private_chat_status: interactToolStatus.private_chat_status == 1 ? true : false //1生效 0不生效
+      },
       limit: 10,
       curMsg: null,//当前正在编辑的消息
       prevTime: '',//用来记录每条消息的上一条消息发送的时间
-      curPrivateTargetId: ''//当前私聊对象id
+      curPrivateTargetId: '',//当前私聊对象id
+      pos: 0,//下一次拉取历史列表开始位置
     };
     this.listenEvents();
     this.controller = null;
@@ -83,10 +90,11 @@ class ChatServer extends BaseServer {
         !this.isSelfMsg(rawMsg) && this.state.chatList.push(msg);
         this.state.prevTime = msg.sendTime;
         //消息过多时丢掉
-        if (this.state.chatList.length > 10000) {
+        if (this.state.chatList.length > 20000) {
           this.state.chatList.splice(0, 5000)
         }
-        //普通消息
+        this.pos++;
+        //非自己发送的普通消息
         if (!this.isSelfMsg(rawMsg)) {
           this.$emit('receiveMsg', rawMsg);
         }
@@ -114,16 +122,18 @@ class ChatServer extends BaseServer {
       // 开启全体禁言
       if (rawMsg.data.type === 'disable_all') {
         this.setLocalAllBanned(true)
+        this.setAllBannedModuleList(rawMsg.data);
         if (role_name == 2) {
           useMicServer().speakOff();
         }
-        this.$emit('allBanned', this.state.allBanned);
+        this.$emit('allBanned', this.state.allBanned, rawMsg.data);
 
       }
       // 关闭全体禁言
       if (rawMsg.data.type === 'permit_all') {
         this.setLocalAllBanned(false)
-        this.$emit('allBanned', this.state.allBanned);
+        this.setAllBannedModuleList(rawMsg.data);
+        this.$emit('allBanned', this.state.allBanned, rawMsg.data);
       }
     });
     msgServer.$onMsg('ROOM_MSG', rawMsg => {
@@ -138,6 +148,14 @@ class ChatServer extends BaseServer {
       }
       if (rawMsg.data.type === 'room_kickout' && this.isMyMsg(rawMsg)) {
         this.$emit('roomKickout');
+      }
+      if (rawMsg.data.type == "live_over") {
+        this.state.allBanned = false;
+        this.setAllBannedModuleList({
+          chat_status: 1,
+          qa_status: 1,
+          private_chat_status: 1
+        })
       }
     });
     //接收频道变更通知
@@ -199,6 +217,7 @@ class ChatServer extends BaseServer {
     //请求获取聊天消息
     let historyList = await this.fetchHistoryData(params);
     console.log('historyList', historyList);
+    this.state.pos += historyList.data.list.length;
     let list = (historyList.data.list || [])
       .map(item => {
         //处理普通内容
@@ -251,6 +270,7 @@ class ChatServer extends BaseServer {
   }
   // 清空普通聊天消息
   clearChatMsg() {
+    this.state.pos = 0
     this.state.chatList.splice(0, this.state.chatList.length);
   }
   //清空私聊列表
@@ -349,6 +369,13 @@ class ChatServer extends BaseServer {
   setLocalAllBanned(flag) {
     this.state.allBanned = flag
   }
+  //设置全体禁言状态下各模块生效状态
+  setAllBannedModuleList(data) {
+    const { chat_status, qa_status, private_chat_status } = data;
+    this.state.allBannedModuleList.chat_status = chat_status == 1 ? true : false;
+    this.state.allBannedModuleList.qa_status = qa_status == 1 ? true : false;
+    this.state.allBannedModuleList.private_chat_status = private_chat_status == 1 ? true : false;
+  }
   /**
    * 禁言/取消禁言
    * */
@@ -439,6 +466,10 @@ class ChatServer extends BaseServer {
         this.state.privateChatList.splice(0, 0, ...list)
       }
     });
+  }
+  //设置当前server属性
+  setState(key, value) {
+    this.state[key] = value
   }
 }
 
