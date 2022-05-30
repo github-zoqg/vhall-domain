@@ -107,7 +107,7 @@ class Domain {
   //初始化房间信息
   async initRoom(roomInitOptions, devLogOptions) {
     console.log('----------------测试异步--------------------------日志sdk开始加载前-----------')
-    await VhallPaasSDK.loadSdk(['report'])
+    await VhallPaasSDK.loadSdk(['report'], false)
     console.log('----------------测试异步--------------------------日志sdk加载完成后-----------')
     // 初始化日志上报
     if (devLogOptions) {
