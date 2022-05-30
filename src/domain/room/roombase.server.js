@@ -95,9 +95,7 @@ class RoomBaseServer extends BaseServer {
     this.state.clientType = options.clientType;
     this.state.deviceType = options.deviceType;
     return new Promise((resolve, reject) => {
-      console.log('----------------测试异步--------------------------房间初始化接口开始-----------')
       meeting[liveType.get(options.clientType)](options).then(res => {
-        console.log('----------------测试异步--------------------------房间初始化接口完成-----------')
         if (res.code === 200) {
           this.state.watchInitData = res.data;
           // 设置转发初始值(初始化数据实体)

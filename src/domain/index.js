@@ -93,12 +93,10 @@ class Domain {
   // 加载paasSdk
   paasSdkInit(options) {
     return new Promise(resolve => {
-      console.log('----------------测试异步--------------------------paas sdk开始加载前-----------')
       VhallPaasSDK.init({
         plugins: options || ['chat', 'player', 'doc', 'interaction']
       }).onSuccess(controllers => {
         this.controllers = controllers;
-        console.log('----------------测试异步--------------------------paas sdk加载完成后-----------')
         resolve();
       });
     });
@@ -106,9 +104,7 @@ class Domain {
 
   //初始化房间信息
   async initRoom(roomInitOptions, devLogOptions) {
-    console.log('----------------测试异步--------------------------日志sdk开始加载前-----------')
     await VhallPaasSDK.loadSdk(['report'], false)
-    console.log('----------------测试异步--------------------------日志sdk加载完成后-----------')
     // 初始化日志上报
     if (devLogOptions) {
       this.initVhallReportForDev(devLogOptions)

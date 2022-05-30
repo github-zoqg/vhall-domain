@@ -73,8 +73,6 @@ class MsgServer extends BaseServer {
     console.log('聊天初始化参数', options);
     this.state.msgSdkInitOptions = options;
     window.VhallPaasSDK = VhallPaasSDK
-    console.log('----------------测试异步--------------------------VhallPaasSDK-----------', VhallPaasSDK.modules)
-    console.log('----------------测试异步--------------------------VhallPaasSDK-----------', JSON.stringify(VhallPaasSDK.modules))
     const vhallchat = await VhallPaasSDK.modules.VhallChat.createInstance(options);
     this.msgInstance = vhallchat.message;
     console.log('主房间消息实例', this.msgInstance);

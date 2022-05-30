@@ -14,13 +14,11 @@ class VhallPaasSDK {
     return this;
   }
   static async loadSdk(plugins, isInvokeCallback = true) {
-    console.log('----------------测试异步--------------------------sdk开始加载-----------')
     const sdklist = [...plugins].map(item => {
       return mountSDK(passSdk[item] || saasSdk[item]);
     });
     try {
       const loadres = await Promise.all(sdklist);
-      console.log('----------------测试异步--------------------------sdk加载完成-----------')
       this.loadStatus = 'success';
       loadres.forEach(item => {
         item && (this.modules[item] = window[item]);
