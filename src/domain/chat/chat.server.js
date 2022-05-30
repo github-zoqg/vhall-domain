@@ -18,8 +18,6 @@ class ChatServer extends BaseServer {
       return ChatServer.instance;
     }
     super();
-    const { interactToolStatus } = useRoomBaseServer().state;
-    const { groupInitData } = useGroupServer().state;
     //消息sdk
     this.state = {
       //聊天记录
@@ -29,14 +27,11 @@ class ChatServer extends BaseServer {
       //预览图片地址
       imgUrls: [],
       //当前用户禁言状态
-      banned: groupInitData.isInGroup ? (groupInitData.is_banned == 1 ? true : false) : (interactToolStatus.is_banned == 1 ? true : false), //1禁言 0取消禁言
+      banned: false,
       //当前频道全部禁言状态
-      allBanned: groupInitData.isInGroup ? false : (interactToolStatus.all_banned == 1 ? true : false), //1禁言 0取消禁言
+      allBanned: false,
       //全体禁言状态下各模块生效信息
       allBannedModuleList: {
-        chat_status: interactToolStatus.chat_status == 1 ? true : false, //1生效 0不生效
-        qa_status: interactToolStatus.qa_status == 1 ? true : false, //1生效 0不生效
-        private_chat_status: interactToolStatus.private_chat_status == 1 ? true : false //1生效 0不生效
       },
       limit: 10,
       curMsg: null,//当前正在编辑的消息
@@ -48,6 +43,17 @@ class ChatServer extends BaseServer {
     this.controller = null;
     ChatServer.instance = this;
     return this;
+  }
+  init() {
+    const { interactToolStatus } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state;
+    this.state.banned = groupInitData.isInGroup ? (groupInitData.is_banned == 1 ? true : false) : (interactToolStatus.is_banned == 1 ? true : false); //1禁言 0取消禁言
+    this.state.allBanned = groupInitData.isInGroup ? false : (interactToolStatus.all_banned == 1 ? true : false); //1禁言 0取消禁言
+    this.state.allBannedModuleList = {
+      chat_status: interactToolStatus.chat_status == 1 ? true : false, //1生效 0不生效
+      qa_status: interactToolStatus.qa_status == 1 ? true : false, //1生效 0不生效
+      private_chat_status: interactToolStatus.private_chat_status == 1 ? true : false //1生效 0不生效
+    }
   }
   Events = {
     //个人禁言
