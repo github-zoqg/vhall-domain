@@ -59,7 +59,6 @@ class InteractiveServer extends BaseServer {
 
     // 是否需要初始化互动
     if (!this._isNeedInteractive(customOptions)) return Promise.resolve();
-
     // 这里判断上麦角色以及是否自动上麦
     const defaultOptions = await this._getDefaultOptions(customOptions);
     const options = merge.recursive({}, defaultOptions, customOptions);
@@ -143,6 +142,7 @@ class InteractiveServer extends BaseServer {
   _isNeedInteractive(options) {
     const { watchInitData } = useRoomBaseServer().state;
     const { isSpeakOn } = useMicServer().state;
+    // 0. 观众，浏览器不支持SDK 不初始化互动，直接走旁路
     // 1. 非观众需要初始化互动
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动

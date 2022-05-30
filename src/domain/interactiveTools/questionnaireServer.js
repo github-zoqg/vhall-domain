@@ -18,7 +18,9 @@ class QuestionnaireServer extends BaseServer {
     this.state = {
       iconVisible: false, // icon 是否显示
       dotVisible: false, // 小红点是否显示
-      lastQuestionnaireId: '' // 最后一个问卷id
+      lastQuestionnaireId: '', // 最后一个问卷id
+      QuestionList: null,
+      alias: ''
     }
   }
 
@@ -63,6 +65,7 @@ class QuestionnaireServer extends BaseServer {
     });
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.UPDATE, async data => {
       const extension = JSON.parse(data.extension);
+      data.alias = this.state.alias;
       const relt = await this.editQuestionnaire(data, extension.playback_filling);
       this.$emit(VHall_Questionnaire_Const.EVENT.UPDATE, relt, data);
     });
@@ -132,7 +135,8 @@ class QuestionnaireServer extends BaseServer {
     return new Promise((resolve, reject) => {
       questionnaireApi.publishQuestionnaire({
         room_id: interact.room_id,
-        survey_id: surveyId
+        survey_id: surveyId,
+        switch_id: watchInitData.switch.switch_id
       }).then(res => {
         if (res.code === 200) {
           // 防止首次推送后没有发布
@@ -152,15 +156,20 @@ class QuestionnaireServer extends BaseServer {
 
   /**
    * @description 复制问卷
+   * @param opts { surveyId: 111, alias: '问卷展示名称'}
    */
-  copyQuestionnaire(surveyId) {
+  copyQuestionnaire(opts) {
     const { watchInitData } = this.useRoomBaseServer.state;
     const { webinar, interact } = watchInitData;
-    return questionnaireApi.copyQuestionnaire({
+    const params = {
       webinar_id: webinar.id,
       room_id: interact.room_id,
-      survey_id: surveyId
-    });
+      survey_id: opts.surveyId
+    }
+    if (opts.alias) {
+      params.alias = opts.alias
+    }
+    return questionnaireApi.copyQuestionnaire(params);
   }
 
   /**
@@ -179,19 +188,23 @@ class QuestionnaireServer extends BaseServer {
   /**
    * @description 编辑问卷
    */
-  editQuestionnaire(params, playback_filling) {
+  editQuestionnaire(data, playback_filling) {
     const { watchInitData } = this.useRoomBaseServer.state;
     const { webinar, interact, join_info } = watchInitData;
-    return questionnaireApi.editQuestionnaire({
-      survey_id: params.id,
-      title: params.title,
-      description: params.description,
-      img_url: params.imgUrl,
+    const params = {
+      survey_id: data.id,
+      title: data.title,
+      description: data.description,
+      img_url: data.imgUrl,
       playback_filling: playback_filling,
       user_id: join_info.user_id || join_info.third_party_user_id,
       webinar_id: webinar.id,
       room_id: interact.room_id
-    });
+    }
+    if (data.alias) {
+      params.alias = data.alias
+    }
+    return questionnaireApi.editQuestionnaire(params);
   }
 
   // 提交问卷
@@ -260,17 +273,26 @@ class QuestionnaireServer extends BaseServer {
     let relt = Promise.resolve(true);
     if (isShare) {
       if (join_info.role_name === 1) {
-        relt = await questionnaireApi.copyMainQuestionnaire({
+        const params = {
           survey_id: data.id
-        });
+        }
+        if (data.alias) {
+          params.alias = data.alias
+        }
+        relt = await questionnaireApi.copyMainQuestionnaire(params);
       } else {
-        relt = await questionnaireApi.copyOtherQuestionnaire({
+        const params = {
           webinar_id: webinar.id,
           room_id: interact.room_id,
           survey_id: data.id
-        });
+        }
+        if (data.alias) {
+          params.alias = data.alias
+        }
+        relt = await questionnaireApi.copyOtherQuestionnaire(params);
       }
     }
+    // console.log('当前data', data.alias)
     relt = await this.createLiveQuestion(data);
     return relt;
   }
@@ -282,7 +304,7 @@ class QuestionnaireServer extends BaseServer {
     const extension = JSON.parse(data.extension);
     const { watchInitData } = this.useRoomBaseServer.state;
     const { webinar, interact, join_info } = watchInitData;
-    return questionnaireApi.createLiveQuestion({
+    const params = {
       title: data.title,
       survey_id: data.id,
       description: data.description,
@@ -291,7 +313,11 @@ class QuestionnaireServer extends BaseServer {
       room_id: interact.room_id,
       webinar_id: webinar.id,
       user_id: join_info.user_id || join_info.third_party_user_id
-    });
+    }
+    if (data.alias) {
+      params.alias = data.alias
+    }
+    return questionnaireApi.createLiveQuestion(params);
   }
 
   /**
@@ -351,6 +377,26 @@ class QuestionnaireServer extends BaseServer {
   // 小红点
   setDotVisible(visivle) {
     this.state.dotVisible = visivle
+  }
+
+  //活动问卷历史列表
+  getSurveyList() {
+    const { watchInitData } = this.useRoomBaseServer.state;
+    return questionnaireApi.getSurveyList({
+      room_id: watchInitData.interact.room_id,
+      webinar_id: watchInitData.webinar.id,
+      switch_id: watchInitData.switch.switch_id
+    }).then(res => {
+      if (res.code == 200) {
+        this.state.QuestionList = res.data
+        return res.data
+      }
+    });
+  }
+
+  // 设置问卷别名
+  setAlias(data) {
+    this.state.alias = data
   }
 }
 
