@@ -25,7 +25,7 @@ export default {
   },
   questionnaire: {
     name: 'VhallQuestionnaire',
-    url: '//t-alistatic01.e.vhall.com/common-static/middle/questionnaire/1.0.1/questionnaire_service.js'
+    url: '//cnstatic01.e.vhall.com/common-static/middle/questionnaire/1.0.4/questionnaire_service.js'
   },
   // 数据上报sdk
   report: {

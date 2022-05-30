@@ -147,6 +147,7 @@ class InteractiveServer extends BaseServer {
   async _isNeedInteractive(options) {
     const { watchInitData } = useRoomBaseServer().state;
     const { isSpeakOn } = useMicServer().state;
+    // 0. 观众，浏览器不支持SDK 不初始化互动，直接走旁路
     // 1. 非观众需要初始化互动
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动
