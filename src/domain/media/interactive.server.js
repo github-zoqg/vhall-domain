@@ -35,7 +35,10 @@ class InteractiveServer extends BaseServer {
       defaultStreamBg: false, //开始推流到成功期间展示默认图
       showPlayIcon: false, // 展示播放按钮
       isGroupDiscuss: false, // 分组是否继续讨论
-      mainStreamId: null // 当前主屏的流id
+      mainStreamId: null, // 当前主屏的流id
+      mobileOnWheat: false, // V7.1.2版本需求，将wap的自动上麦操作移至platform层
+      mediaPermissionDenied: false, // V7.1.2版本需求   分组活动+开启自动上麦，pc端观众，默认自动上麦
+      initInteractiveFailed: false // 初始化互动是否失败
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
@@ -61,7 +64,8 @@ class InteractiveServer extends BaseServer {
   async init(customOptions = {}) {
 
     // 是否需要初始化互动
-    if (!this._isNeedInteractive(customOptions)) return Promise.resolve();
+    const isNeedInit = await this._isNeedInteractive(customOptions);
+    if (!isNeedInit) return Promise.resolve();
     // 这里判断上麦角色以及是否自动上麦
     const defaultOptions = await this._getDefaultOptions(customOptions);
     const options = merge.recursive({}, defaultOptions, customOptions);
@@ -111,6 +115,7 @@ class InteractiveServer extends BaseServer {
           resolve(event);
         },
         error => {
+          this.state.initInteractiveFailed = true
           reject(error);
         }
       );
@@ -144,13 +149,25 @@ class InteractiveServer extends BaseServer {
   /**
    * 判断是否需要初始化互动实例
    */
-  _isNeedInteractive(options) {
+  async _isNeedInteractive(options) {
     const { watchInitData } = useRoomBaseServer().state;
     const { isSpeakOn } = useMicServer().state;
     // 0. 观众，浏览器不支持SDK 不初始化互动，直接走旁路
     // 1. 非观众需要初始化互动
     // 2. 无延迟模式需要初始化互动（互动无延迟、分组）
     // 3. 普通互动上麦需要初始化互动
+
+    if (watchInitData.join_info.role_name == 2 && (watchInitData.webinar.no_delay_webinar == 1 || [3, 6].includes(watchInitData.webinar.mode)) && !options?.videoPolling) {
+      const res = await useMediaCheckServer().checkSystemRequirements()
+      const supperSdk = res?.result || false;
+      console.log('是否支持SDK', supperSdk)
+      if (!supperSdk) {
+        this.state.initInteractiveFailed = true
+        return supperSdk
+      } else {
+        this.state.initInteractiveFailed = false
+      }
+    }
 
     // 助理条件较多，单独判断
     if (watchInitData.join_info.role_name == 3) {
@@ -257,6 +274,12 @@ class InteractiveServer extends BaseServer {
           this.state.isGroupDiscuss = false
         }
       }
+      if (useMediaCheckServer().state.deviceInfo.device_status == 0 && !opts.videoPolling) {
+        let _flag = await useMediaCheckServer().getMediaInputPermission({ isNeedBroadcast: false })
+        if (!_flag) {
+          await useMicServer().speakOff()
+        }
+      }
       return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
     }
 
@@ -281,7 +304,8 @@ class InteractiveServer extends BaseServer {
 
     // 记录状态，初始化互动时为false,调用speakOn成功后 设置为true
     this.state.autoSpeak = false
-    if ((useMediaCheckServer().state.deviceInfo.device_status === 1)) {
+    let device_status = useMediaCheckServer().state.deviceInfo.device_status
+    if ((+device_status != 2)) {
       if (interactToolStatus.auto_speak == 1) {
         if (groupInitData.isInGroup) {
           autoSpeak =
@@ -310,8 +334,36 @@ class InteractiveServer extends BaseServer {
     }
 
 
-
     if (autoSpeak) {
+      // 获取当前最大上麦人数currentMaxOnMicNums 和 当前的在麦人数currentOnMicNums    在麦人数>=最大上麦人数，则不再调用上麦接口
+      let currentMaxOnMicNums = watchInitData.webinar?.inav_num || 1
+      let currentOnMicNums = 0
+      groupInitData.isInGroup ? currentOnMicNums = groupInitData.speaker_list?.length : currentOnMicNums = interactToolStatus.speaker_list?.length
+      console.log(`[interactiveServer]----currentOnMicNums: ${currentOnMicNums}---currentMaxOnMicNums: ${currentMaxOnMicNums}`)
+      if (currentOnMicNums >= currentMaxOnMicNums) {
+        if (watchInitData.join_info.role_name != 2) {
+          return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
+        }
+        return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE
+      }
+
+      // 依据V7.1.2需求   分组活动 + pc端 + 观众 + 未超出最大上麦人数 => 获取设备权限
+      if (watchInitData.webinar.mode == 6 && !useMsgServer().isMobileDevice() && watchInitData.join_info.role_name == 2) {
+        let _flag = await useMediaCheckServer().getMediaInputPermission({ isNeedBroadcast: false })
+        if (!_flag) {
+          this.state.mediaPermissionDenied = true
+          return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE
+        }
+      }
+
+      // 依据V7.1.2需求   将wap的分组活动自动上麦逻辑移至platform侧    分组活动 + wap + 自动上麦 + 观众 + 未超出最大上麦人数
+      if (watchInitData.webinar.mode == 6 && useMsgServer().isMobileDevice() && watchInitData.join_info.role_name == 2) {
+        this.state.mobileOnWheat = true // platform侧依据此进行加载初始化互动实例并上麦
+        // 此处增加device_status 原因：分组直播中，切换wap观众小组，若是设备可用的时候，还是需要调用上麦接口的
+        if (device_status != 1) {
+          return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE
+        }
+      }
       // 调上麦接口判断当前人是否可以上麦
       const res = await micServer.userSpeakOn();
       console.log('[interactiveServer]----上麦接口响应', res)
@@ -323,11 +375,6 @@ class InteractiveServer extends BaseServer {
         this.state.autoSpeak = true
 
         return VhallPaasSDK.modules.VhallRTC.ROLE_HOST;
-      } else if (res.code == '513025') {
-        // 由于调用上麦是在互动服务内，异常时，无法提示，  直接派发的话，业务未初始化，故延迟500
-        setTimeout(() => {
-          this.$emit('SPEAKON_FAILED', res)
-        }, 500);
       }
     } else {
       micServer.setSpeakOffToInit(false)
