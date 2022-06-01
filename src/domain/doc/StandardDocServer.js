@@ -113,7 +113,8 @@ export default class StandardDocServer extends AbstractDocServer {
 
       const groupMsgInitOptions = useMsgServer().getCurrentGroupMsgInitOptions()
       if (groupMsgInitOptions && groupMsgInitOptions.context) {
-        defaultOptions.context = groupMsgInitOptions.context
+        // 文档的 context 字段需要转成字符串（聊天不用），否则断线重连会收不到重连人的上线消息，paas的bug，已反馈
+        defaultOptions.context = JSON.stringify(groupMsgInitOptions.context)
       }
     } else {
       defaultOptions.role = this.mapDocRole(this.hasDocPermission() ? 1 : 2);
@@ -123,7 +124,8 @@ export default class StandardDocServer extends AbstractDocServer {
 
       const msgInitOptions = useMsgServer().getCurrentMsgInitOptions()
       if (msgInitOptions && msgInitOptions.context) {
-        defaultOptions.context = msgInitOptions.context
+        // 文档的 context 字段需要转成字符串（聊天不用），否则断线重连会收不到重连人的上线消息，paas的bug，已反馈
+        defaultOptions.context = JSON.stringify(msgInitOptions.context)
       }
     }
     //  如果是无延迟直播，文档播放模式改为互动模式
