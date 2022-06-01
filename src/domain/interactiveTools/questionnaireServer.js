@@ -80,9 +80,9 @@ class QuestionnaireServer extends BaseServer {
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.SUBMIT, async data => {
       const res = await this.submitQuestion(data);
       // 最后小红点以最后一个问卷的提交情况为准
-      if (data.naire_id == this.state.lastQuestionnaireId) {
-        this.state.dotVisible = false
-      }
+      // if (data.naire_id == this.state.lastQuestionnaireId) {
+      //   this.state.dotVisible = false
+      // }
       this.$emit(VHall_Questionnaire_Const.EVENT.SUBMIT, res);
     });
     this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
