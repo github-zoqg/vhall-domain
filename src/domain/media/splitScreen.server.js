@@ -234,11 +234,13 @@ class SplitScreenServer extends BaseServer {
 
     // 流信息更新事件注册
     const micServer = useMicServer()
+    const interactiveServer = useInteractiveServer()
+    const roomBaseServer = useRoomBaseServer()
     // 监听上麦流列表信息更新事件,通知主页面上麦流列表信息更新(开启分屏之后,主页面将不能自主更新上麦流列表信息)
     micServer.$on('INTERACTIVE_REMOTE_STREAMS_UPDATE', speakerList => {
       console.log('-----splitScreen--------远端流列表更新----', speakerList)
       // 如果直播已结束，不更新上麦列表
-      if (useRoomBaseServer().state.watchInitData.webinar.type == 3) {
+      if (roomBaseServer.state.watchInitData.webinar.type == 3) {
         return
       }
       const speakerListCopy = [...speakerList]
@@ -254,6 +256,18 @@ class SplitScreenServer extends BaseServer {
         speakerList: speakerListCopy
       }, this.curOrigin)
     })
+
+    // 接收设为主讲人消息
+    micServer.$on('vrtc_big_screen_set', msg => {
+      if (roomBaseServer.state.watchInitData.join_info.role_name == 1) {
+        const mainScreenSpeaker = micServer.state.speakerList.find(
+          speaker => speaker.accountId == msg.data.room_join_id
+        );
+        if (mainScreenSpeaker.streamId) {
+          interactiveServer.setBroadCastScreen(mainScreenSpeaker.streamId);
+        }
+      }
+    });
   }
 
   /**
