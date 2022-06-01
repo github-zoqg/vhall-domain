@@ -100,9 +100,10 @@ const joinLottery = params => {
 };
 
 // 参与抽奖(口令)
-const getLotteryHistory = () => {
+const getLotteryHistory = params => {
   return request('/v3/vss/lottery/check-list', {
-    method: 'GET'
+    method: 'GET',
+    params
   });
 };
 

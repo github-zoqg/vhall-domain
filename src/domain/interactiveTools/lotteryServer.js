@@ -142,7 +142,9 @@ class LotteryServer extends BaseServer {
 
   // 获取抽奖历史(处理请求状态)
   getLotteryHistory() {
-    return lotteryApi.getLotteryHistory().then(res => {
+    return lotteryApi.getLotteryHistory({
+      show_all: 1
+    }).then(res => {
       if (res.code === 200 && res.data && Array.isArray(res.data)) {
         return res.data
       } else {
