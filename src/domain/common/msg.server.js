@@ -83,6 +83,7 @@ class MsgServer extends BaseServer {
     //如果已存在子房间先销毁
     const defautlGroupOptions = this.getGroupDefaultOptions();
     const options = merge.recursive({}, defautlGroupOptions, customOptions);
+    this.state.groupMsgSdkInitOptions = options;
     //创建pass消息房间实例
     const vhallchat = await VhallPaasSDK.modules.VhallChat.createInstance(options);
     this.groupMsgInstance = vhallchat.message;
