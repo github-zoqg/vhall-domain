@@ -21,7 +21,7 @@ export default {
   //文档sdk
   doc: {
     name: 'VHDocSDK',
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.2.2.js'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.3.1.js'
   },
   questionnaire: {
     name: 'VhallQuestionnaire',
