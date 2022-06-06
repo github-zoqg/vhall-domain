@@ -406,7 +406,7 @@ class MemberServer extends BaseServer {
     const isLive = clientType === 'send';
     const { isInGroup, switch_status } = useGroupServer().state.groupInitData;
     // 如果是聊天审核,不做任何操作
-    if (msg.context?.isAuthChat) {
+    if (msg?.context?.isAuthChat) {
       return;
     }
     //todo 这里可能会改成，请求一下分组的接口，拿到分组的实际人数，因为分组Server的list这时候可能还在请求
