@@ -9,8 +9,6 @@ import VhallPaasSDK from '@/sdk/index';
 import useMicServer from './mic.server';
 import interactive from '@/request/interactive';
 import useMediaSettingServer from './mediaSetting.server';
-import useDesktopShareServer from './desktopShare.server';
-import useChatServer from '../chat/chat.server'
 import useInsertFileServer from './insertFile.server';
 import useVideoPollingServer from './videoPolling.server';
 class InteractiveServer extends BaseServer {
@@ -77,7 +75,7 @@ class InteractiveServer extends BaseServer {
     // 更新互动实例参数
     this.interactiveInstanceOptions = options;
 
-    console.log('%cVHALL-DOMAIN-互动初始化参数', 'color:blue', options);
+    console.log('%cVHALL-DOMAIN-互动初始化参数', 'color:blue', options, this.state.isGroupDiscuss);
 
     return new Promise((resolve, reject) => {
       this.createInteractiveInstance(
@@ -259,15 +257,16 @@ class InteractiveServer extends BaseServer {
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state
     const micServer = useMicServer()
-    const chatServer = useChatServer()
 
 
     // 如果在麦上，设为 HOST
+    this.state.isGroupDiscuss = false
     if (micServer.getSpeakerStatus() || opts.videoPolling) {
       if (useMediaCheckServer().state.deviceInfo.device_status === 2 && !opts.videoPolling) {
         // 若设备为2   不允许则直接下麦
         await micServer.speakOff()
       } else {
+        console.log('继续讨论的状态', opts?.isSwitchStart)
         if (opts.hasOwnProperty('isSwitchStart') && !opts.isSwitchStart && micServer.getSpeakerStatus()) {
           this.state.isGroupDiscuss = true
         } else {
@@ -290,15 +289,17 @@ class InteractiveServer extends BaseServer {
 
     // 自动上麦 + 未开启禁言 + 未开启全体禁言 + 不是因为被下麦或者手动下麦去初始化互动
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
+    const banned = groupInitData.isInGroup ? (groupInitData.is_banned == 1 ? true : false) : (interactToolStatus.is_banned == 1 ? true : false); //1禁言 0取消禁言
+    const allBanned = interactToolStatus.all_banned == 1 ? true : false;
     console.table([
       { name: 'device_status', val: useMediaCheckServer().state.deviceInfo.device_status },
       { name: 'auto_speak', val: interactToolStatus.auto_speak },
       { name: 'isInGroup', val: groupInitData.isInGroup },
-      { name: 'is_banned', val: parseInt(groupInitData.is_banned) },
+      { name: 'is_banned', val: banned },
       { name: 'isSpeakOffToInit', val: micServer.state.isSpeakOffToInit },
       { name: 'role_name', val: watchInitData.join_info.role_name },
-      { name: 'chatServer_banned', val: chatServer.state.banned },
-      { name: 'chatServer_allBanned', val: chatServer.state.allBanned }])
+      { name: 'chatServer_banned', val: banned },
+      { name: 'chatServer_allBanned', val: allBanned }])
 
     let autoSpeak = false
 
@@ -309,13 +310,13 @@ class InteractiveServer extends BaseServer {
       if (interactToolStatus.auto_speak == 1) {
         if (groupInitData.isInGroup) {
           autoSpeak =
-            parseInt(groupInitData.is_banned) !== 1 &&
+            !banned &&
             !micServer.state.isSpeakOffToInit &&
             watchInitData.join_info.role_name != 3
         } else {
           autoSpeak =
-            !chatServer.state.banned &&
-            !chatServer.state.allBanned &&
+            !banned &&
+            !allBanned &&
             !micServer.state.isSpeakOffToInit &&
             watchInitData.join_info.role_name != 3
         }
