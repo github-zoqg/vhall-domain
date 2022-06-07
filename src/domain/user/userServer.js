@@ -3,6 +3,7 @@
  */
 import { user as userApi } from '@/request/index.js';
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
+import { VENDORURLS } from '@/vendor.config.js'
 
 class UserServer {
   constructor() {
@@ -163,6 +164,10 @@ class UserServer {
    * @description 明文密码加密
    * */
   handleEncryptPassword(password, publicKey) {
+    if (!window.JSEncrypt) {
+      // 动态加载 jsencrypt
+      await loadjs(VENDORURLS.jsencrypt, { returnPromise: true }).then();
+    }
     let retPassword = '';
     const encryptor = new window.JSEncrypt(); // 新建JSEncrypt对象(依赖在中台导入)
     // 设置公钥
