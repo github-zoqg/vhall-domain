@@ -162,9 +162,13 @@ class StandardGroupServer extends BaseServer {
       switch (msg.data.event_type || msg.data.type) {
         // 直播结束
         case 'live_over':
+          const { watchInitData } = useRoomBaseServer().state;
           this.state.panelShow = false
           this.state.waitingUserList = [];
           this.state.groupedUserList = [];
+          if (watchInitData.webinar.mode == 6 && (watchInitData.join_info.role_name == 1 || watchInitData.join_info.role_name == 3)) {
+            this.updateGroupInitData()
+          }
           break;
         //【分组创建/新增完成】
         case 'group_room_create':
@@ -445,6 +449,12 @@ class StandardGroupServer extends BaseServer {
       })
       return
     };
+
+    // 继续讨论，主持人进入小组，需要隐藏分组设置面半
+    const roleName = useRoomBaseServer().state.watchInitData.join_info.role_name
+    if (roleName == 1 || roleName == 3) {
+      this.state.panelShow = false;
+    }
 
     // 进入小组中的人更新小组上麦列表
     useMicServer().updateSpeakerList()
