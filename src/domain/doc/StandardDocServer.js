@@ -110,11 +110,23 @@ export default class StandardDocServer extends AbstractDocServer {
       defaultOptions.roomId = groupInitData.group_room_id;
       defaultOptions.channelId = groupInitData.channel_id;
       defaultOptions.token = groupInitData.access_token;
+
+      const groupMsgInitOptions = useMsgServer().getCurrentGroupMsgInitOptions()
+      if (groupMsgInitOptions && groupMsgInitOptions.context) {
+        // 文档的 context 字段需要转成字符串（聊天不用），否则断线重连会收不到重连人的上线消息，paas的bug，已反馈
+        defaultOptions.context = JSON.stringify(groupMsgInitOptions.context)
+      }
     } else {
       defaultOptions.role = this.mapDocRole(this.hasDocPermission() ? 1 : 2);
       defaultOptions.roomId = watchInitData.interact.room_id; // 必填。
       defaultOptions.channelId = watchInitData.interact.channel_id; // 频道id 必须
       defaultOptions.token = watchInitData.interact.paas_access_token; // access_token，必填
+
+      const msgInitOptions = useMsgServer().getCurrentMsgInitOptions()
+      if (msgInitOptions && msgInitOptions.context) {
+        // 文档的 context 字段需要转成字符串（聊天不用），否则断线重连会收不到重连人的上线消息，paas的bug，已反馈
+        defaultOptions.context = JSON.stringify(msgInitOptions.context)
+      }
     }
     //  如果是无延迟直播，文档播放模式改为互动模式
     if (watchInitData.webinar.no_delay_webinar) {

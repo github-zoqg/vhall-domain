@@ -50,10 +50,11 @@ class VirtualClientStartServer extends BaseServer {
   }
   listenEvent() {
     const msgServer = useMsgServer();
+    let isSendClient = Boolean(['send', 'record', 'clientEmbed'].includes(useRoomBaseServer().state.clientType))
+    if (isSendClient) return;
     // 加入房间
     msgServer.$onMsg('JOIN', msg => {
       this.state.uvOnline = msg.uv;
-      console.log('11111111JOIN', msg, this.state)
       if (msg.context.pv > this.state.uvHot) {
         this.state.uvHot = msg.context.pv;
       }
