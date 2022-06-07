@@ -709,7 +709,9 @@ class StandardGroupServer extends BaseServer {
       useDocServer()._setDocPermisson();
 
       // 组长变更，speaker中的roleName会变更，影响到流画面按钮显示，需要更新上麦列表
-      useMicServer().updateSpeakerList()
+      if (this.state.groupInitData.isInGroup) {
+        useMicServer().updateSpeakerList()
+      }
 
       // 被设置为组长的是自己，且没上麦
       if (msg.data.account_id == join_info.third_party_user_id && !useMicServer().getSpeakerStatus()) {
