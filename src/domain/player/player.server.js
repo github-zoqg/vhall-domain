@@ -31,7 +31,8 @@ class PlayerServer extends BaseServer {
       markPoints: [],
       isBarrage: false,
       type: 'live', // live or vod
-      voice: 60
+      voice: 60,
+      isSmallPlayer: false
     };
 
     PlayerServer.instance = this;
@@ -339,6 +340,10 @@ class PlayerServer extends BaseServer {
       }
     }
     return defaultOptions;
+  }
+  // 设置播放器大小
+  setPlayerSize(data) {
+    this.state.isSmallPlayer = data;
   }
 }
 
