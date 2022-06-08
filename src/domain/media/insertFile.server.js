@@ -417,21 +417,24 @@ class InsertFileServer extends BaseServer {
 
       // 如果麦克风开启，静音
       if (!localSpeaker.audioMuted && localSpeaker.streamId) {
-        interactiveServer.muteAudio({
-          streamId: localSpeaker.streamId,
-          isMute: true
+        // 设置静音
+        interactiveServer.setDeviceStatus({
+          device: 1,
+          status: 0,
+          receive_account_id: roomBaseServer.state.watchInitData.join_info.third_party_user_id
         })
-        this.$emit('insert_mic_mute_change', 'play')
+        // this.$emit('insert_mic_mute_change', 'play')
       }
     } else {
       // 如果是关闭插播、暂停播放、播放结束，还原麦克风状态
       // 如果现在的麦克风状态和原麦克风状态不同，还原
       if (localSpeaker.streamId && localSpeaker.audioMuted != this.state.oldMicMute) {
-        interactiveServer.muteAudio({
-          streamId: localSpeaker.streamId,
-          isMute: this.state.oldMicMute
+        interactiveServer.setDeviceStatus({
+          device: 1,
+          status: this.state.oldMicMute ? 0 : 1,
+          receive_account_id: roomBaseServer.state.watchInitData.join_info.third_party_user_id
         })
-        this.$emit('insert_mic_mute_change', 'pause')
+        // this.$emit('insert_mic_mute_change', 'pause')
       }
     }
   }
