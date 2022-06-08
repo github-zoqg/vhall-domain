@@ -454,6 +454,7 @@ class StandardGroupServer extends BaseServer {
     const roleName = useRoomBaseServer().state.watchInitData.join_info.role_name
     if (roleName == 1 || roleName == 3) {
       this.state.panelShow = false;
+      this.$emit(this.EVENT_TYPE.ENTER_GROUP_FROM_MAIN, msg)
     }
 
     // 进入小组中的人更新小组上麦列表
