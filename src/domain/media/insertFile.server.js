@@ -55,7 +55,11 @@ class InsertFileServer extends BaseServer {
     });
     // 流加入
     interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
-      e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      try {
+        e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      } catch (error) {
+        console.log('error', error)
+      }
       if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) { // 判断两种类型的 streamType 是为了兼容客户端
         this.getInsertFileStream()
         // 更新麦克风状态
@@ -65,7 +69,11 @@ class InsertFileServer extends BaseServer {
     });
     // 流删除
     interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
-      e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      try {
+        e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      } catch (error) {
+        console.log('error', error)
+      }
       if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
         this.getInsertFileStream()
         // 更新麦克风状态
@@ -75,7 +83,11 @@ class InsertFileServer extends BaseServer {
     });
     // 本地推流或订阅远端流异常断开事件
     interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
-      e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      try {
+        e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      } catch (error) {
+        console.log('error', error)
+      }
       if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
         this.$emit('INSERT_FILE_STREAM_FAILED', e);
       }
@@ -128,9 +140,13 @@ class InsertFileServer extends BaseServer {
     });
     let retStream = null
     if (stream) {
-      retStream = {
-        ...stream,
-        attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
+      try {
+        retStream = {
+          ...stream,
+          attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
+        }
+      } catch (error) {
+        console.log('error', error)
       }
       this.state.insertStreamInfo.streamId = stream.streamId
       this.state.insertStreamInfo.userInfo = {
