@@ -1450,6 +1450,15 @@ class InteractiveServer extends BaseServer {
     if (useInsertFileServer().getInsertFileStream()) {
       // 备份麦克风状态
       useInsertFileServer().state.oldMicMute = options.mute.audio
+      if (!options.mute.audio) {
+        const { watchInitData } = useRoomBaseServer().state;
+        // 设置静音
+        this.setDeviceStatus({
+          device: 1,
+          status: 0,
+          receive_account_id: watchInitData.join_info.third_party_user_id
+        })
+      }
       // 设置流静音
       options.mute.audio = true
     }
