@@ -6,7 +6,7 @@ import env from '../../env';
  * */
 function getChatList(params = {}) {
   let url = env.imChat === 'v3' ? '/v3/interacts/chat/latest-list' : '/v4/im-chat/chat/get-list';
-  if (params.pos != 0) {
+  if (!params.isfirst) {
     url = '/v3/interacts/chat/get-list'
   }
   return request({
