@@ -9,6 +9,7 @@ class MenuServer extends BaseServer {
     super();
 
     this.state = {
+      selectedType: '',
       list: [
         { name: '聊天', type: 3, status: '1', welcome_content: '' },
         { name: '公告', type: 'notice', status: '1' },

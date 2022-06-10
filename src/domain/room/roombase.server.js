@@ -65,7 +65,10 @@ class RoomBaseServer extends BaseServer {
         langList: []
       },
       customRoleName: {},
-      director_stream: 0
+      director_stream: 0,
+      transpositionInfo: {
+        isWapBodyDocSwitch: false, // 播放器文档位置是否切换
+      }
     };
     RoomBaseServer.instance = this;
     return this;
@@ -300,6 +303,15 @@ class RoomBaseServer extends BaseServer {
       }
       return res;
     });
+  }
+
+  // 设置wap文档播放器切换的信息
+  setTranspositionInfo(key, val) {
+    if (!this.state.transpositionInfo.hasOwnProperty(key)) {
+      console.log('无效的参数')
+      return
+    }
+    this.state.transpositionInfo[key] = val
   }
 
   // 获取观看协议状态查询
