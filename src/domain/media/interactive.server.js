@@ -36,7 +36,8 @@ class InteractiveServer extends BaseServer {
       mainStreamId: null, // 当前主屏的流id
       mobileOnWheat: false, // V7.1.2版本需求，将wap的自动上麦操作移至platform层
       mediaPermissionDenied: false, // V7.1.2版本需求   分组活动+开启自动上麦，pc端观众，默认自动上麦
-      initInteractiveFailed: false // 初始化互动是否失败
+      initInteractiveFailed: false, // 初始化互动是否失败
+      initRole: null // 初始化互动的角色*
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
@@ -81,6 +82,7 @@ class InteractiveServer extends BaseServer {
       this.createInteractiveInstance(
         options,
         event => {
+          this.state.initRole = options.role
           let streams = event.currentStreams.filter(stream => {
             try {
               if (stream.attributes && typeof stream.attributes == 'string') {
@@ -113,6 +115,7 @@ class InteractiveServer extends BaseServer {
           resolve(event);
         },
         error => {
+          this.state.initRole = null
           this.state.initInteractiveFailed = true
           reject(error);
         }
@@ -463,7 +466,11 @@ class InteractiveServer extends BaseServer {
     // 远端流加入事件
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      try {
+        e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      } catch (error) {
+        console.log('error', error)
+      }
 
       // if (this.state.remoteStreams.find(s => s.streamId == e.data.streamId)) {
       //   return
@@ -1169,10 +1176,14 @@ class InteractiveServer extends BaseServer {
     if (isUseCurrentStreams) {
       streamList = [...this.currentStreams]
     }
-    streamList = streamList.map(stream => ({
-      ...stream,
-      attributes: stream.attributes && typeof stream.attributes == 'string' ? JSON.parse(stream.attributes) : stream.attributes
-    }));
+    try {
+      streamList = streamList.map(stream => ({
+        ...stream,
+        attributes: stream.attributes && typeof stream.attributes == 'string' ? JSON.parse(stream.attributes) : stream.attributes
+      }));
+    } catch (error) {
+      console.log('error', error)
+    }
 
     // 此处默认插播和桌面共享不共存，只会返回一个
     let stream = streamList.find(stream => stream.streamType === 3 || stream.streamType === 4);
@@ -1481,6 +1492,15 @@ class InteractiveServer extends BaseServer {
     if (useInsertFileServer().getInsertFileStream()) {
       // 备份麦克风状态
       useInsertFileServer().state.oldMicMute = options.mute.audio
+      if (!options.mute.audio) {
+        const { watchInitData } = useRoomBaseServer().state;
+        // 设置静音
+        this.setDeviceStatus({
+          device: 1,
+          status: 0,
+          receive_account_id: watchInitData.join_info.third_party_user_id
+        })
+      }
       // 设置流静音
       options.mute.audio = true
     }
