@@ -35,6 +35,17 @@ class MsgServer extends BaseServer {
     JOIN: [], // 加入房间
     LEFT: [] // 离开房间
   };
+
+  // 非直播状态下，观看端只能收到以下类型的房间消息
+  _roomMsgWhiteListInPlayback = [
+    'gift_send_success', // 礼物赠送成功消息
+    'reward_pay_ok', // 打赏成功消息
+    'base_num_update', // 虚拟人数消息
+    'question_answer_create', // 创建问答
+    'question_answer_commit', // 回复问答
+    'question_answer_backout' // 撤回问答
+  ]
+
   listenEvents() {
     this.$onMsg('ROOM_MSG', msg => {
       const { join_info } = useRoomBaseServer().state.watchInitData
@@ -234,6 +245,10 @@ class MsgServer extends BaseServer {
   _addListeners(instance) {
     for (let eventType in this._eventhandlers) {
       this._handlePaasInstanceOn(instance, eventType, msg => {
+        // 非直播状态，房间消息白名单
+        if (eventType == 'ROOM_MSG' && useRoomBaseServer().state.watchInitData?.webinar?.type != 1 && this._roomMsgWhiteListInPlayback.indexOf(msg.data.type) == -1) {
+          return
+        }
         if (this._eventhandlers[eventType].length) {
           this._eventhandlers[eventType].forEach(handler => {
             handler(msg);
