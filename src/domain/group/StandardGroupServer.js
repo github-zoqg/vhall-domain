@@ -1224,7 +1224,7 @@ class StandardGroupServer extends BaseServer {
       device_type: isPcClient ? '2' : '1',
       isBanned: options.isBanned
     };
-    msgServer.sendRoomMsg(JSON.stringify(body));
+    msgServer.sendMainRoomMsg(JSON.stringify(body));
   }
 }
 
