@@ -246,7 +246,8 @@ class MsgServer extends BaseServer {
     for (let eventType in this._eventhandlers) {
       this._handlePaasInstanceOn(instance, eventType, msg => {
         // 非直播状态，房间消息白名单
-        if (eventType == 'ROOM_MSG' && useRoomBaseServer().state.watchInitData?.webinar?.type != 1 && this._roomMsgWhiteListInPlayback.indexOf(msg.data.type) == -1) {
+        const { watchInitData } = useRoomBaseServer().state
+        if (eventType == 'ROOM_MSG' && watchInitData?.join_info?.role_name == 2 && watchInitData?.webinar?.type != 1 && this._roomMsgWhiteListInPlayback.indexOf(msg.data.type) == -1) {
           return
         }
         if (this._eventhandlers[eventType].length) {
