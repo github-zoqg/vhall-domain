@@ -99,6 +99,14 @@ const joinLottery = params => {
   });
 };
 
+// 参与抽奖(口令)
+const getLotteryHistory = params => {
+  return request('/v3/vss/lottery/check-list', {
+    method: 'GET',
+    params
+  });
+};
+
 export default {
   getPrizeList,
   pushLottery,
@@ -110,5 +118,6 @@ export default {
   checkLotteryResult,
   getDrawPrizeInfo,
   acceptPrize,
-  joinLottery
+  joinLottery,
+  getLotteryHistory
 };
