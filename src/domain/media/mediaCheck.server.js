@@ -49,12 +49,29 @@ class MediaCheckServer {
     });
   }
 
+  /**
+   * 根据选中的设备来调用getUserMedia方法
+   * @returns getUserMedia()
+   */
+  async getUserMediaWithSelectedDevices() {
+    function getConstraints() {
+      let constraints = { audio: true, video: true }
+      const selectedVideoDeviceId = sessionStorage.getItem('selectedVideoDeviceId')
+      const selectedAudioDeviceId = sessionStorage.getItem('selectedAudioDeviceId')
+      if (selectedVideoDeviceId) constraints.video = { deviceId: selectedVideoDeviceId };
+      if (selectedAudioDeviceId) constraints.audio = { deviceId: selectedAudioDeviceId };
+      return constraints
+    }
+
+    const constraints = getConstraints()
+    return navigator.mediaDevices.getUserMedia(constraints)
+  }
+
   // 获取用户媒体输入许可
   async getMediaInputPermission(options = { isNeedBroadcast: true }) {
     console.log('%c [mediaCheck] ', 'color: pink', navigator.mediaDevices)
     if (navigator.mediaDevices) {
-      return navigator.mediaDevices
-        .getUserMedia({ audio: true, video: true })
+      return this.getUserMediaWithSelectedDevices()
         .then(async stream => {
           // TODO: 根据参数判断是否发消息同步状态
           await this.setDevice({ status: 1, send_msg: Number(options.isNeedBroadcast) });
