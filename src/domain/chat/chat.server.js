@@ -369,6 +369,11 @@ class ChatServer extends BaseServer {
   }
   //设置本地个人禁言状态
   setLocalBanned(flag) {
+    const groupInitData = useGroupServer().state.groupInitData;
+    if (groupInitData.isInGroup) {
+      groupInitData.is_banned = flag
+      return
+    }
     this.state.banned = flag
   }
   //设置本地全员禁言状态
