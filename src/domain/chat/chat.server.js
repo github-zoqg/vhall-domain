@@ -372,7 +372,6 @@ class ChatServer extends BaseServer {
     const groupInitData = useGroupServer().state.groupInitData;
     if (groupInitData.isInGroup) {
       groupInitData.is_banned = flag
-      return
     }
     this.state.banned = flag
   }
