@@ -493,7 +493,7 @@ export default class AbstractDocServer extends BaseServer {
    * 用于记录流和文档的开始/结束时间点，便于在后面回放功能中使用
    * @param {Number} val 1-开始直播，2-结束直播
    * @param {Number} type 2-互动直播，1-其它直播
-   * @returns 
+   * @returns
    */
   @checkDocInstance()
   start(val, type) {
@@ -512,7 +512,7 @@ export default class AbstractDocServer extends BaseServer {
   /**
    * 是否在转播
    * @param {Boolean} isRelay true:转播，false-非转播
-   * @returns 
+   * @returns
    */
   @checkDocInstance()
   setRelay(isRelay = true) {
@@ -550,5 +550,16 @@ export default class AbstractDocServer extends BaseServer {
   @checkDocInstance()
   loadVodIframe() {
     return this.docInstance.loadVodIframe();
+  }
+
+  /**
+  * 旋转画布
+  * @param {Number} angle 角度,大于0的数字
+  * @param {?String} id 容器id, 可选，不传则设置所有文档的大小
+  * @returns
+  */
+  @checkDocInstance()
+  rotate(angle, id) {
+    return this.docInstance.rotate(angle, { id });
   }
 }
