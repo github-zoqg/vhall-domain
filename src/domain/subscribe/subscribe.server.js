@@ -9,7 +9,13 @@ class SubscribeServer extends BaseServer {
     }
     super();
     SubscribeServer.instance = this;
-    this.state = {};
+    this.state = {
+      isFirstEnterPlayer: false, //是否是初时进入页面
+      isChangeOrder: false, // 暖场视频顺序是否修改
+      subscribeWarmList: [], // 初始化播放器组件个数
+      playIndex: 0,  //播放了第几个
+      initIndex: 0 // 初始化播放器第几个
+    };
     this.listenMsg();
     return this;
   }
@@ -42,6 +48,13 @@ class SubscribeServer extends BaseServer {
     return subscribeApi.payWay(params).then(res => {
       return res;
     });
+  }
+
+  // 添加暖场视频列表
+  setWarmVideoList(item, flag = true) {
+    flag ? this.state.subscribeWarmList.push(item) : this.state.subscribeWarmList.shift();
+
+    console.log(this.state.subscribeWarmList, '12324snuancnuanc1暖场视频')
   }
 }
 
