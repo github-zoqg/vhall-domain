@@ -11,16 +11,6 @@ const groupInit = (params = {}) => {
   });
 };
 
-//预分组小组初始化
-const initPresetGroup = (params = {}) => {
-  const url = env.group === 'v3' ? '/v3/interacts/group/init-preset-group' : '';
-  return request({
-    url,
-    method: 'POST',
-    data: params
-  });
-};
-
 //重新导入
 const groupPresetImport = (params = {}) => {
   const url = env.group === 'v3' ? '/v3/interacts/group/preset-import' : '';
@@ -79,6 +69,26 @@ const groupEndDiscussion = (params = {}) => {
     data: params
   });
 };
+
+// 暂停讨论
+const groupPauseDiscussion = (params = {}) => {
+  const url = env.group === 'v3' ? '/v3/interacts/group-switch/stop' : ''; // TODO 补充v4接口
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
+
+// 继续讨论
+const groupProceedDiscussion = (params = {}) => {
+  const url = env.group === 'v3' ? '/v3/interacts/group-switch/proceed' : ''; // TODO 补充v4接口
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
 
 // 获取分组待分配用户列表
 const groupWaitList = (params = {}) => {
@@ -172,12 +182,13 @@ const groupHelp = (params = {}) => {
 
 export default {
   groupInit,
-  initPresetGroup,
   groupCreate,
   groupSetLeader,
   groupDisband,
   groupStartDiscussion,
   groupEndDiscussion,
+  groupPauseDiscussion,
+  groupProceedDiscussion,
   groupWaitList,
   groupListing,
   groupEnter,
