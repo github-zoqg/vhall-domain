@@ -56,6 +56,7 @@ class PlayerServer extends BaseServer {
         },
         //创建播放器失败成功回调
         e => {
+          console.log(options, '???shibao失败')
           throw new Error(e.message);
         }
       );
