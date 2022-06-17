@@ -40,7 +40,6 @@ export default class StandardDocServer extends AbstractDocServer {
 
       isVodUpdateFirst: true, //是否回放update消息第一次执行
 
-      isPortrait: true, // 是否是竖屏
     };
 
     // 由于文档对象的创建需要指定具体的宽高，而宽高需要根据具体dom计算，所以需要在文档组件初始化时初始化该方法
@@ -97,6 +96,7 @@ export default class StandardDocServer extends AbstractDocServer {
   _getDefaultOptions() {
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
+    debugger
     // 初始化参数
     const defaultOptions = {
       isVod: [4, 5].includes(watchInitData.webinar?.type) && watchInitData.record?.paas_record_id, // 是否是点播和回放
