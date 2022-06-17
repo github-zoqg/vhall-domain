@@ -30,7 +30,7 @@ class MicServer extends BaseServer {
   }
   // 更新上麦列表,接口更新时调用
   updateSpeakerList() {
-    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+    const { interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state
 
     let speakerList = interactToolStatus.speaker_list || []
@@ -200,7 +200,7 @@ class MicServer extends BaseServer {
           if (join_info.third_party_user_id == msg.data.room_join_id) {
             this.state.isSpeakOn = true;
             this.$emit('vrtc_connect_success', msg);
-          } else if (join_info.role_name == 1 || useGroupServer().state.groupInitData.join_role == 20) {
+          } else if (join_info.role_name == 1 || useGroupServer().state.groupInitData.isInGroup && useGroupServer().state.groupInitData.join_role == 20) {
             // 如果是主持人或者组长派发事件，更新成员列表
             this.$emit('vrtc_connect_success', msg);
           }

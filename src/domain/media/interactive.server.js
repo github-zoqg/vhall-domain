@@ -9,8 +9,6 @@ import VhallPaasSDK from '@/sdk/index';
 import useMicServer from './mic.server';
 import interactive from '@/request/interactive';
 import useMediaSettingServer from './mediaSetting.server';
-import useDesktopShareServer from './desktopShare.server';
-import useChatServer from '../chat/chat.server'
 import useInsertFileServer from './insertFile.server';
 import useVideoPollingServer from './videoPolling.server';
 class InteractiveServer extends BaseServer {
@@ -34,6 +32,8 @@ class InteractiveServer extends BaseServer {
       fullScreenType: false, // wap 全屏状态
       defaultStreamBg: false, //开始推流到成功期间展示默认图
       showPlayIcon: false, // 展示播放按钮
+      isGroupDiscuss: false, // 分组是否继续讨论
+      mainStreamId: null, // 当前主屏的流id
       mobileOnWheat: false, // V7.1.2版本需求，将wap的自动上麦操作移至platform层
       mediaPermissionDenied: false, // V7.1.2版本需求   分组活动+开启自动上麦，pc端观众，默认自动上麦
       initInteractiveFailed: false, // 初始化互动是否失败
@@ -41,6 +41,7 @@ class InteractiveServer extends BaseServer {
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
+      PROCEED_DISCUSSION: 'PROCEED_DISCUSSION' // 分组初始化继续讨论事件
     }
 
     this.abortStreams = []  // 自动播放失败的订阅流
@@ -75,7 +76,7 @@ class InteractiveServer extends BaseServer {
     // 更新互动实例参数
     this.interactiveInstanceOptions = options;
 
-    console.log('%cVHALL-DOMAIN-互动初始化参数', 'color:blue', options);
+    console.log('%cVHALL-DOMAIN-互动初始化参数', 'color:blue', options, this.state.isGroupDiscuss);
 
     return new Promise((resolve, reject) => {
       this.createInteractiveInstance(
@@ -107,7 +108,9 @@ class InteractiveServer extends BaseServer {
 
             useMicServer().updateSpeakerByAccountId(stream.accountId, stream)
           })
-
+          if (this.state.isGroupDiscuss) {
+            this.$emit(this.EVENT_TYPE.PROCEED_DISCUSSION)
+          }
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
           resolve(event);
         },
@@ -212,6 +215,8 @@ class InteractiveServer extends BaseServer {
     // 获取互动实例角色
     const role = await this._getInteractiveRole(options);
 
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
+
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
       inavId, // 互动房间ID，必填
@@ -224,9 +229,9 @@ class InteractiveServer extends BaseServer {
           : VhallPaasSDK.modules.VhallRTC.MODE_RTC, //应用场景模式，选填，可选值参考下文【应用场景类型】。支持版本：2.3.1及以上。
       role, //用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
       attributes: '', // String 类型
-      autoStartBroadcast: watchInitData.join_info.role_name == 1, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
+      autoStartBroadcast: watchInitData.join_info.role_name == 1 || isGroupLeader, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
       broadcastConfig:
-        watchInitData.join_info.role_name == 1
+        watchInitData.join_info.role_name == 1 || isGroupLeader
           ? {
             adaptiveLayoutMode:
               VhallRTC[sessionStorage.getItem('layout')] ||
@@ -243,6 +248,7 @@ class InteractiveServer extends BaseServer {
           : {}, // 自动旁路   开启旁路直播方法所需参数
       otherOption: watchInitData.report_data
     };
+    console.log('初始化互动options', defaultOptions)
     return defaultOptions;
   }
 
@@ -253,13 +259,22 @@ class InteractiveServer extends BaseServer {
   async _getInteractiveRole(opts) {
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state
+    const micServer = useMicServer()
 
 
     // 如果在麦上，设为 HOST
-    if (useMicServer().getSpeakerStatus() || opts.videoPolling) {
+    this.state.isGroupDiscuss = false
+    if (micServer.getSpeakerStatus() || opts.videoPolling) {
       if (useMediaCheckServer().state.deviceInfo.device_status === 2 && !opts.videoPolling) {
         // 若设备为2   不允许则直接下麦
-        await useMicServer().speakOff()
+        await micServer.speakOff()
+      } else {
+        console.log('继续讨论的状态', opts?.isSwitchStart)
+        if (opts.hasOwnProperty('isSwitchStart') && !opts.isSwitchStart && micServer.getSpeakerStatus()) {
+          this.state.isGroupDiscuss = true
+        } else {
+          this.state.isGroupDiscuss = false
+        }
       }
       if (useMediaCheckServer().state.deviceInfo.device_status == 0 && !opts.videoPolling) {
         let _flag = await useMediaCheckServer().getMediaInputPermission({ isNeedBroadcast: false })
@@ -274,20 +289,20 @@ class InteractiveServer extends BaseServer {
     if (watchInitData.webinar.no_delay_webinar == 0) {
       return VhallPaasSDK.modules.VhallRTC.ROLE_AUDIENCE;
     }
-    const micServer = useMicServer()
-    const chatServer = useChatServer()
 
     // 自动上麦 + 未开启禁言 + 未开启全体禁言 + 不是因为被下麦或者手动下麦去初始化互动
     // 被下麦或者手动下麦 会在 disconnect_success 里去调用init方法
+    const banned = groupInitData.isInGroup ? (groupInitData.is_banned == 1 ? true : false) : (interactToolStatus.is_banned == 1 ? true : false); //1禁言 0取消禁言
+    const allBanned = interactToolStatus.all_banned == 1 ? true : false;
     console.table([
       { name: 'device_status', val: useMediaCheckServer().state.deviceInfo.device_status },
       { name: 'auto_speak', val: interactToolStatus.auto_speak },
       { name: 'isInGroup', val: groupInitData.isInGroup },
-      { name: 'is_banned', val: parseInt(groupInitData.is_banned) },
+      { name: 'is_banned', val: banned },
       { name: 'isSpeakOffToInit', val: micServer.state.isSpeakOffToInit },
       { name: 'role_name', val: watchInitData.join_info.role_name },
-      { name: 'chatServer_banned', val: chatServer.state.banned },
-      { name: 'chatServer_allBanned', val: chatServer.state.allBanned }])
+      { name: 'chatServer_banned', val: banned },
+      { name: 'chatServer_allBanned', val: allBanned }])
 
     let autoSpeak = false
 
@@ -298,13 +313,13 @@ class InteractiveServer extends BaseServer {
       if (interactToolStatus.auto_speak == 1) {
         if (groupInitData.isInGroup) {
           autoSpeak =
-            parseInt(groupInitData.is_banned) !== 1 &&
+            !banned &&
             !micServer.state.isSpeakOffToInit &&
             watchInitData.join_info.role_name != 3
         } else {
           autoSpeak =
-            !chatServer.state.banned &&
-            !chatServer.state.allBanned &&
+            !banned &&
+            !allBanned &&
             !micServer.state.isSpeakOffToInit &&
             watchInitData.join_info.role_name != 3
         }
@@ -1177,7 +1192,6 @@ class InteractiveServer extends BaseServer {
   // 重新旁路布局
   async resetLayout() {
     const role_name = useRoomBaseServer().state.watchInitData.join_info.role_name;
-
     const { watchInitData } = useRoomBaseServer().state;
     const third_party_user_id = watchInitData?.join_info?.third_party_user_id;
     const { interactToolStatus } = useRoomBaseServer().state;
@@ -1249,9 +1263,12 @@ class InteractiveServer extends BaseServer {
     const mainScreenStream = speakerList.find(item => {
       return item.accountId === useRoomBaseServer().state.interactToolStatus.main_screen
     })
+    const mainScreenStreamId = streamId || (mainScreenStream && mainScreenStream.streamId) || this.state.localStream.streamId
+    if (mainScreenStreamId == this.state.mainStreamId) return Promise.resolve();
     return this.interactiveInstance
-      .setBroadCastScreen({
-        mainScreenStreamId: streamId || (mainScreenStream && mainScreenStream.streamId) || this.state.localStream.streamId
+      .setBroadCastScreen({ mainScreenStreamId }).then(res => {
+        console.log('动态配置旁路主屏-success', res)
+        this.state.mainStreamId = mainScreenStreamId
       })
       .catch(async err => {
         // 设置失败重试三次
