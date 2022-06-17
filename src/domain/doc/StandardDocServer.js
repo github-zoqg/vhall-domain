@@ -9,6 +9,7 @@ import request from '@/utils/http.js';
 import useMicServer from '../media/mic.server';
 import useInsertFileServer from '../media/insertFile.server';
 import useDesktopShareServer from '../media/desktopShare.server';
+import usePlayerServer from '../player/player.server';
 /**
  * 标准（通用）直播场景下的文档白板服务
  * 继承自AbstractDocServer
@@ -93,10 +94,9 @@ export default class StandardDocServer extends AbstractDocServer {
   }
 
   // 获取默认初始化参数
-  _getDefaultOptions() {
+  async _getDefaultOptions() {
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
-    debugger
     // 初始化参数
     const defaultOptions = {
       isVod: [4, 5].includes(watchInitData.webinar?.type) && watchInitData.record?.paas_record_id, // 是否是点播和回放
@@ -135,6 +135,53 @@ export default class StandardDocServer extends AbstractDocServer {
       // 分组直播一定是无延迟直播 no_delay_webinar=1
       defaultOptions.mode = window.VHDocSDK.PlayMode.INTERACT;
     }
+
+    let configDoc = await usePlayerServer().getPlayerConfig({
+      webinar_id: watchInitData.webinar.id,
+      tags: ['basic-config', 'water-mark']
+    })
+    let configWater = configDoc.data['water-mark'] && configDoc.data['water-mark'].data;
+    // 水印  文档
+    if (configWater && configWater.doc_watermark_open == 1) {
+
+      let waterText = ''
+      configWater.doc_watermark_type = JSON.parse(configWater.doc_watermark_type)
+      if (watchInitData.join_info.join_id) {
+        waterText =
+          (configWater.doc_watermark_type.text
+            ? configWater.doc_watermark_type.text_value
+            : '') +
+          (configWater.doc_watermark_type.user_id
+            ? '-' + watchInitData.join_info.join_id || ''
+            : '') +
+          (configWater.doc_watermark_type.nick_name
+            ? '-' + watchInitData.join_info.nickname || ''
+            : '')
+      } else {
+        let userInfo = localStorage.getItem('userInfo')
+        waterText =
+          (configWater.doc_watermark_type.text
+            ? configWater.doc_watermark_type.text_value
+            : '') +
+          (configWater.doc_watermark_type.user_id
+            ? '-' + userInfo?.user_id || ''
+            : '') +
+          (configWater.doc_watermark_type.nick_name
+            ? '-' + userInfo?.nick_name || ''
+            : '')
+      }
+
+      Object.assign(defaultOptions, {
+        watermarkOption: {  // 如果有watermarkOption则展示水印，否则不展示。
+          text: waterText, // 水印内容，如果有watermarkOption必填，length最大为20
+          angle: 15, // 水印逆时针倾斜角度，选填，默认15，取值范围 [0-360]
+          color: configWater.doc_font_color, // 水印颜色，选填，默认#000000
+          opcity: configWater.doc_transparency, // 水印透明度，选填，默认0.5，取值范围 [0-1]
+          fontSize: configWater.doc_font_size, // 字体大小，选填，默认12，取值范围 [12-48]
+        }
+      })
+    }
+    console.log('configWater:', defaultOptions)
     return defaultOptions;
   }
 
