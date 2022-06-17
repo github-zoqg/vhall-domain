@@ -591,7 +591,7 @@ class RoomBaseServer extends BaseServer {
   startRecord(data = {}) {
     return meeting.startRecord(data).then(res => {
       if (res.code == 200) {
-        this.state.watchInitData.is_recording = 1;
+        this.state.watchInitData.record.is_recording = 1;
       }
       return res;
     });
@@ -601,7 +601,7 @@ class RoomBaseServer extends BaseServer {
   endRecord(data = {}) {
     return meeting.endRecord(data).then(res => {
       if (res.code == 200) {
-        this.state.watchInitData.is_recording = 0;
+        this.state.watchInitData.record.is_recording = 0;
       }
       return res;
     });

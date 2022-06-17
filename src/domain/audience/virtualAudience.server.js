@@ -69,6 +69,9 @@ class VirtualClientStartServer extends BaseServer {
       if (msgs.type == 'base_num_update') {
         this.state.virtualHot = this.state.virtualHot + Number(msgs.update_pv);
         this.state.virtualOnline = this.state.virtualOnline + Number(msgs.update_online_num);
+      } else if (msgs.type == 'main_room_join_change') {
+        // 分组直播，小组中和主房间切换，需要维护在线人数
+        this.state.uvOnline = msg.uv;
       }
     });
   }

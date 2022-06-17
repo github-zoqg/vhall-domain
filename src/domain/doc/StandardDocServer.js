@@ -938,7 +938,7 @@ export default class StandardDocServer extends AbstractDocServer {
     this.state.thumbnailList = []; // 缩略图列表
 
     // 观众是否可见
-    if (useRoomBaseServer().state.interactToolStatus.is_open_switch == 1
+    if (useGroupServer().state.groupInitData.switch_status == 1
       && useGroupServer().state.groupInitData.isInGroup) {
       this.state.switchStatus = true; // 在小组中,文档始终可见
     } else {
