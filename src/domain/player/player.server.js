@@ -47,6 +47,7 @@ class PlayerServer extends BaseServer {
         options,
         //创建播放器成功回调
         event => {
+          console.log(options, '??wo自动播放参数')
           this.playerInstance = event.vhallplayer;
           this.state.markPoints = event.markPoints;
           this.openControls(false);
