@@ -25,6 +25,6 @@ export default {
   },
   questionnaire: {
     name: 'VhallQuestionnaire',
-    url: '//cnstatic01.e.vhall.com/common-static/middle/questionnaire/1.0.4/questionnaire_service.js'
+    url: '//cnstatic01.e.vhall.com/common-static/middle/questionnaire/1.0.5/questionnaire_service.js'
   }
 };
