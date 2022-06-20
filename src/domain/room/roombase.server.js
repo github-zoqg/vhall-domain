@@ -67,7 +67,8 @@ class RoomBaseServer extends BaseServer {
       customRoleName: {},
       director_stream: 0,
       warmUpVideo: {
-        warmup_paas_record_id: []
+        warmup_paas_record_id: [],
+        warmup_player_type: 1
       }
     };
     RoomBaseServer.instance = this;
@@ -124,7 +125,7 @@ class RoomBaseServer extends BaseServer {
             }
           }
           // 判断暖场视频数据
-          if (this.state.watchInitData.status === 'subscribe' && res.data.warmup && res.data.warmup.warmup_paas_record_id) {
+          if (this.state.watchInitData.status === 'subscribe' && res.data.warmup && res.data.warmup.warmup_paas_record_id.length) {
             this.state.warmUpVideo = res.data.warmup;
           }
           // 判断是不是第三方推流
