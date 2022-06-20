@@ -1231,7 +1231,10 @@ class InteractiveServer extends BaseServer {
       await this.setBroadCastLayout({ layout: VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 });
     } else {
       // 自适应布局
-      const adaptiveLayoutMode = VhallRTC[useMediaSettingServer().state.layout];
+      const res = await useRoomBaseServer().getInavToolStatus();
+      const type = res.code == 200 && res.data.layout ? res.data.layout : useMediaSettingServer().state.layout;
+      console.log('自适应布局模式====', type)
+      const adaptiveLayoutMode = VhallRTC[type];
       await this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode });
     }
 
