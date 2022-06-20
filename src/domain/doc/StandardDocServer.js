@@ -144,7 +144,6 @@ export default class StandardDocServer extends AbstractDocServer {
     if (configWater && configWater.doc_watermark_open == 1) {
 
       let waterText = ''
-      configWater.doc_watermark_type = JSON.parse(configWater.doc_watermark_type)
       if (watchInitData.join_info.join_id) {
         waterText =
           (configWater.doc_watermark_type.text
