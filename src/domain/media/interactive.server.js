@@ -1230,6 +1230,7 @@ class InteractiveServer extends BaseServer {
       // 一人铺满布局
       await this.setBroadCastLayout({ layout: VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 });
     } else {
+      if (groupInitData.isInGroup) return;
       // 自适应布局
       const res = await useRoomBaseServer().getInavToolStatus();
       const type = res.code == 200 && res.data.layout ? res.data.layout : useMediaSettingServer().state.layout;
