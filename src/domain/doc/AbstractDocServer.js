@@ -555,7 +555,7 @@ export default class AbstractDocServer extends BaseServer {
   /**
   * 旋转画布
   * @param {Number} angle 角度,大于0的数字
-  * @param {?String} id 容器id, 可选，不传则设置所有文档的大小
+  * @param {?String} id 容器id, 可选，不传则设置所有文档的样式
   * @returns
   */
   @checkDocInstance()
