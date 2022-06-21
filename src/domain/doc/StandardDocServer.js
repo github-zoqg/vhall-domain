@@ -135,50 +135,39 @@ export default class StandardDocServer extends AbstractDocServer {
       // 分组直播一定是无延迟直播 no_delay_webinar=1
       defaultOptions.mode = window.VHDocSDK.PlayMode.INTERACT;
     }
-    let configDoc = await docApi.getWaterMarkConfig({
+    const configDocRes = await docApi.getWaterMarkConfig({
       webinar_id: watchInitData.webinar.id,
-      tags: ['basic-config', 'water-mark']
+      tags: ['water-mark']
     })
-    let configWater = configDoc.data['water-mark'] && configDoc.data['water-mark'].data;
-    // 水印  文档
-    if (configWater && configWater.doc_watermark_open == 1) {
+    if (configDocRes && configDocRes.code === 200) {
+      let configWater = configDocRes.data['water-mark'] && configDocRes.data['water-mark'].data;
+      // 水印  文档
+      if (configWater && configWater.doc_watermark_open == 1) {
 
-      let waterText = ''
-      if (watchInitData.join_info.join_id) {
-        waterText =
-          (configWater.doc_watermark_type.text
-            ? configWater.doc_watermark_type.text_value
-            : '') +
-          (configWater.doc_watermark_type.user_id
-            ? '-' + watchInitData.join_info.join_id || ''
-            : '') +
-          (configWater.doc_watermark_type.nick_name
-            ? '-' + watchInitData.join_info.nickname || ''
-            : '')
-      } else {
-        let userInfo = localStorage.getItem('userInfo')
-        waterText =
-          (configWater.doc_watermark_type.text
-            ? configWater.doc_watermark_type.text_value
-            : '') +
-          (configWater.doc_watermark_type.user_id
-            ? '-' + userInfo?.user_id || ''
-            : '') +
-          (configWater.doc_watermark_type.nick_name
-            ? '-' + userInfo?.nick_name || ''
-            : '')
-      }
-
-      Object.assign(defaultOptions, {
-        watermarkOption: {  // 如果有watermarkOption则展示水印，否则不展示。
-          text: waterText || '版权所有，盗版必究', // 水印内容，如果有watermarkOption必填，length最大为20
-          angle: 15, // 水印逆时针倾斜角度，选填，默认15，取值范围 [0-360]
-          color: configWater.doc_font_color || '#5a5a5a', // 水印颜色，选填，默认#000000
-          opcity: configWater.doc_transparency || 50, // 水印透明度，选填，默认0.5，取值范围 [0-1]
-          fontSize: configWater.doc_font_size || 12, // 字体大小，选填，默认12，取值范围 [12-48]
+        let waterText = ''
+        let waterText_arr = []
+        configWater.doc_watermark_type.text && waterText_arr.push(configWater.doc_watermark_type.text_value)
+        if (watchInitData.join_info.join_id) {
+          configWater.doc_watermark_type.user_id && waterText_arr.push(watchInitData.join_info.join_id)
+          configWater.doc_watermark_type.nick_name && waterText_arr.push(watchInitData.join_info.nickname)
+        } else {
+          let userInfo = localStorage.getItem('userInfo')
+          configWater.doc_watermark_type.user_id && userInfo?.user_id && waterText_arr.push(userInfo.user_id)
+          configWater.doc_watermark_type.nick_name && userInfo?.nick_name && waterText_arr.push(userInfo.nick_name)
         }
-      })
+        waterText = waterText_arr.join('-')
+        Object.assign(defaultOptions, {
+          watermarkOption: {  // 如果有watermarkOption则展示水印，否则不展示。
+            text: waterText || '版权所有，盗版必究', // 水印内容，如果有watermarkOption必填，length最大为20
+            angle: 15, // 水印逆时针倾斜角度，选填，默认15，取值范围 [0-360]
+            color: configWater.doc_font_color || '#5a5a5a', // 水印颜色，选填，默认#000000
+            opcity: configWater.doc_transparency || 50, // 水印透明度，选填，默认50，取值范围 [0-100]
+            fontSize: configWater.doc_font_size || 12, // 字体大小，选填，默认12，取值范围 [12-48]
+          }
+        })
+      }
     }
+
     // Object.assign(defaultOptions, {
     //   watermarkOption: {  // 如果有watermarkOption则展示水印，否则不展示。
     //     text: '版权所有，盗版必究', // 水印内容，如果有watermarkOption必填，length最大为20
