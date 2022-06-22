@@ -14,6 +14,7 @@ class SubscribeServer extends BaseServer {
       isChangeOrder: false, // 暖场视频顺序是否修改
       subscribeWarmList: [], // 初始化播放器组件个数
       warmVideo: 60,
+      isPlaying: false, // 是否播放
       warmFullScreen: false, // 是否是全屏
       playIndex: 0,  //播放了第几个
       initIndex: 0 // 初始化播放器第几个
