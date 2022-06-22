@@ -1,5 +1,6 @@
 import paasSdk from './lib/paas-sdk.js';
 import saasSdk from './lib/saas-sdk.js';
+import loadjs from 'loadjs';
 
 // paasSdk、SaasSdk的配置
 export const ALLSDKCONFIG = Object.assign({}, paasSdk, saasSdk);
