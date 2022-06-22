@@ -36,7 +36,7 @@ import useZIndexServer from '@/domain/interactiveTools/zindexServer.js';
 import useQaAdminServer from '@/domain/interactiveTools/qaadmin.server.js';
 import useQaServer from '@/domain/interactiveTools/qa.server.js';
 import { setRequestBody, setRequestHeaders } from '@/utils/http.js';
-import VhallPaasSDK from '../sdk';
+import VhallPaasSDK, { ALLSDKCONFIG } from '../sdk';
 import { Dep } from '@/domain/common/base.server';
 import { INIT_DOMAIN } from '@/domain/common/dep.const';
 import useChatAuthServer from './chat/chatAuth.server';
@@ -76,54 +76,44 @@ class Domain {
     if (options.requestBody) {
       setRequestBody(options.requestBody);
     }
-    let taskList = [];
+
+    let taskList = VhallPaasSDK.init(options.plugins);
     // 是否在创建domain实例的时候初始化房间
-    if (options.isNotInitRoom) {
-      taskList = [this.paasSdkInit(options.plugins)];
-    } else {
-      taskList = [this.paasSdkInit(options.plugins), this.initRoom(options.initRoom, options.devLogOptions)];
+    if (!options.isNotInitRoom) {
+      taskList.push(this.initRoom(options.initRoom, options.devLogOptions))
     }
     return Promise.all(taskList).then(res => {
       //触发所有注册的依赖passsdk和房间初始化的回调
       // Dep.expenseDep(INIT_DOMAIN, res);
+      for (const item of Object.values(ALLSDKCONFIG)) {
+        if (item.name && window[item.name]) {
+          VhallPaasSDK.modules[item.name] = window[item.name];
+        }
+      }
       return this;
     })
   }
 
-  // 加载paasSdk
-  paasSdkInit(options) {
-    return new Promise(resolve => {
-      VhallPaasSDK.init({
-        plugins: options || ['chat', 'player', 'doc', 'interaction']
-      }).onSuccess(controllers => {
-        this.controllers = controllers;
-        resolve();
-      });
-    });
-  }
 
   //初始化房间信息
   async initRoom(roomInitOptions, devLogOptions) {
-    await VhallPaasSDK.loadSdk(['report'], false)
-    // 初始化日志上报
+    // 加载 report Sdk
+    await VhallPaasSDK.loadReportSdk();
+
+    // 初始化【开发侧】日志上报
     if (devLogOptions) {
-      this.initVhallReportForDev(devLogOptions)
+      window.vhallLog = window.ITextbookLog(devLogOptions)
     }
     const roomBaseServer = useRoomBaseServer();
     return roomBaseServer.initLive(roomInitOptions);
   }
 
-  // 初始化数据上报, 客户需要的统计数据
+  // 初始化数据上报, 【客户】需要的统计数据
   initVhallReport(reportOptions) {
     window.vhallReport = new VhallReport(reportOptions);
   }
 
-  // 开发日志上报
-  initVhallReportForDev(logOptions) {
-    window.vhallLog = ITextbookLog(logOptions);
-  }
-
-  // 微吼直播产品侧需要的数据
+  // 微吼直播【产品侧】需要的数据
   initVhallReportForProduct(reportOptions) {
     window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
   }
