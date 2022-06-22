@@ -67,9 +67,7 @@ class RoomBaseServer extends BaseServer {
       },
       customRoleName: {},
       director_stream: 0,
-      transpositionInfo: {
-        isWapBodyDocSwitch: false, // 播放器文档位置是否切换
-      },
+      isWapBodyDocSwitch: false, // 播放器文档位置是否切换
       unionConfig: {} //通用配置 - 基本配置，播放器跑马灯配置，文档水印配置等
     };
     RoomBaseServer.instance = this;
@@ -171,6 +169,8 @@ class RoomBaseServer extends BaseServer {
 
       } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
         this.state.watchInitData.webinar.type = 3;
+        // 直播结束还原位置切换的状态
+        this.state.isWapBodyDocSwitch = false
         // 把演示人、主讲人、主屏人都设置成主持人
         this.state.interactToolStatus.presentation_screen = this.state.watchInitData.webinar.userinfo.user_id;
         this.state.interactToolStatus.doc_permission = this.state.watchInitData.webinar.userinfo.user_id;
@@ -305,15 +305,6 @@ class RoomBaseServer extends BaseServer {
       }
       return res;
     });
-  }
-
-  // 设置wap文档播放器切换的信息
-  setTranspositionInfo(key, val) {
-    if (!this.state.transpositionInfo.hasOwnProperty(key)) {
-      console.log('无效的参数')
-      return
-    }
-    this.state.transpositionInfo[key] = val
   }
 
   // 获取观看协议状态查询
