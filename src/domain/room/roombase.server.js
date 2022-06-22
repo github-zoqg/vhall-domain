@@ -1,5 +1,6 @@
 import { meeting, roomApi } from '@/request/index.js';
 import { merge, getQueryString } from '@/utils/index.js';
+import { player } from '../../request';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 
@@ -68,7 +69,8 @@ class RoomBaseServer extends BaseServer {
       director_stream: 0,
       transpositionInfo: {
         isWapBodyDocSwitch: false, // 播放器文档位置是否切换
-      }
+      },
+      unionConfig: {} //通用配置 - 基本配置，播放器跑马灯配置，文档水印配置等
     };
     RoomBaseServer.instance = this;
     return this;
@@ -729,6 +731,22 @@ class RoomBaseServer extends BaseServer {
         return false
       }
     })
+  }
+
+  setUnionConfig(data) {
+    this.state.unionConfig = Object.assign({}, this.state.unionConfig, data)
+  }
+
+  //获取播放器以及文档水印相关配置
+  getUnionConfig(webinar_id) {
+    return player.getPlayerConfig({
+      webinar_id: webinar_id || this.state.watchInitData.webinar.id,
+      tags: ['basic-config', 'definition', 'screen-config', 'water-mark']
+    }).then(res => {
+      if (res.code == 200) {
+        this.setUnionConfig(res.data)
+      }
+    });
   }
 }
 

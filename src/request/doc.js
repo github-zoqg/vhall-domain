@@ -53,15 +53,6 @@ const delDocList = (params = {}) => {
   });
 };
 
-// 获取播放器配置项
-const getWaterMarkConfig = (params = {}) => {
-  return request({
-    url: '/v3/interacts/union/player-config',
-    method: 'POST',
-    data: params
-  });
-};
-
 // 上传文档url
 const uploadUrl =
   env.doc === 'v3' ? '/v3/interacts/document/upload-webinar-document'
@@ -70,7 +61,6 @@ const uploadUrl =
 export default {
   getSharedDocList,
   getWebinarDocList,
-  getWaterMarkConfig,
   syncDoc,
   delDocList,
   uploadUrl
