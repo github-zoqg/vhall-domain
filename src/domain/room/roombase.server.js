@@ -169,6 +169,8 @@ class RoomBaseServer extends BaseServer {
 
       } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
         this.state.watchInitData.webinar.type = 3;
+        // 直播结束还原位置切换的状态
+        this.state.isWapBodyDocSwitch = false
         // 把演示人、主讲人、主屏人都设置成主持人
         this.state.interactToolStatus.presentation_screen = this.state.watchInitData.webinar.userinfo.user_id;
         this.state.interactToolStatus.doc_permission = this.state.watchInitData.webinar.userinfo.user_id;
