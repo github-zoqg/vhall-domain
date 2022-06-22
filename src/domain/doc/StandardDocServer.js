@@ -337,6 +337,7 @@ export default class StandardDocServer extends AbstractDocServer {
         }
         this.addNewFile({ fileType, docId, cid });
       }
+      this.$emit('dispatch_doc_select_container', data);
     });
 
     this.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT, ({ cid, docId }) => {
