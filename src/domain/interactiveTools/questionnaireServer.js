@@ -27,6 +27,18 @@ class QuestionnaireServer extends BaseServer {
       QUESTIONNAIRE_SUBMIT: 'questionnaire_submit',
       QUESTIONNAIRE_ERROR: 'questionnaire_error'
     }
+
+    useMsgServer().$onMsg('ROOM_MSG', async msg => {
+      switch (msg.data.event_type || msg.data.type) {
+        case 'questionnaire_push':
+          console.log('问卷消息', msg);
+          const questionnaireId = msg.data.questionnaire_id
+          this.state.lastQuestionnaireId = questionnaireId
+          this.state.iconVisible = true
+          this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_PUSH, msg.data);
+          break;
+      }
+    });
   }
 
   /**
@@ -88,18 +100,6 @@ class QuestionnaireServer extends BaseServer {
         // console.log('问卷错误', data);
       });
     }
-
-    useMsgServer().$onMsg('ROOM_MSG', async msg => {
-      switch (msg.data.event_type || msg.data.type) {
-        case 'questionnaire_push':
-          console.log('问卷消息', msg);
-          const questionnaireId = msg.data.questionnaire_id
-          this.state.lastQuestionnaireId = questionnaireId
-          this.state.iconVisible = true
-          this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_PUSH, msg.data);
-          break;
-      }
-    });
   }
 
   /**
