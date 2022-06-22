@@ -738,10 +738,10 @@ class RoomBaseServer extends BaseServer {
   }
 
   //获取播放器以及文档水印相关配置
-  getUnionConfig(webinar_id) {
+  getUnionConfig(webinar_id, tags = ['basic-config', 'definition', 'screen-config', 'water-mark']) {
     return player.getPlayerConfig({
       webinar_id: webinar_id || this.state.watchInitData.webinar.id,
-      tags: ['basic-config', 'definition', 'screen-config', 'water-mark']
+      tags: tags
     }).then(res => {
       if (res.code == 200) {
         this.setUnionConfig(res.data)
