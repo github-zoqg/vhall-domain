@@ -4,8 +4,9 @@ import alias from '@rollup/plugin-alias';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import serve from 'rollup-plugin-serve'; //提供静态服务器能力
 import replace from '@rollup/plugin-replace';
-const pkg = require('./package.json');
 import path from 'path';
+import chalk from 'chalk';
+const pkg = require('./package.json');
 
 export default arg => {
   return {
@@ -67,7 +68,8 @@ export default arg => {
 
         // execute function after server has begun listening
         onListening: function () {
-          console.log('\r\nServer listening at: http://localhost:10001/lib/middle-domain.js\r\n');
+          const url = 'http://localhost:10001/lib/middle-domain.js';
+          console.log('\nServer listening at: ' + chalk.hex('#4169E1').underline(`${url}\n`));
         }
       })
     ]
