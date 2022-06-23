@@ -31,12 +31,9 @@ export function getBuildConfig(env) {
         sourcemap: true,
         // rollup通过`external` + `output.globals`来标记外部依赖
         globals: {
-          moment: 'moment'
         }
       }
     ],
-    // 第三方库通过外链引入
-    external: ['moment'],
     // 警告处理
     onwarn: function (warning, rollupWarn) {
       if (warning.code === 'CIRCULAR_DEPENDENCY') {
@@ -79,6 +76,7 @@ export function getBuildConfig(env) {
         ],
         hook: 'writeBundle',
         verbose: true
-      })]
+      })
+    ]
   }
 };
