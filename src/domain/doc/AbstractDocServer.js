@@ -241,7 +241,7 @@ export default class AbstractDocServer extends BaseServer {
    */
   @checkDocInstance()
   zoomReset(id) {
-    return this.docInstance.zoomReset({ id });
+    return this.docInstance.currentDoc && this.docInstance.zoomReset({ id });
   }
 
   /**
@@ -560,6 +560,6 @@ export default class AbstractDocServer extends BaseServer {
   */
   @checkDocInstance()
   rotate(angle, id) {
-    return this.docInstance.rotate(angle, { id });
+    return this.docInstance.currentDoc && this.docInstance.rotate(angle, { id });
   }
 }
