@@ -1,6 +1,6 @@
 {
   "name": "middle-domain",
-  "version": "7.3.3-test.4",
+  "version": "7.3.3-test.5",
   "description": "",
   "private": true,
   "main": "dist/lib/middle-domain.js",
@@ -56,6 +56,7 @@
   "dependencies": {
     "axios": "^0.25.0",
     "core-js": "3",
+    "loadjs": "^4.2.0",
     "merge": "^2.1.1"
   }
 }

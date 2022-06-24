@@ -5,7 +5,7 @@ import { user as userApi } from '@/request/index.js';
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
 import { VENDORURLS } from '@/vendor.config.js'
 import { getPlatform } from '@/utils/http';
-
+import loadjs from 'loadjs';
 class UserServer {
   constructor() {
     this.capInstance = null; // 云盾实例
