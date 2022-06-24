@@ -125,6 +125,7 @@ class QaServer extends BaseServer {
           account_id: third_party_user_id,
           avatar,
           msgId: new Date().getTime(),
+          // 不使用时间戳，而使用这种时间格式，是为了和服务端消息数据结构保持一致
           created_time: dayjs().format('yyyy-MM-DD HH:mm:ss')
         })
       );
