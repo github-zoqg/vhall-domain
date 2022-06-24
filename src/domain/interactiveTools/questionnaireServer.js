@@ -5,16 +5,12 @@ import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import questionnaireApi from '../../request/questionnaire';
 import useMsgServer from '../common/msg.server';
-
-const QUESTIONNAIRE_PUSH = 'questionnaire_push'; // 推送消息
 class QuestionnaireServer extends BaseServer {
   constructor(opts = {}) {
     super();
     this._uploadUrl = opts.uploadUrl;
     this._creatSelector = opts.creatSelector;
     this._paasSDKInstance = null;
-    this.useRoomBaseServer = useRoomBaseServer();
-    this.intiPaasQuestionnaireServerSDK(opts);
     this.state = {
       iconVisible: false, // icon 是否显示
       dotVisible: false, // 小红点是否显示
@@ -22,14 +18,43 @@ class QuestionnaireServer extends BaseServer {
       QuestionList: null,
       alias: ''
     }
+
+    this.EVENT_TYPE = {
+      QUESTIONNAIRE_PUSH: 'questionnaire_push',
+      QUESTIONNAIRE_READY: 'questionnaire_ready',
+      QUESTIONNAIRE_CREATE: 'questionnaire_create',
+      QUESTIONNAIRE_UPDATE: 'questionnaire_update',
+      QUESTIONNAIRE_SUBMIT: 'questionnaire_submit',
+      QUESTIONNAIRE_ERROR: 'questionnaire_error'
+    }
+
+    useMsgServer().$onMsg('ROOM_MSG', async msg => {
+      switch (msg.data.event_type || msg.data.type) {
+        case 'questionnaire_push':
+          console.log('问卷消息', msg);
+          const questionnaireId = msg.data.questionnaire_id
+          this.state.lastQuestionnaireId = questionnaireId
+          this.state.iconVisible = true
+          this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_PUSH, msg.data);
+          break;
+      }
+    });
   }
 
   /**
-   * @description 初始化问卷服务sdk
+   * 初始化
+   * @param {Object} customOptions
+   * @returns {Promise}
    */
-  intiPaasQuestionnaireServerSDK(opts = {}) {
-    const { watchInitData } = this.useRoomBaseServer.state;
+  init(opts = {}) {
+    if (this._paasSDKInstance) {
+      // 问卷sdk已经实例化过
+      // console.log('问卷sdk已经初始化过，不需要重复初始化');
+      return;
+    }
+    const { watchInitData } = useRoomBaseServer().state;
     const { interact, join_info } = watchInitData;
+    // 初始化问卷服务SDK
     this._paasSDKInstance = new VHall_Questionnaire_Service({
       auth: {
         app_id: interact.paas_app_id,
@@ -40,55 +65,41 @@ class QuestionnaireServer extends BaseServer {
       uploadUrl: this._uploadUrl,
       iphoneNumber: ''
     });
-    if (opts.mode === 'watch') {
-      this.initWatchEvent();
+    // 初始化问卷相关事件
+    this._initEvent(opts.mode);
+  }
+
+  _initEvent(mode) {
+    if (mode === 'watch') {
+      // 初始化观看端事件
+      this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.SUBMIT, async data => {
+        const res = await this.submitQuestion(data);
+        // 最后小红点以最后一个问卷的提交情况为准
+        // if (data.naire_id == this.state.lastQuestionnaireId) {
+        //   this.state.dotVisible = false
+        // }
+        this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_SUBMIT, res);
+      });
+      this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
+        this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_ERROR, data);
+        console.log('问卷错误', data);
+      });
     } else {
-      this.initLiveEvent();
+      // 初始化发起端事件
+      this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.CREATE, data => {
+        this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_CREATE, data);
+      });
+      this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.UPDATE, async data => {
+        const extension = JSON.parse(data.extension);
+        data.alias = this.state.alias;
+        const relt = await this.editQuestionnaire(data, extension.playback_filling);
+        this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_UPDATE, relt, data);
+      });
+      this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
+        this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_ERROR, data);
+        // console.log('问卷错误', data);
+      });
     }
-    useMsgServer().$onMsg('ROOM_MSG', async msg => {
-      switch (msg.data.event_type || msg.data.type) {
-        case QUESTIONNAIRE_PUSH:
-          console.log('问卷消息', msg);
-          const questionnaireId = msg.data.questionnaire_id
-          this.state.lastQuestionnaireId = questionnaireId
-          this.state.iconVisible = true
-          this.$emit(QUESTIONNAIRE_PUSH, msg.data);
-          break;
-      }
-    });
-  }
-
-  // 初始化发起端事件监听
-  initLiveEvent() {
-    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.CREATE, data => {
-      this.$emit(VHall_Questionnaire_Const.EVENT.CREATE, data);
-    });
-    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.UPDATE, async data => {
-      const extension = JSON.parse(data.extension);
-      data.alias = this.state.alias;
-      const relt = await this.editQuestionnaire(data, extension.playback_filling);
-      this.$emit(VHall_Questionnaire_Const.EVENT.UPDATE, relt, data);
-    });
-    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
-      this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, data);
-      // console.log('问卷错误', data);
-    });
-  }
-
-  // 初始化观看端事件监听
-  initWatchEvent() {
-    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.SUBMIT, async data => {
-      const res = await this.submitQuestion(data);
-      // 最后小红点以最后一个问卷的提交情况为准
-      // if (data.naire_id == this.state.lastQuestionnaireId) {
-      //   this.state.dotVisible = false
-      // }
-      this.$emit(VHall_Questionnaire_Const.EVENT.SUBMIT, res);
-    });
-    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
-      this.$emit(VHall_Questionnaire_Const.EVENT.ERROR, data);
-      console.log('问卷错误', data);
-    });
   }
 
   /**
@@ -119,7 +130,7 @@ class QuestionnaireServer extends BaseServer {
    * @description 条件查询问卷列表
    */
   queryQuestionnaireList(params) {
-    const { watchInitData } = this.useRoomBaseServer.state;
+    const { watchInitData } = useRoomBaseServer().state;
     const { webinar, interact } = watchInitData;
     return questionnaireApi.queryQuestionnaireList({
       webinar_id: webinar.id,
@@ -130,7 +141,7 @@ class QuestionnaireServer extends BaseServer {
 
   // 推送问卷
   publishQuestionnaire(surveyId) {
-    const { watchInitData } = this.useRoomBaseServer.state;
+    const { watchInitData } = useRoomBaseServer().state;
     const { interact } = watchInitData;
     return new Promise((resolve, reject) => {
       questionnaireApi.publishQuestionnaire({
@@ -159,7 +170,7 @@ class QuestionnaireServer extends BaseServer {
    * @param opts { surveyId: 111, alias: '问卷展示名称'}
    */
   copyQuestionnaire(opts) {
-    const { watchInitData } = this.useRoomBaseServer.state;
+    const { watchInitData } = useRoomBaseServer().state;
     const { webinar, interact } = watchInitData;
     const params = {
       webinar_id: webinar.id,
@@ -176,7 +187,7 @@ class QuestionnaireServer extends BaseServer {
    * @description 删除问卷
    */
   deleteQuestionnaire(surveyId) {
-    const { watchInitData } = this.useRoomBaseServer.state;
+    const { watchInitData } = useRoomBaseServer().state;
     const { webinar, interact } = watchInitData;
     return questionnaireApi.deleteQuestionnaire({
       webinar_id: webinar.id,
@@ -189,7 +200,7 @@ class QuestionnaireServer extends BaseServer {
    * @description 编辑问卷
    */
   editQuestionnaire(data, playback_filling) {
-    const { watchInitData } = this.useRoomBaseServer.state;
+    const { watchInitData } = useRoomBaseServer().state;
     const { webinar, interact, join_info } = watchInitData;
     const params = {
       survey_id: data.id,
@@ -249,7 +260,7 @@ class QuestionnaireServer extends BaseServer {
             break;
         }
       });
-    const { watchInitData } = this.useRoomBaseServer.state;
+    const { watchInitData } = useRoomBaseServer().state;
     const { webinar, interact, join_info } = watchInitData;
     return await questionnaireApi.submitQuestionnaire({
       survey_id: naire_id,
@@ -268,7 +279,7 @@ class QuestionnaireServer extends BaseServer {
    * @description 保存问卷(合并方法)
    */
   async saveQuestionnaire(data, isShare = false) {
-    const { watchInitData } = this.useRoomBaseServer.state;
+    const { watchInitData } = useRoomBaseServer().state;
     const { interact, join_info, webinar } = watchInitData;
     let relt = Promise.resolve(true);
     if (isShare) {
@@ -302,7 +313,7 @@ class QuestionnaireServer extends BaseServer {
    */
   createLiveQuestion(data) {
     const extension = JSON.parse(data.extension);
-    const { watchInitData } = this.useRoomBaseServer.state;
+    const { watchInitData } = useRoomBaseServer().state;
     const { webinar, interact, join_info } = watchInitData;
     const params = {
       title: data.title,
@@ -324,7 +335,7 @@ class QuestionnaireServer extends BaseServer {
    * 检查用户是否已提交文件
    */
   checkAnswerStatus(surveyId) {
-    const { watchInitData } = this.useRoomBaseServer.state;
+    const { watchInitData } = useRoomBaseServer().state;
     const { webinar } = watchInitData;
     return questionnaireApi.checkAnswerStatus({
       survey_id: surveyId,
@@ -356,7 +367,7 @@ class QuestionnaireServer extends BaseServer {
    * 获取活动最后一个问卷
    */
   getLastSurvey() {
-    const { watchInitData, configList } = this.useRoomBaseServer.state;
+    const { watchInitData, configList } = useRoomBaseServer().state;
     const { interact, switch: _switch, webinar } = watchInitData;
     let playback_filling = 0
     if (configList['ui.hide_chat_history'] == 1) { // 打开admin此配置不请求接口
@@ -381,7 +392,7 @@ class QuestionnaireServer extends BaseServer {
 
   //活动问卷历史列表
   getSurveyList() {
-    const { watchInitData } = this.useRoomBaseServer.state;
+    const { watchInitData } = useRoomBaseServer().state;
     return questionnaireApi.getSurveyList({
       room_id: watchInitData.interact.room_id,
       webinar_id: watchInitData.webinar.id,
