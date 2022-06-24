@@ -1,6 +1,6 @@
 {
   "name": "middle-domain",
-  "version": "1.4.1-test.7",
+  "version": "1.4.2",
   "description": "",
   "private": true,
   "main": "dist/lib/middle-domain.js",
@@ -59,6 +59,7 @@
     "axios": "^0.25.0",
     "core-js": "3",
     "dayjs": "^1.11.3",
+    "loadjs": "^4.2.0",
     "merge": "^2.1.1"
   }
 }
