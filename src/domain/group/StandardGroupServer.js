@@ -4,7 +4,7 @@ import useInteractiveServer from '../media/interactive.server';
 import useMsgServer from '../common/msg.server';
 import useDocServer from '../doc/doc.server';
 import { group as groupApi } from '../../request/index.js';
-import { isPc } from '@/utils/index.js';
+import { isPc, merge } from '@/utils/index.js';
 import useMicServer from '../media/mic.server';
 import { sleep } from '../../utils';
 
@@ -24,6 +24,7 @@ class StandardGroupServer extends BaseServer {
       // 当前用户所在小组数据
       groupInitData: {
         isInGroup: false, //不在小组中
+        switch_status: 0 // 分组讨论状态：0-未开启，1-开启，2-分组已初始化未开始讨论，3-暂停
         // access_token: "access:fd8d3653:a68a5549b8ea8811" //访问token
         // channel_id: "ch_GeUR54XP" //通道Id
         // doc_permission: "16423152" // 主讲人ID
@@ -119,15 +120,20 @@ class StandardGroupServer extends BaseServer {
     // 未开启讨论时，发起端的分组状态要保持，存在有group_id，但是isInGroup=false的情况
     // 所以判断在不在小组中只能通过isInGroup字段判断
     await this.updateGroupInitData()
-    const { interactToolStatus } = useRoomBaseServer().state;
-    if (!this.state.groupInitData.group_id && interactToolStatus.group_id) {
-      this.state.groupInitData.group_id = interactToolStatus.group_id;
-      this.state.groupInitData.join_role = interactToolStatus.join_role;
-    }
   }
+
+  // 设置分组信息
+  setGroupInitData(props, val) {
+    if (!props || typeof props !== 'string') return;
+    const its = merge.recursive({}, this.state.groupInitData);
+    its[props] = val;
+    this.state.groupInitData = its;
+  }
+
+
   /**
    * 分组讨论重新导入
-   * @returns 
+   * @returns
    */
   async groupPresetImport() {
     const { watchInitData } = useRoomBaseServer().state;
@@ -149,21 +155,6 @@ class StandardGroupServer extends BaseServer {
     return await groupApi.groupInit(params);
   }
 
-  /**
-   * 
-   * @returns 
-   */
-  async initPresetGroup() {
-    const { watchInitData } = useRoomBaseServer().state;
-    const params = {
-      room_id: watchInitData.interact.room_id, // 主直播房间ID
-      switch_id: watchInitData.switch.switch_id, // 场次ID,
-      webinar_id: watchInitData.webinar.id
-    };
-    const result = await groupApi.initPresetGroup(params);
-    return result;
-  }
-
   //监听分组相关消息（属于房间消息）
   listenMsg() {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
@@ -171,9 +162,13 @@ class StandardGroupServer extends BaseServer {
       switch (msg.data.event_type || msg.data.type) {
         // 直播结束
         case 'live_over':
+          const { watchInitData } = useRoomBaseServer().state;
           this.state.panelShow = false
           this.state.waitingUserList = [];
           this.state.groupedUserList = [];
+          if (watchInitData.webinar.mode == 6 && (watchInitData.join_info.role_name == 1 || watchInitData.join_info.role_name == 3)) {
+            this.updateGroupInitData()
+          }
           break;
         //【分组创建/新增完成】
         case 'group_room_create':
@@ -187,9 +182,17 @@ class StandardGroupServer extends BaseServer {
         case 'group_switch_start':
           this.msgdoForGroupSwitchStart(msg);
           break;
+        //继续讨论
+        case 'group_switch_proceed':
+          this.msgdoForGroupSwitchStart(msg, { isSwitchStart: false });
+          break;
         //结束讨论
         case 'group_switch_end':
           this.msgdoForGroupSwitchEnd(msg);
+          break;
+        //暂停讨论
+        case 'group_switch_stop':
+          this.msgdoForGroupSwitchEnd(msg, { isSwitchEnd: false });
           break;
         //小组被解散
         case 'group_disband':
@@ -259,7 +262,7 @@ class StandardGroupServer extends BaseServer {
       }
       console.log('[group] domain 加入房间消息：', msg);
       if (useRoomBaseServer().state.clientType === 'send') {
-        if (msg.context.groupInitData && msg.context.groupInitData.group_id) {
+        if (msg.context.groupInitData && msg.context.groupInitData.group_id != 0) {
           for (let item of this.state.groupedUserList) {
             if (item.id == msg.context.groupInitData.group_id) {
               const obj = item.group_joins.find(item => item.account_id == msg.sender_id);
@@ -335,9 +338,9 @@ class StandardGroupServer extends BaseServer {
         if (msg.data.is_append === 1) {
           // 每次讨论，初始化分配小组只会执行一次
           this.state.panelShow = true;
-          if (interactToolStatus.is_open_switch == 0) {
+          if (this.state.groupInitData.switch_status == 0) {
             // 如果是未分组，置成已分组未讨论状态
-            useRoomBaseServer().setInavToolStatus('is_open_switch', 2);
+            this.setGroupInitData('switch_status', 2);
           }
           // 更新待分配的人员列表
           this.getWaitingUserList();
@@ -416,16 +419,13 @@ class StandardGroupServer extends BaseServer {
   }
 
   /**
-   * //【开启讨论/开始讨论】
+   * //【开启讨论/开始讨论/继续讨论】
    * @param {*} msg
    * @notes 发起端、接收端 广播
    * @returns
    */
-  async msgdoForGroupSwitchStart(msg) {
+  async msgdoForGroupSwitchStart(msg, options = { isSwitchStart: true }) {
     console.log('[group] domain group_switch_start', msg);
-    // 设置开始为开始讨论状态
-    useRoomBaseServer().setInavToolStatus('is_open_switch', 1);
-
     // 更新个人所在小组信息
     await this.updateGroupInitData();
     console.log('[group] 开始讨论，isInGroup ', this.state.groupInitData.isInGroup);
@@ -450,6 +450,13 @@ class StandardGroupServer extends BaseServer {
       return
     };
 
+    // 继续讨论，主持人进入小组，需要隐藏分组设置面半
+    const roleName = useRoomBaseServer().state.watchInitData.join_info.role_name
+    if (roleName == 1 || roleName == 3) {
+      this.state.panelShow = false;
+      this.$emit(this.EVENT_TYPE.ENTER_GROUP_FROM_MAIN, msg)
+    }
+
     // 进入小组中的人更新小组上麦列表
     useMicServer().updateSpeakerList()
     console.log('[group] 开始讨论，updateSpeakerList ', JSON.stringify(useMicServer().state.speakerList));
@@ -473,7 +480,7 @@ class StandardGroupServer extends BaseServer {
     this.$emit(this.EVENT_TYPE.GROUP_MSG_CREATED, msg);
 
     // 处理分组下互动sdk切换channel
-    await useInteractiveServer().init()
+    await useInteractiveServer().init(options)
 
     // 处理文档channel切换逻辑
     useDocServer().groupReInitDocProcess();
@@ -483,24 +490,28 @@ class StandardGroupServer extends BaseServer {
     this.$emit(this.EVENT_TYPE.GROUP_SWITCH_START, msg);
   }
 
-  //【结束讨论】
-  async msgdoForGroupSwitchEnd(msg) {
+  //【结束/暂停讨论】
+  async msgdoForGroupSwitchEnd(msg, options = { isSwitchEnd: true }) {
     // 如果没有结束讨论，直接结束了直播，就return;
     if (msg.data.over_live) return;
 
     const roomBaseServer = useRoomBaseServer()
     console.log('[group] domain group_switch_end', msg);
     // 设置开始为未讨论状态
-    roomBaseServer.setInavToolStatus('is_open_switch', 0);
+    this.setGroupInitData('switch_status', options.isSwitchEnd ? 0 : 3);
     // 主持人是否在小组内
     roomBaseServer.setInavToolStatus('is_host_in_group', 0);
-    // 重置分配人员列表
-    this.state.waitingUserList = [];
-    this.state.groupedUserList = [];
 
-    if (roomBaseServer.state.clientType === 'send') {
-      //主持端
-      this.state.panelShow = false;
+    // 如果是结束直播
+    if (options.isSwitchEnd) {
+      // 重置分配人员列表
+      this.state.waitingUserList = [];
+      this.state.groupedUserList = [];
+
+      if (roomBaseServer.state.clientType === 'send') {
+        //主持端
+        this.state.panelShow = false;
+      }
     }
 
     // 结束讨论但不在分组中，不需要发消息，直接 return
@@ -557,7 +568,7 @@ class StandardGroupServer extends BaseServer {
       ]);
     }
 
-    if (useRoomBaseServer().state.interactToolStatus.is_open_switch != 1) {
+    if (this.state.groupInitData.switch_status != 1) {
       console.log('[group] 未开启讨论，不处理分组切换逻辑。');
       if (clientType === 'send') {
         this.$emit(this.EVENT_TYPE.GROUP_JOIN_CHANGE, msg);
@@ -571,7 +582,7 @@ class StandardGroupServer extends BaseServer {
     console.log('[group] groupJoinChangeInfo:', groupJoinChangeInfo);
 
     // 没有换组的人，需要更新自己所在房间的信息
-    if ((!this.state.groupInitData.group_id || msg.data.group_ids.includes(Number(this.state.groupInitData.group_id))) && !groupJoinChangeInfo.isNeedCare) {
+    if (msg.data.group_ids.includes(Number(this.state.groupInitData.group_id)) && !groupJoinChangeInfo.isNeedCare) {
       // 如果变更的小组中包含主房间，需要更新主房间的上麦列表
       if (msg.data.group_ids.includes(0)) {
         await this.updateMainRoomInavToolStatus()
@@ -633,7 +644,7 @@ class StandardGroupServer extends BaseServer {
       // 创建子房间聊天实例
 
       if (
-        useRoomBaseServer().state.interactToolStatus.is_open_switch === 1 &&
+        this.state.groupInitData.switch_status === 1 &&
         this.state.groupInitData.isInGroup
       ) {
         // 创建新的子房间聊天实例
@@ -658,7 +669,7 @@ class StandardGroupServer extends BaseServer {
       useMsgServer().destroyGroupMsg();
 
       if (
-        useRoomBaseServer().state.interactToolStatus.is_open_switch === 1 &&
+        this.state.groupInitData.switch_status === 1 &&
         this.state.groupInitData.isInGroup
       ) {
         // 创建新的子房间聊天实例
@@ -709,7 +720,9 @@ class StandardGroupServer extends BaseServer {
       useDocServer()._setDocPermisson();
 
       // 组长变更，speaker中的roleName会变更，影响到流画面按钮显示，需要更新上麦列表
-      useMicServer().updateSpeakerList()
+      if (this.state.groupInitData.isInGroup) {
+        useMicServer().updateSpeakerList()
+      }
 
       // 被设置为组长的是自己，且没上麦
       if (msg.data.account_id == join_info.third_party_user_id && !useMicServer().getSpeakerStatus()) {
@@ -986,7 +999,7 @@ class StandardGroupServer extends BaseServer {
     const result = await groupApi.groupStartDiscussion(params);
     if (result && result.code === 200) {
       // 开始讨论成功
-      useRoomBaseServer().setInavToolStatus('is_open_switch', 1);
+      this.setGroupInitData('switch_status', 1)
     }
     return result;
   }
@@ -1004,6 +1017,38 @@ class StandardGroupServer extends BaseServer {
       switch_id: watchInitData.switch.switch_id // 场次ID
     };
     const result = await groupApi.groupEndDiscussion(params);
+    return result;
+  }
+
+  /**
+   * 暂停讨论
+   * 该操作执行成功，所有端会收到 event_type === 'group_switch_stop'的消息
+   * 和type==='group_switch_stop'的消息
+   * @returns
+   */
+  async pauseDiscussion() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const params = {
+      room_id: watchInitData.interact.room_id, // 主直播房间ID
+      switch_id: watchInitData.switch.switch_id // 场次ID
+    };
+    const result = await groupApi.groupPauseDiscussion(params);
+    return result;
+  }
+
+  /**
+   * 继续讨论
+   * 该操作执行成功，所有端会收到 event_type === 'group_switch_start'的消息
+   * 和type==='group_switch_start'的消息
+   * @returns
+   */
+  async proceedDiscussion() {
+    const { watchInitData } = useRoomBaseServer().state;
+    const params = {
+      room_id: watchInitData.interact.room_id, // 主直播房间ID
+      switch_id: watchInitData.switch.switch_id // 场次ID
+    };
+    const result = await groupApi.groupProceedDiscussion(params);
     return result;
   }
 
@@ -1048,7 +1093,7 @@ class StandardGroupServer extends BaseServer {
     //   ...result.data,
     //   ...this.state.groupInitData
     // }) || {};
-    if (result.data?.group_id) {
+    if (result.data?.group_id != 0 && result.data?.switch_status == 1) {
       this.state.groupInitData.isInGroup = true;
     } else {
       this.state.groupInitData.isInGroup = false;
@@ -1099,22 +1144,6 @@ class StandardGroupServer extends BaseServer {
       from: oldGroupId,
       to: oldGroupId
     };
-  }
-
-  // 分组直播，进出子房间需要在主房间发消息，维护主房间 online-list
-  sendMainRoomJoinChangeMsg(options = { isJoinMainRoom: false, isBanned: false }) {
-    const { watchInitData } = useRoomBaseServer().state;
-    var isPcClient = isPc();
-    const body = {
-      type: 'main_room_join_change',
-      nickname: watchInitData.join_info.nickname,
-      accountId: watchInitData.join_info.third_party_user_id,
-      isJoinMainRoom: options.isJoinMainRoom,
-      role_name: watchInitData.join_info.role_name,
-      device_type: isPcClient ? '2' : '1',
-      isBanned: options.isBanned
-    };
-    useMsgServer().sendMainRoomMsg(JSON.stringify(body));
   }
 
   // 设置主讲人（邀请演示）
@@ -1195,7 +1224,7 @@ class StandardGroupServer extends BaseServer {
       device_type: isPcClient ? '2' : '1',
       isBanned: options.isBanned
     };
-    msgServer.sendRoomMsg(JSON.stringify(body));
+    msgServer.sendMainRoomMsg(JSON.stringify(body));
   }
 }
 

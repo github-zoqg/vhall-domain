@@ -55,7 +55,11 @@ class InsertFileServer extends BaseServer {
     });
     // 流加入
     interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
-      e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      try {
+        e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      } catch (error) {
+        console.log('error', error)
+      }
       if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) { // 判断两种类型的 streamType 是为了兼容客户端
         this.getInsertFileStream()
         // 更新麦克风状态
@@ -65,7 +69,11 @@ class InsertFileServer extends BaseServer {
     });
     // 流删除
     interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
-      e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      try {
+        e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      } catch (error) {
+        console.log('error', error)
+      }
       if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
         this.getInsertFileStream()
         // 更新麦克风状态
@@ -75,7 +83,11 @@ class InsertFileServer extends BaseServer {
     });
     // 本地推流或订阅远端流异常断开事件
     interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_FAILED, e => {
-      e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      try {
+        e.data.attributes = e.data.attributes && typeof e.data.attributes === 'string' ? JSON.parse(e.data.attributes) : e.data.attributes;
+      } catch (error) {
+        console.log('error', error)
+      }
       if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
         this.$emit('INSERT_FILE_STREAM_FAILED', e);
       }
@@ -128,9 +140,13 @@ class InsertFileServer extends BaseServer {
     });
     let retStream = null
     if (stream) {
-      retStream = {
-        ...stream,
-        attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
+      try {
+        retStream = {
+          ...stream,
+          attributes: stream.attributes ? JSON.parse(stream.attributes) : ''
+        }
+      } catch (error) {
+        console.log('error', error)
       }
       this.state.insertStreamInfo.streamId = stream.streamId
       this.state.insertStreamInfo.userInfo = {
@@ -417,21 +433,24 @@ class InsertFileServer extends BaseServer {
 
       // 如果麦克风开启，静音
       if (!localSpeaker.audioMuted && localSpeaker.streamId) {
-        interactiveServer.muteAudio({
-          streamId: localSpeaker.streamId,
-          isMute: true
+        // 设置静音
+        interactiveServer.setDeviceStatus({
+          device: 1,
+          status: 0,
+          receive_account_id: roomBaseServer.state.watchInitData.join_info.third_party_user_id
         })
-        this.$emit('insert_mic_mute_change', 'play')
+        // this.$emit('insert_mic_mute_change', 'play')
       }
     } else {
       // 如果是关闭插播、暂停播放、播放结束，还原麦克风状态
       // 如果现在的麦克风状态和原麦克风状态不同，还原
       if (localSpeaker.streamId && localSpeaker.audioMuted != this.state.oldMicMute) {
-        interactiveServer.muteAudio({
-          streamId: localSpeaker.streamId,
-          isMute: this.state.oldMicMute
+        interactiveServer.setDeviceStatus({
+          device: 1,
+          status: this.state.oldMicMute ? 0 : 1,
+          receive_account_id: roomBaseServer.state.watchInitData.join_info.third_party_user_id
         })
-        this.$emit('insert_mic_mute_change', 'pause')
+        // this.$emit('insert_mic_mute_change', 'pause')
       }
     }
   }
