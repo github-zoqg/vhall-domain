@@ -182,6 +182,18 @@ class RedPacketServer extends BaseServer {
   }
 
   /**
+   * @description 发送口令红包
+   */
+  createCodeRedPacket(params) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const { interact } = watchInitData;
+    return redPacketApi.createCodeRedpacket({
+      room_id: interact.room_id,
+      ...params
+    });
+  }
+
+  /**
    * @description 红包中奖人列表
    */
   getRedPacketWinners(params) {
