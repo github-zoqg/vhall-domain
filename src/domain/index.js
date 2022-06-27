@@ -53,6 +53,7 @@ import useEntryformServer from '@/domain/entryform/entry.server.js';
 import useSubscribeServer from '@/domain/subscribe/subscribe.server';
 import useSubjectServer from '@/domain/brand/subject.server';
 import useRedPacketServer from '@/domain/interactiveTools/redPacketServer.js';
+import useCodeRedPacketServer from '@/domain/interactiveTools/redCodePacketServer.js';
 
 import useSplitScreenServer from '@/domain/media/splitScreen.server';
 import useVideoPollingServer from '@/domain/media/videoPolling.server';
@@ -163,6 +164,7 @@ export {
   useSubscribeServer,
   useSubjectServer,
   useRedPacketServer,
+  useCodeRedPacketServer,
   useKeyLoginServer,
   useSplitScreenServer,
   useVideoPollingServer,

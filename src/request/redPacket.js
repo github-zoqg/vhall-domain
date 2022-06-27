@@ -12,15 +12,6 @@ const createRedpacket = params => {
   });
 };
 
-// 发送红包（口令红包）
-const createCodeRedpacket = params => {
-  return request({
-    url: '/v3/interacts/pwd-redpacket/create',
-    method: 'POST',
-    data: params
-  });
-};
-
 
 // 获取红包信息
 const getRedPacketInfo = params => {
@@ -66,7 +57,6 @@ const getRedpacketTotal = params => {
 
 export default {
   createRedpacket,
-  createCodeRedpacket,
   getRedPacketInfo,
   openRedpacket,
   getRedPacketWinners,
