@@ -1,13 +1,12 @@
 import BaseServer from '@/domain/common/base.server.js';
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
-import redPacketApi from '../../request/redPacket';
-import chatApi from '../../request/im/chat/index'
+import redPacketApi from '../../request/redCodePacket';
 
 const RED_ENVELOPE_OK = 'red_envelope_ok'; // 发红包
 const RED_ENVELOPE_OPEN_SUCCESS = 'red_envelope_open_success'; // 红包成功打开
 const RED_ENVELOPE_PUSH = 'red_envelope_push'; // 红包推送
-class RedPacketServer extends BaseServer {
+class RedCodePacketServer extends BaseServer {
   constructor(opts = {}) {
     super(opts);
     this._uuid = ''; // 当期那操作的红包
@@ -127,7 +126,7 @@ class RedPacketServer extends BaseServer {
   /**
    * @description 获取红包(观看端的初始化)
    */
-  getRedPacketInfo(uuid) {
+  getCodeRedPacketInfo(uuid) {
     const { watchInitData } = useRoomBaseServer().state;
     const { interact } = watchInitData;
     this._uuid = uuid;
@@ -151,7 +150,7 @@ class RedPacketServer extends BaseServer {
   /**
    * @description 领红包
    */
-  openRedPacket() {
+  openCodeRedPacket() {
     const { watchInitData } = useRoomBaseServer().state;
     const { interact } = watchInitData;
     return redPacketApi
@@ -170,12 +169,12 @@ class RedPacketServer extends BaseServer {
   }
 
   /**
-   * @description 发送红包
+   * @description 发送口令红包
    */
-  createRedPacket(params) {
+  createCodeRedPacket(params) {
     const { watchInitData } = useRoomBaseServer().state;
     const { interact } = watchInitData;
-    return redPacketApi.createRedpacket({
+    return redPacketApi.createCodeRedpacket({
       room_id: interact.room_id,
       ...params
     });
@@ -184,7 +183,7 @@ class RedPacketServer extends BaseServer {
   /**
    * @description 红包中奖人列表
    */
-  getRedPacketWinners(params) {
+  getCodeRedPacketWinners(params) {
     const { watchInitData } = useRoomBaseServer().state;
     const { interact } = watchInitData;
     return redPacketApi.getRedPacketWinners({
@@ -203,7 +202,7 @@ class RedPacketServer extends BaseServer {
   /**
    * @description 获取最后一个红包的领取信息
    */
-  getLatestRedpacketUsage() {
+  getLatestCodeRedpacketUsage() {
     const { watchInitData } = useRoomBaseServer().state;
     const { interact } = watchInitData;
     return redPacketApi.getLatestRedpacketUsage({
@@ -217,9 +216,9 @@ class RedPacketServer extends BaseServer {
   }
 }
 
-export default function useRedPacketServer(opts) {
-  if (!RedPacketServer.instance) {
-    RedPacketServer.instance = new RedPacketServer(opts);
+export default function useCodeRedPacketServer(opts) {
+  if (!RedCodePacketServer.instance) {
+    RedCodePacketServer.instance = new RedCodePacketServer(opts);
   }
-  return RedPacketServer.instance;
+  return RedCodePacketServer.instance;
 }
