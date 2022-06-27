@@ -82,6 +82,10 @@ class ChatServer extends BaseServer {
     msgServer.$onMsg('CHAT', rawMsg => {
       const { role_name } = useRoomBaseServer().state.watchInitData.join_info;
       if (['text', 'image'].includes(rawMsg.data.type)) {
+        // ios客戶端发送的聊天消息不含 barrageTxt 字段导致没有弹幕，所以需要兼容
+        if (!rawMsg.data.barrageTxt) {
+          rawMsg.data.barrageTxt = rawMsg.data.text_content
+        }
         //表情处理
         rawMsg.data.text_content = textToEmojiText(rawMsg.data.text_content);
         //格式化消息用于渲染并添加到消息列表
