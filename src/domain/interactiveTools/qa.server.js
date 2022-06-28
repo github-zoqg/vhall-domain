@@ -1,7 +1,7 @@
 /**
  * 聊天服务
  * */
-import moment from 'moment';
+import dayjs from 'dayjs';
 import BaseServer from '@/domain/common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
@@ -29,7 +29,7 @@ class QaServer extends BaseServer {
     QA_CREATE: 'question_answer_create',
     QA_COMMIT: 'question_answer_commit',
     QA_BACKOUT: 'question_answer_backout',
-    QA_SET: "question_answer_set"//设置问答名称
+    QA_SET: 'question_answer_set' //设置问答名称
   };
   //setSate
   setState(key, value) {
@@ -38,9 +38,9 @@ class QaServer extends BaseServer {
   //监听msgServer通知
   listenEvents() {
     const msgServer = useMsgServer();
-    const { watchInitData } = useRoomBaseServer().state
+    const { watchInitData } = useRoomBaseServer().state;
     msgServer.$onMsg('ROOM_MSG', msg => {
-      const { role_name, third_party_user_id, join_id } = watchInitData.join_info
+      const { role_name, third_party_user_id, join_id } = watchInitData.join_info;
       switch (msg.data.type) {
         //开启问答
         case this.Events.QA_OPEN:
@@ -54,10 +54,10 @@ class QaServer extends BaseServer {
         case this.Events.QA_CREATE:
           //主持人助理嘉宾接收全部问答，观众只接收自己问答
           if (role_name != 2) {
-            msg.data.msgId = msg.data?.answer?.id || msg.data.id
+            msg.data.msgId = msg.data?.answer?.id || msg.data.id;
             msg.data.content = textToEmojiText(msg.data.content);
             this.state.qaList.push(msg.data);
-            console.log(this.state.qaList)
+            console.log(this.state.qaList);
           }
           this.$emit(this.Events.QA_CREATE, msg);
           break;
@@ -70,24 +70,23 @@ class QaServer extends BaseServer {
             role_name == 1
           ) {
             msg.data.content = textToEmojiText(msg.data.content);
-            msg.data.msgId = msg.data?.answer?.id || msg.data.id
+            msg.data.msgId = msg.data?.answer?.id || msg.data.id;
             this.state.qaList.push(msg.data);
           }
           this.$emit(this.Events.QA_COMMIT, msg);
           break;
         case this.Events.QA_BACKOUT:
-          const backIndex = this.state.qaList.findIndex((item) => {
-
+          const backIndex = this.state.qaList.findIndex(item => {
             return item.answer && item.answer.id == msg.data.question_answer_id;
-          })
-          this.state.qaList.splice(backIndex, 1)
+          });
+          this.state.qaList.splice(backIndex, 1);
           this.$emit(this.Events.QA_BACKOUT, msg);
           break;
         case this.Events.QA_SET:
           this.$emit(this.Events.QA_SET, msg);
           break;
-        case "live_start":
-          this.state.qaList.splice(0)
+        case 'live_start':
+          this.state.qaList.splice(0);
           break;
       }
     });
@@ -116,12 +115,22 @@ class QaServer extends BaseServer {
     const { watchInitData } = useRoomBaseServer().state;
     params.room_id = watchInitData.interact.room_id;
     return qa.list.sendQaMsg(params).then(() => {
-      const { nickname, third_party_user_id, avatar, join_id } = watchInitData.join_info
-      params.content = textToEmojiText(params.content)
-      this.state.qaList.push(Object.assign(params, { type: 'question', join_id, nick_name: nickname, account_id: third_party_user_id, avatar, msgId: new Date().getTime(), created_time: moment().format('yyyy-MM-DD HH:mm:ss') }))
-      console.log('this.state.qaList', this.state.qaList)
+      const { nickname, third_party_user_id, avatar, join_id } = watchInitData.join_info;
+      params.content = textToEmojiText(params.content);
+      this.state.qaList.push(
+        Object.assign(params, {
+          type: 'question',
+          join_id,
+          nick_name: nickname,
+          account_id: third_party_user_id,
+          avatar,
+          msgId: new Date().getTime(),
+          // 不使用时间戳，而使用这种时间格式，是为了和服务端消息数据结构保持一致
+          created_time: dayjs().format('yyyy-MM-DD HH:mm:ss')
+        })
+      );
+      console.log('this.state.qaList', this.state.qaList);
     });
-
   }
   // getHistoryQaMsg() {
   //   const { watchInitData } = useRoomBaseServer().state;
@@ -139,15 +148,13 @@ class QaServer extends BaseServer {
     if (watchInitData.webinar.type == 5 && watchInitData.switch.switch_id) {
       params.webinar_switch_id = watchInitData.switch.switch_id;
     }
-    qa.list.getHistoryQaMsg(params)
-      .then(res => {
-        console.warn(res, '历史问答记录');
-        const list = res.data.list.map(h => {
-          return { ...h, content: textToEmojiText(h.content), msgId: h?.answer?.id || h.id };
-        });
-        this.state.qaList.splice(0, this.state.qaList.length, ...list)
-
+    qa.list.getHistoryQaMsg(params).then(res => {
+      console.warn(res, '历史问答记录');
+      const list = res.data.list.map(h => {
+        return { ...h, content: textToEmojiText(h.content), msgId: h?.answer?.id || h.id };
       });
+      this.state.qaList.splice(0, this.state.qaList.length, ...list);
+    });
   }
 
   // [发起端] 获取已设定的问答名称
@@ -155,9 +162,8 @@ class QaServer extends BaseServer {
     const { watchInitData } = useRoomBaseServer().state;
     return qa.list.getQaShowName({
       webinar_id: watchInitData.webinar.id
-    })
+    });
   }
-
 }
 
 export default function useQaServer() {

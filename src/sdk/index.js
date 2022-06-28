@@ -47,7 +47,9 @@ class VhallPaasSDK {
     const sdkArr = []
     for (const k of sdks) {
       if (ALLSDKCONFIG[k] && ALLSDKCONFIG[k].url) {
-        sdkArr.push(loadjs(ALLSDKCONFIG[k].url, k, { returnPromise: true }));
+        if (!loadjs.isDefined(k)) {
+          sdkArr.push(loadjs(ALLSDKCONFIG[k].url, k, { returnPromise: true }));
+        }
       }
     }
     return sdkArr;
