@@ -51,13 +51,13 @@ class ChatServer extends BaseServer {
         ? true
         : false
       : interactToolStatus.is_banned == 1
-      ? true
-      : false; //1禁言 0取消禁言
+        ? true
+        : false; //1禁言 0取消禁言
     this.state.allBanned = groupInitData.isInGroup
       ? false
       : interactToolStatus.all_banned == 1
-      ? true
-      : false; //1禁言 0取消禁言
+        ? true
+        : false; //1禁言 0取消禁言
     this.state.allBannedModuleList = {
       chat_status: interactToolStatus.chat_status == 1 ? true : false, //1生效 0不生效
       qa_status: interactToolStatus.qa_status == 1 ? true : false, //1生效 0不生效
@@ -313,7 +313,7 @@ class ChatServer extends BaseServer {
       useMsgServer().sendChatMsg(data, context);
     }
     const msg = Msg._handleGenerateMsg({ data, context });
-    const date_time = dayjs().format('yyyy-MM-DD HH:mm:ss');
+    const date_time = dayjs().format('YYYY-MM-DD HH:mm:ss');
     msg.sendTime = date_time;
     if (data.target_id) {
       this.state.privateChatList.push(msg);
