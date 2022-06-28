@@ -3,9 +3,9 @@ import useRoomBaseServer from '@/domain/room/roombase.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
 import redPacketApi from '../../request/redCodePacket';
 
-const RED_ENVELOPE_OK = 'red_envelope_ok'; // 发红包
-const RED_ENVELOPE_OPEN_SUCCESS = 'red_envelope_open_success'; // 红包成功打开
-const RED_ENVELOPE_PUSH = 'red_envelope_push'; // 红包推送
+const PWD_RED_ENVELOPE_OK = 'pwd_red_envelope_ok'; // 发红包
+const PWD_RED_ENVELOPE_OPEN_SUCCESS = 'pwd_red_envelope_open_success'; // 红包成功打开
+const PWD_RED_ENVELOPE_PUSH = 'pwd_red_envelope_push'; // 红包推送
 class RedCodePacketServer extends BaseServer {
   constructor(opts = {}) {
     super(opts);
@@ -18,7 +18,8 @@ class RedCodePacketServer extends BaseServer {
       online: 0, // 在线人数
       amount: 0, // 获奖金额
       status: -1, // 红包状态: 0 抢光了, 1 可抢
-      available: false // 当前红包是否可领取
+      available: false, // 当前红包是否可领取
+      red_code: '' //口令红包码
     };
     this.listenMsg(opts);
     useRoomBaseServer().$on('commonConfigRepacketChange', () => {
@@ -28,7 +29,7 @@ class RedCodePacketServer extends BaseServer {
   }
 
   initIconStatus() {
-    console.log('initIconStatus,useRoomBaseServer')
+    console.log('initIconStatus,useRoomBaseServer-watch')
     console.log(useRoomBaseServer().state)
     const redPacketInfo = useRoomBaseServer().state?.redPacket
     console.log(JSON.parse(JSON.stringify(redPacketInfo)))
@@ -69,13 +70,13 @@ class RedCodePacketServer extends BaseServer {
   listenMsg(opts) {
     useMsgServer().$onMsg('ROOM_MSG', msg => {
       switch (msg.data.event_type || msg.data.type) {
-        case RED_ENVELOPE_OK:
-          console.log('红包消息:RED_ENVELOPE_OK')
+        case PWD_RED_ENVELOPE_OK:
+          console.log('红包消息:PWD_RED_ENVELOPE_OK')
           this.state.available = true
           this.state.iconVisible = true
           this.state.dotVisible = true
           this._lastUUid = msg.data.red_packet_uuid
-          this.$emit(RED_ENVELOPE_OK, msg.data);
+          this.$emit(PWD_RED_ENVELOPE_OK, msg.data);
           break;
       }
     });
@@ -95,12 +96,12 @@ class RedCodePacketServer extends BaseServer {
     if (opts?.mode === 'watch') {
       useMsgServer().$onMsg('ROOM_MSG', msg => {
         switch (msg.data.event_type || msg.data.type) {
-          case RED_ENVELOPE_PUSH: // 红包推送消息
-            console.log('红包消息:RED_ENVELOPE_PUSH')
+          case PWD_RED_ENVELOPE_PUSH: // 红包推送消息
+            console.log('红包消息:PWD_RED_ENVELOPE_PUSH')
             this.state.available = true
             break;
-          case RED_ENVELOPE_OPEN_SUCCESS: // 红包领取消息
-            console.log('红包消息:RED_ENVELOPE_OPEN_SUCCESS')
+          case PWD_RED_ENVELOPE_OPEN_SUCCESS: // 红包领取消息
+            console.log('红包消息:PWD_RED_ENVELOPE_OPEN_SUCCESS')
             this.state.available = !(msg.data?.red_packet_status === 0);
             console.log('available:' + this.state.available)
             break;
@@ -131,17 +132,17 @@ class RedCodePacketServer extends BaseServer {
     const { interact } = watchInitData;
     this._uuid = uuid;
     return redPacketApi
-      .getRedPacketInfo({
+      .getCodeRedPacketInfo({
         room_id: interact.room_id,
         red_packet_uuid: this._uuid
       })
       .then(res => {
         this.state.info = res.data.red_packet;
         this.state.status = res.data.status;
-        if (res.data.amount) {
-          this.state.amount = res.data.amount;
+        if (res.data.red_code) {
+          this.state.red_code = res.data.red_code;
         } else {
-          this.state.amount = 0;
+          this.state.red_code = '';
         }
         return res;
       });
@@ -154,15 +155,15 @@ class RedCodePacketServer extends BaseServer {
     const { watchInitData } = useRoomBaseServer().state;
     const { interact } = watchInitData;
     return redPacketApi
-      .openRedpacket({
+      .openCodeRedpacket({
         room_id: interact.room_id,
         red_packet_uuid: this._uuid
       })
       .then(res => {
         if (res.data?.red_packet) { // 没有抢到红包该接口也返回amount
-          this.state.amount = res.data.amount;
+          this.state.red_code = res.data.red_code;
         } else {
-          this.state.amount = 0;
+          this.state.red_code = '';
         }
         return res;
       });
@@ -186,7 +187,7 @@ class RedCodePacketServer extends BaseServer {
   getCodeRedPacketWinners(params) {
     const { watchInitData } = useRoomBaseServer().state;
     const { interact } = watchInitData;
-    return redPacketApi.getRedPacketWinners({
+    return redPacketApi.getCodeRedPacketWinners({
       order: 'created_at',
       order_type: 'desc',
       room_id: interact.room_id,
