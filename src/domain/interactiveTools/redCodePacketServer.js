@@ -22,8 +22,8 @@ class RedCodePacketServer extends BaseServer {
       red_code: '' //口令红包码
     };
     this.listenMsg(opts);
-    useRoomBaseServer().$on('commonConfigRepacketChange', () => {
-      console.log('commonConfigRepacketChange')
+    useRoomBaseServer().$on('commonConfigCodeRepacketChange', () => {
+      console.log('口令红包，commonConfigCodeRepacketChange')
       this.initIconStatus()
     })
   }
@@ -31,12 +31,19 @@ class RedCodePacketServer extends BaseServer {
   initIconStatus() {
     console.log('initIconStatus,useRoomBaseServer-watch')
     console.log(useRoomBaseServer().state)
-    const redPacketInfo = useRoomBaseServer().state?.redPacket
+    const redPacketInfo = useRoomBaseServer().state?.pwdredPacket
     console.log(JSON.parse(JSON.stringify(redPacketInfo)))
     if (redPacketInfo) {
-      const hasRest = (parseInt(redPacketInfo.number) > parseInt(redPacketInfo.get_user_count))
-      const available = hasRest && redPacketInfo.is_luck !== 1 // 当已没有剩余红包且自己没领取过了
+      //口令红包数量：1-不限，2-固定数量
+      let available = false
+      if (redPacketInfo.join_type == 1) {
+        available = true
+      } else {
+        const hasRest = (parseInt(redPacketInfo.number) > parseInt(redPacketInfo.get_user_count))
+        available = hasRest && redPacketInfo.is_luck !== 1 // 当已没有剩余红包且自己没领取过了
+      }
       this.state.available = available;
+      console.log('available', available)
       if (redPacketInfo.status == 1) {
         this.state.iconVisible = true;
         if (available) {
@@ -160,7 +167,7 @@ class RedCodePacketServer extends BaseServer {
         red_packet_uuid: this._uuid
       })
       .then(res => {
-        if (res.data?.red_packet) { // 没有抢到红包该接口也返回amount
+        if (res.data?.red_code) {
           this.state.red_code = res.data.red_code;
         } else {
           this.state.red_code = '';
@@ -189,7 +196,7 @@ class RedCodePacketServer extends BaseServer {
     const { interact } = watchInitData;
     return redPacketApi.getCodeRedPacketWinners({
       order: 'created_at',
-      order_type: 'desc',
+      order_type: 'asc',
       room_id: interact.room_id,
       red_packet_uuid: this._uuid,
       ...params
