@@ -101,7 +101,7 @@ cLog(info('└──────────────────────
 
 function getUrl(env) {
   return env === 'production' ?
-    `https://cnstatic01.e.vhall.com/common-static/middle/middle-domain/${currentVersion}/middle-domain.js` :
+    `https://s2.e.vhall.com/common-static/middle/middle-domain/${currentVersion}/middle-domain.js` :
     // t-vhallsaas-static.oss-cn-beijing.aliyuncs.com
     `https://t-alistatic01.e.vhall.com/common-static/middle/middle-domain/${currentVersion}/middle-domain.js`;
 }
