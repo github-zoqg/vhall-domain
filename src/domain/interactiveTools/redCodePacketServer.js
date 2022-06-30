@@ -17,7 +17,7 @@ class RedCodePacketServer extends BaseServer {
       info: {}, // 红包信息
       online: 0, // 在线人数
       amount: 0, // 获奖金额
-      status: -1, // 红包状态: 0 抢光了, 1 可抢
+      is_luck: 2, //    0：打开没抢到     1:抢到了     2：没打开红包
       available: false, // 当前红包是否可领取
       red_code: '' //口令红包码
     };
@@ -34,21 +34,13 @@ class RedCodePacketServer extends BaseServer {
     const redPacketInfo = useRoomBaseServer().state?.pwdredPacket
     console.log(JSON.parse(JSON.stringify(redPacketInfo)))
     if (redPacketInfo) {
-      //口令红包数量：1-不限，2-固定数量
-      let available = false
-      if (redPacketInfo.join_type == 1) {
-        available = redPacketInfo.is_luck !== 1 // 当已没有剩余红包且自己没领取过了
-      } else {
-        const hasRest = (parseInt(redPacketInfo.number) > parseInt(redPacketInfo.get_user_count))
-        available = hasRest && redPacketInfo.is_luck !== 1 // 当已没有剩余红包且自己没领取过了
-      }
-      this.state.available = available;
-      console.log('available', available)
+      //is_luck  0：打开没抢到     1:抢到了     2：没打开红包
+      this.state.available = redPacketInfo.is_luck == 2 // 没打开红包就可以领
+      // 没打开红包则显示红包小红点
+      this.state.dotVisible = redPacketInfo.is_luck == 2
+      console.log('available', this.state.available, 'dotVisible', this.state.dotVisible)
       if (redPacketInfo.status == 1) {
         this.state.iconVisible = true;
-        if (available) {
-          this.state.dotVisible = true;
-        }
       }
       this._lastUUid = redPacketInfo.red_packet_uuid
     }
@@ -145,7 +137,8 @@ class RedCodePacketServer extends BaseServer {
       })
       .then(res => {
         this.state.info = res.data.red_packet;
-        this.state.status = res.data.status;
+        //is_luck  0：打开没抢到     1:抢到了     2：没打开红包
+        this.state.is_luck = res.data.is_luck;
         if (res.data.red_code) {
           this.state.red_code = res.data.red_code;
         } else {
