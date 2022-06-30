@@ -482,7 +482,11 @@ export default class StandardDocServer extends AbstractDocServer {
     // 如果是发起端，主持人正在桌面共享，助理界面优先显示文档
     if (!this.isWatch() && useRoomBaseServer().state.watchInitData.join_info.role_name == 3 &&
       useDesktopShareServer().state.localDesktopStreamId) {
-      useRoomBaseServer().setChangeElement('doc');
+      if (this.state.currentCid) {
+        useRoomBaseServer().setChangeElement('doc');
+      } else {
+        useRoomBaseServer().setChangeElement('stream-list');
+      }
     }
 
     if (useRoomBaseServer().state.clientType != 'send') {
@@ -1057,8 +1061,6 @@ export default class StandardDocServer extends AbstractDocServer {
           // 有插播或者桌面共享
           if (isSpeakOn) {
             setChangeElement('stream-list');
-          } else if (role_name == 3) {
-            setChangeElement('doc');
           } else if (role_name != 2) {
             setChangeElement('stream-list');
           } else {
