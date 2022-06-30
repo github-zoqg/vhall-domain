@@ -37,7 +37,7 @@ class RedCodePacketServer extends BaseServer {
       //口令红包数量：1-不限，2-固定数量
       let available = false
       if (redPacketInfo.join_type == 1) {
-        available = true
+        available = redPacketInfo.is_luck !== 1 // 当已没有剩余红包且自己没领取过了
       } else {
         const hasRest = (parseInt(redPacketInfo.number) > parseInt(redPacketInfo.get_user_count))
         available = hasRest && redPacketInfo.is_luck !== 1 // 当已没有剩余红包且自己没领取过了
