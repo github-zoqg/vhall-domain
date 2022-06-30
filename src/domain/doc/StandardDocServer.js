@@ -1061,6 +1061,12 @@ export default class StandardDocServer extends AbstractDocServer {
           // 有插播或者桌面共享
           if (isSpeakOn) {
             setChangeElement('stream-list');
+          } else if (role_name == 3) {
+            if (this.state.currentCid) {
+              setChangeElement('doc');
+            } else {
+              setChangeElement('stream-list');
+            }
           } else if (role_name != 2) {
             setChangeElement('stream-list');
           } else {
