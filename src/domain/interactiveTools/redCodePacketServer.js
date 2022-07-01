@@ -22,10 +22,8 @@ class RedCodePacketServer extends BaseServer {
       red_code: '' //口令红包码
     };
     this.listenMsg(opts);
-    useRoomBaseServer().$on('commonConfigCodeRepacketChange', () => {
-      console.log('口令红包，commonConfigCodeRepacketChange')
-      this.initIconStatus()
-    })
+    //初始化在聚合接口之后
+    this.initIconStatus()
   }
 
   initIconStatus() {
@@ -39,6 +37,7 @@ class RedCodePacketServer extends BaseServer {
       // 没打开红包则显示红包小红点
       this.state.dotVisible = redPacketInfo.is_luck == 2
       console.log('available', this.state.available, 'dotVisible', this.state.dotVisible)
+      // 显示红包icon
       if (redPacketInfo.status == 1) {
         this.state.iconVisible = true;
       }
@@ -139,6 +138,7 @@ class RedCodePacketServer extends BaseServer {
         this.state.info = res.data.red_packet;
         //is_luck  0：打开没抢到     1:抢到了     2：没打开红包
         this.state.is_luck = res.data.is_luck;
+        //保存红包口令
         if (res.data.red_code) {
           this.state.red_code = res.data.red_code;
         } else {
@@ -160,6 +160,7 @@ class RedCodePacketServer extends BaseServer {
         red_packet_uuid: this._uuid
       })
       .then(res => {
+        //存储口令
         if (res.data?.red_code) {
           this.state.red_code = res.data.red_code;
         } else {
