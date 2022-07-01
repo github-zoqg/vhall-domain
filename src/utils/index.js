@@ -33,7 +33,7 @@ function uploadFile(options, onChange) {
 
 // 判断浏览器是否是 chrome88 以上版本
 function isChrome88() {
-  let chromeReg = /Chrome\/(\d{2})[.\d]+\sSafari\/[.\d]+$/gi;
+  let chromeReg = /Chrome\/(\d{2,3})[.\d]+\sSafari\/[.\d]+$/gi;
   let chromeResult = chromeReg.exec(navigator.userAgent);
   return chromeResult && chromeResult.length > 0 && chromeResult[1] > 87;
 }
