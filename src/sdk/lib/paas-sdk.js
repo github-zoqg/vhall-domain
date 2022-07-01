@@ -25,6 +25,7 @@ export default {
   },
   questionnaire: {
     name: 'VhallQuestionnaire',
-    url: '//cnstatic01.e.vhall.com/common-static/middle/questionnaire/1.0.5/questionnaire_service.js'
+    url: '//s3.e.vhall.com/common-static/middle/questionnaire/1.0.6/questionnaire_service.js',
+    defer: true // 新增属性，延迟执行
   }
 };

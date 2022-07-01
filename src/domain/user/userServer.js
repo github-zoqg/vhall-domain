@@ -3,7 +3,8 @@
  */
 import { user as userApi } from '@/request/index.js';
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
-
+import { VENDORURLS } from '@/vendor.config.js'
+import loadjs from 'loadjs';
 class UserServer {
   constructor() {
     this.capInstance = null; // 云盾实例
@@ -162,7 +163,11 @@ class UserServer {
   /**
    * @description 明文密码加密
    * */
-  handleEncryptPassword(password, publicKey) {
+  async handleEncryptPassword(password, publicKey) {
+    if (!window.JSEncrypt) {
+      // 动态加载 jsencrypt
+      await loadjs(VENDORURLS.jsencrypt, { returnPromise: true });
+    }
     let retPassword = '';
     const encryptor = new window.JSEncrypt(); // 新建JSEncrypt对象(依赖在中台导入)
     // 设置公钥
@@ -192,7 +197,7 @@ class UserServer {
     let retPassword;
     try {
       const publicKey = getKeyRelt.data.public_key;
-      retPassword = this.handleEncryptPassword(password, publicKey);
+      retPassword = await this.handleEncryptPassword(password, publicKey);
     } catch (error) {
       this.refreshNECaptha();
       return {
