@@ -107,11 +107,12 @@ const loginRoleOut = (params = {}) => {
 
 
 // 第三方授权
-const oauthCallback = (params = {}) => {
+const oauthCallback = (params = {}, withCookie = false) => {
   return request({
     url: env.user === 'v3' ? '/v3/users/oauth/callback' : '/v4/ucenter-login-reg/oauth/callback',
     method: 'POST',
-    data: params
+    data: params,
+    withCredentials: withCookie
   });
 };
 

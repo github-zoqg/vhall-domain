@@ -265,7 +265,9 @@ class UserServer {
    * @description 第三方授权回调 跳转到qq授权登录链接、跳转到微信授权登录链接
    * */
   oauthCallback(params) {
-    return userApi.oauthCallback(params);
+    const platform = getPlatform()
+    const isPcWatch = (platform === 7)
+    return userApi.oauthCallback(params, isPcWatch);
   }
 
   /**
