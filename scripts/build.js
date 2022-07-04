@@ -82,10 +82,15 @@ cLog(info('└──────────────────────
   try {
     if (args.env === 'production') {
       // 生产环境 
-      execSync(`node_modules${path.sep}.bin${path.sep}rollup -c rollup.config.prod.js`)
+      let cmdStr = `node_modules${path.sep}.bin${path.sep}rollup -c rollup.config.prod.js --environment production`;
+      if (args.analyze) {
+        cmdStr = `${cmdStr} --configAnalyze`;
+      }
+      // 执行
+      execSync(cmdStr, { cwd: path.resolve(__dirname, '../'), stdio: 'inherit' });
     } else if (args.env === 'test') {
       // 测试环境
-      execSync(`node_modules${path.sep}.bin${path.sep}rollup -c rollup.config.test.js`)
+      execSync(`node_modules${path.sep}.bin${path.sep}rollup -c rollup.config.test.js`, { cwd: path.resolve(__dirname, '../'), stdio: 'inherit' });
     }
     cLog(chalk.green.bold(`\nbuild domain version ${currentVersion} successfully\n`));
   } catch (ex) {
@@ -96,7 +101,7 @@ cLog(info('└──────────────────────
 
 function getUrl(env) {
   return env === 'production' ?
-    `https://cnstatic01.e.vhall.com/common-static/middle/middle-domain/${currentVersion}/middle-domain.js` :
+    `https://s2.e.vhall.com/common-static/middle/middle-domain/${currentVersion}/middle-domain.js` :
     // t-vhallsaas-static.oss-cn-beijing.aliyuncs.com
     `https://t-alistatic01.e.vhall.com/common-static/middle/middle-domain/${currentVersion}/middle-domain.js`;
 }

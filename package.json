@@ -1,16 +1,17 @@
 {
   "name": "middle-domain",
-  "version": "7.3.3-test.5",
+  "version": "7.3.3-test.6",
   "description": "",
   "private": true,
   "main": "dist/lib/middle-domain.js",
   "scripts": {
-    "dev": "rollup -c --watch",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm run dev",
+    "dev": "rollup -c rollup.config.dev.js --watch",
     "build:test": "node ./scripts/build.js --env=test",
     "build:prod": "node ./scripts/build.js --env=production",
     "build:rollup": "rollup -c rollup.config.prod.js",
     "update:version": "node ./scripts/update-version.js serve",
+    "vis": "node ./scripts/build.js --env=production --analyze",
     "format": "prettier --write './src/**/*.(vue|js|css|less|jsx)'"
   },
   "author": "",
@@ -41,6 +42,7 @@
     "rollup-plugin-hot": "^0.1.1",
     "rollup-plugin-serve": "^1.1.0",
     "rollup-plugin-uglify": "^6.0.4",
+    "rollup-plugin-visualizer": "^5.6.0",
     "semver": "^7.3.5"
   },
   "gitHooks": {
@@ -56,6 +58,7 @@
   "dependencies": {
     "axios": "^0.25.0",
     "core-js": "3",
+    "dayjs": "^1.11.3",
     "loadjs": "^4.2.0",
     "merge": "^2.1.1"
   }
