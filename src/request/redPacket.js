@@ -12,6 +12,7 @@ const createRedpacket = params => {
   });
 };
 
+
 // 获取红包信息
 const getRedPacketInfo = params => {
   return request({

@@ -9,7 +9,7 @@ class ZIndexServer {
     this._typeList = [
       'giftPay', // 礼物支付弹窗
       'lottery', // 抽奖弹窗
-      'redPacket', // 红包弹窗
+      'redPacket', // 红包弹窗 暂时和口令共用
       'reward', // 打赏弹窗
       'questionnaire', // 问卷弹窗
       'signIn' // 签到弹窗
