@@ -51,6 +51,7 @@ class RoomBaseServer extends BaseServer {
       inviteCard: {}, // 邀请卡
       keywords: {}, //关键词
       redPacket: {}, // 红包
+      pwdredPacket: {}, // 口令红包
       priseLike: {}, // 点赞数
       noticeInfo: {}, // 公告
       signInfo: {}, //签到信息
@@ -522,8 +523,10 @@ class RoomBaseServer extends BaseServer {
         this.state.inviteCard = res.data['invite-card'] ? res.data['invite-card'].data : {}; // 邀请卡
         this.state.keywords = res.data['keywords'] ? res.data['keywords'].data : {}; //关键词
         this.state.redPacket = res.data['red-packet'] ? res.data['red-packet'].data : {};
+        this.state.pwdredPacket = res.data['pwd-red-packet'] ? res.data['pwd-red-packet'].data : {};
         //红包
-        this.$emit('commonConfigRepacketChange') // 通知红包组件获取最新的状态
+        // this.$emit('commonConfigRepacketChange') // 通知红包组件获取最新的状态
+        // this.$emit('commonConfigCodeRepacketChange') // 通知口令红包组件获取最新的状态
         this.state.priseLike = res.data['like'] ? res.data['like'].data : {}; //点赞数
         this.state.noticeInfo = res.data['announcement'] ? res.data['announcement'].data : {}; //公告
         this.state.signInfo = res.data['sign'] ? res.data['sign'].data : {}; //签到信息
