@@ -6,6 +6,7 @@ import BaseServer from '../common/base.server.js';
 import useInteractiveServer from './interactive.server.js';
 import useMicServer from './mic.server.js'
 import useMsgServer from '../common/msg.server.js';
+import useVideoPollingServer from './videoPolling.server.js';
 
 class InsertFileServer extends BaseServer {
   constructor() {
@@ -132,7 +133,7 @@ class InsertFileServer extends BaseServer {
   // 获取插播流信息
   getInsertFileStream() {
     const interactiveServer = useInteractiveServer()
-    if (!interactiveServer.interactiveInstance) return
+    if (!interactiveServer.interactiveInstance || useVideoPollingServer().state.isPolling) return
     const streamList = interactiveServer.getRoomStreams();
     const stream = streamList.find(stream => {
       return stream.streamType === 4

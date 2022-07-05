@@ -5,7 +5,7 @@ import VhallPaasSDK from '@/sdk/index';
 import useGroupServer from '../group/StandardGroupServer';
 import { merge, sleep } from '../../utils';
 import useDocServer from '../doc/doc.server';
-
+import useVideoPollingServer from './videoPolling.server.js';
 
 class DesktopShareServer extends BaseServer {
   constructor() {
@@ -43,7 +43,7 @@ class DesktopShareServer extends BaseServer {
     // 远端流加入事件
     interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      if (e.data.streamType === 3) {
+      if (e.data.streamType === 3 && !useVideoPollingServer().state.isPolling) {
         this.state.desktopShareInfo = e.data.attributes
         this.state.localDesktopStreamId = e.data.streamId
         this.$emit('screen_stream_add', e.data.streamId);
@@ -91,7 +91,7 @@ class DesktopShareServer extends BaseServer {
   initDesktopShareStatus() {
     const interactiveServer = useInteractiveServer();
     let stream = interactiveServer.getDesktopAndIntercutInfo(true);
-    if (stream?.streamType === 3) {
+    if (stream?.streamType === 3 && !useVideoPollingServer().state.isPolling) {
       this.state.localDesktopStreamId = stream.streamId
       this.state.desktopShareInfo = stream.attributes
       this.$emit('screen_stream_add', stream.streamId);
