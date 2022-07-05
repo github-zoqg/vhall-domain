@@ -475,7 +475,16 @@ class InteractiveServer extends BaseServer {
       // if (this.state.remoteStreams.find(s => s.streamId == e.data.streamId)) {
       //   return
       // }
-
+      try {
+        if (this.state.localStream.streamId) {
+          console.log('远端流加入事件，调整分辨率-t', this.getVideoProfile())
+          this.setVideoProfile({
+            streamId: this.state.localStream.streamId, profile: VhallRTC[this.getVideoProfile()]
+          })
+        }
+      } catch (error) {
+        console.log('远端流加入事件，调整分辨率', error)
+      }
       if (e.data.streamType === 2) {
         let params = {
           streamId: e.data.streamId,
@@ -501,6 +510,16 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_REMOVED, async e => {
       console.log('[interactiveServer]--------流退出事件----', e);
 
+      try {
+        if (this.state.localStream.streamId) {
+          console.log('远端流离开事件，调整分辨率-t', this.getVideoProfile())
+          this.setVideoProfile({
+            streamId: this.state.localStream.streamId, profile: VhallRTC[this.getVideoProfile()]
+          })
+        }
+      } catch (error) {
+        console.log('远端流离开事件，调整分辨率', error)
+      }
 
       if (e.data.streamType === 2) {
         let params = {
@@ -578,6 +597,15 @@ class InteractiveServer extends BaseServer {
       this.$emit('EVENT_STREAM_PLAYABORT', e);
     });
 
+    // 主讲人切换，调整分辨率
+    useRoomBaseServer().$on('VRTC_SPEAKER_SWITCH', async (msg) => {
+      if (this.state.localStream.streamId) {
+        console.log('主讲人切换，调整分辨率', msg, this.getVideoProfile())
+        this.setVideoProfile({
+          streamId: this.state.localStream.streamId, profile: VhallRTC[this.getVideoProfile()]
+        })
+      }
+    })
     // -------------------------房间业务消息--------------------------------------------
 
 
@@ -627,6 +655,13 @@ class InteractiveServer extends BaseServer {
           });
           this.$emit('vrtc_mute_cancel', msg);
         }
+      }
+      if (msg.data.type === 'vrtc_big_screen_set' &&  // 设置主画面
+        this.state.localStream.streamId) {
+        console.log('设置主画面-调整分辨率', msg, this.getVideoProfile())
+        this.setVideoProfile({
+          streamId: this.state.localStream.streamId, profile: VhallRTC[this.getVideoProfile()]
+        })
       }
       if (msg.data.type === 'live_over') {
         // 直播结束
