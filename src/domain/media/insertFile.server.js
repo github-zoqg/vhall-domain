@@ -132,8 +132,9 @@ class InsertFileServer extends BaseServer {
 
   // 获取插播流信息
   getInsertFileStream() {
-    const interactiveServer = useInteractiveServer()
-    if (!interactiveServer.interactiveInstance || useVideoPollingServer().state.isPolling) return
+    const interactiveServer = useInteractiveServer();
+    const { watchInitData } = useRoomBaseServer().state;
+    if (!interactiveServer.interactiveInstance || (watchInitData.webinar.no_delay_webinar != 1 && useVideoPollingServer().state.isPolling)) return;
     const streamList = interactiveServer.getRoomStreams();
     const stream = streamList.find(stream => {
       return stream.streamType === 4
@@ -401,6 +402,8 @@ class InsertFileServer extends BaseServer {
   // 订阅插播流
   subscribeInsertStream(options = {}) {
     const interactiveServer = useInteractiveServer();
+    const { watchInitData } = useRoomBaseServer().state;
+    if (!interactiveServer.interactiveInstance || (watchInitData.webinar.no_delay_webinar != 1 && useVideoPollingServer().state.isPolling)) return new Promise.reject();
     return interactiveServer.subscribe({
       streamId: this.state.insertStreamInfo.streamId,
       ...options
