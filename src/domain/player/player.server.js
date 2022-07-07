@@ -74,6 +74,11 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.pause();
   }
 
+  //获取播放器状态
+  getIsPause() {
+    return this.playerInstance.getIsPause();
+  }
+
   isPause() {
     return this.playerInstance.isPause();
   }
@@ -96,6 +101,11 @@ class PlayerServer extends BaseServer {
 
   exitFullScreen() {
     return this.playerInstance.exitFullScreen();
+  }
+
+  //播放器是否是全屏
+  isFullscreen() {
+    return this.playerInstance.isFullscreen()
   }
 
   setMute() {
@@ -252,6 +262,11 @@ class PlayerServer extends BaseServer {
       this.$emit(VhallPlayer.TIMEUPDATE, e);
     });
 
+    //自动播放失败
+    this.playerInstance.on(VhallPlayer.AUTOPLAY_FAILED, e => {
+      this.$emit(VhallPlayer.AUTOPLAY_FAILED, e);
+    });
+
     // 开始播放时触发
     this.playerInstance.on(VhallPlayer.PLAY, e => {
       this.$emit(VhallPlayer.PLAY, e);
@@ -286,6 +301,12 @@ class PlayerServer extends BaseServer {
     this.playerInstance.on(VhallPlayer.DEFINITION_CHANGE, e => {
       this.$emit(VhallPlayer.DEFINITION_CHANGE, e);
     });
+
+    //全屏状态改变
+    this.playerInstance.on(VhallPlayer.FULLSCREEN_CHANGE, e => {
+      this.$emit(VhallPlayer.FULLSCREEN_CHANGE, e);
+    });
+
   }
 
   //获取默认初始化参数
