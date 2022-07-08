@@ -18,6 +18,11 @@ function setRequestHeaders(options) {
   Object.assign(HEADERS, options);
 }
 
+// 返回当前请求头设置的platform 判断当前的使用的端
+function getPlatform() {
+  return HEADERS['platform']
+}
+
 function setRequestBody(options) {
   Object.assign(COMMON_BODY, options);
 }
@@ -97,4 +102,4 @@ service.interceptors.response.use(response => {
 });
 
 export default service;
-export { setBaseUrl, setRequestHeaders, setRequestBody };
+export { setBaseUrl, setRequestHeaders, setRequestBody, getPlatform };

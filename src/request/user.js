@@ -31,12 +31,13 @@ const sendCode = (params = {}) => {
 };
 
 // 登录(c端)
-const userLogin = (params = {}) => {
+const userLogin = (params = {}, withCookie = false) => {
   return request({
     url:
       env.user === 'v3' ? '/v3/users/user-consumer/login' : '/v4/ucenter-login-reg/consumer/login',
     method: 'POST',
-    data: params
+    data: params,
+    withCredentials: withCookie
   });
 };
 
@@ -86,11 +87,12 @@ const loginInfo = (params = {}) => {
 };
 
 // 退出登录
-const loginOut = (params = {}) => {
+const loginOut = (params = {}, withCookie = false) => {
   return request({
     url: env.user === 'v3' ? '/v3/users/user/logout' : '/v4/meeting/live/role-logout',
     method: 'POST',
-    data: params
+    data: params,
+    withCredentials: withCookie // 携带cookie
   });
 };
 
@@ -105,11 +107,12 @@ const loginRoleOut = (params = {}) => {
 
 
 // 第三方授权
-const oauthCallback = (params = {}) => {
+const oauthCallback = (params = {}, withCookie = false) => {
   return request({
     url: env.user === 'v3' ? '/v3/users/oauth/callback' : '/v4/ucenter-login-reg/oauth/callback',
     method: 'POST',
-    data: params
+    data: params,
+    withCredentials: withCookie
   });
 };
 
@@ -208,6 +211,20 @@ function roleLogin(params = {}) {
   });
 }
 
+// sso自动登录
+function ssoAutoLogin(data = {}, withCookie = true) {
+  return request({
+    url: '/v3/users/user/auto-login',
+    method: 'POST',
+    data: {
+      biz_id,
+      ...data
+    },
+    withCredentials: withCookie // 默认携带cookie
+  });
+}
+
+
 export default {
   getCapthaKey,
   sendCode,
@@ -228,5 +245,6 @@ export default {
   bindInfo,
   uploadImage,
   roleLogin,
-  authWeixinAjax
+  authWeixinAjax,
+  ssoAutoLogin
 };
