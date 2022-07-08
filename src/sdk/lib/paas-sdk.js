@@ -6,7 +6,7 @@ export default {
   //播放器sdk
   player: {
     name: 'VhallPlayer',
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.4.3.js'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.4.7.js'
   },
   //聊天sdk
   chat: {
@@ -16,12 +16,12 @@ export default {
   //互动sdk
   interaction: {
     name: 'VhallRTC',
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.8.js'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.3.11.js'
   },
   //文档sdk
   doc: {
     name: 'VHDocSDK',
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.3.1.js'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.4.0.js'
   },
   questionnaire: {
     name: 'VhallQuestionnaire',
