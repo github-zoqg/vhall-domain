@@ -124,10 +124,12 @@ class RoomBaseServer extends BaseServer {
             if (this.state.embedObj.embedVideo) {
               this.state.watchInitData.webinar.no_delay_webinar = 0
             }
-          }
-          // 判断暖场视频数据
-          if (this.state.watchInitData.status === 'subscribe' && res.data.warmup && res.data.warmup.warmup_paas_record_id.length) {
-            this.state.warmUpVideo = res.data.warmup;
+
+            // 判断暖场视频数据
+            if (this.state.watchInitData.status === 'subscribe' && res.data.warmup && res.data.warmup.warmup_paas_record_id.length) {
+              this.state.warmUpVideo = res.data.warmup;
+            }
+
           }
           // 判断是不是第三方推流
           if (res.data.switch && res.data.switch.start_type == 4) {
