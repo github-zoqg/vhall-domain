@@ -925,8 +925,15 @@ class MemberServer extends BaseServer {
       return host.concat(onMicGuest, downMicGuest, assistant, leader, onMicAudience, downMicAudience);
     } else {
       let resultAudience = pollingAudience.concat(onMicAudience, downMicAudience)
-      // 过滤掉手机端用户和jssdk用户
-      resultAudience = resultAudience.filter(item => item.device_type != 1 && item.device_type != 3)
+      // 过滤掉手机端用户和jssdk用户，使用platform字段显示iosSDK和安卓SDK的用户
+      resultAudience = resultAudience.filter(
+        item => item.device_type != 1 &&
+          (item.device_type != 3 ||
+            (item.device_type == 3 &&
+              (item.platform == 4 || item.platform == 5)
+            )
+          )
+      )
       return resultAudience
     }
   }
