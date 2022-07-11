@@ -83,8 +83,9 @@ class DesktopShareServer extends BaseServer {
   }
   emitStreamAdd(stream) {
     const { watchInitData } = useRoomBaseServer().state;
+    const { role_name } = watchInitData.join_info;
     const { isSpeakOn } = useMicServer().state;
-    if (stream?.streamType === 3 && (watchInitData.webinar.no_delay_webinar == 1 || watchInitData.webinar.no_delay_webinar != 1 && isSpeakOn)) {
+    if (stream?.streamType === 3 && (watchInitData.webinar.no_delay_webinar == 1 || watchInitData.webinar.no_delay_webinar != 1 && isSpeakOn || [1, 3, 4].includes(+role_name))) {
       this.state.localDesktopStreamId = stream.streamId;
       this.state.desktopShareInfo = stream.attributes;
       this.$emit('screen_stream_add', stream.streamId);
