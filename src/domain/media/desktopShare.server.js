@@ -5,8 +5,7 @@ import VhallPaasSDK from '@/sdk/index';
 import useGroupServer from '../group/StandardGroupServer';
 import { merge, sleep } from '../../utils';
 import useDocServer from '../doc/doc.server';
-
-
+import useMicServer from './mic.server';
 class DesktopShareServer extends BaseServer {
   constructor() {
     super();
@@ -43,11 +42,7 @@ class DesktopShareServer extends BaseServer {
     // 远端流加入事件
     interactiveServer.$on(VhallPaasSDK.modules.VhallRTC.EVENT_REMOTESTREAM_ADD, e => {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
-      if (e.data.streamType === 3) {
-        this.state.desktopShareInfo = e.data.attributes
-        this.state.localDesktopStreamId = e.data.streamId
-        this.$emit('screen_stream_add', e.data.streamId);
-      }
+      this.emitStreamAdd(e.data);
     });
 
     // 桌面共享停止事件
@@ -86,16 +81,20 @@ class DesktopShareServer extends BaseServer {
       }
     })
   }
-
+  emitStreamAdd(stream) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const { isSpeakOn } = useMicServer().state;
+    if (stream?.streamType === 3 && (watchInitData.webinar.no_delay_webinar == 1 || watchInitData.webinar.no_delay_webinar != 1 && isSpeakOn)) {
+      this.state.localDesktopStreamId = stream.streamId;
+      this.state.desktopShareInfo = stream.attributes;
+      this.$emit('screen_stream_add', stream.streamId);
+    }
+  }
   // 初始化桌面共享状态
   initDesktopShareStatus() {
     const interactiveServer = useInteractiveServer();
     let stream = interactiveServer.getDesktopAndIntercutInfo(true);
-    if (stream?.streamType === 3) {
-      this.state.localDesktopStreamId = stream.streamId
-      this.state.desktopShareInfo = stream.attributes
-      this.$emit('screen_stream_add', stream.streamId);
-    }
+    this.emitStreamAdd(stream);
   }
 
   // 创建桌面共享流
