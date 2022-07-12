@@ -1137,6 +1137,6 @@ export default class StandardDocServer extends AbstractDocServer {
 
   //单个文档是否加载完成
   singleLoadComplete() {
-    return this.docInstance.currentDoc.loadComplete
+    return this.docInstance?.currentDoc?.loadComplete
   }
 }
