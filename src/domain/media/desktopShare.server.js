@@ -164,7 +164,8 @@ class DesktopShareServer extends BaseServer {
         accountId: join_info.third_party_user_id,
         nickname: join_info.nickname,
         role: join_info.role_name
-      })
+      }),
+      videoContentHint: options.videoContentHint
     };
 
     return this.createLocaldesktopStream(retOptions).then(data => {
