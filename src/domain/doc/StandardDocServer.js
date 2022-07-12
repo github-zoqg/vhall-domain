@@ -33,7 +33,7 @@ export default class StandardDocServer extends AbstractDocServer {
       pageNum: 1, // 当前页码
 
       allComplete: true,
-      docLoadComplete: true, // 文档是否加载完成
+      docLoadComplete: true, // 所有文档是否加载完成
 
       thumbnailList: [], // 缩略图列表
       switchStatus: false, // 直播中观众是否可见
@@ -1133,5 +1133,10 @@ export default class StandardDocServer extends AbstractDocServer {
     //   }
     // })
     return watermarkOptions
+  }
+
+  //单个文档是否加载完成
+  singleLoadComplete() {
+    return this.docInstance.currentDoc.loadComplete
   }
 }
