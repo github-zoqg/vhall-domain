@@ -264,7 +264,8 @@ export default class StandardDocServer extends AbstractDocServer {
     // 文档翻页事件
     this.on(VHDocSDK.Event.PAGE_CHANGE, data => {
       console.log('[doc]========文档翻页========');
-      if (this.isWatch() && useRoomBaseServer().state.watchInitData.webinar.type != 1) return;
+      //观看&&直播&&回放   TODO：无法追溯
+      if (this.isWatch() && useRoomBaseServer().state.watchInitData.webinar.type != 1 && useRoomBaseServer().state.watchInitData.webinar.type != 5) return;
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
       this.$emit('dispatch_doc_page_change', data);
