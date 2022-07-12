@@ -868,13 +868,17 @@ class InteractiveServer extends BaseServer {
     const third_party_user_id = watchInitData?.join_info?.third_party_user_id;
     const { groupInitData } = useGroupServer().state
     // 当前演示者或当前主讲人可重新旁路布局
-    let isHost = interactToolStatus.doc_permission == third_party_user_id
+    /**
+     * let isHost = interactToolStatus.doc_permission == third_party_user_id
       || interactToolStatus.main_screen == third_party_user_id; // 主讲人或主画面
 
     if (groupInitData.isInGroup) {
       isHost = (groupInitData.doc_permission && groupInitData.doc_permission == third_party_user_id) ||
         (groupInitData.main_screen && groupInitData.main_screen == third_party_user_id)
-    }
+    }*/
+    const isHost = groupInitData.isInGroup ?
+      (groupInitData.main_screen && groupInitData.main_screen == third_party_user_id) :
+      interactToolStatus.main_screen == third_party_user_id; // 主画面
 
     const remoteStream = this.getRoomStreams();
     if (!remoteStream || !remoteStream.length) {
