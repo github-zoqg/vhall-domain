@@ -6,7 +6,9 @@ class SubjectServer {
       return SubjectServer.instance;
     }
 
-    this.state = {};
+    this.state = {
+      subjectDetailInfo: {}
+    };
   }
 
   getSubjectInfo(data = {}) {
