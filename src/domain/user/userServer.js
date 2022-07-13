@@ -4,6 +4,7 @@
 import { user as userApi } from '@/request/index.js';
 import useRoomBaseServer from '@/domain/room/roombase.server.js';
 import { VENDORURLS } from '@/vendor.config.js'
+import { getPlatform } from '@/utils/http';
 import loadjs from 'loadjs';
 class UserServer {
   constructor() {
@@ -133,8 +134,10 @@ class UserServer {
       // 刷新易盾
       this.refreshNECaptha();
     };
+    const platform = getPlatform()
+    const isPcWatch = (platform === 7)
     return userApi
-      .userLogin(params)
+      .userLogin(params, isPcWatch)
       .then(res => {
         if (res.code === 200) {
           localStorage.setItem('token', res.data.token || '');
@@ -262,7 +265,9 @@ class UserServer {
    * @description 第三方授权回调 跳转到qq授权登录链接、跳转到微信授权登录链接
    * */
   oauthCallback(params) {
-    return userApi.oauthCallback(params);
+    const platform = getPlatform()
+    const isPcWatch = (platform === 7)
+    return userApi.oauthCallback(params, isPcWatch);
   }
 
   /**
@@ -308,7 +313,9 @@ class UserServer {
 
   // 退出登录
   loginOut(data) {
-    return userApi.loginOut(data);
+    const platform = getPlatform()
+    const isPcWatch = (platform === 7)
+    return userApi.loginOut(data, isPcWatch);
   }
 
   // 角色退出（嘉宾、助理）
@@ -339,6 +346,11 @@ class UserServer {
   // 图片上传cdn
   uploadImage(data) {
     return userApi.uploadImage(data);
+  }
+
+  // sso 自动登录
+  ssoAutoLogin(data) {
+    return userApi.ssoAutoLogin(data);
   }
 }
 
