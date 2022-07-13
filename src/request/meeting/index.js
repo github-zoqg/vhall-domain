@@ -104,7 +104,7 @@ function startLive(params) {
 
 // 开始直播-第三方
 function startLiveThird(params) {
-  const url = 'http://yapi.vhall.domain/mock/99/v3/webinars/stream/pull';
+  const url = '/v3/webinars/stream/pull';
 
   return request({
     url,
@@ -362,7 +362,7 @@ function createRecordInRecord(data) {
 }
 // 获取直播间流状态
 function getLiveStreamStatus(params) {
-  const url = 'http://yapi.vhall.domain/mock/99/v3/webinars/stream/get-stream-status';
+  const url = '/v3/webinars/stream/get-stream-status';
   return request({
     url,
     method: 'GET',
