@@ -66,7 +66,10 @@ class RoomBaseServer extends BaseServer {
         langList: []
       },
       customRoleName: {},
-      director_stream: 0
+      director_stream: 0,
+      streamStatus: 0,   //直播间内是否有流：0-无，1-有
+      thirdPullStreamUrl: '',   //第三方拉流地址
+      thirdPullStreamMode: 1,   //第三方拉流模式  1,2
     };
     RoomBaseServer.instance = this;
     return this;
@@ -720,6 +723,39 @@ class RoomBaseServer extends BaseServer {
         return false
       }
     })
+  }
+
+  // 获取直播间流状态
+  getLiveStreamStatus(params = {}) {
+    return meeting.getLiveStreamStatus({
+      webinar_id: params.webinarId || this.state.watchInitData.webinar.id,
+    }).then(res => {
+      if (res.code == 200) {
+        this.state.streamStatus = res.data.status;
+      }
+      return res;
+    });
+  }
+
+  // 开播startLiveThird  第三方
+  startLiveThird(data = {}) {
+    return meeting.startLiveThird(data).then(res => {
+      if (res.code == 200) {
+        // 活动状态（2-预约 1-直播 3-结束 4-点播 5-回放）
+        this.state.watchInitData.webinar.type = 1;
+        this.state.watchInitData.switch = res.data;
+      }
+      return res;
+    });
+  }
+
+  // 设置第三方拉流地址
+  setThirdPullStreamUrl(value) {
+    this.state.thirdPullStreamUrl = value;
+  }
+  // 设置第三方拉流地址模式
+  setThirdPullStreamMode(value) {
+    this.state.thirdPullStreamMode = value;
   }
 }
 

@@ -102,6 +102,18 @@ function startLive(params) {
   });
 }
 
+// 开始直播-第三方
+function startLiveThird(params) {
+  const url = 'http://yapi.vhall.domain/mock/99/v3/webinars/stream/pull';
+
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
+
+
 // 结束直播
 function endLive(params) {
   const url = env.meeting === 'v3' ? '/v3/webinars/live/end' : '/v4/room/webinar/end';
@@ -348,6 +360,16 @@ function createRecordInRecord(data) {
     data
   });
 }
+// 获取直播间流状态
+function getLiveStreamStatus(params) {
+  const url = 'http://yapi.vhall.domain/mock/99/v3/webinars/stream/get-stream-status';
+  return request({
+    url,
+    method: 'GET',
+    data: params
+  });
+}
+
 /**
  * @function attention 获取自定义角色名称
  * @params webinar_id: 活动id
@@ -396,7 +418,9 @@ const meeting = {
   wechatShare,
   getCustomRoleName,
   restrictions,
-  setUserAgree
+  setUserAgree,
+  getLiveStreamStatus,
+  startLiveThird
 };
 
 export default meeting;
