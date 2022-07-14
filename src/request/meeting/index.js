@@ -366,7 +366,7 @@ function getLiveStreamStatus(params) {
   return request({
     url,
     method: 'GET',
-    data: params
+    params
   });
 }
 
