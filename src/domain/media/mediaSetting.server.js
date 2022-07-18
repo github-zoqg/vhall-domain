@@ -15,6 +15,7 @@ class MediaSettingServer {
       canvasImgUrl: '//cnstatic01.e.vhall.com/common-static/middle/images/canvasDefault.png', // 当前图片流url
       rate: '', // 当前画质
       screenRate: '', //当前桌面共享画质
+      videoHint: '',  //插播文件视频质量优先项
       videoType: 'camera', // 当前视频类型 camera||picture
       layout: 'CANVAS_ADAPTIVE_LAYOUT_TILED_MODE', // 当前选择的布局(默认主次浮窗)
       video: '', // 当前选择的摄像头或图片等[设备ID]
@@ -237,6 +238,20 @@ class MediaSettingServer {
 
   async setStream(params = {}) {
     return roomApi.base.setStream(params);
+  }
+
+  // 推流过程中动态切换视频清晰或流畅模式
+  // opt = {
+  //   streamId:'xxx', //必填
+  //   hint：'detail', //必填
+  //   }
+  setVideoContentHint(opt) {
+    console.log(opt, 'setVideoContentHint')
+    return VhallPaasSDK.modules.VhallRTC.vhallrtc.setVideoContentHint(opt).then(() => {
+      console.log('切换成功')
+    }).catch(() => {
+      console.log('切换失败')
+    });
   }
 }
 
