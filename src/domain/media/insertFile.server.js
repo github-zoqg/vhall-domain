@@ -318,7 +318,8 @@ class InsertFileServer extends BaseServer {
         stream_type: 4,
         has_video: this.state.insertStreamInfo.has_video ? 1 : 0
       }),
-      streamType: 4
+      streamType: 4,
+      videoContentHint: options.videoContentHint
     };
 
     if (this.state.isChrome88 && this.state.insertStreamInfo.has_video) {
