@@ -974,6 +974,10 @@ export default class StandardDocServer extends AbstractDocServer {
     if (!window.VHDocSDK) return;
     const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
+
+    const userId = watchInitData.join_info.third_party_user_id;
+    const presenterId = groupInitData.isInGroup ? groupInitData.presentation_screen :
+      interactToolStatus.presentation_screen;
     if (
       (groupInitData.isInGroup && groupInitData.presentation_screen ==
         watchInitData.join_info.third_party_user_id) ||
@@ -985,6 +989,9 @@ export default class StandardDocServer extends AbstractDocServer {
       this.setRole(VHDocSDK.RoleType.HOST);
     } else {
       if (watchInitData.join_info.role_name == 3) {
+        this.setRole(VHDocSDK.RoleType.ASSISTANT);
+      } else if (watchInitData.join_info.role_name == 1 && presenterId != userId) {
+        // 当前是主持人，但是主讲人是其他人，设置文档操作权限为 助理
         this.setRole(VHDocSDK.RoleType.ASSISTANT);
       } else {
         // 设置文档操作权限为观众
