@@ -1052,8 +1052,22 @@ class InteractiveServer extends BaseServer {
   }
 
   // 销毁本地流
-  destroyStream(streamId) {
-    return this.interactiveInstance.destroyStream(streamId || this.state.streamId);
+  destroyStream(options = {}) {
+    return this.interactiveInstance.destroyStream({ streamId: options?.streamId || this.state.localStream.streamId })
+      .then(res => {
+        // 如果是销毁本地上麦流，清空上麦流参数
+        if (!options.streamId || options.streamId == this.state.localStream.streamId) {
+          this._clearLocalStream();
+        }
+        return res;
+      }).catch(error => {
+        // 如果是销毁本地上麦流，清空上麦流参数
+        if (!options.streamId || options.streamId == this.state.localStream.streamId) {
+          this._clearLocalStream();
+        }
+        console.error('destroyStream', error)
+        return Promise.reject(error)
+      });
   }
 
   // 无缝切换本地流
