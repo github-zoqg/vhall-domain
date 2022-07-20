@@ -7,7 +7,8 @@ class SubjectServer {
     }
 
     this.state = {
-      subjectDetailInfo: {}
+      subjectDetailInfo: {},
+      subjectAuthInfo: {}
     };
   }
 
@@ -17,6 +18,20 @@ class SubjectServer {
 
   wechatShare(data = {}) {
     return wechatApi.wechatShare(data);
+  }
+
+  // 专题鉴权
+  getSubjectWatchAuth(data = {}) {
+    return roomSubjectApi.subject.getSubjectWatchAuth(data);
+  }
+
+  //专题初始化
+  initSubjectInfo(data = {}) {
+    return roomSubjectApi.subject.getSubjectWatchAuth(data).then(res => {
+      if (res.code == 200) {
+        this.state.subjectAuthInfo = res.data;
+      }
+    })
   }
 }
 

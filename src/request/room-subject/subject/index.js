@@ -22,7 +22,31 @@ function getSubjectInfo(data = {}) {
 };
 
 
+// 专题初始化
+function initSubjectInfo(params = {}) {
+  const url = roomSubjectApiList['initSubjectInfo']['v3'];
+  return request({
+    url,
+    method: 'Get',
+    params
+  });
+};
+
+
+// 专题鉴权
+function getSubjectWatchAuth(data = {}) {
+  const url = roomSubjectApiList['subjectWatchAuth']['v3'];
+  return request({
+    url,
+    method: 'POST',
+    data
+  });
+};
+
+
 export default {
   getSubjectInfo,
-  subjectInitBefore
+  subjectInitBefore,
+  getSubjectWatchAuth,
+  initSubjectInfo
 };
