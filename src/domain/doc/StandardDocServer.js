@@ -626,6 +626,7 @@ export default class StandardDocServer extends AbstractDocServer {
     });
     await this.activeContainer(elId);
     if (fileType === 'document' && docId) {
+      this.state.allComplete = false
       const { status, status_jpeg, slideIndex, slidesTotal, converted_page, converted_page_jpeg } =
         await this.loadDoc({
           id: elId,
