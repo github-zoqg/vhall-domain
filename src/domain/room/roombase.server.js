@@ -1,5 +1,6 @@
 import { meeting, roomApi } from '@/request/index.js';
 import { merge, getQueryString } from '@/utils/index.js';
+import { player } from '../../request';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 
@@ -67,6 +68,8 @@ class RoomBaseServer extends BaseServer {
       },
       customRoleName: {},
       director_stream: 0,
+      isWapBodyDocSwitch: false, // 播放器文档位置是否切换
+      unionConfig: {}, //通用配置 - 基本配置，播放器跑马灯配置，文档水印配置等
       warmUpVideo: {
         warmup_paas_record_id: [],
         warmup_player_type: 1
@@ -177,6 +180,8 @@ class RoomBaseServer extends BaseServer {
 
       } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
         this.state.watchInitData.webinar.type = 3;
+        // 直播结束还原位置切换的状态
+        this.state.isWapBodyDocSwitch = false
         // 把演示人、主讲人、主屏人都设置成主持人
         this.state.interactToolStatus.presentation_screen = this.state.watchInitData.webinar.userinfo.user_id;
         this.state.interactToolStatus.doc_permission = this.state.watchInitData.webinar.userinfo.user_id;
@@ -730,6 +735,22 @@ class RoomBaseServer extends BaseServer {
         return false
       }
     })
+  }
+
+  setUnionConfig(data) {
+    this.state.unionConfig = Object.assign({}, this.state.unionConfig, data)
+  }
+
+  //获取播放器以及文档水印相关配置
+  getUnionConfig(webinar_id, tags = ['basic-config', 'definition', 'screen-config', 'water-mark']) {
+    return player.getPlayerConfig({
+      webinar_id: webinar_id || this.state.watchInitData.webinar.id,
+      tags: tags
+    }).then(res => {
+      if (res.code == 200) {
+        this.setUnionConfig(res.data)
+      }
+    });
   }
 }
 

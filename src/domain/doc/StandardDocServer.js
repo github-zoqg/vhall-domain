@@ -33,12 +33,13 @@ export default class StandardDocServer extends AbstractDocServer {
       pageNum: 1, // 当前页码
 
       allComplete: true,
-      docLoadComplete: true, // 文档是否加载完成
+      docLoadComplete: true, // 所有文档是否加载完成
 
       thumbnailList: [], // 缩略图列表
       switchStatus: false, // 直播中观众是否可见
 
-      isVodUpdateFirst: true //是否回放update消息第一次执行
+      isVodUpdateFirst: true, //是否回放update消息第一次执行
+
     };
 
     // 由于文档对象的创建需要指定具体的宽高，而宽高需要根据具体dom计算，所以需要在文档组件初始化时初始化该方法
@@ -62,8 +63,9 @@ export default class StandardDocServer extends AbstractDocServer {
    * @param {Object} customOptions
    * @returns {Promise}
    */
-  init(customOptions = {}) {
-    const defaultOptions = this._getDefaultOptions();
+  async init(customOptions = {}) {
+    const defaultOptions = await this._getDefaultOptions();
+
     const options = merge.recursive({}, defaultOptions, customOptions);
     // 初始化 passDocInstance
     return this.initialize(options)
@@ -92,7 +94,7 @@ export default class StandardDocServer extends AbstractDocServer {
   }
 
   // 获取默认初始化参数
-  _getDefaultOptions() {
+  async _getDefaultOptions() {
     const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
     // 初始化参数
@@ -133,6 +135,11 @@ export default class StandardDocServer extends AbstractDocServer {
       // 分组直播一定是无延迟直播 no_delay_webinar=1
       defaultOptions.mode = window.VHDocSDK.PlayMode.INTERACT;
     }
+
+    const watermarkOptions = this.initWaterMark()
+    Object.assign(defaultOptions, watermarkOptions)
+
+    console.log('【defaultOptions】=====>:', defaultOptions)
     return defaultOptions;
   }
 
@@ -257,7 +264,8 @@ export default class StandardDocServer extends AbstractDocServer {
     // 文档翻页事件
     this.on(VHDocSDK.Event.PAGE_CHANGE, data => {
       console.log('[doc]========文档翻页========');
-      if (this.isWatch() && useRoomBaseServer().state.watchInitData.webinar.type != 1) return;
+      //观看&&直播&&回放   TODO：无法追溯
+      if (this.isWatch() && useRoomBaseServer().state.watchInitData.webinar.type != 1 && useRoomBaseServer().state.watchInitData.webinar.type != 5) return;
       this.state.pageTotal = data.info.slidesTotal;
       this.state.pageNum = Number(data.info.slideIndex) + 1;
       this.$emit('dispatch_doc_page_change', data);
@@ -330,6 +338,7 @@ export default class StandardDocServer extends AbstractDocServer {
         }
         this.addNewFile({ fileType, docId, cid });
       }
+      this.$emit('dispatch_doc_select_container', data);
     });
 
     this.on(VHDocSDK.Event.DOCUMENT_NOT_EXIT, ({ cid, docId }) => {
@@ -464,7 +473,7 @@ export default class StandardDocServer extends AbstractDocServer {
     const { list, switch_status } = await this.getContainerInfo(channelId);
 
     // 直播中
-    if (useRoomBaseServer().state.watchInitData.webinar.type == 1) {
+    if (useRoomBaseServer().state.watchInitData.webinar.type == 1 || !this.isWatch()) {
       // 观众端是否可见
       if (useGroupServer().state.groupInitData.isInGroup) {
         // 小组中文档始终可见
@@ -1077,5 +1086,57 @@ export default class StandardDocServer extends AbstractDocServer {
         }
       }
     }
+  }
+
+  /**
+   * 获取文档水印配置
+   */
+  initWaterMark() {
+    let watermarkOptions = {}
+    const { watchInitData } = useRoomBaseServer().state;
+    //非观众不设置文档水印
+    if (watchInitData.join_info.role_name != 2) return {}
+    let configWater = useRoomBaseServer().state.unionConfig['water-mark'] && useRoomBaseServer().state.unionConfig['water-mark'].data;
+    // 水印  文档
+    if (configWater && configWater.doc_watermark_open == 1) {
+
+      let waterText = ''
+      let waterText_arr = []
+      configWater.doc_watermark_type.text && waterText_arr.push(configWater.doc_watermark_type.text_value)
+      if (watchInitData.join_info.join_id) {
+        configWater.doc_watermark_type.user_id && waterText_arr.push(watchInitData.join_info.join_id)
+        configWater.doc_watermark_type.nick_name && waterText_arr.push(watchInitData.join_info.nickname)
+      } else {
+        let userInfo = localStorage.getItem('userInfo')
+        configWater.doc_watermark_type.user_id && userInfo?.user_id && waterText_arr.push(userInfo.user_id)
+        configWater.doc_watermark_type.nick_name && userInfo?.nick_name && waterText_arr.push(userInfo.nick_name)
+      }
+      waterText = waterText_arr.join('-')
+      watermarkOptions = Object.assign({}, {
+        watermarkOption: {  // 如果有watermarkOption则展示水印，否则不展示。
+          text: waterText, // 水印内容，如果有watermarkOption必填，length最大为20
+          angle: 15, // 水印逆时针倾斜角度，选填，默认15，取值范围 [0-360]
+          color: configWater.doc_font_color || '#5a5a5a', // 水印颜色，选填，默认#000000
+          opcity: configWater.doc_transparency || 50, // 水印透明度，选填，默认50，取值范围 [0-100]
+          fontSize: configWater.doc_font_size || 12, // 字体大小，选填，默认12，取值范围 [12-48]
+        }
+      })
+    }
+
+    // Object.assign(defaultOptions, {
+    //   watermarkOption: {  // 如果有watermarkOption则展示水印，否则不展示。
+    //     text: '版权所有，盗版必究', // 水印内容，如果有watermarkOption必填，length最大为20
+    //     angle: 15, // 水印逆时针倾斜角度，选填，默认15，取值范围 [0-360]
+    //     color: '#5a5a5a', // 水印颜色，选填，默认#000000
+    //     opcity: 50, // 水印透明度，选填，默认0.5，取值范围 [0-1]
+    //     fontSize: 12, // 字体大小，选填，默认12，取值范围 [12-48]
+    //   }
+    // })
+    return watermarkOptions
+  }
+
+  //单个文档是否加载完成
+  singleLoadComplete() {
+    return this.docInstance?.currentDoc?.loadComplete
   }
 }
