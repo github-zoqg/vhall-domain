@@ -13,7 +13,13 @@ class SubjectServer {
   }
 
   getSubjectInfo(data = {}) {
-    return roomSubjectApi.subject.getSubjectInfo(data);
+    return roomSubjectApi.subject.getSubjectInfo(data).then(res => {
+      if (res.code === 200) {
+        // 基本信息
+        this.state.subjectDetailInfo = res.data.webinar_subject;
+      }
+      return res;
+    });
   }
 
   wechatShare(data = {}) {
@@ -29,6 +35,7 @@ class SubjectServer {
   initSubjectInfo(data = {}) {
     return roomSubjectApi.subject.initSubjectInfo(data).then(res => {
       if (res.code == 200) {
+        // 权限
         this.state.subjectAuthInfo = res.data;
       }
       return res;

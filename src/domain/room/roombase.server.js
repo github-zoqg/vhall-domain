@@ -63,7 +63,9 @@ class RoomBaseServer extends BaseServer {
       //多语言信息
       languages: {
         curLang: {},
-        lang: 'zh',
+        lang: {
+          type: 'zh'
+        },
         langList: []
       },
       customRoleName: {},
