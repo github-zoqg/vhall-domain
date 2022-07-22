@@ -120,6 +120,15 @@ export default class StandardDocServer extends AbstractDocServer {
       }
     } else {
       defaultOptions.role = this.mapDocRole(this.hasDocPermission() ? 1 : 2);
+      try {
+        const userId = watchInitData.join_info.third_party_user_id;
+        const presenterId = groupInitData.isInGroup ? groupInitData.presentation_screen :
+          interactToolStatus.presentation_screen;
+        if (watchInitData.join_info.role_name == 1 && presenterId != userId) {
+          // 当前是主持人，但是主讲人是其他人，设置文档操作权限为 助理
+          defaultOptions.role = VHDocSDK.RoleType.ASSISTANT
+        }
+      } catch (e) { }
       defaultOptions.roomId = watchInitData.interact.room_id; // 必填。
       defaultOptions.channelId = watchInitData.interact.channel_id; // 频道id 必须
       defaultOptions.token = watchInitData.interact.paas_access_token; // access_token，必填
