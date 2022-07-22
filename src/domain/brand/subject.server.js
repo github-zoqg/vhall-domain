@@ -27,10 +27,11 @@ class SubjectServer {
 
   //专题初始化
   initSubjectInfo(data = {}) {
-    return roomSubjectApi.subject.getSubjectWatchAuth(data).then(res => {
+    return roomSubjectApi.subject.initSubjectInfo(data).then(res => {
       if (res.code == 200) {
         this.state.subjectAuthInfo = res.data;
       }
+      return res;
     })
   }
 }
