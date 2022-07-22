@@ -153,7 +153,7 @@ class InsertFileServer extends BaseServer {
       this.state.insertStreamInfo.streamId = stream.streamId
       this.state.insertStreamInfo.userInfo = {
         accountId: retStream.accountId,
-        role: retStream.attributes.role,
+        role: retStream.attributes.role || retStream.attributes.role_name, // 远端流假如的时候，attributes里面塞入了role_name，没有role
         nickname: retStream.attributes.nickname,
 
       }
