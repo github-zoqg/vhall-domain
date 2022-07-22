@@ -1,6 +1,6 @@
 {
   "name": "middle-domain",
-  "version": "7.3.4-test.3",
+  "version": "7.3.4-test.4",
   "description": "",
   "private": true,
   "main": "dist/lib/middle-domain.js",
