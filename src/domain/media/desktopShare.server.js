@@ -105,6 +105,13 @@ class DesktopShareServer extends BaseServer {
     return interactiveServer.createLocalStream(params)
   }
 
+  // 销毁桌面共享流
+  destroyLocaldesktopStream(options = {}) {
+    const interactiveServer = useInteractiveServer();
+    const params = merge.recursive({ streamType: 3 }, options);
+    return interactiveServer.destroyStream(params)
+  }
+
   //检测浏览器是否支持桌面共享
   browserDetection() {
     const ua = navigator.userAgent;
@@ -175,6 +182,18 @@ class DesktopShareServer extends BaseServer {
         nickname: join_info.nickname,
         role: join_info.role_name
       }
+      return data
+    }).catch(e => {
+      return Promise.reject(e)
+    })
+  }
+
+  // 结束桌面共享（本地流）
+  endStartShareScreen(options) {
+    return this.destroyLocaldesktopStream({
+      streamId: options.streamId || this.state.localDesktopStreamId
+    }).then(data => {
+      this.state.localDesktopStreamId = ''
       return data
     }).catch(e => {
       return Promise.reject(e)
