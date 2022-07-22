@@ -33,10 +33,9 @@ class ChatServer extends BaseServer {
       //全体禁言状态下各模块生效信息
       allBannedModuleList: {},
       limit: 10,
-      curMsg: null, //当前正在编辑的消息
-      prevTime: '', //用来记录每条消息的上一条消息发送的时间
-      curPrivateTargetId: '', //当前私聊对象id
-      pos: 0 //下一次拉取历史列表开始位置
+      curMsg: null,//当前正在编辑的消息
+      prevTime: '',//用来记录每条消息的上一条消息发送的时间
+      curPrivateTargetId: '',//当前私聊对象id
     };
     this.listenEvents();
     this.controller = null;
@@ -112,7 +111,6 @@ class ChatServer extends BaseServer {
         if (this.state.chatList.length > 20000) {
           this.state.chatList.splice(0, 5000);
         }
-        this.pos++;
         //非自己发送的普通消息
         if (!this.isSelfMsg(rawMsg)) {
           this.$emit('receiveMsg', rawMsg);
@@ -233,8 +231,6 @@ class ChatServer extends BaseServer {
   async getHistoryMsg(params) {
     //请求获取聊天消息
     let historyList = await this.fetchHistoryData(params);
-    console.log('historyList', historyList);
-    this.state.pos += historyList.data.list.length;
     let list = (historyList.data.list || [])
       .map(item => {
         //处理普通内容
@@ -287,7 +283,6 @@ class ChatServer extends BaseServer {
   }
   // 清空普通聊天消息
   clearChatMsg() {
-    this.state.pos = 0;
     this.state.chatList.splice(0, this.state.chatList.length);
   }
   //清空私聊列表
