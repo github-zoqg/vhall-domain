@@ -482,7 +482,7 @@ export default class StandardDocServer extends AbstractDocServer {
     const { list, switch_status } = await this.getContainerInfo(channelId);
 
     // 直播中
-    if (useRoomBaseServer().state.watchInitData.webinar.type == 1) {
+    if (useRoomBaseServer().state.watchInitData.webinar.type == 1 || !this.isWatch()) {
       // 观众端是否可见
       if (useGroupServer().state.groupInitData.isInGroup) {
         // 小组中文档始终可见
