@@ -241,6 +241,12 @@ class MediaSettingServer {
       // 触发消息 图片格式错误或大小超出限制
 
       console.log('图片格式错误或大小超出限制');
+      return Promise.resolve({
+        data: {
+          code: 20001,
+          msg: '图片格式错误或大小超出限制'
+        }
+      })
 
     }
 
@@ -254,10 +260,9 @@ class MediaSettingServer {
    * @param {Object} options 配置参数
    */
   async createALocalPreviewInstance(options = {}) {
-
     if (this.isVideoCreating) return; // 创建中则不重复创建，以免多次调用
     if (this.state.videoType !== 'camera') return;
-    if (this.state.video === '') return;
+    if (options.video === '') return;
 
     this.isVideoCreating = true;
 
