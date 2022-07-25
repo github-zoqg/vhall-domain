@@ -195,6 +195,30 @@ class MediaSettingServer {
   }
 
   /**
+   * 获取本地麦克风列表
+   *
+   * @async
+   * @function getMicrophonesList
+   * @return {Promise<Array>} 返回可枚举的设备数组
+   */
+  getMicrophonesList() {
+    return this.getMicrophones(
+      d => d.deviceId !== 'default' && d.deviceId !== 'communications' && d.label
+    )
+  }
+
+  /**
+   * 获取本地扬声器列表
+   *
+   * @async
+   * @function getSpeakersList
+   * @return {Promise<Array>} 返回可枚举的设备数组
+   */
+  getSpeakersList() {
+    return this.getSpeakers(item => item.label)
+  }
+
+  /**
    * 获取本地摄像头列表
    *
    * @async
