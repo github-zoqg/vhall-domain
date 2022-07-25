@@ -80,6 +80,8 @@ class MediaStaticMicrophoneServer extends BaseServer {
    * @function cancelAnalyserUpdates
    */
   cancelAnalyserUpdates() {
+
+    if (!this.inputPoint) return
     window.cancelAnimationFrame(this.state.rafID);
     this.inputPoint.disconnect();
     this.audioInput.disconnect();
