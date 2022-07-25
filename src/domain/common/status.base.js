@@ -10,17 +10,19 @@ import useGroupServer from '../group/StandardGroupServer';
 import { WATCH_WEBINAR_MODE } from './status.const';
 
 // 当前用户是否在上麦列表中
-export const isSpeaker = () => {
+const isSpeaker = () => {
 	const { watchInitData } = useRoomBaseServer().state;
 	return useMicServer().getSpeakerByAccountId(watchInitData.join_info.third_party_user_id);
 };
 
 // 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
 export const getSpeakerValue = () => {
-	if (isSpeaker()) {
+	const { watchInitData } = useRoomBaseServer().state;
+	const speakerValue = useMicServer().getSpeakerByAccountId(watchInitData.join_info.third_party_user_id);
+	if (speakerValue) {
 		return {
-			audio: speaker.audioMuted,
-			video: speaker.videoMuted
+			audio: speakerValue.audioMuted,
+			video: speakerValue.videoMuted
 		};
 	}
 	// 否则返回为空

@@ -738,11 +738,9 @@ class InteractiveServer extends BaseServer {
         };
 
         // 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
-        if (statusBase.isSpeaker()) {
-            defaultOptions.mute = {
-                audio: speaker.audioMuted,
-                video: speaker.videoMuted
-            };
+        const speakerValue = statusBase.getSpeakerValue();
+        if (speakerValue) {
+            defaultOptions.mute = {...speakerValue};
         }
 
         // 音频直播静音video
