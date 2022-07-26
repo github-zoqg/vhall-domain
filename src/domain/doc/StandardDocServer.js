@@ -123,7 +123,7 @@ export default class StandardDocServer extends AbstractDocServer {
       try {
         const userId = watchInitData.join_info.third_party_user_id;
         const doc_permission = groupInitData.isInGroup ? groupInitData.doc_permission :
-        interactToolStatus.doc_permission;
+          interactToolStatus.doc_permission;
         if (watchInitData.join_info.role_name == 1 && doc_permission != userId) {
           // 当前是主持人，但是主讲人是其他人，设置文档操作权限为 助理
           defaultOptions.role = VHDocSDK.RoleType.ASSISTANT
@@ -1000,8 +1000,8 @@ export default class StandardDocServer extends AbstractDocServer {
     } else {
       if (watchInitData.join_info.role_name == 3) {
         this.setRole(VHDocSDK.RoleType.ASSISTANT);
-      } else if (watchInitData.join_info.role_name == 1 && doc_permission != userId) {
-        // 当前是主持人，但是主讲人是其他人，设置文档操作权限为 助理
+      } else if (!groupInitData.isInGroup && watchInitData.join_info.role_name == 1 && doc_permission != userId) {
+        // 不在小组内，当前是主持人，但是主讲人是其他人，设置文档操作权限为 助理
         this.setRole(VHDocSDK.RoleType.ASSISTANT);
       } else {
         // 设置文档操作权限为观众
