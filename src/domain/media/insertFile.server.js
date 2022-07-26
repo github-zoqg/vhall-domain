@@ -61,7 +61,7 @@ class InsertFileServer extends BaseServer {
       } catch (error) {
         console.log('error', error)
       }
-      if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) { // 判断两种类型的 streamType 是为了兼容客户端
+      if (e.data.attributes?.stream_type == 4 || e.data.streamType == 4) { // 判断两种类型的 streamType 是为了兼容客户端
         this.getInsertFileStream()
         // 更新麦克风状态
         this.updateMicMuteStatusByInsert({ isStart: true })
@@ -75,7 +75,7 @@ class InsertFileServer extends BaseServer {
       } catch (error) {
         console.log('error', error)
       }
-      if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
+      if (e.data.attributes?.stream_type == 4 || e.data.streamType == 4) {
         this.getInsertFileStream()
         // 更新麦克风状态
         this.updateMicMuteStatusByInsert({ isStart: false })
@@ -89,7 +89,7 @@ class InsertFileServer extends BaseServer {
       } catch (error) {
         console.log('error', error)
       }
-      if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
+      if (e.data.attributes?.stream_type == 4 || e.data.streamType == 4) {
         this.$emit('INSERT_FILE_STREAM_FAILED', e);
       }
     });
