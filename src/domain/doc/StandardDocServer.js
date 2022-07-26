@@ -32,7 +32,7 @@ export default class StandardDocServer extends AbstractDocServer {
       pageTotal: 1, //总页数
       pageNum: 1, // 当前页码
 
-      allComplete: true,
+      allComplete: false,
       docLoadComplete: true, // 所有文档是否加载完成
 
       thumbnailList: [], // 缩略图列表
@@ -213,7 +213,7 @@ export default class StandardDocServer extends AbstractDocServer {
         this.state.containerList = []; // 动态容器列表
         this.state.pageTotal = 1; //总页数
         this.state.pageNum = 1; // 当前页码Ï
-        this.state.allComplete = true;
+        this.state.allComplete = false;
         this.state.docLoadComplete = true; // 文档是否加载完成
         this.state.thumbnailList = []; // 缩略图列表
         this.state.switchStatus = false; // 观众是否可见
@@ -635,6 +635,7 @@ export default class StandardDocServer extends AbstractDocServer {
     });
     await this.activeContainer(elId);
     if (fileType === 'document' && docId) {
+      this.state.allComplete = false
       const { status, status_jpeg, slideIndex, slidesTotal, converted_page, converted_page_jpeg } =
         await this.loadDoc({
           id: elId,
