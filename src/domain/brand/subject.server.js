@@ -37,6 +37,7 @@ class SubjectServer {
       if (res.code == 200) {
         // 权限
         this.state.subjectAuthInfo = res.data;
+        sessionStorage.setItem('visitorId', res.data.visitor_id);
       }
       return res;
     })
