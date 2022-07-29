@@ -279,7 +279,7 @@ class RoomBaseServer extends BaseServer {
 
     // 衍生值
     const byProductData = {
-      isRebroadcasting: Boolean(this.state.watchInitData.rebroadcast.id)
+      isRebroadcasting: Boolean(obj.id)
     }
 
     this.state.watchInitData.rebroadcast = {
