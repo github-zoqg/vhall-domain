@@ -126,11 +126,17 @@ class RebroadCastServer extends BaseServer {
 
   // 开始转播
   start(params = {}) {
+    const roomState = useRoomBaseServer().state;
+    const rebroadcast = roomState.watchInitData.rebroadcast;
+    rebroadcast.id = params.source_id
     return rebroadcastRequest.startRebroadcast(params);
   }
 
   // 结束转播
   stop(params = {}) {
+    const roomState = useRoomBaseServer().state;
+    const rebroadcast = roomState.watchInitData.rebroadcast;
+    rebroadcast.id = ''
     return rebroadcastRequest.stopRebroadcast(params);
   }
 }
