@@ -1,5 +1,5 @@
 import VhallPaasSDK from '@/sdk/index';
-import { merge } from '../../utils';
+import { merge, renderHTML } from '../../utils';
 import useInteractiveServer from './interactive.server';
 import { roomApi } from '@/request/index.js';
 import useRoomBaseServer from '../room/roombase.server';
@@ -292,8 +292,8 @@ class MediaSettingServer {
 
     await this.destroyStream();
 
-    document.getElementById(options.videoNode).innerHTML = '';
-
+    // document.getElementById(options.videoNode).innerHTML = '';
+    renderHTML(document.getElementById(options.videoNode))
     try {
       this.isVideoError = false;
       this.isVideoSwitching = true;

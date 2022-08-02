@@ -1,5 +1,5 @@
 import { insertFile } from '../../request/index.js';
-import { uploadFile, isChrome88 } from '@/utils/index.js';
+import { uploadFile, isChrome88, renderHTML } from '@/utils/index.js';
 import { im } from '@/request/index.js';
 import useRoomBaseServer from '../room/roombase.server';
 import BaseServer from '../common/base.server.js';
@@ -216,7 +216,8 @@ class InsertFileServer extends BaseServer {
         windowURL.revokeObjectURL(fileUrl);
       };
       const videoContainerElement = document.getElementById(options.el);
-      videoContainerElement.innerHTML = '';
+      // videoContainerElement.innerHTML = '';
+      renderHTML(videoContainerElement)
       videoContainerElement.appendChild(videoElement);
       videoElement.addEventListener('canplay', e => {
         setTimeout(() => {
