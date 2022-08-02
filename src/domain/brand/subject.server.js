@@ -37,6 +37,8 @@ class SubjectServer {
       if (res.code == 200) {
         // 权限
         this.state.subjectAuthInfo = res.data;
+        localStorage.setItem('visitorId', res.data.visitor_id)
+        // 到观看端不用验证身份
         sessionStorage.setItem('visitorId', res.data.visitor_id);
       }
       return res;
