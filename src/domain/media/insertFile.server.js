@@ -345,6 +345,7 @@ class InsertFileServer extends BaseServer {
     return interactiveServer.createLocalStream(retOptions).then(data => {
       // 更新 insertStreamInfo 信息
       this.state.insertStreamInfo.streamId = data.streamId
+      useRoomBaseServer().setInsertFileStreamId(data.streamId)
       return data
     });
   }
@@ -381,6 +382,7 @@ class InsertFileServer extends BaseServer {
     this.state.isInsertFilePushing = false
     this.currentLocalInsertFile = null
     this.state.currentRemoteInsertFile = {}
+    useRoomBaseServer().setInsertFileStreamId('')
   }
 
   /**

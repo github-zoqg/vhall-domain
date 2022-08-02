@@ -288,6 +288,18 @@ class RoomBaseServer extends BaseServer {
     };
   }
 
+  // 记录桌面共享流id
+  setDesktopStreamId(data) {
+    this.state.watchInitData.localDesktopStreamId = data
+    console.log(this.state.watchInitData, 'this.state.watchInitData')
+  }
+
+  // 记录插播流id
+  setInsertFileStreamId(data) {
+    this.state.watchInitData.insertFileStreamId = data
+    console.log(this.state.watchInitData, 'this.state.watchInitData')
+  }
+
   // 更新roomVisibleModule
   updateRoomVisibleModules(cb) {
     this.state.roomVisibleModules = cb(this.state.roomVisibleModules);

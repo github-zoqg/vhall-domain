@@ -170,6 +170,7 @@ class DesktopShareServer extends BaseServer {
 
     return this.createLocaldesktopStream(retOptions).then(data => {
       this.state.localDesktopStreamId = data.streamId
+      useRoomBaseServer().setDesktopStreamId(data.streamId)
       this.state.desktopShareInfo = {
         accountId: join_info.third_party_user_id,
         nickname: join_info.nickname,
@@ -220,6 +221,7 @@ class DesktopShareServer extends BaseServer {
    * 停止桌面共享
    * */
   stopShareScreen() {
+    useRoomBaseServer().setDesktopStreamId('')
     return interactiveServer.unpublishStream({ streamId: this.state.localDesktopStreamId }).then(res => {
       this.state.localDesktopStreamId = ''
       return res
