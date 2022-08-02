@@ -159,6 +159,7 @@ class InsertFileServer extends BaseServer {
       }
       this.state.isInsertFilePushing = true
       this.state.insertStreamInfo.has_video = retStream.attributes.has_video // 是否音频插播
+      useRoomBaseServer().setInsertFileStreamId(stream.streamId)
     }
 
     if (!retStream) {
