@@ -222,6 +222,7 @@ class DesktopShareServer extends BaseServer {
   stopShareScreen() {
     return interactiveServer.unpublishStream({ streamId: this.state.localDesktopStreamId }).then(res => {
       this.state.localDesktopStreamId = ''
+      window.vhallReportForProduct?.report(110260, { report_extra: res });
       return res
     });
   }

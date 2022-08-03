@@ -1300,6 +1300,7 @@ class InteractiveServer extends BaseServer {
       const type = res.code == 200 && res.data.layout ? res.data.layout : useMediaSettingServer().state.layout;
       console.log('自适应布局模式====', type)
       const adaptiveLayoutMode = VhallRTC[type];
+      window.vhallReportForProduct?.report(110240, { report_extra: { broadCastAdaptiveLayoutMode: res } });
       await this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode });
     }
 
