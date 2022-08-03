@@ -84,8 +84,11 @@ export const roomSubjectApiList = {
     middle: "/v4/room-subject/subject/init-before"
   },
   getSubjectInfo: {
-    v3: "/v3/webinars/subject/info",
+    v3: "/v3/webinars/subject-watch/subject-watch-info",
     middle: "/v4/room-subject/subject/info"
+  },
+  getWebinarList: {
+    v3: "/v3/webinars/subject-watch/get-subject-webinar-list",
   },
   subjectWatchAuth: {
     v3: "/v3/webinars/subject-watch/subject-auth"
