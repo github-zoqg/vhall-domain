@@ -8,15 +8,31 @@ class SubjectServer {
 
     this.state = {
       subjectDetailInfo: {},
-      subjectAuthInfo: {}
+      subjectAuthInfo: {},
+      webinarInfo: {
+        total: 0,
+        list: []
+      }
     };
   }
 
+  // 获取专题详情信息
   getSubjectInfo(data = {}) {
     return roomSubjectApi.subject.getSubjectInfo(data).then(res => {
       if (res.code === 200) {
         // 基本信息
-        this.state.subjectDetailInfo = res.data.webinar_subject;
+        this.state.subjectDetailInfo = res.data;
+      }
+      return res;
+    });
+  }
+
+  // 获取专题详情信息
+  getWebinarList(data = {}) {
+    return roomSubjectApi.subject.getWebinarList(data).then(res => {
+      if (res.code === 200) {
+        // 基本信息
+        this.state.webinarInfo = res.data;
       }
       return res;
     });
