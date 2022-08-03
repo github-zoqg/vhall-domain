@@ -87,6 +87,9 @@ class DesktopShareServer extends BaseServer {
     const { isSpeakOn } = useMicServer().state;
     if (stream?.streamType === 3 && (watchInitData.webinar.no_delay_webinar == 1 || watchInitData.webinar.no_delay_webinar != 1 && isSpeakOn || [1, 3, 4].includes(+role_name))) {
       this.state.localDesktopStreamId = stream.streamId;
+      // TODO 客户端桌面共享的时候，attributes格式是 attributes: { avatar: '', join_role: '', join_uid: '',join_uname: '', nickName: '', role: '' } ，另外accountId在 stream对象里 (兼容处理)
+      stream.attributes.nickname = stream.attributes.nickname || stream.attributes.nickName
+      stream.attributes.accountId = stream.attributes.accountId || stream.accountId
       this.state.desktopShareInfo = stream.attributes;
       this.$emit('screen_stream_add', stream.streamId);
     }
@@ -103,6 +106,13 @@ class DesktopShareServer extends BaseServer {
     const interactiveServer = useInteractiveServer();
     const params = merge.recursive({ streamType: 3 }, options);
     return interactiveServer.createLocalStream(params)
+  }
+
+  // 销毁桌面共享流
+  destroyLocaldesktopStream(options = {}) {
+    const interactiveServer = useInteractiveServer();
+    const params = merge.recursive({ streamType: 3 }, options);
+    return interactiveServer.destroyStream(params)
   }
 
   //检测浏览器是否支持桌面共享
@@ -153,7 +163,6 @@ class DesktopShareServer extends BaseServer {
     const roomBaseServer = useRoomBaseServer();
 
     const { join_info } = roomBaseServer.state.watchInitData;
-
     const retOptions = {
       videoNode: options.videoNode,
       profile: options.profile,
@@ -176,6 +185,18 @@ class DesktopShareServer extends BaseServer {
         nickname: join_info.nickname,
         role: join_info.role_name
       }
+      return data
+    }).catch(e => {
+      return Promise.reject(e)
+    })
+  }
+
+  // 结束桌面共享（本地流）
+  endStartShareScreen(options) {
+    return this.destroyLocaldesktopStream({
+      streamId: options.streamId || this.state.localDesktopStreamId
+    }).then(data => {
+      this.state.localDesktopStreamId = ''
       return data
     }).catch(e => {
       return Promise.reject(e)
