@@ -9,10 +9,7 @@ class SubjectServer {
     this.state = {
       subjectDetailInfo: {},
       subjectAuthInfo: {},
-      webinarInfo: {
-        total: 0,
-        list: []
-      }
+      webinarList: []
     };
   }
 
@@ -32,7 +29,7 @@ class SubjectServer {
     return roomSubjectApi.subject.getWebinarList(data).then(res => {
       if (res.code === 200) {
         // 基本信息
-        this.state.webinarInfo = res.data;
+        this.state.webinarList = this.state.webinarList.concat(res.data.list)
       }
       return res;
     });
