@@ -164,6 +164,7 @@ class InsertFileServer extends BaseServer {
       }
       this.state.isInsertFilePushing = true
       this.state.insertStreamInfo.has_video = InsertFileServer._getAttributesByKey(retStream.attributes, 'has_video') // 是否音频插播
+      useRoomBaseServer().setInsertFileStreamId(stream.streamId)
     }
 
     if (!retStream) {
@@ -350,6 +351,7 @@ class InsertFileServer extends BaseServer {
     return interactiveServer.createLocalStream(retOptions).then(data => {
       // 更新 insertStreamInfo 信息
       this.state.insertStreamInfo.streamId = data.streamId
+      useRoomBaseServer().setInsertFileStreamId(data.streamId)
       return data
     });
   }
@@ -386,6 +388,7 @@ class InsertFileServer extends BaseServer {
     this.state.isInsertFilePushing = false
     this.currentLocalInsertFile = null
     this.state.currentRemoteInsertFile = {}
+    useRoomBaseServer().setInsertFileStreamId('')
   }
 
   /**
