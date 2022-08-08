@@ -105,6 +105,12 @@ class InsertFileServer extends BaseServer {
     })
   }
 
+
+  // 获取attributes-key内容
+  static _getAttributesByKey(attributes, key) {
+    // ''.role 返回为 undefined
+    return attributes ? attributes[key] || '' : ''
+  }
   // 设置当前本地插播文件
   setLocalInsertFile(file) {
     this.currentLocalInsertFile = file
@@ -153,12 +159,12 @@ class InsertFileServer extends BaseServer {
       this.state.insertStreamInfo.streamId = stream.streamId
       this.state.insertStreamInfo.userInfo = {
         accountId: retStream.accountId,
-        role: retStream.attributes.role,
-        nickname: retStream.attributes.nickname,
-
+        role: InsertFileServer._getAttributesByKey(retStream.attributes, 'role') || InsertFileServer._getAttributesByKey(retStream.attributes, 'role_name'), // 远端流加入的时候，attributes里面塞入了role_name，没有role（比如客户端流加入的时候）
+        nickname: InsertFileServer._getAttributesByKey(retStream.attributes, 'nickname')
       }
       this.state.isInsertFilePushing = true
-      this.state.insertStreamInfo.has_video = retStream.attributes.has_video // 是否音频插播
+      this.state.insertStreamInfo.has_video = InsertFileServer._getAttributesByKey(retStream.attributes, 'has_video') // 是否音频插播
+      useRoomBaseServer().setInsertFileStreamId(stream.streamId)
     }
 
     if (!retStream) {
@@ -346,6 +352,7 @@ class InsertFileServer extends BaseServer {
     return interactiveServer.createLocalStream(retOptions).then(data => {
       // 更新 insertStreamInfo 信息
       this.state.insertStreamInfo.streamId = data.streamId
+      useRoomBaseServer().setInsertFileStreamId(data.streamId)
       return data
     });
   }
@@ -382,6 +389,7 @@ class InsertFileServer extends BaseServer {
     this.state.isInsertFilePushing = false
     this.currentLocalInsertFile = null
     this.state.currentRemoteInsertFile = {}
+    useRoomBaseServer().setInsertFileStreamId('')
   }
 
   /**
