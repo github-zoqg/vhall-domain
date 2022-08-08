@@ -528,6 +528,7 @@ export default class StandardDocServer extends AbstractDocServer {
    * @param {*} param0
    */
   async addNewFile({ fileType, docId, docType, cid }) {
+    if (typeof this.getDocViewRect !== 'function') return;
     const docViewRect = this.getDocViewRect();
     if (!docViewRect || docViewRect.width < 1 || docViewRect.height < 1) {
       return;

@@ -11,6 +11,8 @@ import interactive from '@/request/interactive';
 import useMediaSettingServer from './mediaSetting.server';
 import useInsertFileServer from './insertFile.server';
 import useVideoPollingServer from './videoPolling.server';
+import * as statusBase from '../common/status.base';
+import * as statusConst from '../common/status.const';
 class InteractiveServer extends BaseServer {
   constructor() {
     super();
@@ -707,68 +709,57 @@ class InteractiveServer extends BaseServer {
    * @return {Promise}
    */
   createLocalVideoStream(options = {}) {
-    const { watchInitData } = useRoomBaseServer().state;
+    const {
+			watchInitData,
+			interactToolStatus,
+			isWebinarMode,
+			attributes,
+			roleName
+	} = statusBase.getBaseInfo();
 
-    const { interactToolStatus } = useRoomBaseServer().state;
+	let defaultOptions = {
+			videoNode: options.videoNode, // 必填，传入本地视频显示容器ID
+			audio: true, // 选填，是否采集音频设备，默认为true
+			video: !isWebinarMode, // 选填，是否采集视频设备，默认为true
+			audioDevice: options.audioDevice || sessionStorage.getItem('selectedAudioDeviceId'), // 选填，指定的音频设备id，默认为系统缺省
+			videoDevice: !isWebinarMode
+					? options.videoDevice || sessionStorage.getItem('selectedVideoDeviceId')
+					: null, // 选填，指定的视频设备id，默认为系统缺省
+			profile:
+					VhallRTC[this.getVideoProfile()] ||
+					VhallRTC[options.profile] ||
+					VhallRTC[interactToolStatus.definition] ||
+					VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
+			streamType: statusConst.STREAM_TYPE_VOICE_VIDEO, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享，5为视频轮巡。
+			attributes: JSON.stringify({
+					...attributes,
+					role: roleName // app端字段不统一，过渡方案，待字段统一后可删除
+			}) //选填，自定义信息，支持字符串类型
+	};
 
-    const { groupInitData } = useGroupServer().state
+	// 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
+	const speakerValue = statusBase.getSpeakerValue();
+	if (speakerValue) {
+			defaultOptions.mute = {...speakerValue};
+	}
 
-    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
+	// 音频直播静音video
+	if (isWebinarMode) {
+			defaultOptions.mute && (defaultOptions.mute.video = true);
+			!defaultOptions.mute && (defaultOptions.mute = { video: true });
+	}
 
-    const roleName = isGroupLeader ? 20 : watchInitData.join_info.role_name
+	// 处理插播中的麦克风状态
+	defaultOptions = this.handleInsertFileMicStatus(defaultOptions)
 
+	const params = merge.recursive({}, defaultOptions, options);
 
-    let defaultOptions = {
-      videoNode: options.videoNode, // 必填，传入本地视频显示容器ID
-      audio: true, // 选填，是否采集音频设备，默认为true
-      video: watchInitData.webinar.mode != 1, // 选填，是否采集视频设备，默认为true
-      audioDevice: options.audioDevice || sessionStorage.getItem('selectedAudioDeviceId'), // 选填，指定的音频设备id，默认为系统缺省
-      videoDevice:
-        watchInitData.webinar.mode != 1
-          ? options.videoDevice || sessionStorage.getItem('selectedVideoDeviceId')
-          : null, // 选填，指定的视频设备id，默认为系统缺省
-      profile:
-        VhallRTC[this.getVideoProfile()] ||
-        VhallRTC[options.profile] ||
-        VhallRTC[interactToolStatus.definition] ||
-        VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
-      streamType: 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享，5为视频轮巡。
-      attributes: JSON.stringify({
-        roleName: roleName,
-        accountId: watchInitData.join_info.third_party_user_id,
-        nickname: watchInitData.join_info.nickname,
-        nickName: watchInitData.join_info.nickname, // app端字段不统一，过渡方案，待字段统一后可删除
-        role: roleName, // app端字段不统一，过渡方案，待字段统一后可删除
-      }) //选填，自定义信息，支持字符串类型
-    };
-
-    // 当前用户是否在上麦列表中
-    const speaker = useMicServer().getSpeakerByAccountId(watchInitData.join_info.third_party_user_id)
-    // 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
-    if (speaker) {
-      defaultOptions.mute = {
-        audio: speaker.audioMuted,
-        video: speaker.videoMuted
-      };
-    }
-
-    // 音频直播静音video
-    if (watchInitData.webinar.mode == 1) {
-      defaultOptions.mute && (defaultOptions.mute.video = true);
-      !defaultOptions.mute && (defaultOptions.mute = { video: true });
-    }
-
-    // 处理插播中的麦克风状态
-    defaultOptions = this.handleInsertFileMicStatus(defaultOptions)
-
-    const params = merge.recursive({}, defaultOptions, options);
-
-    return this.createLocalStream(params).then(data => {
-      this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
-      return data
-    }).catch(e => {
-      return Promise.reject(e)
-    })
+	return this.createLocalStream(params).then(data => {
+			this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
+			return data
+	}).catch(e => {
+			return Promise.reject(e)
+	})
   }
 
   /**
@@ -777,86 +768,45 @@ class InteractiveServer extends BaseServer {
    * @return {Promise}
    */
   createVideoPollingStream(options = {}) {
-    const { watchInitData } = useRoomBaseServer().state;
+    const {
+			interactToolStatus,
+			isWebinarMode,
+			roleName
+		} = statusBase.getBaseInfo();
 
-    const { interactToolStatus } = useRoomBaseServer().state;
+		let defaultOptions = {
+			videoNode: options.videoNode, // 必填，传入本地视频显示容器ID
+			audio: false, // 选填，是否采集音频设备，默认为true
+			video: !isWebinarMode, // 选填，是否采集视频设备，默认为true
+			// audioDevice: options.audioDevice || sessionStorage.getItem('selectedAudioDeviceId'), // 选填，指定的音频设备id，默认为系统缺省
+			videoDevice: !isWebinarMode
+					? options.videoDevice || sessionStorage.getItem('selectedVideoDeviceId')
+					: null, // 选填，指定的视频设备id，默认为系统缺省
+			profile:
+					VhallRTC[this.getVideoProfile()] ||
+					VhallRTC[options.profile] ||
+					VhallRTC[interactToolStatus.definition] ||
+					VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
+			streamType: statusConst.STREAM_TYPE_VOICE_TURNING, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享，5为视频轮巡。
+			mixOption: {
+					// 选填，指定此本地流的音频和视频是否加入旁路混流。支持版本：2.3.2及以上。
+					mixVideo: false, // 视频是否加入旁路混流
+					mixAudio: false  // 音频是否加入旁路混流
+			},
+			attributes: JSON.stringify({
+					...attributes,
+					role: roleName
+			}) //选填，自定义信息，支持字符串类型
+		};
 
-    const roleName = watchInitData.join_info.role_name
+		const params = merge.recursive({}, defaultOptions, options);
 
-    let defaultOptions = {
-      videoNode: options.videoNode, // 必填，传入本地视频显示容器ID
-      audio: false, // 选填，是否采集音频设备，默认为true
-      video: watchInitData.webinar.mode != 1, // 选填，是否采集视频设备，默认为true
-      // audioDevice: options.audioDevice || sessionStorage.getItem('selectedAudioDeviceId'), // 选填，指定的音频设备id，默认为系统缺省
-      videoDevice:
-        watchInitData.webinar.mode != 1
-          ? options.videoDevice || sessionStorage.getItem('selectedVideoDeviceId')
-          : null, // 选填，指定的视频设备id，默认为系统缺省
-      profile:
-        VhallRTC[this.getVideoProfile()] ||
-        VhallRTC[options.profile] ||
-        VhallRTC[interactToolStatus.definition] ||
-        VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
-      streamType: 5, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享，5为视频轮巡。
-      mixOption: {
-        // 选填，指定此本地流的音频和视频是否加入旁路混流。支持版本：2.3.2及以上。
-        mixVideo: false, // 视频是否加入旁路混流
-        mixAudio: false  // 音频是否加入旁路混流
-      },
-      attributes: JSON.stringify({
-        roleName: roleName,
-        accountId: watchInitData.join_info.third_party_user_id,
-        nickname: watchInitData.join_info.nickname,
-        nickName: watchInitData.join_info.nickname, // app端字段不统一，过渡方案，待字段统一后可删除
-        role: roleName, // app端字段不统一，过渡方案，待字段统一后可删除
-      }) //选填，自定义信息，支持字符串类型
-    };
-
-    const params = merge.recursive({}, defaultOptions, options);
-
-    return this.createLocalStream(params).then(data => {
-      useVideoPollingServer().setlocalPollingInfo(data)
-      return data
-    }).catch(e => {
-      return Promise.reject(e)
-    })
-  }
-
-  /**
-   * 获取旁路布局
-   * @param { string } param [字符串 120，240，360，480]
-   * @returns { String } [互动sdk推流Profile常量]
-   */
-  formatDefinition(param = '360') {
-    let definition = 'RTC_VIDEO_PROFILE_360P_16x9_M';
-    switch (param) {
-      case '720':
-      case '超清':
-        definition = 'RTC_VIDEO_PROFILE_720P_16x9_M';
-        break;
-      case '240':
-      case '流畅':
-        definition = 'RTC_VIDEO_PROFILE_240P_16x9_M';
-        break;
-      case '540':
-        definition = 'RTC_VIDEO_PROFILE_540P_16x9_M';
-        break;
-      case '480':
-      case '高清':
-        definition = 'RTC_VIDEO_PROFILE_480P_16x9_M';
-        break;
-      case '180':
-        definition = 'RTC_VIDEO_PROFILE_180P_16x9_M';
-        break;
-      case '360':
-      case '标清':
-        definition = 'RTC_VIDEO_PROFILE_360P_16x9_M';
-        break;
-      case '120':
-        definition = 'RTC_VIDEO_PROFILE_120P_16x9_M';
-        break;
-    }
-    return definition;
+		return this.createLocalStream(params).then(data => {
+				useVideoPollingServer().setlocalPollingInfo(data)
+				return data
+		}).catch(e => {
+				return Promise.reject(e)
+		})
   }
 
   /**
@@ -883,9 +833,9 @@ class InteractiveServer extends BaseServer {
     const remoteStream = this.getRoomStreams();
     if (!remoteStream || !remoteStream.length) {
       if (isHost) {
-        profile = this.formatDefinition('720');
+        profile = statusConst.formatDefinition('720');
       } else {
-        profile = this.formatDefinition('360');
+        profile = statusConst.formatDefinition('360');
       }
       console.log('[interactiveServer]-------分辨率计算结果---', profile)
       return profile
@@ -895,21 +845,21 @@ class InteractiveServer extends BaseServer {
 
     if (onlineLength >= 0 && onlineLength <= 6) {
       if (isHost) {
-        profile = this.formatDefinition('720');
+        profile = statusConst.formatDefinition('720');
       } else {
-        profile = this.formatDefinition('360');
+        profile = statusConst.formatDefinition('360');
       }
     } else if (onlineLength > 6 && onlineLength <= 11) {
       if (isHost) {
-        profile = this.formatDefinition('720');
+        profile = statusConst.formatDefinition('720');
       } else {
-        profile = this.formatDefinition('240');
+        profile = statusConst.formatDefinition('240');
       }
     } else {
       if (isHost) {
-        profile = this.formatDefinition('540');
+        profile = statusConst.formatDefinition('540');
       } else {
-        profile = this.formatDefinition('180');
+        profile = statusConst.formatDefinition('180');
       }
     }
     console.log('[interactiveServer]-------分辨率计算结果---', profile)
@@ -979,47 +929,42 @@ class InteractiveServer extends BaseServer {
    * @returns {any}
    */
   async createWapLocalStream(options = {}, addConfig = {}) {
-    const { watchInitData } = useRoomBaseServer().state;
-    const { interactToolStatus } = useRoomBaseServer().state;
+    const {
+			watchInitData,
+			interactToolStatus,
+			attributes
+		} = statusBase.getBaseInfo();
 
-    let defaultOptions = {
-      video: true,
-      audio: true,
-      facingMode: options.facingMode || 'user',
-      profile:
-        VhallRTC[this.getVideoProfile()] ||
-        VhallRTC[options.profile] ||
-        VhallRTC[interactToolStatus.definition] ||
-        VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
-      streamType: 2, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。,
-      attributes: JSON.stringify({
-        roleName: watchInitData.join_info.role_name,
-        accountId: watchInitData.join_info.third_party_user_id,
-        nickname: watchInitData.join_info.nickname
-      })
-    };
-    // 当前用户是否在上麦列表中
-    const speaker = useMicServer().getSpeakerByAccountId(watchInitData.join_info.third_party_user_id)
+		let defaultOptions = {
+				video: true,
+				audio: true,
+				facingMode: options.facingMode || 'user',
+				profile:
+						VhallRTC[this.getVideoProfile()] ||
+						VhallRTC[options.profile] ||
+						VhallRTC[interactToolStatus.definition] ||
+						VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
+				streamType: statusConst.STREAM_TYPE_VOICE_VIDEO, //选填，指定互动流类型，当需要自定义类型时可传值。如未传值，则底层自动判断： 0为纯音频，1为纯视频，2为音视频，3为屏幕共享。,
+				attributes: JSON.stringify(attributes)
+		};
 
 
-    // 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
-    if (speaker) {
-      defaultOptions.mute = {
-        audio: speaker.audioMuted,
-        video: speaker.videoMuted
-      };
-    }
+		// 如果当前用户在上麦列表中，mute 状态需要从上麦列表中获取，否则默认开启
+		const speakerValue = statusBase.getSpeakerValue();
+		if (speakerValue) {
+				defaultOptions.mute = { ...speakerValue };
+		}
 
-    // 处理插播中的麦克风状态
-    defaultOptions = this.handleInsertFileMicStatus(defaultOptions)
+		// 处理插播中的麦克风状态
+		defaultOptions = this.handleInsertFileMicStatus(defaultOptions)
 
-    const params = merge.recursive({}, defaultOptions, options, addConfig);
-    return await this.createLocalStream(params).then(data => {
-      this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
-      return data
-    }).catch(e => {
-      return Promise.reject(e)
-    })
+		const params = merge.recursive({}, defaultOptions, options, addConfig);
+		return await this.createLocalStream(params).then(data => {
+				this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
+				return data
+		}).catch(e => {
+				return Promise.reject(e)
+		})
   }
 
   /**
