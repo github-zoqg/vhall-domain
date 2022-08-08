@@ -5,6 +5,7 @@ import BaseServer from '../common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import questionnaireApi from '../../request/questionnaire';
 import useMsgServer from '../common/msg.server';
+import { renderHTML } from '../../utils';
 class QuestionnaireServer extends BaseServer {
   constructor(opts = {}) {
     super();
@@ -106,7 +107,8 @@ class QuestionnaireServer extends BaseServer {
    * @description 渲染问卷的视图(编辑)
    */
   renderCreatQuestionnaire(selector, id = '') {
-    document.querySelector(selector).innerHTML = '';
+    // document.querySelector(selector).innerHTML = '';
+    renderHTML(document.querySelector(selector))
     this._paasSDKInstance.renderPageEdit(selector, id);
   }
 
@@ -114,7 +116,8 @@ class QuestionnaireServer extends BaseServer {
    * @description 渲染问卷的视图(观看端和预览)
    */
   renderQuestionnaire4Watch(selector, id) {
-    document.querySelector(selector).innerHTML = '';
+    // document.querySelector(selector).innerHTML = '';
+    renderHTML(document.querySelector(selector))
     this._paasSDKInstance.renderPagePC(selector, id);
   }
 
@@ -122,7 +125,8 @@ class QuestionnaireServer extends BaseServer {
    * @description 渲染问卷的视图(wap)
    */
   renderQuestionnaire4Wap(selector, id) {
-    document.querySelector(selector).innerHTML = '';
+    // document.querySelector(selector).innerHTML = '';
+    renderHTML(document.querySelector(selector))
     this._paasSDKInstance.renderPageH5(selector, id);
   }
 

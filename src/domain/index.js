@@ -3,6 +3,7 @@ import useMsgServer from '@/domain/common/msg.server.js';
 import useInteractiveServer from '@/domain/media/interactive.server.js';
 import useMediaCheckServer from '@/domain/media/mediaCheck.server.js';
 import useMediaSettingServer from '@/domain/media/mediaSetting.server.js';
+import useMediaStaticMicrophoneServer from '@/domain/media/mediaStaticMicrophone.server.js';
 import usePlayerServer from '@/domain/player/player.server.js';
 import useDocServer from '@/domain/doc/doc.server.js';
 import useCanvasStreamServer from '@/domain/media/canvasStream.server.js';
@@ -133,6 +134,7 @@ export {
   useCanvasStreamServer,
   useMediaCheckServer,
   useMediaSettingServer,
+  useMediaStaticMicrophoneServer,
   useInsertFileServer,
   useDesktopShareServer,
   useChatServer,
