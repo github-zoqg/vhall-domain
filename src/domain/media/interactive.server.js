@@ -770,7 +770,8 @@ class InteractiveServer extends BaseServer {
   createVideoPollingStream(options = {}) {
     const {
 			interactToolStatus,
-			isWebinarMode,
+      isWebinarMode,
+      attributes,
 			roleName
 		} = statusBase.getBaseInfo();
 
