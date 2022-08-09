@@ -126,6 +126,12 @@ class RebroadCastServer extends BaseServer {
 
   // 开始转播
   start(params = {}) {
+    const roomState = useRoomBaseServer().state;
+    const localDesktopStreamId = roomState.watchInitData.localDesktopStreamId;
+    const insertFileStreamId = roomState.watchInitData.insertFileStreamId;
+    if (localDesktopStreamId || insertFileStreamId) {
+      return false
+    }
     return rebroadcastRequest.startRebroadcast(params);
   }
 

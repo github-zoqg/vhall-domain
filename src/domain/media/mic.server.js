@@ -7,6 +7,8 @@ import userMemberServer from '../member/member.server';
 import useGroupServer from '../group/StandardGroupServer';
 import { Speaker } from './class'
 import useInteractiveServer from './interactive.server';
+import useMediaCheckServer from './mediaCheck.server';
+import useDocServer from '../doc/doc.server';
 class MicServer extends BaseServer {
   constructor() {
     super();
@@ -130,8 +132,9 @@ class MicServer extends BaseServer {
 
   _initEventListeners() {
     const msgServer = useMsgServer();
-    msgServer.$onMsg('ROOM_MSG', msg => {
-      const { join_info } = useRoomBaseServer().state.watchInitData;
+    msgServer.$onMsg('ROOM_MSG', async msg => {
+      const { watchInitData: { join_info, webinar }, interactToolStatus } = useRoomBaseServer().state;
+      const isVideoPolling = useRoomBaseServer().state.configList['video_polling'] == 1;
       switch (msg.data.type) {
         // 开启允许举手
         case 'live_over':
@@ -199,9 +202,31 @@ class MicServer extends BaseServer {
 
           if (join_info.third_party_user_id == msg.data.room_join_id) {
             this.state.isSpeakOn = true;
-            this.$emit('vrtc_connect_success', msg);
-          } else if (join_info.role_name == 1 || useGroupServer().state.groupInitData.isInGroup && useGroupServer().state.groupInitData.join_role == 20) {
-            // 如果是主持人或者组长派发事件，更新成员列表
+          }
+          // 如果是主持人或者组长派发事件，更新成员列表
+          if (join_info.third_party_user_id == msg.data.room_join_id || join_info.role_name == 1 || useGroupServer().state.groupInitData.isInGroup && useGroupServer().state.groupInitData.join_role == 20) {
+            // 若上麦成功后发现设备不允许上麦，则进行下麦操作
+            let device_status = useMediaCheckServer().state.deviceInfo.device_status;
+            if (device_status == 2) {
+              this.speakOff();
+              return;
+            } else if (device_status == 0 && [2, 4].includes(join_info.role_name)) {
+              // 观众 嘉宾
+              let _flag = await useMediaCheckServer().getMediaInputPermission({
+                isNeedBroadcast: msgServer.isMobileDevice() ? false : isVideoPolling && webinar.mode != 6
+              });
+              if (!_flag) {
+                this.speakOff();
+                this.$emit('vrtc_exception_msg', { type: 1039 }) // 设备检测未通过抛出异常提示
+                return;
+              }
+            }
+            if (!msgServer.isMobileDevice()) {
+              // 上麦成功后，如果开启文档可见，把主画面置为小屏
+              if (useDocServer().state.switchStatus) {
+                useRoomBaseServer().setChangeElement('stream-list');
+              }
+            }
             this.$emit('vrtc_connect_success', msg);
           }
           break;
@@ -231,11 +256,8 @@ class MicServer extends BaseServer {
         // 设置主画面
         case 'vrtc_big_screen_set':
           if (useGroupServer().state.groupInitData.isInGroup) return;
-          const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
-          // if(useGroupServer().state.groupInitData.isInGroup)
           interactToolStatus.main_screen = msg.data.room_join_id;
           this.$emit('vrtc_big_screen_set', msg);
-          // const str = watchInitData.webinar.mode == 6 ? '主画面' : '主讲人';
           break;
         // 设置主讲人 补充增加
         case 'vrtc_speaker_switch':
