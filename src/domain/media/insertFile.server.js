@@ -1,5 +1,5 @@
 import { insertFile } from '../../request/index.js';
-import { uploadFile, isChrome88 } from '@/utils/index.js';
+import { uploadFile, isChrome88, renderHTML } from '@/utils/index.js';
 import { im } from '@/request/index.js';
 import useRoomBaseServer from '../room/roombase.server';
 import BaseServer from '../common/base.server.js';
@@ -61,7 +61,7 @@ class InsertFileServer extends BaseServer {
       } catch (error) {
         console.log('error', error)
       }
-      if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) { // 判断两种类型的 streamType 是为了兼容客户端
+      if (e.data.attributes?.stream_type == 4 || e.data.streamType == 4) { // 判断两种类型的 streamType 是为了兼容客户端
         this.getInsertFileStream()
         // 更新麦克风状态
         this.updateMicMuteStatusByInsert({ isStart: true })
@@ -75,7 +75,7 @@ class InsertFileServer extends BaseServer {
       } catch (error) {
         console.log('error', error)
       }
-      if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
+      if (e.data.attributes?.stream_type == 4 || e.data.streamType == 4) {
         this.getInsertFileStream()
         // 更新麦克风状态
         this.updateMicMuteStatusByInsert({ isStart: false })
@@ -89,7 +89,7 @@ class InsertFileServer extends BaseServer {
       } catch (error) {
         console.log('error', error)
       }
-      if (e.data.attributes.stream_type == 4 || e.data.streamType == 4) {
+      if (e.data.attributes?.stream_type == 4 || e.data.streamType == 4) {
         this.$emit('INSERT_FILE_STREAM_FAILED', e);
       }
     });
@@ -164,6 +164,7 @@ class InsertFileServer extends BaseServer {
       }
       this.state.isInsertFilePushing = true
       this.state.insertStreamInfo.has_video = InsertFileServer._getAttributesByKey(retStream.attributes, 'has_video') // 是否音频插播
+      useRoomBaseServer().setInsertFileStreamId(stream.streamId)
     }
 
     if (!retStream) {
@@ -221,7 +222,8 @@ class InsertFileServer extends BaseServer {
         windowURL.revokeObjectURL(fileUrl);
       };
       const videoContainerElement = document.getElementById(options.el);
-      videoContainerElement.innerHTML = '';
+      // videoContainerElement.innerHTML = '';
+      renderHTML(videoContainerElement)
       videoContainerElement.appendChild(videoElement);
       videoElement.addEventListener('canplay', e => {
         setTimeout(() => {
@@ -350,6 +352,7 @@ class InsertFileServer extends BaseServer {
     return interactiveServer.createLocalStream(retOptions).then(data => {
       // 更新 insertStreamInfo 信息
       this.state.insertStreamInfo.streamId = data.streamId
+      useRoomBaseServer().setInsertFileStreamId(data.streamId)
       return data
     });
   }
@@ -386,6 +389,7 @@ class InsertFileServer extends BaseServer {
     this.state.isInsertFilePushing = false
     this.currentLocalInsertFile = null
     this.state.currentRemoteInsertFile = {}
+    useRoomBaseServer().setInsertFileStreamId('')
   }
 
   /**

@@ -73,8 +73,9 @@ class MediaCheckServer {
     if (navigator.mediaDevices) {
       return this.getUserMediaWithSelectedDevices()
         .then(async stream => {
+          const device_type = options.device_type ? options.device_type : this.isMobileDevice() ? 1 : 2
           // TODO: 根据参数判断是否发消息同步状态
-          await this.setDevice({ status: 1, send_msg: Number(options.isNeedBroadcast) });
+          await this.setDevice({ status: 1, type: device_type, send_msg: Number(options.isNeedBroadcast) });
           stream.getTracks().forEach(trackInput => {
             // 增加异步停止track stop       进行尝试解决 ID1004170 问题
             setTimeout(() => {
