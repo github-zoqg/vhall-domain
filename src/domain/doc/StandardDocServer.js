@@ -32,7 +32,7 @@ export default class StandardDocServer extends AbstractDocServer {
       pageTotal: 1, //总页数
       pageNum: 1, // 当前页码
 
-      allComplete: true,
+      allComplete: false,
       docLoadComplete: true, // 所有文档是否加载完成
 
       thumbnailList: [], // 缩略图列表
@@ -120,6 +120,13 @@ export default class StandardDocServer extends AbstractDocServer {
       }
     } else {
       defaultOptions.role = this.mapDocRole(this.hasDocPermission() ? 1 : 2);
+      const userId = watchInitData.join_info.third_party_user_id;
+      const doc_permission = groupInitData.isInGroup ? groupInitData.doc_permission :
+        interactToolStatus.doc_permission;
+      if (watchInitData.join_info.role_name == 1 && doc_permission != userId) {
+        // 不在小组内，当前角色是主持人，但是主讲人是其他人，设置文档操作权限为 助理
+        defaultOptions.role = this.mapDocRole(3);
+      }
       defaultOptions.roomId = watchInitData.interact.room_id; // 必填。
       defaultOptions.channelId = watchInitData.interact.channel_id; // 频道id 必须
       defaultOptions.token = watchInitData.interact.paas_access_token; // access_token，必填
@@ -204,7 +211,7 @@ export default class StandardDocServer extends AbstractDocServer {
         this.state.containerList = []; // 动态容器列表
         this.state.pageTotal = 1; //总页数
         this.state.pageNum = 1; // 当前页码Ï
-        this.state.allComplete = true;
+        this.state.allComplete = false;
         this.state.docLoadComplete = true; // 文档是否加载完成
         this.state.thumbnailList = []; // 缩略图列表
         this.state.switchStatus = false; // 观众是否可见
@@ -473,7 +480,7 @@ export default class StandardDocServer extends AbstractDocServer {
     const { list, switch_status } = await this.getContainerInfo(channelId);
 
     // 直播中
-    if (useRoomBaseServer().state.watchInitData.webinar.type == 1) {
+    if (useRoomBaseServer().state.watchInitData.webinar.type == 1 || !this.isWatch()) {
       // 观众端是否可见
       if (useGroupServer().state.groupInitData.isInGroup) {
         // 小组中文档始终可见
@@ -521,6 +528,7 @@ export default class StandardDocServer extends AbstractDocServer {
    * @param {*} param0
    */
   async addNewFile({ fileType, docId, docType, cid }) {
+    if (typeof this.getDocViewRect !== 'function') return;
     const docViewRect = this.getDocViewRect();
     if (!docViewRect || docViewRect.width < 1 || docViewRect.height < 1) {
       return;
@@ -626,6 +634,7 @@ export default class StandardDocServer extends AbstractDocServer {
     });
     await this.activeContainer(elId);
     if (fileType === 'document' && docId) {
+      this.state.allComplete = false
       const { status, status_jpeg, slideIndex, slidesTotal, converted_page, converted_page_jpeg } =
         await this.loadDoc({
           id: elId,
@@ -974,6 +983,10 @@ export default class StandardDocServer extends AbstractDocServer {
     if (!window.VHDocSDK) return;
     const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
+
+    const userId = watchInitData.join_info.third_party_user_id;
+    const doc_permission = groupInitData.isInGroup ? groupInitData.doc_permission :
+      interactToolStatus.doc_permission;
     if (
       (groupInitData.isInGroup && groupInitData.presentation_screen ==
         watchInitData.join_info.third_party_user_id) ||
@@ -985,6 +998,9 @@ export default class StandardDocServer extends AbstractDocServer {
       this.setRole(VHDocSDK.RoleType.HOST);
     } else {
       if (watchInitData.join_info.role_name == 3) {
+        this.setRole(VHDocSDK.RoleType.ASSISTANT);
+      } else if (!groupInitData.isInGroup && watchInitData.join_info.role_name == 1 && doc_permission != userId) {
+        // 不在小组内，当前是主持人，但是主讲人是其他人，设置文档操作权限为 助理
         this.setRole(VHDocSDK.RoleType.ASSISTANT);
       } else {
         // 设置文档操作权限为观众
