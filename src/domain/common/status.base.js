@@ -60,6 +60,7 @@ export const getBaseInfo = () => {
 		attributes: {
 			roleName,
 			accountId: third_party_user_id,
+			nickname: nickname,
 			nickName: nickname // app端字段不统一，过渡方案，待字段统一后可删除
 		}
 	};
