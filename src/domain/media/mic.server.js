@@ -261,6 +261,9 @@ class MicServer extends BaseServer {
           break;
         // 设置主讲人 补充增加
         case 'vrtc_speaker_switch':
+          if (join_info.role_name == 4) {
+            window.vhallReportForProduct?.report(110171, { report_extra: msg });
+          }
           this.$emit('vrtc_speaker_switch', msg)
           break;
       }
