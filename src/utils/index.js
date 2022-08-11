@@ -159,85 +159,105 @@ Date.prototype.format = function (fmt) {
 };
 /**
 * 渲染元素
-* @param {*} domCtn: dom容器 
+* @param {*} domCtn: dom容器
 * @param {*} data: {tag: 'div', text: 'hello', props: {id: 'test'}, children: []}
 * @returns 无
 */
 const renderHTML = (domCtn = null, data = []) => {
-	// dom节点是否有效
-	if (!domCtn) {
-		console.error('renderHTML params domCtn is required');
-		return;
-	}
-	// data参数是否是对象类型
-	if (!(data instanceof Array)) {
-		console.error('renderHTML params data必须是数组类型');
-		return;
-	}
-	// data为空则清除dom元素值
-	if (data.length === 0) {
-		// 子节点
-		const childNodes = domCtn.childNodes;
-		(childNodes || []).forEach(node => {
-			domCtn.removeChild(node);
-		});
-		return;
-	}
+  // dom节点是否有效
+  if (!domCtn) {
+    console.error('renderHTML params domCtn is required');
+    return;
+  }
+  // data参数是否是对象类型
+  if (!(data instanceof Array)) {
+    console.error('renderHTML params data必须是数组类型');
+    return;
+  }
+  // data为空则清除dom元素值
+  if (data.length === 0) {
+    // 子节点
+    const childNodes = domCtn.childNodes;
+    (childNodes || []).forEach(node => {
+      domCtn.removeChild(node);
+    });
+    return;
+  }
 
-	// deep循环
-	const deepDomData = (dDom = null, dData = {}) => {
-		const {
-			tag = '',
-			props = {},
-			children = [],
-			text = ''
-		} = dData;
-		// 是否元素类型
-		const isElementType = tag === '';
-		// 是否文本类型
-		const isTextType = text === '';
-		// 非节点 && 非文本
-		if (!isElementType && !isTextType) {
-			return;
-		}
-		// 节点类型
-		if (!isTextType) {
-			// 若文本中有标签时需要转化
-			const textNode = document.createTextNode(text);
-			dDom.append(textNode);
-		} else {
-			// 元素类型
-			// 创建节点, 针对script标签元素直接通过code包装
-			const tagLower = tag.toLowerCase();
-			const currNode = document.createElement(tagLower);
-			// 属性
-			const propKeys = Object.keys(props);
-			// 若有属性
-			if (propKeys.length !== 0) {
-				propKeys.forEach(key => {
-					currNode.setAttribute(key, props[key]);
-				});
-			}
-			// 子节点
-			(children || []).forEach(node => {
-				deepDomData(currNode, node);
-			});
-			// script标签的话则用code包裹
-			if (tagLower === 'script') {
-				const codeNode = document.createElement('code');
-				codeNode.textContent = '<script>' + currNode.textContent + '<\/script>';
-				dDom.append(codeNode);
-			} else {
-				// 直接插入
-				dDom.append(currNode);
-			}
-		}
-	};
-	// 调用
-	data.forEach(dataVal => {
-		deepDomData(domCtn, dataVal);
-	});
+  // deep循环
+  const deepDomData = (dDom = null, dData = {}) => {
+    const {
+      tag = '',
+      props = {},
+      children = [],
+      text = ''
+    } = dData;
+    // 是否元素类型
+    const isElementType = tag === '';
+    // 是否文本类型
+    const isTextType = text === '';
+    // 非节点 && 非文本
+    if (!isElementType && !isTextType) {
+      return;
+    }
+    // 节点类型
+    if (!isTextType) {
+      // 若文本中有标签时需要转化
+      const textNode = document.createTextNode(text);
+      dDom.append(textNode);
+    } else {
+      // 元素类型
+      // 创建节点, 针对script标签元素直接通过code包装
+      const tagLower = tag.toLowerCase();
+      const currNode = document.createElement(tagLower);
+      // 属性
+      const propKeys = Object.keys(props);
+      // 若有属性
+      if (propKeys.length !== 0) {
+        propKeys.forEach(key => {
+          currNode.setAttribute(key, props[key]);
+        });
+      }
+      // 子节点
+      (children || []).forEach(node => {
+        deepDomData(currNode, node);
+      });
+      // script标签的话则用code包裹
+      if (tagLower === 'script') {
+        const codeNode = document.createElement('code');
+        codeNode.textContent = '<script>' + currNode.textContent + '<\/script>';
+        dDom.append(codeNode);
+      } else {
+        // 直接插入
+        dDom.append(currNode);
+      }
+    }
+  };
+  // 调用
+  data.forEach(dataVal => {
+    deepDomData(domCtn, dataVal);
+  });
 };
+
+/**
+ * 将接受到的参数转成字符串
+ * @param {*} val
+ * @returns String
+ */
+const _toString = (val) => {
+  const type = Object.prototype.toString.call(val);
+
+  if (type === '[object Function]' || type === '[object RegExp]' || type === '[object Symbol]') {
+    return val.toString();
+  }
+
+  if (type === '[object Error]') {
+    return JSON.stringify(val, Object.getOwnPropertyNames(val));
+  }
+
+  return JSON.stringify(val);
+}
+
 export {
   merge,
   isPc,
@@ -249,5 +269,6 @@ export {
   sleep,
   awaitWrap,
   getQueryString,
-  renderHTML
+  renderHTML,
+  _toString
 };
