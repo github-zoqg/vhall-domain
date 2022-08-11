@@ -35,7 +35,7 @@ export function report_interactive_stream_mute(eventData) {
     if (Object.prototype.hasOwnProperty.call(resultData, 'stream')) {
       delete resultData.stream
     }
-    window.vhallLog({
+    window.vhallLog && window.vhallLog({
       tag: 'domain_interactive_stream_mute', // 日志所属功能模块，命名规则：domain_{server名称}_{事件名称}
       commonData: getCommonReportInfo(),
       eventData: _toString(resultData),
