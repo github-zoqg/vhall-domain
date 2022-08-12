@@ -115,9 +115,30 @@ class Domain {
     window.vhallReport = new VhallReport(reportOptions);
   }
 
-  // 微吼直播【产品侧】需要的数据
+  // ** 微吼直播【产品侧】需要的数据 **
   initVhallReportForProduct(reportOptions) {
+
+    let unique_code = 'xxx';
     window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
+    // 装饰report函数增加新能力
+    const decorationExtensionReport = (name, execute, source = window.vhallReportForProduct) => {
+      let fn = source[name]
+      source[name] = function (type, options) {
+        unique_code = window.btoa(new Date().getTime());
+        // 此处兼容老的上报参数，新上报参数，需要 report_extra 为必填项
+        if (options && options?.report_extra)
+          options.report_extra['unique_code'] = unique_code;
+        return execute(fn.bind(source, type, options))
+      }
+    }
+    decorationExtensionReport('report', report => {
+      // 设置请求参数唯一值，用于上报信息关联（base64编码）
+      setRequestBody({
+        unique_code: unique_code
+      })
+      report();
+    })
+
   }
 }
 const version = '__VERSION__';
