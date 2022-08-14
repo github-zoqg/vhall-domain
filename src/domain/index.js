@@ -119,15 +119,39 @@ class Domain {
   initVhallReportForProduct(reportOptions) {
 
     let unique_code = 'xxx';
+    let cacheReportCode = {
+
+    };
+
+    const randomCode = (type) => {
+      return window.btoa(`${type}-${new Date().getTime()}`);
+    }
     window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
     // 装饰report函数增加新能力
     const decorationExtensionReport = (name, execute, source = window.vhallReportForProduct) => {
       let fn = source[name]
       source[name] = function (type, options) {
-        unique_code = window.btoa(new Date().getTime());
+
+        // options => null {} {report_extra:{}}
+
+        unique_code = randomCode(type);
+
+        // 此处兼容历史上报数据扩展字段缺失问题
+        if (!options) {
+          options = { report_extra: { unique_code: unique_code } }
+        } else if (!options.report_extra) {
+          options.report_extra = {
+            unique_code: unique_code
+          }
+        }
+
+        // options => { report_extra: { unique_code: 1 } }
         // 此处兼容老的上报参数，新上报参数，需要 report_extra 为必填项
-        if (options && options?.report_extra)
+        if (!('unique_code' in options.report_extra))
           options.report_extra['unique_code'] = unique_code;
+        else
+          unique_code = options.report_extra.unique_code;
+
         return execute(fn.bind(source, type, options))
       }
     }
@@ -138,6 +162,42 @@ class Domain {
       })
       report();
     })
+
+
+    // 开始上报
+    window.vhallReportForProduct.toStartReporting = (eventId, relationalEventIds, extendOptions) => {
+
+      let _randomCode = randomCode(eventId);
+
+      if (typeof relationalEventIds === 'number') relationalEventIds = [relationalEventIds];
+
+      relationalEventIds.forEach(element => {
+        cacheReportCode[element] = _randomCode
+      });
+
+      console.log(eventId, cacheReportCode, 889900);
+      window.vhallReportForProduct.report(eventId, {
+        report_extra: {
+          ...{
+            unique_code: _randomCode
+          },
+          ...extendOptions
+        }
+      });
+    }
+
+    // 结果上报
+    window.vhallReportForProduct.toResultsReporting = (eventId, extendOptions = {}, code) => {
+      console.log(eventId, code || cacheReportCode[eventId], 889901);
+      window.vhallReportForProduct.report(eventId, {
+        report_extra: {
+          ...{
+            unique_code: code || cacheReportCode[eventId]
+          },
+          ...extendOptions
+        }
+      });
+    }
 
   }
 }
