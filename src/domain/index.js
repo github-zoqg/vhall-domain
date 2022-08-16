@@ -99,6 +99,7 @@ class Domain {
 
   //初始化房间信息
   async initRoom(roomInitOptions, devLogOptions) {
+
     // 加载 report Sdk
     await VhallPaasSDK.loadReportSdk();
 
@@ -118,15 +119,54 @@ class Domain {
   // ** 微吼直播【产品侧】需要的数据 **
   initVhallReportForProduct(reportOptions) {
 
-    let unique_code = 'xxx';
-    let cacheReportCode = {
-
-    };
-
-    const randomCode = (type) => {
-      return window.btoa(`${type}-${new Date().getTime()}`);
+    let requestId = 'xxx';
+    let cacheReportCode = {};
+    const useRoomBaseState = useRoomBaseServer().state;
+    const { watchInitData } = useRoomBaseState;
+    const { join_info = {}, webinar = {}, interact = {}, sso = {} } = watchInitData;
+    // 生成request_id 规则：用户ID + 活动ID
+    const randomCode = () => {
+      return `${join_info.third_party_user_id}${webinar.id}`;
     }
     window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
+
+    // 扩展实例后的全局通用上报属性
+    window.vhallReportForProduct.commonParams = {
+      ...{
+        os: 10,
+        // B端账号id
+        business_uid: join_info.third_party_user_id,
+        // 游客ID
+        visitor_id: watchInitData.visitor_id,
+        // 用户唯一id
+        sso_union_id: sso.kick_id,
+        // 用户昵称
+        nickname: join_info.nickname,
+        // 回放ID
+        record_id: webinar.id,
+        // 活动名称(内容名称)
+        webinar_name: webinar.userinfo.nickname,
+        // 是否登录状态
+        is_login: join_info.user_id,
+        // 房间ID
+        room_id: interact.room_id,
+        // 互动房间id
+        inav_id: interact.inav_id,
+        // 聊天室id
+        channel_id: interact.channel_id,
+        // 直播场次ID
+        switch_id: watchInitData.switch.switch_id,
+        // 语言类型
+        language_type: useRoomBaseState.languages.language_type,
+        // 用户类型
+        role_name: join_info.role_name,
+        // UA设备
+        ua: window.navigator.userAgent,
+        // 物料种类 【缺少】
+        //file_type:,
+      },
+      ...window.vhallReportForProduct.commonParams
+    };
     // 装饰report函数增加新能力
     const decorationExtensionReport = (name, execute, source = window.vhallReportForProduct) => {
       let fn = source[name]
@@ -134,31 +174,31 @@ class Domain {
 
         // options => null {} {report_extra:{}}
 
-        unique_code = randomCode(type);
+        requestId = randomCode();
 
         // 此处兼容历史上报数据扩展字段缺失问题
         if (!options) {
-          options = { report_extra: { unique_code: unique_code } }
+          options = { report_extra: { request_id: requestId } }
         } else if (!options.report_extra) {
           options.report_extra = {
-            unique_code: unique_code
+            request_id: requestId
           }
         }
 
-        // options => { report_extra: { unique_code: 1 } }
+        // options => { report_extra: { request_id: 1 } }
         // 此处兼容老的上报参数，新上报参数，需要 report_extra 为必填项
-        if (!('unique_code' in options.report_extra))
-          options.report_extra['unique_code'] = unique_code;
+        if (!('request_id' in options.report_extra))
+          options.report_extra['request_id'] = requestId;
         else
-          unique_code = options.report_extra.unique_code;
+          requestId = options.report_extra.request_id;
 
         return execute(fn.bind(source, type, options))
       }
     }
     decorationExtensionReport('report', report => {
-      // 设置请求参数唯一值，用于上报信息关联（base64编码）
-      setRequestBody({
-        unique_code: unique_code
+      // 设置请求Header 唯一值，用于上报信息关联
+      setRequestHeaders({
+        'request-id': requestId
       })
       report();
     })
@@ -175,11 +215,10 @@ class Domain {
         cacheReportCode[element] = _randomCode
       });
 
-      console.log(eventId, cacheReportCode, 889900);
       window.vhallReportForProduct.report(eventId, {
         report_extra: {
           ...{
-            unique_code: _randomCode
+            request_id: _randomCode
           },
           ...extendOptions
         }
@@ -187,12 +226,11 @@ class Domain {
     }
 
     // 结果上报
-    window.vhallReportForProduct.toResultsReporting = (eventId, extendOptions = {}, code) => {
-      console.log(eventId, code || cacheReportCode[eventId], 889901);
+    window.vhallReportForProduct.toResultsReporting = (eventId, extendOptions = {}) => {
       window.vhallReportForProduct.report(eventId, {
         report_extra: {
           ...{
-            unique_code: code || cacheReportCode[eventId]
+            request_id: cacheReportCode[eventId]
           },
           ...extendOptions
         }
