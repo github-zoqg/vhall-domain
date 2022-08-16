@@ -74,7 +74,7 @@ class QuestionnaireServer extends BaseServer {
     if (mode === 'watch') {
       // 初始化观看端事件
       this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.SUBMIT, async data => {
-        window.vhallReportForProduct?.report(170021, {
+        window.vhallReportForWatch?.report(170021, {
           survey_id: data.naire_id
         });
         const res = await this.submitQuestion(data);
