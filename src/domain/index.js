@@ -119,6 +119,14 @@ class Domain {
   // ** 微吼直播【产品侧】需要的数据 **
   initVhallReportForProduct(reportOptions) {
 
+    // 测试上报开关
+    let isReport = sessionStorage.getItem('isReport');
+    if (!JSON.parse(isReport)) {
+      isReport = confirm("是否开启上报功能");
+      sessionStorage.setItem('isReport', isReport)
+    }
+
+
     let requestId = 'xxx';
     let cacheReportCode = {};
     const useRoomBaseState = useRoomBaseServer().state;
@@ -201,7 +209,8 @@ class Domain {
       setRequestHeaders({
         'request-id': requestId
       })
-      report();
+      // 上报开关
+      isReport && report();
     })
 
 
