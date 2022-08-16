@@ -124,6 +124,7 @@ class Domain {
     const useRoomBaseState = useRoomBaseServer().state;
     const { watchInitData } = useRoomBaseState;
     const { join_info = {}, webinar = {}, interact = {}, sso = {} } = watchInitData;
+
     // 生成request_id 规则：用户ID + 活动ID
     const randomCode = () => {
       return `${join_info.third_party_user_id}${webinar.id}`;
@@ -157,7 +158,7 @@ class Domain {
         // 直播场次ID
         switch_id: watchInitData.switch.switch_id,
         // 语言类型
-        language_type: useRoomBaseState.languages.language_type,
+        language_type: useRoomBaseState.languages.lang.type,
         // 用户类型
         role_name: join_info.role_name,
         // UA设备
