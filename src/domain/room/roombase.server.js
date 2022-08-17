@@ -164,6 +164,7 @@ class RoomBaseServer extends BaseServer {
       if (msg.data.type == 'live_start') {
         // 观看端如果在看回放，直播时没刷新，不能显示直播的页面，故type不能改成1
         if (['send', 'sdk', 'record', 'clientEmbed'].includes(this.state.clientType)) {
+          // 活动状态（2-预约 1-直播 3-结束 4-点播 5-回放）
           this.state.watchInitData.webinar.type = 1;
           // 第三方推流监听消息
           if (this.state.isThirdStream) {
@@ -279,13 +280,25 @@ class RoomBaseServer extends BaseServer {
 
     // 衍生值
     const byProductData = {
-      isRebroadcasting: Boolean(this.state.watchInitData.rebroadcast.id)
+      isRebroadcasting: Boolean(obj.id)
     }
 
     this.state.watchInitData.rebroadcast = {
       ...obj,
       ...byProductData
     };
+  }
+
+  // 记录桌面共享流id
+  setDesktopStreamId(data) {
+    this.state.watchInitData.localDesktopStreamId = data
+    console.log(this.state.watchInitData, 'this.state.watchInitData')
+  }
+
+  // 记录插播流id
+  setInsertFileStreamId(data) {
+    this.state.watchInitData.insertFileStreamId = data
+    console.log(this.state.watchInitData, 'this.state.watchInitData')
   }
 
   // 更新roomVisibleModule
