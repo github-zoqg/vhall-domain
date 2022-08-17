@@ -366,6 +366,7 @@ class PlayerServer extends BaseServer {
           reportExtra.sso_union_id = userServer.state.union_id
         }
       }
+      console.log('播放器上报reportExtra:', reportExtra)
       defaultOptions.otherOption = {
         vid: watchInitData.report_data.vid, // hostId
         vfid: watchInitData.report_data.vfid,
