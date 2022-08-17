@@ -133,11 +133,15 @@ class Domain {
     const { watchInitData } = useRoomBaseState;
     const { join_info = {}, webinar = {}, interact = {}, sso = {} } = watchInitData;
 
-    // 生成request_id 规则：用户ID + 活动ID
-    const randomCode = () => {
-      return `${join_info.third_party_user_id}${webinar.id}`;
+    // 生成request_id 规则：用户ID + 活动ID + 时间戳
+    const randomCode = (type = 0) => {
+      let onlyTimeStamp = new Date().getTime();
+      return `${join_info.third_party_user_id}${webinar.id}${onlyTimeStamp}${type}`;
     }
     window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
+
+    // 测试上报地址
+    window.vhallReportForProduct.BASE_URL = "https://t-dc.e.vhall.com/login";
 
     // 扩展实例后的全局通用上报属性
     window.vhallReportForProduct.commonParams = {
@@ -183,7 +187,7 @@ class Domain {
 
         // options => null {} {report_extra:{}}
 
-        requestId = randomCode();
+        requestId = randomCode(type);
 
         // 此处兼容历史上报数据扩展字段缺失问题
         if (!options) {
@@ -248,7 +252,10 @@ class Domain {
     }
 
   }
+
 }
+
+
 const version = '__VERSION__';
 
 export {
