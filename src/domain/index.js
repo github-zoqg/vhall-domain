@@ -116,8 +116,14 @@ class Domain {
     window.vhallReport = new VhallReport(reportOptions);
   }
 
-  // ** 微吼直播【产品侧】需要的数据 **
+  // 微吼直播【产品侧】需要的数据
   initVhallReportForProduct(reportOptions) {
+    window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
+    this.fullLinkBurningPointReport(reportOptions);
+  }
+
+  // ** 微吼直播新加入埋点上报方式（代理，全链路） **
+  fullLinkBurningPointReport(reportOptions) {
 
     // 测试上报开关
     let isReport = sessionStorage.getItem('isReport');
@@ -138,13 +144,13 @@ class Domain {
       let onlyTimeStamp = new Date().getTime();
       return `${join_info.third_party_user_id}${webinar.id}${onlyTimeStamp}${type}`;
     }
-    window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
+    window.vhallFullLinkBurningPointReport = new VhallReportForProduct(reportOptions);
 
-    // 测试上报地址
-    window.vhallReportForProduct.BASE_URL = "https://t-dc.e.vhall.com/login";
+    // 上报地址
+    window.vhallFullLinkBurningPointReport.BASE_URL = "https://t-dc.e.vhall.com/login";
 
     // 扩展实例后的全局通用上报属性
-    window.vhallReportForProduct.commonParams = {
+    window.vhallFullLinkBurningPointReport.commonParams = {
       ...{
         os: 10,
         // B端账号id
@@ -178,10 +184,13 @@ class Domain {
         // 物料种类 【缺少】
         //file_type:,
       },
-      ...window.vhallReportForProduct.commonParams
+      ...window.vhallReportForProduct.commonParams,
+      ...{
+        s: watchInitData?.visitor_id || join_info?.third_party_user_id
+      }
     };
     // 装饰report函数增加新能力
-    const decorationExtensionReport = (name, execute, source = window.vhallReportForProduct) => {
+    const decorationExtensionReport = (name, execute, source = window.vhallFullLinkBurningPointReport) => {
       let fn = source[name]
       source[name] = function (type, options) {
 
@@ -229,7 +238,7 @@ class Domain {
         cacheReportCode[element] = _randomCode
       });
 
-      window.vhallReportForProduct.report(eventId, {
+      window.vhallFullLinkBurningPointReport.report(eventId, {
         report_extra: {
           ...{
             request_id: _randomCode
@@ -241,7 +250,7 @@ class Domain {
 
     // 结果上报
     window.vhallReportForProduct.toResultsReporting = (eventId, extendOptions = {}) => {
-      window.vhallReportForProduct.report(eventId, {
+      window.vhallFullLinkBurningPointReport.report(eventId, {
         report_extra: {
           ...{
             request_id: cacheReportCode[eventId]
