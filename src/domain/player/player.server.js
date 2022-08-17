@@ -2,7 +2,7 @@ import VhallPaasSDK from '@/sdk/index.js';
 import BaseServer from '@/domain/common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useMsgServer from '@/domain/common/msg.server.js';
-import useUserServer from '@/domain/useUserServer.js';
+import useUserServer from '@/domain/user/useUserServer.js';
 import { textToEmojiText } from '@/utils/emoji';
 import { player } from '../../request/index';
 import { merge } from '../../utils';
