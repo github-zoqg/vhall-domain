@@ -16,7 +16,8 @@ class QaServer extends BaseServer {
     const { interactToolStatus } = useRoomBaseServer().state;
     //消息sdk
     this.state = {
-      qaList: []
+      qaList: [],
+      active: false,
     };
     this.listenEvents();
     this.controller = null;
@@ -52,6 +53,7 @@ class QaServer extends BaseServer {
           break;
         //收到问答
         case this.Events.QA_CREATE:
+          if (!this.state.active) return
           //主持人助理嘉宾接收全部问答，观众只接收自己问答
           if (role_name != 2) {
             msg.data.msgId = msg.data?.answer?.id || msg.data.id;
@@ -63,6 +65,7 @@ class QaServer extends BaseServer {
           break;
         //问答回复
         case this.Events.QA_COMMIT:
+          if (!this.state.active) return
           //处理私信回答和公开回答
           if (
             (msg.data.join_id == join_id && msg.data.answer.is_open == '0') ||
@@ -76,6 +79,7 @@ class QaServer extends BaseServer {
           this.$emit(this.Events.QA_COMMIT, msg);
           break;
         case this.Events.QA_BACKOUT:
+          if (!this.state.active) return
           const backIndex = this.state.qaList.findIndex(item => {
             return item.answer && item.answer.id == msg.data.question_answer_id;
           });
@@ -148,7 +152,7 @@ class QaServer extends BaseServer {
     if (watchInitData.webinar.type == 5 && watchInitData.switch.switch_id) {
       params.webinar_switch_id = watchInitData.switch.switch_id;
     }
-    qa.list.getHistoryQaMsg(params).then(res => {
+    return qa.list.getHistoryQaMsg(params).then(res => {
       console.warn(res, '历史问答记录');
       const list = res.data.list.map(h => {
         return { ...h, content: textToEmojiText(h.content), msgId: h?.answer?.id || h.id };

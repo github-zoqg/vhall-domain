@@ -120,6 +120,13 @@ export default class StandardDocServer extends AbstractDocServer {
       }
     } else {
       defaultOptions.role = this.mapDocRole(this.hasDocPermission() ? 1 : 2);
+      const userId = watchInitData.join_info.third_party_user_id;
+      const doc_permission = groupInitData.isInGroup ? groupInitData.doc_permission :
+        interactToolStatus.doc_permission;
+      if (watchInitData.join_info.role_name == 1 && doc_permission != userId) {
+        // 不在小组内，当前角色是主持人，但是主讲人是其他人，设置文档操作权限为 助理
+        defaultOptions.role = this.mapDocRole(3);
+      }
       defaultOptions.roomId = watchInitData.interact.room_id; // 必填。
       defaultOptions.channelId = watchInitData.interact.channel_id; // 频道id 必须
       defaultOptions.token = watchInitData.interact.paas_access_token; // access_token，必填
@@ -521,6 +528,7 @@ export default class StandardDocServer extends AbstractDocServer {
    * @param {*} param0
    */
   async addNewFile({ fileType, docId, docType, cid }) {
+    if (typeof this.getDocViewRect !== 'function') return;
     const docViewRect = this.getDocViewRect();
     if (!docViewRect || docViewRect.width < 1 || docViewRect.height < 1) {
       return;
@@ -975,6 +983,10 @@ export default class StandardDocServer extends AbstractDocServer {
     if (!window.VHDocSDK) return;
     const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
+
+    const userId = watchInitData.join_info.third_party_user_id;
+    const doc_permission = groupInitData.isInGroup ? groupInitData.doc_permission :
+      interactToolStatus.doc_permission;
     if (
       (groupInitData.isInGroup && groupInitData.presentation_screen ==
         watchInitData.join_info.third_party_user_id) ||
@@ -986,6 +998,9 @@ export default class StandardDocServer extends AbstractDocServer {
       this.setRole(VHDocSDK.RoleType.HOST);
     } else {
       if (watchInitData.join_info.role_name == 3) {
+        this.setRole(VHDocSDK.RoleType.ASSISTANT);
+      } else if (!groupInitData.isInGroup && watchInitData.join_info.role_name == 1 && doc_permission != userId) {
+        // 不在小组内，当前是主持人，但是主讲人是其他人，设置文档操作权限为 助理
         this.setRole(VHDocSDK.RoleType.ASSISTANT);
       } else {
         // 设置文档操作权限为观众

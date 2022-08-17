@@ -280,13 +280,25 @@ class RoomBaseServer extends BaseServer {
 
     // 衍生值
     const byProductData = {
-      isRebroadcasting: Boolean(this.state.watchInitData.rebroadcast.id)
+      isRebroadcasting: Boolean(obj.id)
     }
 
     this.state.watchInitData.rebroadcast = {
       ...obj,
       ...byProductData
     };
+  }
+
+  // 记录桌面共享流id
+  setDesktopStreamId(data) {
+    this.state.watchInitData.localDesktopStreamId = data
+    console.log(this.state.watchInitData, 'this.state.watchInitData')
+  }
+
+  // 记录插播流id
+  setInsertFileStreamId(data) {
+    this.state.watchInitData.insertFileStreamId = data
+    console.log(this.state.watchInitData, 'this.state.watchInitData')
   }
 
   // 更新roomVisibleModule
