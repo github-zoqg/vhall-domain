@@ -2,7 +2,7 @@ import VhallPaasSDK from '@/sdk/index.js';
 import BaseServer from '@/domain/common/base.server';
 import useRoomBaseServer from '../room/roombase.server';
 import useMsgServer from '@/domain/common/msg.server.js';
-import useUserServer from '@/domain/user/useUserServer.js';
+import useUserServer from '@/domain/user/userServer.js';
 import { textToEmojiText } from '@/utils/emoji';
 import { player } from '../../request/index';
 import { merge } from '../../utils';
@@ -356,17 +356,23 @@ class PlayerServer extends BaseServer {
     };
     if (!(watchInitData.rebroadcast && watchInitData.rebroadcast.id)) {
       // 播放器上报增加字段
-      const reportExtra = watchInitData.report_data?.report_extra || {};
-      reportExtra.visitor_id = watchInitData.visitor_id;
-      if (watchInitData?.join_info?.user_id !== 0) {
-        reportExtra.user_id = watchInitData.join_info.user_id;
-        reportExtra.sso_union_id = watchInitData.join_info.user_id;
-        const userServer = new useUserServer()
-        if (userServer.state.union_id) {
-          reportExtra.sso_union_id = userServer.state.union_id
+      let reportExtra = watchInitData.report_data?.report_extra
+      try {
+        reportExtra = JSON.parse(watchInitData.report_data?.report_extra) || {};
+        reportExtra.visitor_id = watchInitData.visitor_id;
+        if (watchInitData?.join_info?.user_id !== 0) {
+          reportExtra.user_id = watchInitData.join_info.user_id;
+          reportExtra.sso_union_id = watchInitData.join_info.user_id;
+          const userServer = new useUserServer();
+          if (userServer.state.union_id) {
+            reportExtra.sso_union_id = userServer.state.union_id;
+          }
         }
+        reportExtra = JSON.stringify(reportExtra)
+      } catch (e) {
+        console.warn('播放器数据上报参数:', e);
       }
-      console.log('播放器上报reportExtra:', reportExtra)
+      console.log('播放器上报reportExtra:', reportExtra);
       defaultOptions.otherOption = {
         vid: watchInitData.report_data.vid, // hostId
         vfid: watchInitData.report_data.vfid,
