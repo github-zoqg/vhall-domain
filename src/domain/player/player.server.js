@@ -371,7 +371,6 @@ class PlayerServer extends BaseServer {
       } catch (e) {
         console.warn('播放器数据上报参数:', e);
       }
-      console.log('播放器上报reportExtra:', reportExtra);
       defaultOptions.otherOption = {
         vid: watchInitData.report_data.vid, // hostId
         vfid: watchInitData.report_data.vfid,
