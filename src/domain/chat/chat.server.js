@@ -11,7 +11,7 @@ import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
 import useMicServer from '../media/mic.server';
 
-import { debounce } from '@/utils';
+import { debounce, throttling } from '@/utils';
 class ChatServer extends BaseServer {
   constructor() {
     if (typeof ChatServer.instance === 'object') {
@@ -37,6 +37,8 @@ class ChatServer extends BaseServer {
       prevTime: '',//用来记录每条消息的上一条消息发送的时间
       curPrivateTargetId: '',//当前私聊对象id
     };
+    //节流暂存消息池
+    this.MSGQUEUE = []
     this.listenEvents();
     this.controller = null;
     ChatServer.instance = this;
@@ -105,10 +107,13 @@ class ChatServer extends BaseServer {
         const msg = Msg._handleGenerateMsg(rawMsg);
         msg.prevTime = this.state.prevTime;
         //自己发的消息不处理
-        !this.isSelfMsg(rawMsg) && this.state.chatList.push(msg);
+        // if (!this.isSelfMsg(rawMsg)) {
+        this.MSGQUEUE.push(msg)
+        this.throttleAddMsg()
+        // }
         this.state.prevTime = msg.sendTime;
         //消息过多时丢掉
-        if (this.state.chatList.length > 20000) {
+        if (this.state.chatList.length > 10000) {
           this.state.chatList.splice(0, 5000);
         }
         //非自己发送的普通消息
@@ -194,6 +199,10 @@ class ChatServer extends BaseServer {
       }
     });
   }
+  throttleAddMsg = throttling(() => {
+    this.state.chatList.push(...this.MSGQUEUE)
+    this.MSGQUEUE.length = 0
+  }, 500)
   setCurPrivateTarget(targetId) {
     this.state.curPrivateTargetId = targetId;
   }
