@@ -3,6 +3,7 @@ import { merge, getQueryString } from '@/utils/index.js';
 import { player } from '../../request';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
+import useMediaSettingServer from '../media/mediaSetting.server';
 
 /**
  * send:发起端
@@ -513,6 +514,9 @@ class RoomBaseServer extends BaseServer {
           this.state.interactToolStatus.presentation_screen =
             this.state.interactToolStatus.doc_permission;
         }
+
+        const layout = res.data.layout ? res.data.layout : useMediaSettingServer().state.layout;
+        useMediaSettingServer().state.layout = layout || 'CANVAS_ADAPTIVE_LAYOUT_TILED_MODE'
       }
       return res;
     });
