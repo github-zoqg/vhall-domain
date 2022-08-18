@@ -356,7 +356,7 @@ class SplitScreenServer extends BaseServer {
     const interactiveServer = useInteractiveServer()
     desktopScreenServer.$on('screen_stream_add', async () => {
       const param = {
-        adaptiveLayoutMode: VhallRTC[sessionStorage.getItem('layout')]
+        adaptiveLayoutMode: useMediaSettingServer().state.layout || VhallRTC[sessionStorage.getItem('layout')]
       };
       await interactiveServer.setBroadCastAdaptiveLayoutMode(param);
       interactiveServer.resetLayout();
