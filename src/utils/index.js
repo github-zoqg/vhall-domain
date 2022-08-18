@@ -71,21 +71,24 @@ function debounce(fn, time, immediate) {
     if (timer) clearTimeout(timer);
     immediate && !timer && fn(...args); // 首次进入，立即执行（立即执行开启，定时器没开启）
     timer = setTimeout(() => {
+      immediate = true;
       timer = null;
     }, time);
   };
 }
 
 // throttling 节流
-function throttling(fn, time, immediate) {
-  let timer;
-  return function (...args) {
-    if (timer) return false;
-    !timer && immediate && fn(args);
-    timer = setTimeout(() => {
-      timer = null;
-    }, time);
-  };
+function throttling(func, delay) {
+  let timer = null;
+  return function () {
+    let args = arguments;
+    if (!timer) {
+      timer = setTimeout(() => {
+        func.apply(this, args);
+        timer = null;
+      }, delay);
+    }
+  }
 }
 
 // sleep
