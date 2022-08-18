@@ -362,10 +362,9 @@ class PlayerServer extends BaseServer {
         reportExtra.visitor_id = watchInitData.visitor_id;
         if (watchInitData?.join_info?.user_id !== 0) {
           reportExtra.user_id = watchInitData.join_info.user_id;
-          reportExtra.sso_union_id = watchInitData.join_info.user_id;
           const userServer = new useUserServer();
-          if (userServer.state.union_id) {
-            reportExtra.sso_union_id = userServer.state.union_id;
+          if (userServer.state?.userInfo?.union_id) {
+            reportExtra.sso_union_id = userServer.state?.userInfo?.union_id;
           }
         }
         reportExtra = JSON.stringify(reportExtra)
