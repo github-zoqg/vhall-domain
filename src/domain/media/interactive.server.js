@@ -219,7 +219,6 @@ class InteractiveServer extends BaseServer {
     const role = await this._getInteractiveRole(options);
 
     const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
-
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
       inavId, // 互动房间ID，必填
@@ -237,7 +236,7 @@ class InteractiveServer extends BaseServer {
         watchInitData.join_info.role_name == 1 || isGroupLeader
           ? {
             adaptiveLayoutMode:
-              useMediaSettingServer().state.layout ||
+              VhallPaasSDK.modules.VhallRTC[useMediaSettingServer().state.layout] ||
               VhallRTC[sessionStorage.getItem('layout')] ||
               VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
             profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
@@ -1529,7 +1528,6 @@ class InteractiveServer extends BaseServer {
   // 初始化活动基本功能
   async baseInit() {
     const { watchInitData } = useRoomBaseServer().state;
-
     const options = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
       inavId: watchInitData.interact.inav_id, // 互动房间ID，必填
@@ -1546,7 +1544,7 @@ class InteractiveServer extends BaseServer {
       autoStartBroadcast: true, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
       broadcastConfig: {
         adaptiveLayoutMode:
-          useMediaSettingServer().state.layout ||
+          VhallPaasSDK.modules.VhallRTC[useMediaSettingServer().state.layout] ||
           VhallRTC[sessionStorage.getItem('layout')] ||
           VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
         profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
