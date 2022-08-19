@@ -107,10 +107,10 @@ class ChatServer extends BaseServer {
         const msg = Msg._handleGenerateMsg(rawMsg);
         msg.prevTime = this.state.prevTime;
         //自己发的消息不处理
-        // if (!this.isSelfMsg(rawMsg)) {
-        this.MSGQUEUE.push(msg)
-        this.throttleAddMsg()
-        // }
+        if (!this.isSelfMsg(rawMsg)) {
+          this.MSGQUEUE.push(msg)
+          this.throttleAddMsg()
+        }
         this.state.prevTime = msg.sendTime;
         //消息过多时丢掉
         if (this.state.chatList.length > 10000) {
