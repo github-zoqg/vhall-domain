@@ -258,6 +258,7 @@ class VideoPollingServer extends BaseServer {
     const memberPolling = []
 
     if (onlineUsers && onlineUsers.length) {
+      onlineUsers = []
       onlineUsers = onlineUsers.map(item => {
         item = {
           ...item,
@@ -279,7 +280,6 @@ class VideoPollingServer extends BaseServer {
           elem = {
             ...elem,
             isPolling: 1,
-            role_name: 2
           }
           onlineUsers.push(elem)
         }
