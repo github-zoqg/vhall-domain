@@ -74,6 +74,9 @@ class QuestionnaireServer extends BaseServer {
     if (mode === 'watch') {
       // 初始化观看端事件
       this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.SUBMIT, async data => {
+        window.vhallReportForWatch?.report(170021, {
+          survey_id: data.naire_id
+        });
         const res = await this.submitQuestion(data);
         // 最后小红点以最后一个问卷的提交情况为准
         // if (data.naire_id == this.state.lastQuestionnaireId) {
