@@ -256,6 +256,7 @@ class VideoPollingServer extends BaseServer {
     const memberServer = userMemberServer()
     let onlineUsers = memberServer.state.onlineUsers
     const memberPolling = []
+
     if (onlineUsers && onlineUsers.length) {
       onlineUsers = onlineUsers.map(item => {
         item = {
@@ -277,13 +278,15 @@ class VideoPollingServer extends BaseServer {
         if (!memberPolling.includes(elem.accountId)) {
           elem = {
             ...elem,
-            isPolling: 1
+            isPolling: 1,
+            role_name: 2
           }
           onlineUsers.push(elem)
         }
       })
     }
     memberServer.state.onlineUsers = memberServer._sortUsers(onlineUsers)
+
   }
 
 
