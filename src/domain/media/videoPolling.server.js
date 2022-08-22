@@ -258,7 +258,6 @@ class VideoPollingServer extends BaseServer {
     const memberPolling = []
 
     if (onlineUsers && onlineUsers.length) {
-      onlineUsers = []
       onlineUsers = onlineUsers.map(item => {
         item = {
           ...item,
