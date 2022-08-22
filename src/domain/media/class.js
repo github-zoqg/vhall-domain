@@ -20,6 +20,7 @@ export class PollingUser {
   constructor(options = {}) {
     this.accountId = options.account_id
     this.roleName = options.role_name
+    this.role_name = options.role_name
     this.nickname = options.nick_name || options.nickname
     this.streamId = options.streamId
     this.attributes = {}
