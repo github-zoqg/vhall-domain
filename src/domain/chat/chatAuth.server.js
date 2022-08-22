@@ -3,6 +3,7 @@ import BaseServer from '@/domain/common/base.server.js';
 import useMsgServer from '@/domain/common/msg.server.js';
 import { Domain } from '@/domain';
 import VhallPaasSDK from '@/sdk/index.js';
+import { debounce, throttling } from '@/utils';
 //消息服务
 const msgServer = useMsgServer();
 
@@ -62,6 +63,7 @@ class ChatAuthServer extends BaseServer {
     };
     // 聊天sdk实例
     this.chatInstance = null;
+    this.MSGQUEUE = []
     //接收自定义消息的sdk实例
     this.customChatInstance = null;
     ChatAuthServer.instance = this;
@@ -150,7 +152,8 @@ class ChatAuthServer extends BaseServer {
             join_id: temp.sender_id,
             nick_name: temp.context.nick_name || temp.context.nickname
           });
-          this.state.auditList.push(temp.data);
+          this.MSGQUEUE.push(temp.data)
+          this.throttleAddMsg()
           break;
         case 2:
           // 开启留言审核、自动阻止、自动发送
@@ -263,7 +266,10 @@ class ChatAuthServer extends BaseServer {
       );
     });
   }
-
+  throttleAddMsg = throttling(() => {
+    this.state.auditList.push(...this.MSGQUEUE)
+    this.MSGQUEUE.length = 0
+  }, 500)
   /**
    * 获取房间信息
    * */
