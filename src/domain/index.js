@@ -160,7 +160,7 @@ class Domain {
         // 用户唯一id
         sso_union_id: sso.kick_id,
         // 用户昵称
-        nickname: join_info.nickname,
+        nickname: encodeURIComponent(join_info.nickname),
         // 回放ID
         record_id: webinar.id,
         // 活动名称(内容名称)
@@ -228,7 +228,7 @@ class Domain {
 
 
     // 开始上报
-    window.vhallReportForProduct.toStartReporting = (eventId, relationalEventIds, extendOptions) => {
+    window.vhallReportForProduct.toStartReporting = (eventId, relationalEventIds, extendOptions = {}) => {
 
       let _randomCode = randomCode(eventId);
 
@@ -250,6 +250,7 @@ class Domain {
 
     // 结果上报
     window.vhallReportForProduct.toResultsReporting = (eventId, extendOptions = {}) => {
+
       window.vhallFullLinkBurningPointReport.report(eventId, {
         report_extra: {
           ...{
