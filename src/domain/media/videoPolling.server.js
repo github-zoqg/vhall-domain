@@ -255,6 +255,8 @@ class VideoPollingServer extends BaseServer {
   updateOnlineUsers() {
     const memberServer = userMemberServer()
     let onlineUsers = memberServer.state.onlineUsers
+    const memberPolling = []
+
     if (onlineUsers && onlineUsers.length) {
       onlineUsers = onlineUsers.map(item => {
         item = {
@@ -263,6 +265,7 @@ class VideoPollingServer extends BaseServer {
         }
         this.state.pollingList.some(elem => {
           if (elem.accountId == item.account_id) {
+            memberPolling.push(elem.accountId)
             item = {
               ...item,
               isPolling: 1
@@ -271,8 +274,18 @@ class VideoPollingServer extends BaseServer {
         })
         return item
       })
+      this.state.pollingList?.forEach((elem) => {
+        if (!memberPolling.includes(elem.accountId)) {
+          elem = {
+            ...elem,
+            isPolling: 1,
+          }
+          onlineUsers.push(elem)
+        }
+      })
     }
     memberServer.state.onlineUsers = memberServer._sortUsers(onlineUsers)
+
   }
 
 

@@ -1,5 +1,5 @@
 /*
- * @Author: yincece(cece.yin@vhall.com) 
+ * @Author: yincece(cece.yin@vhall.com)
  * @Date: 2022-07-21 11:29:14
  * @Desc: 状态-用户
  */
@@ -7,7 +7,7 @@
 import useMicServer from '../media/mic.server.js';
 import useRoomBaseServer from '../room/roombase.server';
 import useGroupServer from '../group/StandardGroupServer';
-import { WATCH_WEBINAR_MODE } from './status.const';
+import { WATCH_WEBINAR_MODE, GROUP_LEADER } from './status.const';
 
 // 当前用户是否在上麦列表中
 const isSpeaker = () => {
@@ -46,7 +46,6 @@ export const getBaseInfo = () => {
 	const roleName = isGroupLeader ? GROUP_LEADER : role_name;
 	// 是否是上麦
 	const isWebinarMode = watchInitData.webinar.mode === WATCH_WEBINAR_MODE;
-	
 
 	return {
 		watchInitData,
@@ -60,6 +59,7 @@ export const getBaseInfo = () => {
 		attributes: {
 			roleName,
 			accountId: third_party_user_id,
+			nickname: nickname,
 			nickName: nickname // app端字段不统一，过渡方案，待字段统一后可删除
 		}
 	};
