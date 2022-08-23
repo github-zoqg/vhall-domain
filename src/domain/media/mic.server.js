@@ -227,6 +227,7 @@ class MicServer extends BaseServer {
                 useRoomBaseServer().setChangeElement('stream-list');
               }
             }
+            window.vhallReportForProduct?.toResultsReporting(170032, { event_type: 'message', res: msg });
             this.$emit('vrtc_connect_success', msg);
           }
           break;
@@ -238,6 +239,7 @@ class MicServer extends BaseServer {
             if (!msg.data.vrtc_reason) { // vrtc_reason 为空时，表示自己或者其他用户通过接口下麦
               this.setSpeakOffToInit(true)
             }
+            window.vhallReportForProduct?.toResultsReporting(170033, { event_type: 'message', res: msg });
             this.$emit('vrtc_disconnect_success', msg);
           }
           break;
@@ -261,9 +263,6 @@ class MicServer extends BaseServer {
           break;
         // 设置主讲人 补充增加
         case 'vrtc_speaker_switch':
-          if (join_info.role_name == 4) {
-            window.vhallReportForProduct?.report(110171, { report_extra: msg });
-          }
           this.$emit('vrtc_speaker_switch', msg)
           break;
       }

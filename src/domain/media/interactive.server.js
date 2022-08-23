@@ -1045,6 +1045,7 @@ class InteractiveServer extends BaseServer {
         type: type, // 必填，支持'video'和'audio'，分别表示视频设备和音频设备
         deviceId: deviceId // 必填，设备ID，可通过getDevices()方法获取。
       };
+      window.vhallReportForProduct?.toStartReporting(110189, 110190, { ...defaultPa });
       return this.interactiveInstance.switchDevice(defaultPa);
     });
   }

@@ -245,7 +245,11 @@ class DesktopShareServer extends BaseServer {
     useRoomBaseServer().setDesktopStreamId('')
     return interactiveServer.unpublishStream({ streamId: this.state.localDesktopStreamId }).then(res => {
       this.state.localDesktopStreamId = ''
-      window.vhallReportForProduct?.report(110260, { report_extra: res });
+      window.vhallReportForProduct?.toResultsReporting(110260, {
+        request_id: res?.request_id,
+        event_type: 'interface',
+        res
+      });
       return res
     });
   }

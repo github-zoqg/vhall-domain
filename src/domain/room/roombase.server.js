@@ -203,6 +203,7 @@ class RoomBaseServer extends BaseServer {
         case 'vrtc_speaker_switch':
           this.state.interactToolStatus.doc_permission = msg.data.room_join_id
           this.state.interactToolStatus.presentation_screen = msg.data.room_join_id
+          window.vhallReportForProduct?.report(110171, { report_extra: msg });
           this.$emit('VRTC_SPEAKER_SWITCH', msg);
           break;
         // 踢出消息
