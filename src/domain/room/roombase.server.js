@@ -63,7 +63,9 @@ class RoomBaseServer extends BaseServer {
       //多语言信息
       languages: {
         curLang: {},
-        lang: 'zh',
+        lang: {
+          type: 'zh'
+        },
         langList: []
       },
       customRoleName: {},
@@ -569,12 +571,11 @@ class RoomBaseServer extends BaseServer {
     })
   }
 
-  // 获取微信分享信息
-  getShareSettingInfo() {
-    const params = {
-      webinar_id: this.state.watchInitData.webinar.id
-    };
-    return meeting.getShareSettingInfo(params).then(res => {
+  // 获取微信分享信息（若传递了活动ID，按照传入的获取活动下分享信息）
+  getShareSettingInfo(params = {}) {
+    return meeting.getShareSettingInfo({
+      webinar_id: params.webinarId || this.state.watchInitData.webinar.id
+    }).then(res => {
       return res;
     })
   }
