@@ -198,7 +198,7 @@ export default class StandardDocServer extends AbstractDocServer {
         }
         this.$emit('live_start');
 
-      } else if (msgType === 'live_over' || (msgType === 'group_switch_end' && msg.data.over_live === 1)) {
+      } else if (msgType === 'live_over' || (msgType === 'group_switch_end' && msg.data.over_type)) {
         // 直播结束（包括分组直播的结束）
         console.log('live_over domain');
         // 删除所有容器, 该方法包含重置观众不可见的逻辑

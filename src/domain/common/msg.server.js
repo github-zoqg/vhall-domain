@@ -51,7 +51,11 @@ class MsgServer extends BaseServer {
     this.$onMsg('ROOM_MSG', msg => {
       const { join_info } = useRoomBaseServer().state.watchInitData
       // 结束直播或在小组中结束直播，需要销毁socket，并且只有观众会销毁
-      if (join_info.role_name == 2 && (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1))) {
+      if (
+        join_info.role_name == 2 &&
+        (msg.data.type == 'live_over' ||
+          (msg.data.type == 'group_switch_end' && msg.data.over_type))
+      ) {
         this.destroy();
         this.destroyGroupMsg();
       }
@@ -253,7 +257,7 @@ class MsgServer extends BaseServer {
         }
 
         //当前直播是彩排，如果是 live_start || live_over 消息则 return,彩排会发新增的消息 live_start_rehearsal|| live_over_rehearsal。
-        if ((msg.data.type == 'live_start' || msg.data.type == 'live_over') && useRoomBaseServer().state.rehearsal) {
+        if ((msg.data.type == 'live_start' || msg.data.type == 'live_over') && msg.data.live_type == 2) {
           return
         }
         if (msg.data.type == 'live_start_rehearsal') {
