@@ -251,6 +251,18 @@ class MsgServer extends BaseServer {
         if (eventType == 'ROOM_MSG' && watchInitData?.join_info?.role_name == 2 && watchInitData?.webinar?.type == 5 && this._roomMsgWhiteListInPlayback.indexOf(msg.data.type) == -1) {
           return
         }
+
+        //当前直播是彩排，如果是 live_start || live_over 消息则 return,彩排会发新增的消息 live_start_rehearsal|| live_over_rehearsal。
+        if ((msg.data.type == 'live_start' || msg.data.type == 'live_over') && useRoomBaseServer().state.rehearsal) {
+          return
+        }
+        if (msg.data.type == 'live_start_rehearsal') {
+          msg.data.type = 'live_start'
+        }
+        if (msg.data.type == 'live_over_rehearsal') {
+          msg.data.type = 'live_over'
+        }
+
         if (this._eventhandlers[eventType].length) {
           this._eventhandlers[eventType].forEach(handler => {
             handler(msg);

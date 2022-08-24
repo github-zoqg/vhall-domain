@@ -76,7 +76,9 @@ class RoomBaseServer extends BaseServer {
       warmUpVideo: {
         warmup_paas_record_id: [],
         warmup_player_type: 1
-      }
+      },
+      rehearsal: false,  //直播间是否是彩排
+      rehearsal_type: 0,  //直播间 彩排状态  1 正在彩排 0 未彩排
     };
     RoomBaseServer.instance = this;
     return this;
@@ -147,6 +149,11 @@ class RoomBaseServer extends BaseServer {
           // 解决多个主持人同时在线问题
           if (!!res.data.visitor_id) {
             sessionStorage.setItem('visitorId_home', res.data.visitor_id);
+          }
+          //配置彩排
+          this.state.rehearsal = res.data.live_type == 2;
+          if (this.state.rehearsal) {
+            this.state.rehearsal_type = res.data.webinar.type == 1 ? 1 : 0;
           }
           this.addListeners();
           resolve(res);
@@ -598,6 +605,10 @@ class RoomBaseServer extends BaseServer {
       if (res.code == 200) {
         this.state.watchInitData.webinar.type = 1;
         this.state.watchInitData.switch = res.data;
+        this.state.rehearsal = res.data.type == 2
+        if (this.state.rehearsal) {
+          this.state.rehearsal_type = 1
+        }
       }
       return res;
     });
@@ -608,6 +619,10 @@ class RoomBaseServer extends BaseServer {
     return meeting.endLive(data).then(res => {
       if (res.code == 200) {
         this.state.watchInitData.webinar.type = 3;
+        this.state.rehearsal = res.data.type == 2
+        if (this.state.rehearsal) {
+          this.state.rehearsal_type = 0
+        }
       }
       return res;
     });
@@ -771,6 +786,10 @@ class RoomBaseServer extends BaseServer {
         // 活动状态（2-预约 1-直播 3-结束 4-点播 5-回放）
         this.state.watchInitData.webinar.type = 1;
         this.state.watchInitData.switch = res.data;
+        this.state.rehearsal = res.data.type == 2
+        if (this.state.rehearsal) {
+          this.state.rehearsal_type = 1
+        }
       }
       return res;
     });
