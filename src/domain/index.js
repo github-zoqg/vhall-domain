@@ -122,7 +122,7 @@ class Domain {
     this.fullLinkBurningPointReport(reportOptions);
   }
 
-  // ** 微吼直播新加入埋点上报方式（代理，全链路） **
+  // ** 微吼直播新加入埋点上报方式（代理，全链路）TODO 会迁移至对应的类库 **
   fullLinkBurningPointReport(reportOptions) {
 
     // 测试上报开关
@@ -139,15 +139,16 @@ class Domain {
     const { watchInitData } = useRoomBaseState;
     const { join_info = {}, webinar = {}, interact = {}, sso = {} } = watchInitData;
 
-    // 生成request_id 规则：用户ID + 活动ID + 时间戳
+    // 生成request_id 规则：用户ID + 活动ID + 时间戳 + 事件ID
     const randomCode = (type = 0) => {
       let onlyTimeStamp = new Date().getTime();
       return `${join_info.third_party_user_id}${webinar.id}${onlyTimeStamp}${type}`;
     }
+
     window.vhallFullLinkBurningPointReport = new VhallReportForProduct(reportOptions);
 
     // 上报地址
-    window.vhallFullLinkBurningPointReport.BASE_URL = "https://t-dc.e.vhall.com/login";
+    window.vhallFullLinkBurningPointReport.BASE_URL = reportOptions.env === 'test' ? 'https://t-dc.e.vhall.com/login' : 'https://dc.e.vhall.com/login';
 
     // 扩展实例后的全局通用上报属性
     window.vhallFullLinkBurningPointReport.commonParams = {
@@ -195,7 +196,6 @@ class Domain {
       source[name] = function (type, options) {
 
         // options => null {} {report_extra:{}}
-
         requestId = randomCode(type);
 
         // 此处兼容历史上报数据扩展字段缺失问题
@@ -227,7 +227,13 @@ class Domain {
     })
 
 
-    // 开始上报
+    //
+    /**
+     * 链路开始上报
+     * @param {Number} eventId 事件ID
+     * @param {Array} relationalEventIds  事件ID对应的结果链路ID
+     * @param {Object} extendOptions 扩展参数
+     */
     window.vhallReportForProduct.toStartReporting = (eventId, relationalEventIds, extendOptions = {}) => {
 
       let _randomCode = randomCode(eventId);
@@ -237,7 +243,6 @@ class Domain {
       relationalEventIds.forEach(element => {
         cacheReportCode[element] = _randomCode
       });
-
       window.vhallFullLinkBurningPointReport.report(eventId, {
         report_extra: {
           ...{
@@ -248,13 +253,18 @@ class Domain {
       });
     }
 
-    // 结果上报
-    window.vhallReportForProduct.toResultsReporting = (eventId, extendOptions = {}) => {
 
-      window.vhallFullLinkBurningPointReport.report(eventId, {
+    /**
+     * 链路结果上报
+     * @param {Number} resultEventId 事件ID
+     * @param {Object} extendOptions 扩展参数
+     */
+    window.vhallReportForProduct.toResultsReporting = (resultEventId, extendOptions = {}) => {
+
+      window.vhallFullLinkBurningPointReport.report(resultEventId, {
         report_extra: {
           ...{
-            request_id: cacheReportCode[eventId]
+            request_id: cacheReportCode[resultEventId]
           },
           ...extendOptions
         }
