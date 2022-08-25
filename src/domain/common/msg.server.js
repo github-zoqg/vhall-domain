@@ -252,19 +252,32 @@ class MsgServer extends BaseServer {
       this._handlePaasInstanceOn(instance, eventType, msg => {
         // 回放状态，房间消息白名单
         const { watchInitData } = useRoomBaseServer().state
-        if (eventType == 'ROOM_MSG' && watchInitData?.join_info?.role_name == 2 && watchInitData?.webinar?.type == 5 && this._roomMsgWhiteListInPlayback.indexOf(msg.data.type) == -1) {
-          return
+        if (
+          eventType == 'ROOM_MSG' &&
+          watchInitData?.join_info?.role_name == 2 &&
+          watchInitData?.webinar?.type == 5 &&
+          this._roomMsgWhiteListInPlayback.indexOf(msg.data.type) == -1
+        ) {
+          return;
         }
 
-        //当前直播是彩排，如果是 live_start || live_over 消息则 return,彩排会发新增的消息 live_start_rehearsal|| live_over_rehearsal。
-        if ((msg.data.type == 'live_start' || msg.data.type == 'live_over') && msg.data.live_type == 2) {
-          return
+        // 为了兼容老客户端，开始彩排的时候，嘉宾会收到开始直播和结束直播的消息。网页不需要关心直接 return 即可
+        if (
+          watchInitData?.join_info?.role_name == 4 &&
+          msg.data.live_type == 2 &&
+          (msg.data.type == 'live_start' || msg.data.type == 'live_over')
+        ) {
+          return;
         }
-        if (msg.data.type == 'live_start_rehearsal') {
-          msg.data.type = 'live_start'
-        }
-        if (msg.data.type == 'live_over_rehearsal') {
-          msg.data.type = 'live_over'
+
+        // 如果是主办方端，收到开始彩排直接转成开始直播
+        // 如果是观众端并且是彩排地址，收到的开始彩排直接转成开始直播
+        if (
+          (msg.data.type == 'live_start_rehearsal' || msg.data.type == 'live_over_rehearsal') &&
+          ((watchInitData?.join_info?.role_name == 2 && watchInitData?.live_type == 2) ||
+            [1, 3, 4, 20].includes(watchInitData?.join_info?.role_name))
+        ) {
+          msg.data.type = msg.data.type == 'live_start_rehearsal' ? 'live_start' : 'live_over';
         }
 
         if (this._eventhandlers[eventType].length) {

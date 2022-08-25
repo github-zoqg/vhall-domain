@@ -103,6 +103,7 @@ class RoomBaseServer extends BaseServer {
       options.embed_type = this.state.embedObj.embedVideo ? 'video' : 'full'
     }
 
+    this.state.watchInitData.live_type = options.live_type
     this.state.clientType = options.clientType;
     this.state.deviceType = options.deviceType;
     return new Promise((resolve, reject) => {
@@ -165,6 +166,8 @@ class RoomBaseServer extends BaseServer {
         // 观看端如果在看回放，直播时没刷新，不能显示直播的页面，故type不能改成1
         if (['send', 'sdk', 'record', 'clientEmbed'].includes(this.state.clientType)) {
           this.state.watchInitData.webinar.type = 1;
+          this.state.watchInitData.live_type = msg.data.live_type;
+
           // 第三方推流监听消息
           if (this.state.isThirdStream) {
             this.$emit('LIVE_START')
@@ -183,6 +186,11 @@ class RoomBaseServer extends BaseServer {
 
       } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_type)) {
         this.state.watchInitData.webinar.type = 3;
+        // 观众不需要重制场次类型
+        if (this.state.watchInitData.join_info.role_name != 2) {
+          this.state.watchInitData.live_type = 0;
+        }
+
         // 直播结束还原位置切换的状态
         this.state.isWapBodyDocSwitch = false
         // 把演示人、主讲人、主屏人都设置成主持人
@@ -609,8 +617,6 @@ class RoomBaseServer extends BaseServer {
     return meeting.endLive(data).then(res => {
       if (res.code == 200) {
         this.state.watchInitData.webinar.type = 3;
-        // 直播结束需要将场次类型改为正常直播
-        this.state.watchInitData.live_type = 0;
       }
       return res;
     });
