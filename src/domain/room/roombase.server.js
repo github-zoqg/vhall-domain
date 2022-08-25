@@ -63,7 +63,9 @@ class RoomBaseServer extends BaseServer {
       //多语言信息
       languages: {
         curLang: {},
-        lang: 'zh',
+        lang: {
+          type: 'zh'
+        },
         langList: []
       },
       customRoleName: {},
@@ -96,7 +98,7 @@ class RoomBaseServer extends BaseServer {
     }
     console.log('初始化初始化', options.clientType, liveType.get(options.clientType));
     if (['standard', 'embed'].includes(options.clientType) && !options.visitor_id) {
-      options.visitor_id = sessionStorage.getItem('visitorId');
+      options.visitor_id = localStorage.getItem('visitorId');
     }
     if (['embed'].includes(options.clientType)) {
       // v6.5.9新增 - 分组直播是单视频嵌入的时候，不支持。
@@ -143,7 +145,7 @@ class RoomBaseServer extends BaseServer {
           }
           console.log('watchInitData', res.data);
           sessionStorage.setItem('interact_token', res.data.interact.interact_token);
-          sessionStorage.setItem('visitorId', res.data.visitor_id);
+          localStorage.setItem('visitorId', res.data.visitor_id);
           // 解决多个主持人同时在线问题
           if (!!res.data.visitor_id) {
             sessionStorage.setItem('visitorId_home', res.data.visitor_id);
@@ -342,7 +344,7 @@ class RoomBaseServer extends BaseServer {
   // 同意条款
   agreeWitthTerms(params = {}) {
     const webinarId = this.state.watchInitData?.webinar?.id
-    const visitorId = sessionStorage.getItem('visitorId') || ''
+    const visitorId = localStorage.getItem('visitorId') || ''
     return meeting.setUserAgree({
       webinar_id: webinarId,
       visitor_id: visitorId,
@@ -569,12 +571,11 @@ class RoomBaseServer extends BaseServer {
     })
   }
 
-  // 获取微信分享信息
-  getShareSettingInfo() {
-    const params = {
-      webinar_id: this.state.watchInitData.webinar.id
-    };
-    return meeting.getShareSettingInfo(params).then(res => {
+  // 获取微信分享信息（若传递了活动ID，按照传入的获取活动下分享信息）
+  getShareSettingInfo(params = {}) {
+    return meeting.getShareSettingInfo({
+      webinar_id: params.webinarId || this.state.watchInitData.webinar.id
+    }).then(res => {
       return res;
     })
   }
