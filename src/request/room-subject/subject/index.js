@@ -12,6 +12,8 @@ function subjectInitBefore(params) {
     data: params
   });
 }
+
+// 获取专题详情信息
 function getSubjectInfo(data = {}) {
   const url = roomSubjectApiList['getSubjectInfo']['v3'];
   return request({
@@ -22,7 +24,42 @@ function getSubjectInfo(data = {}) {
 };
 
 
+// 获取专题绑定的活动列表
+function getWebinarList(data = {}) {
+  const url = roomSubjectApiList['getWebinarList']['v3'];
+  return request({
+    url,
+    method: 'POST',
+    data
+  });
+};
+
+// 专题初始化
+function initSubjectInfo(params = {}) {
+  const url = roomSubjectApiList['initSubjectInfo']['v3'];
+  return request({
+    url,
+    method: 'Get',
+    params
+  });
+};
+
+
+// 专题鉴权
+function getSubjectWatchAuth(data = {}) {
+  const url = roomSubjectApiList['subjectWatchAuth']['v3'];
+  return request({
+    url,
+    method: 'POST',
+    data
+  });
+};
+
+
 export default {
   getSubjectInfo,
-  subjectInitBefore
+  getWebinarList,
+  subjectInitBefore,
+  getSubjectWatchAuth,
+  initSubjectInfo
 };

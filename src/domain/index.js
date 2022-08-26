@@ -121,6 +121,10 @@ class Domain {
     window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
     this.fullLinkBurningPointReport(reportOptions);
   }
+  // 微吼直播【产品侧】需要的数据(观看端,接入数据信息平台,与发起端区分)
+  initVhallReportForWatch(reportOptions) {
+    window.vhallReportForWatch = new VhallReportForProduct(reportOptions);
+  }
 
   // ** 微吼直播新加入埋点上报方式（代理，全链路）TODO 会迁移至对应的类库 **
   fullLinkBurningPointReport(reportOptions) {
@@ -273,8 +277,6 @@ class Domain {
   }
 
 }
-
-
 const version = '__VERSION__';
 
 export {
