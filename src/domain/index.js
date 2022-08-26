@@ -130,11 +130,12 @@ class Domain {
   fullLinkBurningPointReport(reportOptions) {
 
     // 测试上报开关
-    let isReport = sessionStorage.getItem('isReport');
+    /**
+     * let isReport = sessionStorage.getItem('isReport');
     if (!JSON.parse(isReport)) {
       isReport = confirm("是否开启上报功能");
       sessionStorage.setItem('isReport', isReport)
-    }
+    }*/
 
 
     let requestId = 'xxx';
@@ -227,7 +228,8 @@ class Domain {
         'request-id': requestId
       })
       // 上报开关
-      isReport && report();
+      // isReport && report();
+      report();
     })
 
 
