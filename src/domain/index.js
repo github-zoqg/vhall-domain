@@ -227,7 +227,6 @@ class Domain {
     })
 
 
-    //
     /**
      * 链路开始上报
      * @param {Number} eventId 事件ID
