@@ -44,7 +44,8 @@ service.interceptors.request.use(
     config.headers = {
       'interact-token': sessionStorage.getItem('interact_token') || '',
       ...HEADERS,
-      ...config.headers
+      ...config.headers,
+      zone: Intl.DateTimeFormat().resolvedOptions().timeZone
     };
 
     if (config.headers['Content-Type'] === 'multipart/form-data') {
