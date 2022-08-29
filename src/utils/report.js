@@ -47,8 +47,8 @@ export function report_interactive_stream_mute(eventData) {
 }
 
 /**
- *
- * @param {*} options
+ * 全链路上报
+ * @param {Object} options
  */
 export function fullLinkBurningPointReport(options) {
 
