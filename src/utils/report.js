@@ -145,6 +145,8 @@ export function fullLinkBurningPointReport(options) {
       else
         requestId = options.report_extra.request_id;
 
+      // 处理中文 base64（window.btoa） 的编码错误
+      options.report_extra = encodeURIComponent(JSON.stringify(options.report_extra))
       return execute(fn.bind(source, type, options))
     }
   }
