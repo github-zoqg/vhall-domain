@@ -95,7 +95,7 @@ export function fullLinkBurningPointReport(options) {
       // 回放ID
       record_id: webinar.id,
       // 活动名称(内容名称)
-      webinar_name: webinar.userinfo.nickname,
+      webinar_name: encodeURIComponent(webinar.userinfo.nickname),
       // 是否登录状态
       is_login: join_info.user_id,
       // 房间ID
