@@ -90,12 +90,12 @@ export function fullLinkBurningPointReport(options) {
       visitor_id: watchInitData.visitor_id,
       // 用户唯一id
       sso_union_id: sso.kick_id,
-      // 用户昵称
+      // 用户昵称 todo 需要判断来源
       nickname: encodeURIComponent(join_info.nickname),
       // 回放ID
       record_id: webinar.id,
       // 活动名称(内容名称)
-      webinar_name: encodeURIComponent(webinar.userinfo.nickname),
+      webinar_name: encodeURIComponent(webinar.subject),
       // 是否登录状态
       is_login: join_info.user_id,
       // 房间ID
