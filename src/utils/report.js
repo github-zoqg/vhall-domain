@@ -85,7 +85,7 @@ export function fullLinkBurningPointReport(options) {
     ...{
       os: 10,
       // B端账号id
-      business_uid: join_info.third_party_user_id,
+      business_uid: webinar.userinfo.user_id,
       // 游客ID
       visitor_id: watchInitData.visitor_id,
       // 用户唯一id
@@ -97,7 +97,7 @@ export function fullLinkBurningPointReport(options) {
       // 活动名称(内容名称)
       webinar_name: encodeURIComponent(webinar.subject),
       // 是否登录状态
-      is_login: join_info.user_id,
+      is_login: join_info.user_id == 0 ? 0 : 1,
       // 房间ID
       room_id: interact.room_id,
       // 互动房间id
@@ -117,7 +117,12 @@ export function fullLinkBurningPointReport(options) {
     },
     ...window.vhallReportForProduct.commonParams,
     ...{
-      s: watchInitData?.visitor_id || join_info?.third_party_user_id
+      s: (() => {
+        const current = new Date().getTime();
+        const visitorId = watchInitData?.visitor_id || join_info?.third_party_user_id;
+        return `${interact.paas_app_id}_${visitorId}${current}`;
+      })()
+
     }
   };
 
