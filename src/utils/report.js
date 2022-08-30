@@ -107,18 +107,30 @@ export function fullLinkBurningPointReport(options) {
       // 直播场次ID
       switch_id: watchInitData.switch.switch_id,
       // 语言类型
-      language_type: useRoomBaseState.languages.lang.type,
+      // language_type: useRoomBaseState.languages.lang.type,
+      language_type: localStorage.getItem('lang') || 1,
       // 用户类型
       role_name: join_info.role_name,
       // UA设备
       ua: window.navigator.userAgent,
       // 物料种类 【缺少】
-      //file_type:,
+      file_type: webinar.type,
+      // 活动类型
+      webinar_type: webinar.mode,
+      // 参会ID
+      reg_id: join_info.join_id,
+      // 创建时间
+      created_at: dayjs().format('YYYY-MM-DD HH:mm:ss'),
     },
     ...window.vhallReportForProduct.commonParams,
     ...{
       // B端账号id
       business_uid: webinar.userinfo.user_id,
+      // 应用ID 来源于paas
+      app_id: interact.paas_app_id,
+      // 播放平台类型
+      pf: VhallPaasSDK.modules.VhallRTC.isMobileDevice() ? 10 : 7,
+      // 会话ID
       s: (() => {
         const current = new Date().getTime();
         const visitorId = watchInitData?.visitor_id || join_info?.third_party_user_id;
