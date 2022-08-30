@@ -126,7 +126,6 @@ class Domain {
   // 微吼直播【产品侧】需要的数据
   initVhallReportForProduct(reportOptions) {
     window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
-
     // 链路埋点
     fullLinkBurningPointReport({
       reportOptions: reportOptions,

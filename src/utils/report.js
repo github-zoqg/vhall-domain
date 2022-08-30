@@ -66,6 +66,7 @@ export function fullLinkBurningPointReport(options) {
   let requestId = 'xxx';
   let cacheReportCode = {};
   const useRoomBaseState = options.useRoomBaseServer().state;
+
   const { watchInitData } = useRoomBaseState;
   const { join_info = {}, webinar = {}, interact = {}, sso = {} } = watchInitData;
 
@@ -80,12 +81,11 @@ export function fullLinkBurningPointReport(options) {
   // 上报地址
   window.vhallFullLinkBurningPointReport.BASE_URL = options.reportOptions.env === 'test' ? 'https://t-dc.e.vhall.com/login' : 'https://dc.e.vhall.com/login';
 
+
   // 扩展实例后的全局通用上报属性
   window.vhallFullLinkBurningPointReport.commonParams = {
     ...{
       os: 10,
-      // B端账号id
-      business_uid: webinar.userinfo.user_id,
       // 游客ID
       visitor_id: watchInitData.visitor_id,
       // 用户唯一id
@@ -117,6 +117,8 @@ export function fullLinkBurningPointReport(options) {
     },
     ...window.vhallReportForProduct.commonParams,
     ...{
+      // B端账号id
+      business_uid: webinar.userinfo.user_id,
       s: (() => {
         const current = new Date().getTime();
         const visitorId = watchInitData?.visitor_id || join_info?.third_party_user_id;
