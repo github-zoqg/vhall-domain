@@ -117,8 +117,11 @@ export function fullLinkBurningPointReport(options) {
       file_type: webinar.type,
       // 活动类型
       webinar_type: webinar.mode,
+      // 活动ID
+      webinar_id: webinar.id,
       // 参会ID
       reg_id: join_info.join_id,
+
       // 创建时间
       created_at: dayjs().format('YYYY-MM-DD HH:mm:ss'),
     },
