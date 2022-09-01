@@ -263,11 +263,21 @@ class MsgServer extends BaseServer {
 
         // 为了兼容老客户端，开始彩排的时候，嘉宾会收到开始直播和结束直播的消息。网页不需要关心直接 return 即可
         if (
-          watchInitData?.join_info?.role_name == 4 &&
+          (watchInitData?.join_info?.role_name == 4) &&
           msg.data.live_type == 2 &&
           (msg.data.type == 'live_start' || msg.data.type == 'live_over')
         ) {
           return;
+        }
+
+        // 彩排地址的观众，如果活动状态不是直播中，只处理开始彩排的消息，其他消息不处理。
+        if (
+          watchInitData?.join_info?.role_name == 2 &&
+          watchInitData?.live_type == 2 &&
+          watchInitData?.webinar?.type != 1 &&
+          msg.data.type != 'live_start_rehearsal'
+        ) {
+          return
         }
 
         // 如果是主办方端，收到开始彩排直接转成开始直播
