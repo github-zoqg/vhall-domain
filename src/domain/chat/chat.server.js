@@ -106,8 +106,8 @@ class ChatServer extends BaseServer {
         }
         const msg = Msg._handleGenerateMsg(rawMsg);
         msg.prevTime = this.state.prevTime;
-        //自己发的消息不处理
-        if (!this.isSelfMsg(rawMsg)) {
+        //自己发的消息不处理(来自聊天审核页的除外)
+        if (!this.isSelfMsg(rawMsg) || rawMsg?.data?.access_audit == 1) {
           this.MSGQUEUE.push(msg)
           this.throttleAddMsg()
         }
