@@ -52,9 +52,6 @@ export function report_interactive_stream_mute(eventData) {
  */
 export function fullLinkBurningPointReport(options) {
 
-  // 测试上报开关
-  let isReport = true;
-
 
   // let isReport = sessionStorage.getItem('isReport');
   // if (!JSON.parse(isReport)) {
@@ -184,8 +181,10 @@ export function fullLinkBurningPointReport(options) {
     // setRequestHeaders({
     //   'request-id': requestId
     // })
-    // 上报开关
-    isReport && report();
+
+    // 上报开关 (TODO 预留开关)
+    const isReport = sessionStorage.getItem('isReport') || 'ON'
+    isReport == 'ON' && report();
   })
 
   window.vhallReportForProduct.toReport = window.vhallFullLinkBurningPointReport.report;
