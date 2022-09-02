@@ -51,7 +51,11 @@ class MsgServer extends BaseServer {
     this.$onMsg('ROOM_MSG', msg => {
       const { join_info } = useRoomBaseServer().state.watchInitData
       // 结束直播或在小组中结束直播，需要销毁socket，并且只有观众会销毁
-      if (join_info.role_name == 2 && (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1))) {
+      if (
+        join_info.role_name == 2 &&
+        (msg.data.type == 'live_over' ||
+          (msg.data.type == 'group_switch_end' && msg.data.over_type))
+      ) {
         this.destroy();
         this.destroyGroupMsg();
       }
@@ -248,9 +252,44 @@ class MsgServer extends BaseServer {
       this._handlePaasInstanceOn(instance, eventType, msg => {
         // 回放状态，房间消息白名单
         const { watchInitData } = useRoomBaseServer().state
-        if (eventType == 'ROOM_MSG' && watchInitData?.join_info?.role_name == 2 && watchInitData?.webinar?.type == 5 && this._roomMsgWhiteListInPlayback.indexOf(msg.data.type) == -1) {
+        if (
+          eventType == 'ROOM_MSG' &&
+          watchInitData?.join_info?.role_name == 2 &&
+          watchInitData?.webinar?.type == 5 &&
+          this._roomMsgWhiteListInPlayback.indexOf(msg.data.type) == -1
+        ) {
+          return;
+        }
+
+        // 为了兼容老客户端，开始彩排的时候，嘉宾会收到开始直播和结束直播的消息。网页不需要关心直接 return 即可
+        if (
+          (watchInitData?.join_info?.role_name == 4) &&
+          msg.data.live_type == 2 &&
+          (msg.data.type == 'live_start' || msg.data.type == 'live_over')
+        ) {
+          return;
+        }
+
+        // 彩排地址的观众，如果活动状态不是直播中，只处理开始彩排的消息，其他消息不处理。
+        if (
+          watchInitData?.join_info?.role_name == 2 &&
+          watchInitData?.live_type == 2 &&
+          watchInitData?.webinar?.type != 1 &&
+          msg.data.type != 'live_start_rehearsal'
+        ) {
           return
         }
+
+        // 如果是主办方端，收到开始彩排直接转成开始直播
+        // 如果是观众端并且是彩排地址，收到的开始彩排直接转成开始直播
+        if (
+          (msg.data.type == 'live_start_rehearsal' || msg.data.type == 'live_over_rehearsal') &&
+          ((watchInitData?.join_info?.role_name == 2 && watchInitData?.live_type == 2) ||
+            [1, 3, 4, 20].includes(watchInitData?.join_info?.role_name))
+        ) {
+          msg.data.type = msg.data.type == 'live_start_rehearsal' ? 'live_start' : 'live_over';
+        }
+
         if (this._eventhandlers[eventType].length) {
           this._eventhandlers[eventType].forEach(handler => {
             handler(msg);
