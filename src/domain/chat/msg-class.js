@@ -63,7 +63,7 @@ export default class Msg {
       type: item.data.type,
       avatar: item.context.avatar || defaultAvatar,
       sendId: item.sender_id || item.sourceId || item.context.user_id,
-      showTime: item.context.showTime,
+      showTime: item.showTime || item.context.showTime,
       nickname: item.nickname || item.context.nickname || item.context.nick_name,
       roleName: item.context.role_name,
       sendTime: item.date_time,

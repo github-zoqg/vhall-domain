@@ -3,6 +3,7 @@ import { merge, getQueryString } from '@/utils/index.js';
 import { player } from '../../request';
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
+import useMediaSettingServer from '../media/mediaSetting.server';
 
 /**
  * send:发起端
@@ -166,6 +167,7 @@ class RoomBaseServer extends BaseServer {
       if (msg.data.type == 'live_start') {
         // 观看端如果在看回放，直播时没刷新，不能显示直播的页面，故type不能改成1
         if (['send', 'sdk', 'record', 'clientEmbed'].includes(this.state.clientType)) {
+          // 活动状态（2-预约 1-直播 3-结束 4-点播 5-回放）
           this.state.watchInitData.webinar.type = 1;
           // 第三方推流监听消息
           if (this.state.isThirdStream) {
@@ -514,6 +516,9 @@ class RoomBaseServer extends BaseServer {
           this.state.interactToolStatus.presentation_screen =
             this.state.interactToolStatus.doc_permission;
         }
+
+        const layout = res.data.layout ? res.data.layout : useMediaSettingServer().state.layout;
+        useMediaSettingServer().state.layout = layout || 'CANVAS_ADAPTIVE_LAYOUT_TILED_MODE'
       }
       return res;
     });
