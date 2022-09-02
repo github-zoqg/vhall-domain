@@ -187,6 +187,7 @@ export function fullLinkBurningPointReport(options) {
     isReport && report();
   })
 
+  window.vhallReportForProduct.toReport = window.vhallFullLinkBurningPointReport.report;
 
   /**
    * 链路开始上报
