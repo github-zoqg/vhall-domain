@@ -106,6 +106,7 @@ class RoomBaseServer extends BaseServer {
       options.embed_type = this.state.embedObj.embedVideo ? 'video' : 'full'
     }
 
+    this.state.watchInitData.live_type = options.live_type
     this.state.clientType = options.clientType;
     this.state.deviceType = options.deviceType;
     return new Promise((resolve, reject) => {
@@ -169,6 +170,8 @@ class RoomBaseServer extends BaseServer {
         if (['send', 'sdk', 'record', 'clientEmbed'].includes(this.state.clientType)) {
           // 活动状态（2-预约 1-直播 3-结束 4-点播 5-回放）
           this.state.watchInitData.webinar.type = 1;
+          this.state.watchInitData.live_type = msg.data.live_type;
+
           // 第三方推流监听消息
           if (this.state.isThirdStream) {
             this.$emit('LIVE_START')
@@ -185,8 +188,13 @@ class RoomBaseServer extends BaseServer {
         this.state.watchInitData.switch.switch_id = msg.data.switch_id;
         this.state.watchInitData.switch.start_type = msg.data.switch_type;
 
-      } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_live === 1)) {
+      } else if (msg.data.type == 'live_over' || (msg.data.type == 'group_switch_end' && msg.data.over_type)) {
         this.state.watchInitData.webinar.type = 3;
+        // 观众不需要重制场次类型
+        if (this.state.watchInitData.join_info.role_name != 2) {
+          this.state.watchInitData.live_type = 0;
+        }
+
         // 直播结束还原位置切换的状态
         this.state.isWapBodyDocSwitch = false
         // 把演示人、主讲人、主屏人都设置成主持人
@@ -604,6 +612,7 @@ class RoomBaseServer extends BaseServer {
       if (res.code == 200) {
         this.state.watchInitData.webinar.type = 1;
         this.state.watchInitData.switch = res.data;
+        this.state.watchInitData.live_type = res.data.type;
       }
       return res;
     });
@@ -777,6 +786,7 @@ class RoomBaseServer extends BaseServer {
         // 活动状态（2-预约 1-直播 3-结束 4-点播 5-回放）
         this.state.watchInitData.webinar.type = 1;
         this.state.watchInitData.switch = res.data;
+        this.state.watchInitData.live_type = res.data.type
       }
       return res;
     });
