@@ -127,6 +127,7 @@ export function fullLinkBurningPointReport(options) {
     },
     ...window.vhallReportForProduct.commonParams,
     ...{
+      user_id: join_info.user_id,
       // B端账号id
       business_uid: webinar.userinfo.user_id,
       // 应用ID 来源于paas
