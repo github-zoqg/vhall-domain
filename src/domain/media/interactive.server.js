@@ -1228,7 +1228,7 @@ class InteractiveServer extends BaseServer {
 
 
 
-    window.vhallReportForProduct?.report(110239, { report_extra: { stream } });
+    window.vhallReportForProduct?.toReport(110239, { report_extra: { stream } });
     // 如果有桌面共享或插播
     if (stream) {
       await this.setBroadCastScreen(stream.streamId)
@@ -1252,7 +1252,7 @@ class InteractiveServer extends BaseServer {
       const type = res.code == 200 && res.data.layout ? res.data.layout : useMediaSettingServer().state.layout;
       console.log('自适应布局模式====', type)
       const adaptiveLayoutMode = VhallRTC[type];
-      window.vhallReportForProduct?.report(110240, { report_extra: { broadCastAdaptiveLayoutMode: res } });
+      window.vhallReportForProduct?.toReport(110240, { report_extra: { broadCastAdaptiveLayoutMode: res } });
       await this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode });
     }
 
