@@ -441,7 +441,7 @@ function combinationStr(arr) {
     const str =
       item.msgType === 'text'
         ? item.msgCont
-        : `<img width="24" height="24" style="vertical-align:text-bottom;" src="${item.msgImage}"/>`;
+        : `<img width="24" height="24" style="vertical-align:bottom;" src="${item.msgImage}"/>`;
     result += str;
   });
 
