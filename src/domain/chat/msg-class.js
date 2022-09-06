@@ -58,12 +58,11 @@ export default class Msg {
 
   //私有方法，组装消息用于渲染（暂时按照的h5版本的,大致数据一致，具体业务逻辑操作有差异，后续返回一个promise，并返回未处理的原始数据，由视图自己决定如何处理）
   static _handleGenerateMsg(item = {}, isHistoryMsg) {
-    console.log(item);
     let resultMsg = {
       type: item.data.type,
       avatar: item.context.avatar || defaultAvatar,
       sendId: item.sender_id || item.sourceId || item.context.user_id,
-      showTime: item.context.showTime,
+      showTime: item.showTime || item.context.showTime,
       nickname: item.nickname || item.context.nickname || item.context.nick_name,
       roleName: item.context.role_name,
       sendTime: item.date_time,

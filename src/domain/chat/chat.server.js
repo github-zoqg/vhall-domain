@@ -264,16 +264,13 @@ class ChatServer extends BaseServer {
         msg.prevTime = this.state.prevTime;
         this.state.prevTime = msg.sendTime;
         return msg; //第二个参数区别是否为历史消息
-      })
-      .reduce((acc, curr) => {
+      }).reverse().reduce((acc, curr) => {
         const showTime = curr.showTime;
-        acc.some(s => s.showTime === showTime)
+        acc.some(s => s.showTime == showTime)
           ? acc.push({ ...curr, showTime: '' })
           : acc.push(curr);
         return acc;
-      }, [])
-      .reverse()
-      .filter(item => !['customPraise'].includes(item.type));
+      }, []).filter(item => !['customPraise'].includes(item.type));
     this.state.chatList.unshift(...list);
     console.log('chatList', this.state.chatList);
 

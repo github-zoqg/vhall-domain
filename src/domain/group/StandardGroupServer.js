@@ -493,7 +493,7 @@ class StandardGroupServer extends BaseServer {
   //【结束/暂停讨论】
   async msgdoForGroupSwitchEnd(msg, options = { isSwitchEnd: true }) {
     // 如果没有结束讨论，直接结束了直播，就return;
-    if (msg.data.over_live) return;
+    if (msg.data.over_type) return;
 
     const roomBaseServer = useRoomBaseServer()
     console.log('[group] domain group_switch_end', msg);

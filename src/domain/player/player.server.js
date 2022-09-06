@@ -233,7 +233,7 @@ class PlayerServer extends BaseServer {
       }
       // 分组直播 没有结束讨论 直接结束直播
       if (msg.data.type == 'group_switch_end') {
-        if (msg.data.over_live) {
+        if (msg.data.over_type) {
           this.$emit('live_over', msg.data);
         }
       }
