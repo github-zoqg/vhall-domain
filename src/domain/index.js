@@ -74,7 +74,15 @@ import useRecommendServer from '@/domain/brand/recommend.server'
 class Domain {
   constructor(options) {
     if (options.requestHeaders) {
-      setRequestHeaders(options.requestHeaders);
+      // 如果初始化存在 clientType，domain 会自动将 clientType 添加到请求头
+      if (options.initRoom.clientType) {
+        setRequestHeaders({
+          ...options.requestHeaders,
+          'client-type': options.initRoom.clientType
+        });
+      } else {
+        setRequestHeaders(options.requestHeaders);
+      }
     }
     if (options.requestBody) {
       setRequestBody(options.requestBody);

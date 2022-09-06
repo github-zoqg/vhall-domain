@@ -40,7 +40,7 @@ class InteractiveServer extends BaseServer {
       mobileOnWheat: false, // V7.1.2版本需求，将wap的自动上麦操作移至platform层
       mediaPermissionDenied: false, // V7.1.2版本需求   分组活动+开启自动上麦，pc端观众，默认自动上麦
       initInteractiveFailed: false, // 初始化互动是否失败
-      initRole: null // 初始化互动的角色*
+      initRole: null, // 初始化互动的角色*
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
@@ -219,7 +219,6 @@ class InteractiveServer extends BaseServer {
     const role = await this._getInteractiveRole(options);
 
     const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
-
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
       inavId, // 互动房间ID，必填
@@ -237,6 +236,7 @@ class InteractiveServer extends BaseServer {
         watchInitData.join_info.role_name == 1 || isGroupLeader
           ? {
             adaptiveLayoutMode:
+              VhallPaasSDK.modules.VhallRTC[useMediaSettingServer().state.layout] ||
               VhallRTC[sessionStorage.getItem('layout')] ||
               VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
             profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
@@ -1243,6 +1243,7 @@ class InteractiveServer extends BaseServer {
     }
 
     if (stream) {
+      useMediaSettingServer().state.layout = VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 || 'CANVAS_ADAPTIVE_LAYOUT_TILED_MODE'
       // 一人铺满布局
       await this.setBroadCastLayout({ layout: VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 });
     } else {
@@ -1532,7 +1533,6 @@ class InteractiveServer extends BaseServer {
   // 初始化活动基本功能
   async baseInit() {
     const { watchInitData } = useRoomBaseServer().state;
-
     const options = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
       inavId: watchInitData.interact.inav_id, // 互动房间ID，必填
@@ -1549,6 +1549,7 @@ class InteractiveServer extends BaseServer {
       autoStartBroadcast: true, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
       broadcastConfig: {
         adaptiveLayoutMode:
+          VhallPaasSDK.modules.VhallRTC[useMediaSettingServer().state.layout] ||
           VhallRTC[sessionStorage.getItem('layout')] ||
           VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
         profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数

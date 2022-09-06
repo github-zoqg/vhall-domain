@@ -106,8 +106,8 @@ class ChatServer extends BaseServer {
         }
         const msg = Msg._handleGenerateMsg(rawMsg);
         msg.prevTime = this.state.prevTime;
-        //自己发的消息不处理
-        if (!this.isSelfMsg(rawMsg)) {
+        //自己发的消息不处理(来自聊天审核页的除外)
+        if (!this.isSelfMsg(rawMsg) || rawMsg?.data?.access_audit == 1) {
           this.MSGQUEUE.push(msg)
           this.throttleAddMsg()
         }
@@ -264,16 +264,13 @@ class ChatServer extends BaseServer {
         msg.prevTime = this.state.prevTime;
         this.state.prevTime = msg.sendTime;
         return msg; //第二个参数区别是否为历史消息
-      })
-      .reduce((acc, curr) => {
+      }).reverse().reduce((acc, curr) => {
         const showTime = curr.showTime;
-        acc.some(s => s.showTime === showTime)
+        acc.some(s => s.showTime == showTime)
           ? acc.push({ ...curr, showTime: '' })
           : acc.push(curr);
         return acc;
-      }, [])
-      .reverse()
-      .filter(item => !['customPraise'].includes(item.type));
+      }, []).filter(item => !['customPraise'].includes(item.type));
     this.state.chatList.unshift(...list);
     console.log('chatList', this.state.chatList);
 
