@@ -1045,6 +1045,7 @@ class InteractiveServer extends BaseServer {
         type: type, // 必填，支持'video'和'audio'，分别表示视频设备和音频设备
         deviceId: deviceId // 必填，设备ID，可通过getDevices()方法获取。
       };
+      window.vhallReportForProduct?.toStartReporting(110163, 110164, { ...defaultPa });
       return this.interactiveInstance.switchDevice(defaultPa);
     });
   }
@@ -1054,13 +1055,14 @@ class InteractiveServer extends BaseServer {
     if (!this.interactiveInstance) {
       return Promise.reject({ code: '' })
     }
+    const streamId = options.streamId || this.state.localStream.streamId;
     return this.interactiveInstance
-      .publish({
-        streamId: options.streamId || this.state.localStream.streamId
-      })
+      .publish({ streamId })
       .then(data => {
+        window.vhallReportForProduct?.report(110183, { report_extra: { streamId } });
         return data;
       }).catch(error => {
+        window.vhallReportForProduct?.report(110184, { report_extra: { streamId } });
         console.error('publishStream', error)
         return Promise.reject(error)
       })
@@ -1072,21 +1074,22 @@ class InteractiveServer extends BaseServer {
    * @returns {Promise}
    */
   unpublishStream(options = {}) {
+    const streamId = options.streamId || this.state.localStream.streamId;
     return this.interactiveInstance
-      .unpublish({
-        streamId: options.streamId || this.state.localStream.streamId
-      })
+      .unpublish({ streamId })
       .then(res => {
         // 如果是销毁本地上麦流，清空上麦流参数
         if (!options.streamId || options.streamId == this.state.localStream.streamId) {
           this._clearLocalStream();
         }
+        window.vhallReportForProduct?.report(110185, { report_extra: { streamId } });
         return res;
       }).catch(error => {
         // 如果是销毁本地上麦流，清空上麦流参数
         if (!options.streamId || options.streamId == this.state.localStream.streamId) {
           this._clearLocalStream();
         }
+        window.vhallReportForProduct?.report(110186, { report_extra: { streamId } });
         console.error('unpublishStream', error)
         return Promise.reject(error)
       })
@@ -1225,6 +1228,7 @@ class InteractiveServer extends BaseServer {
 
 
 
+    window.vhallReportForProduct?.toReport(110239, { report_extra: { stream } });
     // 如果有桌面共享或插播
     if (stream) {
       await this.setBroadCastScreen(stream.streamId)
@@ -1249,6 +1253,7 @@ class InteractiveServer extends BaseServer {
       const type = res.code == 200 && res.data.layout ? res.data.layout : useMediaSettingServer().state.layout;
       console.log('自适应布局模式====', type)
       const adaptiveLayoutMode = VhallRTC[type];
+      window.vhallReportForProduct?.toReport(110240, { report_extra: { broadCastAdaptiveLayoutMode: res } });
       await this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode });
     }
 
