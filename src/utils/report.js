@@ -79,67 +79,71 @@ export function fullLinkBurningPointReport(options) {
   window.vhallFullLinkBurningPointReport.BASE_URL = options.reportOptions.env === 'test' ? 'https://t-dc.e.vhall.com/login' : 'https://dc.e.vhall.com/login';
 
 
+
   // 扩展实例后的全局通用上报属性
-  window.vhallFullLinkBurningPointReport.commonParams = {
-    ...{
-      os: 10,
-      // 游客ID
-      visitor_id: watchInitData.visitor_id,
-      // 用户唯一id
-      sso_union_id: sso.kick_id,
-      // 用户昵称 todo 需要判断来源
-      nickname: encodeURIComponent(join_info.nickname),
-      // 回放ID
-      record_id: record.paas_record_id,
-      // 活动名称(内容名称)
-      webinar_name: encodeURIComponent(webinar.subject),
-      // 是否登录状态
-      is_login: join_info.user_id == 0 ? 0 : 1,
-      // 房间ID
-      room_id: interact.room_id,
-      // 互动房间id
-      inav_id: interact.inav_id,
-      // 聊天室id
-      channel_id: interact.channel_id,
-      // 直播场次ID
-      switch_id: watchInitData.switch.switch_id,
-      // 语言类型
-      // language_type: useRoomBaseState.languages.lang.type,
-      language_type: localStorage.getItem('lang') || 1,
-      // 用户类型
-      role_name: join_info.role_name,
-      // UA设备
-      ua: window.navigator.userAgent,
-      // 物料种类 【缺少】
-      file_type: webinar.type,
-      // 活动类型
-      webinar_type: webinar.mode,
-      // 活动ID
-      webinar_id: webinar.id,
-      // 参会ID
-      reg_id: join_info.join_id,
+  const setGeneralProperties = () => {
 
-      // 创建时间
-      created_at: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-    },
-    ...window.vhallReportForProduct.commonParams,
-    ...{
-      user_id: join_info.user_id,
-      // B端账号id
-      business_uid: webinar.userinfo.user_id,
-      // 应用ID 来源于paas
-      app_id: interact.paas_app_id,
-      // 播放平台类型
-      pf: VhallPaasSDK.modules.VhallRTC.isMobileDevice() ? 10 : 7,
-      // 会话ID
-      s: (() => {
-        const current = new Date().getTime();
-        const visitorId = watchInitData?.visitor_id || join_info?.third_party_user_id;
-        return `${interact.paas_app_id}_${visitorId}${current}`;
-      })()
+    window.vhallFullLinkBurningPointReport.commonParams = {
+      ...{
+        os: 10,
+        // 游客ID
+        visitor_id: watchInitData.visitor_id,
+        // 用户唯一id
+        sso_union_id: sso.kick_id,
+        // 用户昵称 todo 需要判断来源
+        nickname: encodeURIComponent(join_info.nickname),
+        // 回放ID
+        record_id: record.paas_record_id,
+        // 活动名称(内容名称)
+        webinar_name: encodeURIComponent(webinar.subject),
+        // 是否登录状态
+        is_login: join_info.user_id == 0 ? 0 : 1,
+        // 房间ID
+        room_id: interact.room_id,
+        // 互动房间id
+        inav_id: interact.inav_id,
+        // 聊天室id
+        channel_id: interact.channel_id,
+        // 直播场次ID
+        switch_id: watchInitData.switch.switch_id,
+        // 语言类型
+        // language_type: useRoomBaseState.languages.lang.type,
+        language_type: localStorage.getItem('lang') || 1,
+        // 用户类型
+        role_name: join_info.role_name,
+        // UA设备
+        ua: window.navigator.userAgent,
+        // 物料种类 【缺少】
+        file_type: webinar.type,
+        // 活动类型
+        webinar_type: webinar.mode,
+        // 活动ID
+        webinar_id: webinar.id,
+        // 参会ID
+        reg_id: join_info.join_id,
 
-    }
-  };
+        // 创建时间
+        created_at: dayjs().format('YYYY-MM-DD HH:mm:ss'),
+      },
+      ...window.vhallReportForProduct.commonParams,
+      ...{
+        user_id: join_info.user_id,
+        // B端账号id
+        business_uid: webinar.userinfo.user_id,
+        // 应用ID 来源于paas
+        app_id: interact.paas_app_id,
+        // 播放平台类型
+        pf: VhallPaasSDK.modules.VhallRTC.isMobileDevice() ? 10 : 7,
+        // 会话ID
+        s: (() => {
+          const current = new Date().getTime();
+          const visitorId = watchInitData?.visitor_id || join_info?.third_party_user_id;
+          return `${interact.paas_app_id}_${visitorId}${current}`;
+        })()
+
+      }
+    };
+  }
 
   // 装饰report函数增加新能力
   const decorationExtensionReport = (name, execute, source = window.vhallFullLinkBurningPointReport) => {
@@ -176,6 +180,8 @@ export function fullLinkBurningPointReport(options) {
     }
   }
   decorationExtensionReport('report', report => {
+
+    setGeneralProperties();
     options.reportCallback(requestId)
     // 设置请求Header 唯一值，用于上报信息关联
     // setRequestHeaders({
@@ -186,6 +192,7 @@ export function fullLinkBurningPointReport(options) {
     const isReport = sessionStorage.getItem('isReport') || 'ON'
     isReport == 'ON' && report();
   })
+
 
   window.vhallReportForProduct.toReport = window.vhallFullLinkBurningPointReport.report;
 
