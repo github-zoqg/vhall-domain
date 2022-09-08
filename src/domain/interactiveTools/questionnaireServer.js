@@ -85,10 +85,6 @@ class QuestionnaireServer extends BaseServer {
         // }
         this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_SUBMIT, res);
       });
-      this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
-        this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_ERROR, data);
-        console.log('问卷错误', data);
-      });
     } else {
       // 初始化发起端事件
       this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.CREATE, data => {
@@ -100,11 +96,15 @@ class QuestionnaireServer extends BaseServer {
         const relt = await this.editQuestionnaire(data, extension.playback_filling);
         this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_UPDATE, relt, data);
       });
-      this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
-        this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_ERROR, data);
-        // console.log('问卷错误', data);
-      });
     }
+    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.ERROR, data => {
+      this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_ERROR, data);
+      console.log('问卷错误', data);
+    });
+    this._paasSDKInstance.$on(VHall_Questionnaire_Const.EVENT.READY, data => {
+      this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_READY, data);
+      console.log('问卷初始化完成', data);
+    });
   }
 
   /**
