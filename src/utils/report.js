@@ -65,12 +65,12 @@ export function fullLinkBurningPointReport(options) {
   const useRoomBaseState = options.useRoomBaseServer().state;
 
   const { watchInitData } = useRoomBaseState;
-  const { join_info = {}, webinar = {}, interact = {}, sso = {} } = watchInitData;
+  const { join_info = {}, webinar = {}, interact = {}, sso = {}, record = {} } = watchInitData;
 
   // 生成request_id 规则：用户ID + 活动ID + 时间戳 + 事件ID
-  const randomCode = (type = 0) => {
+  const randomCode = (eventId = 0) => {
     let onlyTimeStamp = new Date().getTime();
-    return `${join_info.third_party_user_id}${webinar.id}${onlyTimeStamp}${type}`;
+    return `${join_info.third_party_user_id}${webinar.id}${onlyTimeStamp}${eventId}`;
   }
 
   window.vhallFullLinkBurningPointReport = new VhallReportForProduct(options.reportOptions);
@@ -90,7 +90,7 @@ export function fullLinkBurningPointReport(options) {
       // 用户昵称 todo 需要判断来源
       nickname: encodeURIComponent(join_info.nickname),
       // 回放ID
-      record_id: webinar.id,
+      record_id: record.paas_record_id,
       // 活动名称(内容名称)
       webinar_name: encodeURIComponent(webinar.subject),
       // 是否登录状态
@@ -144,10 +144,10 @@ export function fullLinkBurningPointReport(options) {
   // 装饰report函数增加新能力
   const decorationExtensionReport = (name, execute, source = window.vhallFullLinkBurningPointReport) => {
     let fn = source[name]
-    source[name] = function (type, options) {
+    source[name] = function (eventId, options) {
 
       // options => null {} {report_extra:{}}
-      requestId = randomCode(type);
+      requestId = randomCode(eventId);
 
       // 此处兼容历史上报数据扩展字段缺失问题
       if (!options) {
@@ -172,7 +172,7 @@ export function fullLinkBurningPointReport(options) {
         console.log(err)
       }
 
-      return execute(fn.bind(source, type, options))
+      return execute(fn.bind(source, eventId, options))
     }
   }
   decorationExtensionReport('report', report => {
