@@ -37,6 +37,7 @@ import useZIndexServer from '@/domain/interactiveTools/zindexServer.js';
 import useQaAdminServer from '@/domain/interactiveTools/qaadmin.server.js';
 import useQaServer from '@/domain/interactiveTools/qa.server.js';
 import { setRequestBody, setRequestHeaders } from '@/utils/http.js';
+import { fullLinkBurningPointReport } from '@/utils/report.js'
 import VhallPaasSDK, { ALLSDKCONFIG } from '../sdk';
 import { Dep } from '@/domain/common/base.server';
 import { INIT_DOMAIN } from '@/domain/common/dep.const';
@@ -107,6 +108,7 @@ class Domain {
 
   //初始化房间信息
   async initRoom(roomInitOptions, devLogOptions) {
+
     // 加载 report Sdk
     await VhallPaasSDK.loadReportSdk();
 
@@ -123,14 +125,28 @@ class Domain {
     window.vhallReport = new VhallReport(reportOptions);
   }
 
-  // 微吼直播【产品侧】需要的数据
-  initVhallReportForProduct(reportOptions) {
-    window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
-  }
+
   // 微吼直播【产品侧】需要的数据(观看端,接入数据信息平台,与发起端区分)
   initVhallReportForWatch(reportOptions) {
     window.vhallReportForWatch = new VhallReportForProduct(reportOptions);
   }
+
+  // 微吼直播【产品侧】需要的数据
+  initVhallReportForProduct(reportOptions) {
+    window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
+    // 链路埋点
+    fullLinkBurningPointReport({
+      reportOptions: reportOptions,
+      useRoomBaseServer: useRoomBaseServer,
+      reportCallback: rId => {
+        setRequestHeaders({
+          'request-id': rId
+        })
+      }
+    });
+  }
+
+
 }
 const version = '__VERSION__';
 

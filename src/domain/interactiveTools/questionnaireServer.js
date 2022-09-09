@@ -64,7 +64,8 @@ class QuestionnaireServer extends BaseServer {
       },
       notify: true,
       uploadUrl: this._uploadUrl,
-      iphoneNumber: ''
+      iphoneNumber: '',
+      showVhPrivacy: (opts && opts.mode == 'watch' && opts.showVhPrivacy) || false // 如果是观看页，展示隐私协议，否则隐藏
     });
     // 初始化问卷相关事件
     this._initEvent(opts.mode);
