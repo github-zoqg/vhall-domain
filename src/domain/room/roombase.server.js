@@ -325,6 +325,13 @@ class RoomBaseServer extends BaseServer {
     });
   }
 
+  // 获取皮肤详情
+  getSkinsInfo(data) {
+    return meeting.getSkinsInfo(data).then(res => {
+      return res;
+    });
+  }
+
   // 获取房间权限配置列表
   getConfigList(data = {}) {
     const defaultParams = {
