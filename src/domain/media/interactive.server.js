@@ -121,8 +121,8 @@ class InteractiveServer extends BaseServer {
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
           event.vhallrtc.removeBroadBackgroundImage().then(() => {
             console.log("removeBroadBackgroundImage success");
-          }).catch(() => {
-            console.error("removeBroadBackgroundImage failed");
+          }).catch(err => {
+            console.error("removeBroadBackgroundImage failed", err);
           })
           // 主持人或组长，设置旁路背景图
           if ((watchInitData.join_info.role_name == 1 || isGroupLeader) && interactToolStatus?.videoBackGroundMap?.videoBackGround) {
@@ -133,8 +133,8 @@ class InteractiveServer extends BaseServer {
             // 设置旁路背景图
             event.vhallrtc.setBroadBackgroundImage(opt).then(() => {
               console.log("setBroadBackgroundImage success");
-            }).catch(() => {
-              console.error("setBroadBackgroundImage failed");
+            }).catch(err => {
+              console.error("setBroadBackgroundImage failed", err);
             })
           }
           resolve(event);
