@@ -81,6 +81,10 @@ class InteractiveServer extends BaseServer {
 
     console.log('%cVHALL-DOMAIN-互动初始化参数', 'color:blue', options, this.state.isGroupDiscuss);
 
+    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state;
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
+
     return new Promise((resolve, reject) => {
       this.createInteractiveInstance(
         options,
@@ -115,6 +119,24 @@ class InteractiveServer extends BaseServer {
             this.$emit(this.EVENT_TYPE.PROCEED_DISCUSSION)
           }
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
+          event.vhallrtc.removeBroadBackgroundImage().then(() => {
+            console.log("removeBroadBackgroundImage success");
+          }).catch(() => {
+            console.error("removeBroadBackgroundImage failed");
+          })
+          // 主持人或组长，设置旁路背景图
+          if ((watchInitData.join_info.role_name == 1 || isGroupLeader) && interactToolStatus?.videoBackGroundMap?.videoBackGround) {
+            const opt = {
+              backgroundImage: interactToolStatus.videoBackGroundMap?.videoBackGround,  //必填,背景图片的url地址，设置后旁路背景区域将显示为背景图
+              cropType: 2,  //必填,背景图片填充模式， 0等比缩放至画布; 1裁剪图片和画布宽高比一致，再缩放至画布; 2直接拉伸填满画布（默认）
+            };
+            // 设置旁路背景图
+            event.vhallrtc.setBroadBackgroundImage(opt).then(() => {
+              console.log("setBroadBackgroundImage success");
+            }).catch(() => {
+              console.error("setBroadBackgroundImage failed");
+            })
+          }
           resolve(event);
         },
         error => {
@@ -203,7 +225,7 @@ class InteractiveServer extends BaseServer {
    * 获取默认初始化参数
    */
   async _getDefaultOptions(options) {
-    const { watchInitData } = useRoomBaseServer().state;
+    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
 
     // 如果是在小组中，取小组中的互动id和房间id初始化互动实例
@@ -251,6 +273,9 @@ class InteractiveServer extends BaseServer {
           : {}, // 自动旁路   开启旁路直播方法所需参数
       otherOption: watchInitData.report_data
     };
+    if (interactToolStatus?.videoBackGroundMap?.videoBackGroundColor) {
+      defaultOptions.broadcastConfig.backgroundColor = interactToolStatus.videoBackGroundMap.videoBackGroundColor.replace('#', '0x')
+    }
     console.log('初始化互动options', defaultOptions)
     return defaultOptions;
   }
@@ -434,9 +459,11 @@ class InteractiveServer extends BaseServer {
       .then(() => {
         this.interactiveInstance = null;
         // 是否有互动实例置为true
-        this.state.isInstanceInit = false
-        // this.state.remoteStreams = [];
-
+        this.state.isInstanceInit = false;
+        /**
+         * 非无延迟互动直播，观众端销毁实例前，派发EVENT_INSTANCE_DESTROY事件（兼容SDK升级2.3.11 移除window.vhallrtc.destroyInstance() 派发EVENT_REMOTESTREAM_REMOVED事件）
+         */
+        this.$emit('EVENT_INSTANCE_DESTROY')
         // 在这清空所有streamId会导致出现网络异常占位图
         useMicServer().removeAllApeakerStreamId()
         this._clearLocalStream()
@@ -593,6 +620,36 @@ class InteractiveServer extends BaseServer {
       this.$emit('EVENT_STREAM_STUNK', e);
       // this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e);
     });
+    // 摄像头设备变更事件
+    /**
+     * this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_CAMERA_CHANGED, e => {
+      const selectedVideoDeviceId = sessionStorage.getItem('selectedVideoDeviceId')
+      if (e.data?.changeInfo) {
+        let i = e.data.changeInfo.findIndex(el => {
+          return el.deviceId === selectedVideoDeviceId
+        })
+        console.log('EVENT_CAMERA_CHANGED', i, selectedVideoDeviceId, e)
+        if (i != -1) {
+          // video
+          this.$emit('media_device_change', e);
+        }
+      }
+    });
+
+    // 麦克风设备变更事件
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_MICROPHONE_CHANGED, e => {
+      const selectedAudioDeviceId = sessionStorage.getItem('selectedAudioDeviceId')
+      if (e.data?.changeInfo) {
+        let i = e.data.changeInfo.findIndex(el => {
+          return el.deviceId === selectedAudioDeviceId
+        })
+        console.log('EVENT_MICROPHONE_CHANGED', i, selectedAudioDeviceId, e)
+        if (i != -1) {
+          this.$emit('media_device_change', e);
+        }
+      }
+    });
+    */
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e => {
       // 新增设备或移除设备时触发
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e);

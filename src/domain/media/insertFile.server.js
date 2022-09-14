@@ -68,6 +68,15 @@ class InsertFileServer extends BaseServer {
         this.$emit('INSERT_FILE_STREAM_ADD', e);
       }
     });
+    // 互动实例销毁
+    interactiveServer.$on('EVENT_INSTANCE_DESTROY', _ => {
+      const { watchInitData } = useRoomBaseServer().state;
+      if (watchInitData.join_info.role_name == 2 && watchInitData.webinar.mode == 3 && watchInitData.webinar.no_delay_webinar == 0) {
+        console.log('EVENT_INSTANCE_DESTROY')
+        this.clearInsertFileInfo();
+        this.$emit('INSERT_FILE_STREAM_REMOVE');
+      }
+    })
     // 流删除
     interactiveServer.$on(VhallRTC.EVENT_REMOTESTREAM_REMOVED, e => {
       try {
