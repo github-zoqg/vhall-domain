@@ -273,7 +273,7 @@ class InteractiveServer extends BaseServer {
           : {}, // 自动旁路   开启旁路直播方法所需参数
       otherOption: watchInitData.report_data
     };
-    if (interactToolStatus?.videoBackGroundMap?.videoBackGroundColor) {
+    if (interactToolStatus?.videoBackGroundMap?.videoBackGroundColor && (watchInitData.join_info.role_name == 1 || isGroupLeader)) {
       let color = interactToolStatus.videoBackGroundMap.videoBackGroundColor.replace('#', '0x');
       defaultOptions.broadcastConfig.backgroundColor = color;
       defaultOptions.broadcastConfig.border.color = color;
