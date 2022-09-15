@@ -81,7 +81,7 @@ class InteractiveServer extends BaseServer {
 
     console.log('%cVHALL-DOMAIN-互动初始化参数', 'color:blue', options, this.state.isGroupDiscuss);
 
-    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+    const { watchInitData } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
     const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
 
@@ -119,23 +119,9 @@ class InteractiveServer extends BaseServer {
             this.$emit(this.EVENT_TYPE.PROCEED_DISCUSSION)
           }
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
-          event.vhallrtc.removeBroadBackgroundImage().then(() => {
-            console.log("removeBroadBackgroundImage success");
-          }).catch(err => {
-            console.error("removeBroadBackgroundImage failed", err);
-          })
           // 主持人或组长，设置旁路背景图
-          if ((watchInitData.join_info.role_name == 1 || isGroupLeader) && interactToolStatus?.videoBackGroundMap?.videoBackGround) {
-            const opt = {
-              backgroundImage: interactToolStatus.videoBackGroundMap?.videoBackGround,  //必填,背景图片的url地址，设置后旁路背景区域将显示为背景图
-              cropType: 2,  //必填,背景图片填充模式， 0等比缩放至画布; 1裁剪图片和画布宽高比一致，再缩放至画布; 2直接拉伸填满画布（默认）
-            };
-            // 设置旁路背景图
-            event.vhallrtc.setBroadBackgroundImage(opt).then(() => {
-              console.log("setBroadBackgroundImage success");
-            }).catch(err => {
-              console.error("setBroadBackgroundImage failed", err);
-            })
+          if (watchInitData.join_info.role_name == 1 || isGroupLeader) {
+            this.setBroadBackgroundImage()
           }
           resolve(event);
         },
@@ -1240,6 +1226,43 @@ class InteractiveServer extends BaseServer {
   // 停止旁路
   stopBroadCast() {
     return this.interactiveInstance.stopBroadCast();
+  }
+
+  // 移除旁路背景图片
+  removeBroadBackgroundImage() {
+    return this.interactiveInstance.removeBroadBackgroundImage()
+  }
+
+  // 设置旁路背景图片
+  setBroadBackgroundImage(options = {}) {
+
+    const { watchInitData, interactToolStatus, skinInfo } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state;
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
+    let skinJsonPc = {}
+
+    if (skinInfo?.skin_json_pc && skinInfo.skin_json_pc != 'null') {
+      skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
+    }
+
+    let defaultOptions = {
+      backgroundImage: '',  //必填,背景图片的url地址，设置后旁路背景区域将显示为背景图
+      cropType: 2,  //必填,背景图片填充模式， 0等比缩放至画布; 1裁剪图片和画布宽高比一致，再缩放至画布; 2直接拉伸填满画布（默认）
+    }
+
+    if (watchInitData.join_info.role_name == 1 && interactToolStatus?.videoBackGroundMap?.videoBackGround) {
+      defaultOptions.backgroundImage = interactToolStatus.videoBackGroundMap?.videoBackGround
+    } else if (isGroupLeader && skinJsonPc?.videoBackGround) {
+      defaultOptions.backgroundImage = skinJsonPc?.videoBackGround
+    }
+
+    const params = merge.recursive({}, defaultOptions, options);
+
+    if (params.backgroundImage) {
+      return this.interactiveInstance.setBroadBackgroundImage(params)
+    } else {
+      return Promise.reject('无效的背景图片')
+    }
   }
 
   // 获取插播和桌面共享的流信息
