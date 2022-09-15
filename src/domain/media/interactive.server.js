@@ -1260,6 +1260,8 @@ class InteractiveServer extends BaseServer {
 
     if (params.backgroundImage) {
       return this.interactiveInstance.setBroadBackgroundImage(params)
+    } else if (watchInitData.join_info.role_name == 1 || isGroupLeader) {
+      return this.removeBroadBackgroundImage()
     } else {
       return Promise.reject('无效的背景图片')
     }
