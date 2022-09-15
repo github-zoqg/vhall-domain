@@ -202,6 +202,16 @@ const uploadImage = (data = {}) => {
   });
 };
 
+//刷新token
+const refreshToken = (params = {}) => {
+  const url = env.group === 'v3' ? '/v3/users/user/refresh-token' : '';
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+};
+
 //口令登录
 function roleLogin(params = {}) {
   return request({
@@ -246,5 +256,6 @@ export default {
   uploadImage,
   roleLogin,
   authWeixinAjax,
-  ssoAutoLogin
+  ssoAutoLogin,
+  refreshToken
 };
