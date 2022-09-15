@@ -274,7 +274,9 @@ class InteractiveServer extends BaseServer {
       otherOption: watchInitData.report_data
     };
     if (interactToolStatus?.videoBackGroundMap?.videoBackGroundColor) {
-      defaultOptions.broadcastConfig.backgroundColor = interactToolStatus.videoBackGroundMap.videoBackGroundColor.replace('#', '0x')
+      let color = interactToolStatus.videoBackGroundMap.videoBackGroundColor.replace('#', '0x');
+      defaultOptions.broadcastConfig.backgroundColor = color;
+      defaultOptions.broadcastConfig.border.color = color;
     }
     console.log('初始化互动options', defaultOptions)
     return defaultOptions;
