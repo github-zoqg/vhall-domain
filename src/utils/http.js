@@ -6,6 +6,14 @@ let MIDDLE_BASE_URL = '';
 let WX_BIND_BASE_URL = '';
 let HEADERS = {};
 let COMMON_BODY = {};
+const INTERCEPTORS_REQUEST = {
+  SUCCESSFULHANDLERS: [],
+  FAILEDHANDLERS: [],
+}; //请求回调
+const INTERCEPTORS_RESPONSE = {
+  SUCCESSFULHANDLERS: [],
+  FAILEDHANDLERS: [],
+}; //响应回调
 
 function setBaseUrl(options) {
   console.log('---V3_BASE_URL----', options);
@@ -27,6 +35,39 @@ function setRequestBody(options) {
   Object.assign(COMMON_BODY, options);
 }
 
+//设置请求拦截器
+function setRequestInterceptors(successfulHandlers, failedHandlers) {
+  if (successfulHandlers && typeof successfulHandlers == 'function') {
+    INTERCEPTORS_REQUEST.SUCCESSFULHANDLERS.push(successfulHandlers)
+  }
+  if (failedHandlers && typeof failedHandlers == 'function') {
+    INTERCEPTORS_REQUEST.FAILEDHANDLERS.push(failedHandlers)
+  }
+}
+
+//设置响应拦截器
+function setResponseInterceptors(successfulHandlers, failedHandlers) {
+  if (successfulHandlers && typeof successfulHandlers == 'function') {
+    INTERCEPTORS_RESPONSE.SUCCESSFULHANDLERS.push(successfulHandlers)
+  }
+  if (failedHandlers && typeof failedHandlers == 'function') {
+    INTERCEPTORS_RESPONSE.FAILEDHANDLERS.push(failedHandlers)
+  }
+}
+
+//清空请求拦截器
+function clearRequestInterceptors() {
+  INTERCEPTORS_REQUEST.SUCCESSFULHANDLERS = []
+  INTERCEPTORS_REQUEST.FAILEDHANDLERS = []
+}
+
+//清空响应拦截器
+function clearResponseInterceptors() {
+  INTERCEPTORS_RESPONSE.SUCCESSFULHANDLERS = []
+  INTERCEPTORS_RESPONSE.FAILEDHANDLERS = []
+}
+
+
 const service = axios.create({ headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
 
 // request interceptor
@@ -47,6 +88,10 @@ service.interceptors.request.use(
       ...config.headers,
       zone: Intl.DateTimeFormat().resolvedOptions().timeZone
     };
+    //角色登录页面登录，无论本地是否存在token，前端请求接口都不携带token。
+    if (config.url.indexOf("/live/role-login") != -1) {
+      config.headers.token = ''
+    }
 
     if (config.headers['Content-Type'] === 'multipart/form-data') {
       if (config.data && typeof config.data === 'object' && !(config.data instanceof FormData)) {
@@ -87,20 +132,49 @@ service.interceptors.request.use(
 
     }
 
+    //执行自定义请求回调
+    // console.log('INTERCEPTORS_REQUEST ->', INTERCEPTORS_REQUEST)
+    INTERCEPTORS_REQUEST.SUCCESSFULHANDLERS.map(func => {
+      let rqs = func(config) || {}
+      Object.assign(config, rqs);
+    })
     // console.log('---请求拦截----', config);
     return config;
   },
   error => {
     // do something with request error
     console.log(error); // for debug
+    //执行自定义请求回调
+    INTERCEPTORS_REQUEST.FAILEDHANDLERS.map(func => {
+      let rqs = func(error) || {}
+      Object.assign(error, rqs);
+    })
     return Promise.reject(error);
   }
 );
 
 // response interceptor
-service.interceptors.response.use(response => {
-  return response.data;
-});
+service.interceptors.response.use(
+  response => {
+    //执行自定义响应回调
+    // console.log('INTERCEPTORS_RESPONSE ->', INTERCEPTORS_RESPONSE)
+    INTERCEPTORS_RESPONSE.SUCCESSFULHANDLERS.map(func => {
+      let rps = func(response) || {}
+      Object.assign(response, rps);
+    })
+    return response.data;
+  },
+  error => {
+    // do something with request error
+    console.log(error); // for debug
+    //执行自定义请求回调
+    INTERCEPTORS_RESPONSE.FAILEDHANDLERS.map(func => {
+      let rps = func(error) || {}
+      Object.assign(error, rps);
+    })
+    return Promise.reject(error);
+  }
+);
 
 export default service;
-export { setBaseUrl, setRequestHeaders, setRequestBody, getPlatform };
+export { setBaseUrl, setRequestHeaders, setRequestBody, getPlatform, setRequestInterceptors, setResponseInterceptors, clearRequestInterceptors, clearResponseInterceptors };
