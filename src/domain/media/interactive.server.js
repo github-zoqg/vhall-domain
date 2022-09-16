@@ -211,7 +211,7 @@ class InteractiveServer extends BaseServer {
    * 获取默认初始化参数
    */
   async _getDefaultOptions(options) {
-    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+    const { watchInitData, interactToolStatus, skinInfo } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
 
     // 如果是在小组中，取小组中的互动id和房间id初始化互动实例
@@ -259,8 +259,18 @@ class InteractiveServer extends BaseServer {
           : {}, // 自动旁路   开启旁路直播方法所需参数
       otherOption: watchInitData.report_data
     };
-    if (interactToolStatus?.videoBackGroundMap?.videoBackGroundColor && (watchInitData.join_info.role_name == 1 || isGroupLeader)) {
+    // 设置旁路背景颜色
+    let skinJsonPc = {}
+    if (skinInfo?.skin_json_pc && skinInfo.skin_json_pc != 'null') {
+      skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
+    }
+
+    if (watchInitData.join_info.role_name == 1 && interactToolStatus?.videoBackGroundMap?.videoBackGroundColor) {
       let color = interactToolStatus.videoBackGroundMap.videoBackGroundColor.replace('#', '0x');
+      defaultOptions.broadcastConfig.backgroundColor = color;
+      defaultOptions.broadcastConfig.border.color = color;
+    } else if (isGroupLeader && skinJsonPc?.videoBackGroundColor) {
+      let color = skinJsonPc?.videoBackGroundColor.replace('#', '0x');
       defaultOptions.broadcastConfig.backgroundColor = color;
       defaultOptions.broadcastConfig.border.color = color;
     }
