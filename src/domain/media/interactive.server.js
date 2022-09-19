@@ -265,7 +265,7 @@ class InteractiveServer extends BaseServer {
       skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
     }
 
-    if (watchInitData.join_info.role_name == 1 && interactToolStatus?.videoBackGroundMap?.videoBackGroundColor) {
+    if ((watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id) && interactToolStatus?.videoBackGroundMap?.videoBackGroundColor) {
       let color = interactToolStatus.videoBackGroundMap.videoBackGroundColor.replace('#', '0x');
       defaultOptions.broadcastConfig.backgroundColor = color;
       defaultOptions.broadcastConfig.border.color = color;
@@ -1259,8 +1259,8 @@ class InteractiveServer extends BaseServer {
       backgroundImage: '',  //必填,背景图片的url地址，设置后旁路背景区域将显示为背景图
       cropType: 2,  //必填,背景图片填充模式， 0等比缩放至画布; 1裁剪图片和画布宽高比一致，再缩放至画布; 2直接拉伸填满画布（默认）
     }
-
-    if (watchInitData.join_info.role_name == 1 && interactToolStatus?.videoBackGroundMap?.videoBackGround) {
+    // 主持人||主讲人
+    if ((watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id) && interactToolStatus?.videoBackGroundMap?.videoBackGround) {
       defaultOptions.backgroundImage = interactToolStatus.videoBackGroundMap?.videoBackGround
     } else if (isGroupLeader && skinJsonPc?.videoBackGround) {
       defaultOptions.backgroundImage = skinJsonPc?.videoBackGround
