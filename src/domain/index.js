@@ -75,7 +75,7 @@ class Domain {
   constructor(options) {
     if (options.requestHeaders) {
       // 如果初始化存在 clientType，domain 会自动将 clientType 添加到请求头
-      if (options.initRoom.clientType) {
+      if (options.initRoom?.clientType) {
         setRequestHeaders({
           ...options.requestHeaders,
           'client-type': options.initRoom.clientType
@@ -88,7 +88,7 @@ class Domain {
       setRequestBody(options.requestBody);
     }
 
-    let taskList = VhallPaasSDK.init(options.plugins);
+    let taskList = VhallPaasSDK.init(options.plugins, options.questionnaireNoDefer = false);
     // 是否在创建domain实例的时候初始化房间
     if (!options.isNotInitRoom) {
       taskList.push(this.initRoom(options.initRoom, options.devLogOptions))
