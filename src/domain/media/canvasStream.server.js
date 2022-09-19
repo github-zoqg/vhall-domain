@@ -45,7 +45,7 @@ class CanvasStreamServer {
   /**
    * 描述： 检查活动 推流类型(videoType) 取真实图片地址(canvasImgUrl)
    * @date 2022-03-23
-   * @returns {any} 
+   * @returns {any}
    */
   async checkImgStream() {
     const { videoType, canvasImgUrl } = useMediaSettingServer().state;
@@ -70,8 +70,10 @@ class CanvasStreamServer {
         _img.src = canvasImgUrl;
         this.canvasImgDom.src = _img.src;
         _img.onload = () => {
-          this.state.canvasSize.width = this.canvasDom.width = _img.width;
-          this.state.canvasSize.height = this.canvasDom.height = _img.height;
+          // 如果图片的尺寸是奇数，需要转换成偶数
+          // http://wiki.vhallops.com/pages/viewpage.action?pageId=301727746
+          this.state.canvasSize.width = this.canvasDom.width = _img.width % 2 === 1 ? _img.width + 1 : _img.width;
+          this.state.canvasSize.height = this.canvasDom.height = _img.height % 2 === 1 ? _img.height + 1 : _img.height;
           resolve();
         };
       } catch (error) {
@@ -91,6 +93,13 @@ class CanvasStreamServer {
     if (this.canvasStreamInterval) {
       clearInterval(this.canvasStreamInterval);
     }
+    c2d.drawImage(
+      this.canvasImgDom,
+      0,
+      0,
+      this.state.canvasSize.width,
+      this.state.canvasSize.height
+    );
     this.canvasStreamInterval = setInterval(() => {
       c2d.drawImage(
         this.canvasImgDom,
@@ -99,7 +108,7 @@ class CanvasStreamServer {
         this.state.canvasSize.width,
         this.state.canvasSize.height
       );
-    }, 1000);
+    }, 200);
   }
 
   /**

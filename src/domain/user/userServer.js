@@ -262,6 +262,13 @@ class UserServer {
   }
 
   /**
+   * @description 刷新token
+   * */
+  refreshToken(params) {
+    return userApi.refreshToken(params);
+  }
+
+  /**
    * @description 第三方授权回调 跳转到qq授权登录链接、跳转到微信授权登录链接
    * */
   oauthCallback(params) {
