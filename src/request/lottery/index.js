@@ -106,6 +106,13 @@ const getLotteryHistory = params => {
     params
   });
 };
+// 获取中奖人信息
+const getLotteryUserInfo = params => {
+  return request('/v3/vss/lottery/user-info', {
+    method: 'POST',
+    data: params
+  });
+};
 
 export default {
   getPrizeList,
@@ -119,5 +126,6 @@ export default {
   getDrawPrizeInfo,
   acceptPrize,
   joinLottery,
-  getLotteryHistory
+  getLotteryHistory,
+  getLotteryUserInfo
 };
