@@ -81,7 +81,7 @@ class InteractiveServer extends BaseServer {
 
     console.log('%cVHALL-DOMAIN-互动初始化参数', 'color:blue', options, this.state.isGroupDiscuss);
 
-    const { watchInitData } = useRoomBaseServer().state;
+    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
     const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
 
@@ -119,8 +119,8 @@ class InteractiveServer extends BaseServer {
             this.$emit(this.EVENT_TYPE.PROCEED_DISCUSSION)
           }
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
-          // 主持人或组长，设置旁路背景图
-          if (watchInitData.join_info.role_name == 1 || isGroupLeader) {
+          // 主持人或组长或主讲人，设置旁路背景图
+          if (watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id) {
             this.setBroadBackgroundImage()
           }
           resolve(event);
@@ -226,7 +226,7 @@ class InteractiveServer extends BaseServer {
     // 获取互动实例角色
     const role = await this._getInteractiveRole(options);
 
-    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission;
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
       inavId, // 互动房间ID，必填
@@ -239,9 +239,9 @@ class InteractiveServer extends BaseServer {
           : VhallPaasSDK.modules.VhallRTC.MODE_RTC, //应用场景模式，选填，可选值参考下文【应用场景类型】。支持版本：2.3.1及以上。
       role, //用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
       attributes: '', // String 类型
-      autoStartBroadcast: watchInitData.join_info.role_name == 1 || isGroupLeader, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
+      autoStartBroadcast: watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
       broadcastConfig:
-        watchInitData.join_info.role_name == 1 || isGroupLeader
+        watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id
           ? {
             adaptiveLayoutMode:
               VhallPaasSDK.modules.VhallRTC[useMediaSettingServer().state.layout] ||
