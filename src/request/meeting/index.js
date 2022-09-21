@@ -382,6 +382,19 @@ const getCustomRoleName = (data) => {
     data
   });
 };
+
+/**
+ * 获取主题风格详情
+ * */
+function getSkinsInfo(params = {}) {
+  const url = env.brand === 'v3' ? '/v3/interacts/skin/watch-get-webinar-skin' : '';
+  return request({
+    url,
+    method: 'POST',
+    data: params
+  });
+}
+
 const meeting = {
   initSendLive,
   initSendLiveYun,
@@ -420,7 +433,8 @@ const meeting = {
   restrictions,
   setUserAgree,
   getLiveStreamStatus,
-  startLiveThird
+  startLiveThird,
+  getSkinsInfo
 };
 
 export default meeting;

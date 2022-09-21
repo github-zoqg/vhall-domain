@@ -44,7 +44,22 @@ class DesktopShareServer extends BaseServer {
       // 0: 纯音频, 1: 只是视频, 2: 音视频  3: 屏幕共享, 4: 插播
       this.emitStreamAdd(e.data);
     });
-
+    // 互动实例销毁
+    interactiveServer.$on('EVENT_INSTANCE_DESTROY', _ => {
+      const { watchInitData } = useRoomBaseServer().state;
+      if (watchInitData.join_info.role_name == 2 && watchInitData.webinar.mode == 3 && watchInitData.webinar.no_delay_webinar == 0 && this.state.localDesktopStreamId) {
+        this.state.localDesktopStreamId = '';
+        let miniElement = null
+        if (useDocServer().state.switchStatus) {
+          miniElement = 'stream-list'
+        } else {
+          miniElement = ''
+        }
+        useRoomBaseServer().setChangeElement(miniElement);
+        this.$emit('screen_stream_remove');
+        this.$emit('EVENT_STREAM_END', e);
+      }
+    })
     // 桌面共享停止事件
     interactiveServer.$on('EVENT_REMOTESTREAM_REMOVED', e => {
       if (e.data.streamId == this.state.localDesktopStreamId) {

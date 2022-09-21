@@ -79,6 +79,7 @@ class MicServer extends BaseServer {
 
     // 派发上麦流列表更新事件
     this.$emit('INTERACTIVE_REMOTE_STREAMS_UPDATE', this.state.speakerList)
+    return this.state.speakerList
   }
 
   // 通过streamId来更新speaker
