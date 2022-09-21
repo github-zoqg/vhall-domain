@@ -10,11 +10,15 @@ class VhallPaasSDK {
   /**
    * sdk 加载并执行
    */
-  static init(plugins) {
+  static init(plugins, questionnaireNoDefer) {
     // 'report', 'base'是必须sdk, 如果plugins为空，则默认加载'chat', 'doc', 'player', 'interaction'这4个sdk
     let sdks = ['report', 'base'].concat(plugins || ['chat', 'doc', 'player', 'interaction']);
     // 去重
     sdks = [...new Set(sdks)];
+    //问卷配置是否延迟加载
+    if (questionnaireNoDefer) {
+      ALLSDKCONFIG['questionnaire'].defer = false
+    }
     // 筛选出配置了 defer:true 的sdk
     const deferSdks = [];
     for (let i = sdks.length - 1; i >= 0; i--) {
@@ -30,9 +34,9 @@ class VhallPaasSDK {
         for (const k of deferSdks) {
           loadjs(ALLSDKCONFIG[k].url, k, {
             async: false,
-            success: function () { },
-            error: function (pathsNotFound) { },
-            before: function (path, scriptEl) {
+            success: function() { },
+            error: function(pathsNotFound) { },
+            before: function(path, scriptEl) {
               scriptEl.defer = true;
               document.body.appendChild(scriptEl);
               /* return `false` to bypass default DOM insertion mechanism */
@@ -67,10 +71,10 @@ class VhallPaasSDK {
       // report sdk已经定义过,但是未执行完毕，需要等待执行完毕后继续
       return await new Promise((resolve, reject) => {
         loadjs.ready("report", {
-          success: function () {
+          success: function() {
             resolve();
           },
-          error: function (depsNotFound) {
+          error: function(depsNotFound) {
             reject(depsNotFound);
           },
         });
