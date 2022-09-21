@@ -234,6 +234,7 @@ class MicServer extends BaseServer {
           break;
         // 用户成功下麦
         case 'vrtc_disconnect_success':
+          this.$emit('before_vrtc_disconnect_success', msg)
           this.state.speakerList = this.state.speakerList.filter(speaker => speaker.accountId != msg.data.target_id)
           if (join_info.third_party_user_id == msg.data.target_id) {
             this.state.isSpeakOn = false;
