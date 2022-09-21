@@ -1256,7 +1256,7 @@ class InteractiveServer extends BaseServer {
     const { groupInitData } = useGroupServer().state;
     const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
     let skinJsonPc = {}
-
+    const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
     if (skinInfo?.skin_json_pc && skinInfo.skin_json_pc != 'null') {
       skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
     }
@@ -1266,7 +1266,7 @@ class InteractiveServer extends BaseServer {
       cropType: 2,  //必填,背景图片填充模式， 0等比缩放至画布; 1裁剪图片和画布宽高比一致，再缩放至画布; 2直接拉伸填满画布（默认）
     }
     // 主持人||主讲人
-    if ((watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id) && interactToolStatus?.videoBackGroundMap?.finalVideoBackground) {
+    if (isHostPermission && interactToolStatus?.videoBackGroundMap?.finalVideoBackground) {
       defaultOptions.backgroundImage = interactToolStatus.videoBackGroundMap?.finalVideoBackground
     } else if (isGroupLeader && skinJsonPc?.finalVideoBackground) {
       defaultOptions.backgroundImage = skinJsonPc?.finalVideoBackground
@@ -1276,7 +1276,7 @@ class InteractiveServer extends BaseServer {
 
     if (params.backgroundImage) {
       return this.interactiveInstance.setBroadBackgroundImage(params)
-    } else if (watchInitData.join_info.role_name == 1 || isGroupLeader) {
+    } else if (isHostPermission || isGroupLeader) {
       return this.removeBroadBackgroundImage()
     } else {
       return Promise.reject('无效的背景图片')
