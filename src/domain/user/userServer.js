@@ -248,6 +248,13 @@ class UserServer {
   }
 
   /**
+   * @description 获取控制台标志信息
+   * */
+  extendsLoginInfo(params) {
+    return userApi.extendsLoginInfo(params);
+  }
+
+  /**
    * @description 手机||邮箱验证码
    * */
   codeCheck(params) {
