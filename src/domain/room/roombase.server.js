@@ -553,6 +553,9 @@ class RoomBaseServer extends BaseServer {
     return meeting.getCommonConfig(retParams).then(res => {
       if (res.code == 200) {
         this.state.skinInfo = res.data['skin'] ? res.data['skin'].data : {}; // 皮肤信息
+        if (this.state.skinInfo?.skin_json_pc && this.state.skinInfo.skin_json_pc != 'null') {
+          this.state.skinInfo.skin_json_pc = JSON.parse(this.state.skinInfo.skin_json_pc);
+        }
         this.state.webinarTag = res.data['webinar-tag'] ? res.data['webinar-tag'].data : {}; //活动标识
         this.state.screenPosterInfo = res.data['screen-poster']
           ? res.data['screen-poster'].data
