@@ -86,6 +86,19 @@ const loginInfo = (params = {}) => {
   });
 };
 
+// 获取控制台标志信息
+const extendsLoginInfo = (params = {}) => {
+  return request({
+    url:
+      env.user === 'v3' ? '/v3/users/user-extends/get-logo-info' : '',
+    method: 'POST',
+    data: {
+      biz_id,
+      ...params
+    }
+  });
+};
+
 // 退出登录
 const loginOut = (params = {}, withCookie = false) => {
   return request({
@@ -257,5 +270,6 @@ export default {
   roleLogin,
   authWeixinAjax,
   ssoAutoLogin,
-  refreshToken
+  refreshToken,
+  extendsLoginInfo
 };

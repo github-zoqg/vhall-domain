@@ -81,6 +81,10 @@ class InteractiveServer extends BaseServer {
 
     console.log('%cVHALL-DOMAIN-互动初始化参数', 'color:blue', options, this.state.isGroupDiscuss);
 
+    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state;
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
+
     return new Promise((resolve, reject) => {
       this.createInteractiveInstance(
         options,
@@ -115,6 +119,10 @@ class InteractiveServer extends BaseServer {
             this.$emit(this.EVENT_TYPE.PROCEED_DISCUSSION)
           }
           this.$emit(this.EVENT_TYPE.INTERACTIVE_INSTANCE_INIT_SUCCESS);
+          // 主持人或组长或主讲人，设置旁路背景图
+          if (watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id) {
+            this.setBroadBackgroundImage()
+          }
           resolve(event);
         },
         error => {
@@ -203,7 +211,7 @@ class InteractiveServer extends BaseServer {
    * 获取默认初始化参数
    */
   async _getDefaultOptions(options) {
-    const { watchInitData } = useRoomBaseServer().state;
+    const { watchInitData, interactToolStatus, skinInfo } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
 
     // 如果是在小组中，取小组中的互动id和房间id初始化互动实例
@@ -218,7 +226,7 @@ class InteractiveServer extends BaseServer {
     // 获取互动实例角色
     const role = await this._getInteractiveRole(options);
 
-    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission;
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
       inavId, // 互动房间ID，必填
@@ -231,9 +239,9 @@ class InteractiveServer extends BaseServer {
           : VhallPaasSDK.modules.VhallRTC.MODE_RTC, //应用场景模式，选填，可选值参考下文【应用场景类型】。支持版本：2.3.1及以上。
       role, //用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
       attributes: '', // String 类型
-      autoStartBroadcast: watchInitData.join_info.role_name == 1 || isGroupLeader, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
+      autoStartBroadcast: watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
       broadcastConfig:
-        watchInitData.join_info.role_name == 1 || isGroupLeader
+        watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id
           ? {
             adaptiveLayoutMode:
               VhallPaasSDK.modules.VhallRTC[useMediaSettingServer().state.layout] ||
@@ -251,6 +259,21 @@ class InteractiveServer extends BaseServer {
           : {}, // 自动旁路   开启旁路直播方法所需参数
       otherOption: watchInitData.report_data
     };
+    // 设置旁路背景颜色
+    let skinJsonPc = {}
+    if (skinInfo?.skin_json_pc && skinInfo.skin_json_pc != 'null') {
+      skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
+    }
+
+    if ((watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id) && interactToolStatus?.videoBackGroundMap?.videoBackGroundColor) {
+      let color = interactToolStatus.videoBackGroundMap.videoBackGroundColor.replace('#', '0x');
+      defaultOptions.broadcastConfig.backgroundColor = color;
+      defaultOptions.broadcastConfig.border.color = color;
+    } else if (isGroupLeader && skinJsonPc?.videoBackGroundColor) {
+      let color = skinJsonPc?.videoBackGroundColor.replace('#', '0x');
+      defaultOptions.broadcastConfig.backgroundColor = color;
+      defaultOptions.broadcastConfig.border.color = color;
+    }
     console.log('初始化互动options', defaultOptions)
     return defaultOptions;
   }
@@ -434,9 +457,11 @@ class InteractiveServer extends BaseServer {
       .then(() => {
         this.interactiveInstance = null;
         // 是否有互动实例置为true
-        this.state.isInstanceInit = false
-        // this.state.remoteStreams = [];
-
+        this.state.isInstanceInit = false;
+        /**
+         * 非无延迟互动直播，观众端销毁实例前，派发EVENT_INSTANCE_DESTROY事件（兼容SDK升级2.3.11 移除window.vhallrtc.destroyInstance() 派发EVENT_REMOTESTREAM_REMOVED事件）
+         */
+        this.$emit('EVENT_INSTANCE_DESTROY')
         // 在这清空所有streamId会导致出现网络异常占位图
         useMicServer().removeAllApeakerStreamId()
         this._clearLocalStream()
@@ -593,6 +618,36 @@ class InteractiveServer extends BaseServer {
       this.$emit('EVENT_STREAM_STUNK', e);
       // this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e);
     });
+    // 摄像头设备变更事件
+    /**
+     * this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_CAMERA_CHANGED, e => {
+      const selectedVideoDeviceId = sessionStorage.getItem('selectedVideoDeviceId')
+      if (e.data?.changeInfo) {
+        let i = e.data.changeInfo.findIndex(el => {
+          return el.deviceId === selectedVideoDeviceId
+        })
+        console.log('EVENT_CAMERA_CHANGED', i, selectedVideoDeviceId, e)
+        if (i != -1) {
+          // video
+          this.$emit('media_device_change', e);
+        }
+      }
+    });
+
+    // 麦克风设备变更事件
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_MICROPHONE_CHANGED, e => {
+      const selectedAudioDeviceId = sessionStorage.getItem('selectedAudioDeviceId')
+      if (e.data?.changeInfo) {
+        let i = e.data.changeInfo.findIndex(el => {
+          return el.deviceId === selectedAudioDeviceId
+        })
+        console.log('EVENT_MICROPHONE_CHANGED', i, selectedAudioDeviceId, e)
+        if (i != -1) {
+          this.$emit('media_device_change', e);
+        }
+      }
+    });
+    */
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e => {
       // 新增设备或移除设备时触发
       this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_DEVICE_CHANGE, e);
@@ -892,6 +947,11 @@ class InteractiveServer extends BaseServer {
       video: false,
       audio: true,
       videoContentHint: 'detail',
+      profile:
+        VhallRTC[this.getVideoProfile()] ||
+        VhallRTC[options.profile] ||
+        VhallRTC[interactToolStatus.definition] ||
+        VhallRTC.RTC_VIDEO_PROFILE_1080P_16x9_H, // 选填，视频质量参数，可选值参考文档中的[互动流视频质量参数表]
       mute: {
         audio: watchInitData.webinar.mode == 6 ? true : false
       },
@@ -918,6 +978,7 @@ class InteractiveServer extends BaseServer {
     defaultOptions = this.handleInsertFileMicStatus(defaultOptions)
 
     const params = merge.recursive({}, defaultOptions, options, addConfig);
+    console.log('创建图片推流参数', params)
     return this.createLocalStream(params).then(data => {
       this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
       return data
@@ -1181,6 +1242,45 @@ class InteractiveServer extends BaseServer {
   // 停止旁路
   stopBroadCast() {
     return this.interactiveInstance.stopBroadCast();
+  }
+
+  // 移除旁路背景图片
+  removeBroadBackgroundImage() {
+    return this.interactiveInstance.removeBroadBackgroundImage()
+  }
+
+  // 设置旁路背景图片
+  setBroadBackgroundImage(options = {}) {
+
+    const { watchInitData, interactToolStatus, skinInfo } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state;
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
+    let skinJsonPc = {}
+    const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
+    if (skinInfo?.skin_json_pc && skinInfo.skin_json_pc != 'null') {
+      skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
+    }
+
+    let defaultOptions = {
+      backgroundImage: '',  //必填,背景图片的url地址，设置后旁路背景区域将显示为背景图
+      cropType: 2,  //必填,背景图片填充模式， 0等比缩放至画布; 1裁剪图片和画布宽高比一致，再缩放至画布; 2直接拉伸填满画布（默认）
+    }
+    // 主持人||主讲人
+    if (isHostPermission && interactToolStatus?.videoBackGroundMap?.finalVideoBackground) {
+      defaultOptions.backgroundImage = interactToolStatus.videoBackGroundMap?.finalVideoBackground
+    } else if (isGroupLeader && skinJsonPc?.finalVideoBackground) {
+      defaultOptions.backgroundImage = skinJsonPc?.finalVideoBackground
+    }
+
+    const params = merge.recursive({}, defaultOptions, options);
+
+    if (params.backgroundImage) {
+      return this.interactiveInstance.setBroadBackgroundImage(params)
+    } else if (isHostPermission || isGroupLeader) {
+      return this.removeBroadBackgroundImage()
+    } else {
+      return Promise.reject('无效的背景图片')
+    }
   }
 
   // 获取插播和桌面共享的流信息
