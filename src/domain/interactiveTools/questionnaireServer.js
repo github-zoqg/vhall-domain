@@ -212,6 +212,7 @@ class QuestionnaireServer extends BaseServer {
   editQuestionnaire(data, playback_filling) {
     const { watchInitData } = useRoomBaseServer().state;
     const { webinar, interact, join_info } = watchInitData;
+    const extension = JSON.parse(data.extension);
     const params = {
       survey_id: data.id,
       title: data.title,
@@ -220,11 +221,17 @@ class QuestionnaireServer extends BaseServer {
       playback_filling: playback_filling,
       user_id: join_info.user_id || join_info.third_party_user_id,
       webinar_id: webinar.id,
-      room_id: interact.room_id
+      room_id: interact.room_id,
+      privacy_agreement: extension.openPrivacy ? 1 : 0,
     }
     if (data.alias) {
       params.alias = data.alias
     }
+    data.detail.forEach(i => {
+      if (i.detail && i.detail.format == 'phone') {
+        params.phone_verification_switch = i.verification == 'Y' ? 1 : 0
+      }
+    })
     return questionnaireApi.editQuestionnaire(params);
   }
 
@@ -333,11 +340,17 @@ class QuestionnaireServer extends BaseServer {
       playback_filling: extension.playback_filling,
       room_id: interact.room_id,
       webinar_id: webinar.id,
-      user_id: join_info.user_id || join_info.third_party_user_id
+      user_id: join_info.user_id || join_info.third_party_user_id,
+      privacy_agreement: extension.openPrivacy ? 1 : 0,
     }
     if (data.alias) {
       params.alias = data.alias
     }
+    data.detail.forEach(i => {
+      if (i.detail && i.detail.format == 'phone') {
+        params.phone_verification_switch = i.verification == 'Y' ? 1 : 0
+      }
+    })
     return questionnaireApi.createLiveQuestion(params);
   }
 
