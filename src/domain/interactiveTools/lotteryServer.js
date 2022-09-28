@@ -145,6 +145,13 @@ class LotteryServer extends BaseServer {
       room_id: this._roomId
     });
   }
+  // 获取中奖人信息
+  getLotteryUserDetail(lotteryId = '') {
+    return lotteryApi.getLotteryUserDetail({
+      room_id: this._roomId,
+      lottery_id: lotteryId,
+    });
+  }
   // 获取抽奖历史(处理请求状态)
   getLotteryHistory() {
     return lotteryApi.getLotteryHistory({
