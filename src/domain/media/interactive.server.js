@@ -41,6 +41,7 @@ class InteractiveServer extends BaseServer {
       mediaPermissionDenied: false, // V7.1.2版本需求   分组活动+开启自动上麦，pc端观众，默认自动上麦
       initInteractiveFailed: false, // 初始化互动是否失败
       initRole: null, // 初始化互动的角色*
+      docStream: {} // 云文档流
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
@@ -88,7 +89,7 @@ class InteractiveServer extends BaseServer {
     return new Promise((resolve, reject) => {
       this.createInteractiveInstance(
         options,
-        event => {
+        async event => {
           this.state.initRole = options.role
           let streams = event.currentStreams.filter(stream => {
             try {
@@ -108,7 +109,16 @@ class InteractiveServer extends BaseServer {
 
           // 拷贝streams
           this.currentStreams = [...streams]
-
+          const { docStreams } = event;
+          console.log('docStreams', docStreams, Object.keys(docStreams).length);
+          const docYunStream = Object.keys(docStreams);
+          if (interactToolStatus.speakerAndShowLayout == 1 && docYunStream.length && watchInitData.join_info.role_name != 2) {
+            //todo sth...
+            this.state.docStream = docStreams[docYunStream]
+            console.log('docStreams----', this.state.docStream)
+            await this.closeDocCloudStream();
+            this.openDocCloudStream({ source: 'init' });
+          }
           streams = streams.filter(stream => stream.streamType <= 2)
           console.log('[interactiveServer] streams----', streams)
           streams.forEach(stream => {
@@ -132,6 +142,44 @@ class InteractiveServer extends BaseServer {
         }
       );
     });
+  }
+
+  /**
+   * 开启文档云渲染
+   * @param {Object} options 参数
+   * @returns
+   */
+  openDocCloudStream(options) {
+    const { watchInitData } = useRoomBaseServer().state;
+    let opt = {
+      appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
+      channelId: watchInitData.interact.channel_id,    //必填文档channelId
+      delayStopTime: 180000 //可选参数，默认3分钟,这里意为房间内不存在实际用户后的释放时间参数 单位ms；例：房间内没有真实用户，只有云渲染流，3分钟后，如果房间内还没有真实用户存在，销毁云实例
+    }
+    opt = Object.assign(opt, options)
+    if (!opt.channelId) return;
+    console.log('openDocCloudStream---1', opt)
+    return this.interactiveInstance.startDocCloudRender(opt).then(e => {
+      console.log('startDocCloudRender success', e)
+    })
+  }
+
+  /**
+   * 关闭文档云渲染
+   * @param {Object} options 参数
+   * @returns
+   */
+  closeDocCloudStream(options) {
+    const { watchInitData } = useRoomBaseServer().state;
+    let opt = {
+      appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
+      channelId: watchInitData.interact.channel_id,    //必填文档channelId
+    }
+    opt = Object.assign(opt, options)
+    if (!opt.channelId) return;
+    return this.interactiveInstance.stopDocCloudRender(opt).then(() => {
+      console.log('stopDocCloudRender success')
+    })
   }
 
   /**
@@ -261,8 +309,12 @@ class InteractiveServer extends BaseServer {
     };
     // 设置旁路背景颜色
     let skinJsonPc = {}
-    if (skinInfo?.skin_json_pc && skinInfo.skin_json_pc != 'null') {
-      skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
+    if (skinInfo?.skin_json_pc) {
+      if (skinInfo.skin_json_pc != 'null' && Object.prototype.toString.call(skinInfo.skin_json_pc) == '[object String]') {
+        skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
+      } else {
+        skinJsonPc = skinInfo.skin_json_pc;
+      }
     }
 
     if ((watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id) && interactToolStatus?.videoBackGroundMap?.videoBackGroundColor) {
@@ -658,7 +710,38 @@ class InteractiveServer extends BaseServer {
       console.log('[interactiveServer]-----自动播放失败---------', e)
       this.$emit('EVENT_STREAM_PLAYABORT', e);
     });
-
+    // 云渲染文档流添加
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_ADDED, msg => {
+      console.log('========云渲染文档流添加========', msg);
+      this.state.docStream = msg.data
+      if (msg.data?.streamId) {
+        // 动态配置旁路主屏
+        this.setBroadCastScreen(msg.data.streamId);
+        this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode: VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_EXT1_MODE });
+        this.$emit('event_doc_stream_add', msg);
+      }
+    });
+    // 云渲染文档流移除
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_REMOVED, msg => {
+      console.log('========云渲染文档流移除========', msg);
+      this.state.docStream = {}
+      if (msg.data?.reason?.msg && msg.data.reason.msg !== 'default') { // 非正常结束
+        const { appId, channelId } = msg.data;
+        this.closeDocCloudStream({ appId, channelId })
+      }
+      this.$emit('event_doc_stream_remove', msg);
+    });
+    // 云渲染服务创建异常
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_FAILED, async msg => {
+      console.log('========云渲染服务创建异常========', msg);
+      this.state.docStream = {}
+      if (msg.data?.reason?.msg && msg.data.reason.msg !== 'default') { // 非正常结束
+        const { appId, channelId } = msg.data;
+        await this.closeDocCloudStream({ appId, channelId })
+        this.openDocCloudStream();
+      }
+      this.$emit('event_doc_stream_failed', msg);
+    });
     // 主讲人切换，调整分辨率
     useRoomBaseServer().$on('VRTC_SPEAKER_SWITCH', async (msg) => {
       if (this.state.localStream.streamId) {
@@ -727,6 +810,7 @@ class InteractiveServer extends BaseServer {
       }
       if (msg.data.type === 'live_over') {
         // 直播结束
+        this.closeDocCloudStream();
         this.setStreamListHeightInWatch(0);
         this.$emit('live_over')
       }
@@ -1257,8 +1341,12 @@ class InteractiveServer extends BaseServer {
     const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
     let skinJsonPc = {}
     const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
-    if (skinInfo?.skin_json_pc && skinInfo.skin_json_pc != 'null') {
-      skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
+    if (skinInfo?.skin_json_pc) {
+      if (skinInfo.skin_json_pc != 'null' && Object.prototype.toString.call(skinInfo.skin_json_pc) == '[object String]') {
+        skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
+      } else {
+        skinJsonPc = skinInfo.skin_json_pc;
+      }
     }
 
     let defaultOptions = {
@@ -1338,6 +1426,8 @@ class InteractiveServer extends BaseServer {
         .catch(e => {
           console.error('[interactiveServer]----动态设置旁路主屏幕失败', e);
         });
+    } else if (Object.keys(this.state.docStream).length) { // 存在旁路文档流
+      this.setBroadCastScreen(this.state.docStream.id)
     } else {
       await this.setBroadCastScreen()
     }
@@ -1349,14 +1439,18 @@ class InteractiveServer extends BaseServer {
     } else {
       if (groupInitData.isInGroup) return;
       // 自适应布局
-      const res = await useRoomBaseServer().getInavToolStatus();
-      const type = res.code == 200 && res.data.layout ? res.data.layout : useMediaSettingServer().state.layout;
-      console.log('自适应布局模式====', type)
-      const adaptiveLayoutMode = VhallRTC[type];
-      window.vhallReportForProduct?.toReport(110240, { report_extra: { broadCastAdaptiveLayoutMode: res } });
-      await this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode });
+      if (Object.keys(this.state.docStream).length) {
+        this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode: VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_EXT1_MODE });
+        console.log('文档云融屏layout--CANVAS_ADAPTIVE_LAYOUT_TILED_EXT1_MODE')
+      } else {
+        const res = await useRoomBaseServer().getInavToolStatus();
+        const type = res.code == 200 && res.data.layout ? res.data.layout : useMediaSettingServer().state.layout;
+        console.log('自适应布局模式====', type)
+        const adaptiveLayoutMode = VhallRTC[type];
+        window.vhallReportForProduct?.toReport(110240, { report_extra: { broadCastAdaptiveLayoutMode: res } });
+        await this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode });
+      }
     }
-
   }
 
   // 动态配置指定旁路布局模板

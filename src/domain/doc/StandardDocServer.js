@@ -7,6 +7,7 @@ import useMsgServer from '../common/msg.server';
 import { doc as docApi } from '../../request/index.js';
 import request from '@/utils/http.js';
 import useMicServer from '../media/mic.server';
+import useInteractiveServer from '../media/interactive.server';
 import useInsertFileServer from '../media/insertFile.server';
 import useDesktopShareServer from '../media/desktopShare.server';
 /**
@@ -280,10 +281,14 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 观众可见按钮切换
     this.on(VHDocSDK.Event.SWITCH_CHANGE, status => {
-      if (useRoomBaseServer().state.watchInitData.webinar.type != 1) return;
-      console.log('[doc]========控制文档开关========', status);
+      const { watchInitData, clientType, interactToolStatus } = useRoomBaseServer().state;
+      if (watchInitData.webinar.type != 1) return;
+      console.log('[doc]========控制文档开关========', status, watchInitData.join_info.role_name, interactToolStatus.speakerAndShowLayout, useInteractiveServer().state.isInstanceInit);
+      if (watchInitData.join_info.role_name == 2 && interactToolStatus.speakerAndShowLayout == 1 && !useInteractiveServer().state.isInstanceInit) {
+        return;
+      }
       this.state.switchStatus = status === 'on';
-      if (useRoomBaseServer().state.clientType != 'send') {
+      if (clientType != 'send') {
         this.resetLayoutByMiniElement()
       }
       this.$emit('dispatch_doc_switch_change', this.state.switchStatus);
@@ -1022,7 +1027,7 @@ export default class StandardDocServer extends AbstractDocServer {
 
     const setChangeElement = useRoomBaseServer().setChangeElement.bind(useRoomBaseServer())
     const {
-      interactToolStatus: { presentation_screen, is_desktop },
+      interactToolStatus: { presentation_screen, is_desktop, speakerAndShowLayout },
       watchInitData: { join_info: { third_party_user_id, role_name }, webinar: { type, no_delay_webinar } }, embedObj
     } = useRoomBaseServer().state
 
@@ -1043,7 +1048,11 @@ export default class StandardDocServer extends AbstractDocServer {
         if (isShareScreen) {
           // 未上麦观众应展示文档+桌面共享
           if (role_name == 2) {
-            setChangeElement('doc');
+            if (speakerAndShowLayout == 1) {
+              setChangeElement('');
+            } else {
+              setChangeElement('doc');
+            }
           } else {
             setChangeElement('stream-list');
           }
@@ -1066,18 +1075,26 @@ export default class StandardDocServer extends AbstractDocServer {
           if (role_name == 4) {
             setChangeElement('stream-list')
           } else {
-            setChangeElement('doc');
+            if (role_name == 2 && speakerAndShowLayout == 1) {
+              setChangeElement('');
+            } else {
+              setChangeElement('doc');
+            }
           }
         } else if (type == 1 && (no_delay_webinar == 1 || isSpeakOn)) {
           // 直播状态下，无延迟或上麦是流列表
           setChangeElement('stream-list');
         } else {
-          // 文档如果可见,直接设置 播放器 为小屏
-          setChangeElement('player');
+          if (speakerAndShowLayout == 1) {
+            setChangeElement('');
+          } else {
+            // 文档如果可见,直接设置 播放器 为小屏
+            setChangeElement('player');
+          }
         }
 
         // 如果开启插播，并且文档可见，小屏一定是文档
-        if (isInsertFilePushing) {
+        if (isInsertFilePushing && speakerAndShowLayout != 1) {
           setChangeElement('doc');
         }
       } else {
