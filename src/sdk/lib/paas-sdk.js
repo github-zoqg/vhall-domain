@@ -21,11 +21,11 @@ export default {
   //文档sdk
   doc: {
     name: 'VHDocSDK',
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.4.3.js'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.4.4.js'
   },
   questionnaire: {
     name: 'VhallQuestionnaire',
-    url: '//s3.e.vhall.com/common-static/middle/questionnaire/1.0.9/questionnaire_service.js',
+    url: '//s3.e.vhall.com/common-static/middle/questionnaire/1.0.10/questionnaire_service.js',
     defer: true // 新增属性，延迟执行
   }
 };
