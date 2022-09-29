@@ -556,6 +556,9 @@ class RoomBaseServer extends BaseServer {
         if (this.state.skinInfo?.skin_json_pc && this.state.skinInfo.skin_json_pc != 'null') {
           this.state.skinInfo.skin_json_pc = JSON.parse(this.state.skinInfo.skin_json_pc);
         }
+        if (this.state.skinInfo?.skin_json_wap && this.state.skinInfo.skin_json_wap != 'null') {
+          this.state.skinInfo.skin_json_wap = JSON.parse(this.state.skinInfo.skin_json_wap);
+        }
         this.state.webinarTag = res.data['webinar-tag'] ? res.data['webinar-tag'].data : {}; //活动标识
         this.state.screenPosterInfo = res.data['screen-poster']
           ? res.data['screen-poster'].data
