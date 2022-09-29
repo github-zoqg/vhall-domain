@@ -281,7 +281,7 @@ class QuestionnaireServer extends BaseServer {
     const { webinar, interact, join_info } = watchInitData;
     return await questionnaireApi.submitQuestionnaire({
       survey_id: naire_id,
-      answer_id: data,
+      answer_id: data.id,
       visit_id: sessionStorage.getItem('visitorWatchId') || '',
       vss_token: this.accessToken,
       extend: JSON.stringify(quesData),
