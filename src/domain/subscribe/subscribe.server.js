@@ -58,6 +58,11 @@ class SubscribeServer extends BaseServer {
 
     console.log(this.state.subscribeWarmList, '12324snuancnuanc1暖场视频')
   }
+
+  // 短信提醒的手机号
+  noticeWechatSubmit(params) {
+    return subscribeApi.noticeWechatSubmit(params)
+  }
 }
 
 export default function useSubscribeServer() {
