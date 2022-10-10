@@ -1431,8 +1431,8 @@ class InteractiveServer extends BaseServer {
     } else {
       await this.setBroadCastScreen()
     }
-
-    if (stream) {
+    // 插播和共享是全屏，只有合并模式占主屏
+    if (stream && interactToolStatus.speakerAndShowLayout == 0) {
       useMediaSettingServer().state.layout = VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 || 'CANVAS_ADAPTIVE_LAYOUT_TILED_MODE'
       // 一人铺满布局
       await this.setBroadCastLayout({ layout: VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 });
