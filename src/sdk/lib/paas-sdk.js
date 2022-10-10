@@ -6,7 +6,7 @@ export default {
   //播放器sdk
   player: {
     name: 'VhallPlayer',
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.4.8.js'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.5.1.js'
   },
   //聊天sdk
   chat: {
