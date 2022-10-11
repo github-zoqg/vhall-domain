@@ -145,7 +145,7 @@ class Domain {
         })
       }
     });
-    window.vhallReportForProduct.toReport = fullLinkReport.report;
+    window.vhallReportForProduct.toReport = fullLinkReport.report.bind(fullLinkReport);
     window.vhallReportForProduct.toStartReporting = fullLinkReport.startReporting.bind(fullLinkReport)
     window.vhallReportForProduct.toResultsReporting = fullLinkReport.resultsReporting.bind(fullLinkReport)
 
