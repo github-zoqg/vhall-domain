@@ -23,7 +23,16 @@ const payWay = (params = {}) => {
   });
 };
 
+const noticeWechatSubmit = (params = {}) => {
+  return request({
+    url: '/v3/interacts/notice/notice-wechat-submit',
+    method: 'POST',
+    data: params
+  });
+};
+
 export default {
   watchAuth,
-  payWay
+  payWay,
+  noticeWechatSubmit
 };
