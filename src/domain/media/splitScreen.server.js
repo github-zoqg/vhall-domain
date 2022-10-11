@@ -169,6 +169,7 @@ class SplitScreenServer extends BaseServer {
       }
       console.log('-----splitScreen--------分屏页面---postMessage----', e)
       const micServer = useMicServer()
+      const interactiveServer = useInteractiveServer()
       switch (e.data.type) {
         // 主页面链接成功
         case 'host_connect':
@@ -218,6 +219,15 @@ class SplitScreenServer extends BaseServer {
           break;
         case 'custom_msg':
           this.$emit('SPLIT_CUSTOM_MESSAGE', e)
+          break;
+        case 'open_doc_cloud_stream':
+          console.log('分屏——open_doc_cloud_stream')
+          interactiveServer.openDocCloudStream();
+          break;
+        case 'close_doc_cloud_stream':
+          console.log('分屏——close_doc_cloud_stream')
+          interactiveServer.closeDocCloudStream();
+          break;
       }
     };
 
@@ -364,6 +374,24 @@ class SplitScreenServer extends BaseServer {
     desktopScreenServer.$on('EVENT_STREAM_END', () => {
       interactiveServer.resetLayout();
     });
+  }
+  // 开启分屏后，文档云融屏的开启及旁路设置由分屏页面接管
+  openDocCloudStreamEvent() {
+    // 判断分屏window是否开启
+    if (this.shadowWin === null) {
+      this.shadowWin = window.open(url || this.state.splitScreenPageUrl)
+    } else {
+      this.shadowWin.postMessage({
+        type: 'open_doc_cloud_stream',
+        source_type: 'split_screen'
+      }, this.curOrigin)
+    }
+  }
+  closeDocCloudStreamEvent() {
+    this.shadowWin.postMessage({
+      type: 'close_doc_cloud_stream',
+      source_type: 'split_screen'
+    }, this.curOrigin)
   }
 }
 export default function useSplitScreenServer() {
