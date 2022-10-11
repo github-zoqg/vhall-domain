@@ -37,7 +37,7 @@ import useZIndexServer from '@/domain/interactiveTools/zindexServer.js';
 import useQaAdminServer from '@/domain/interactiveTools/qaadmin.server.js';
 import useQaServer from '@/domain/interactiveTools/qa.server.js';
 import { setRequestBody, setRequestHeaders } from '@/utils/http.js';
-import { fullLinkBurningPointReport } from '@/utils/report.js'
+import FullLinkReport from '@/utils/fullLink.report.js'
 import VhallPaasSDK, { ALLSDKCONFIG } from '../sdk';
 import { Dep } from '@/domain/common/base.server';
 import { INIT_DOMAIN } from '@/domain/common/dep.const';
@@ -134,18 +134,22 @@ class Domain {
   // 微吼直播【产品侧】需要的数据
   initVhallReportForProduct(reportOptions) {
     window.vhallReportForProduct = new VhallReportForProduct(reportOptions);
-    // 链路埋点
-    fullLinkBurningPointReport({
+
+    // 链路埋点实例化
+    const fullLinkReport = new FullLinkReport({
       reportOptions: reportOptions,
       useRoomBaseServer: useRoomBaseServer,
       reportCallback: rId => {
-        setRequestHeaders({
+        rId && setRequestHeaders({
           'request-id': rId
         })
       }
     });
-  }
+    window.vhallReportForProduct.toReport = fullLinkReport.report;
+    window.vhallReportForProduct.toStartReporting = fullLinkReport.startReporting.bind(fullLinkReport)
+    window.vhallReportForProduct.toResultsReporting = fullLinkReport.resultsReporting.bind(fullLinkReport)
 
+  }
 
 }
 const version = '__VERSION__';
