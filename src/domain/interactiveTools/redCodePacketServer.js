@@ -39,6 +39,7 @@ class RedCodePacketServer extends BaseServer {
       console.log('available', this.state.available, 'dotVisible', this.state.dotVisible)
       // 显示红包icon
       if (redPacketInfo.status == 1) {
+        !this.state.iconVisible && this.changeIconShowNum(true)
         this.state.iconVisible = true;
       }
       this._lastUUid = redPacketInfo.red_packet_uuid
@@ -71,6 +72,7 @@ class RedCodePacketServer extends BaseServer {
         case PWD_RED_ENVELOPE_OK:
           console.log('红包消息:PWD_RED_ENVELOPE_OK')
           this.state.available = true
+          !this.state.iconVisible && this.changeIconShowNum(true)
           this.state.iconVisible = true
           this.state.dotVisible = true
           this._lastUUid = msg.data.red_packet_uuid
@@ -215,6 +217,11 @@ class RedCodePacketServer extends BaseServer {
       }
       return res
     })
+  }
+
+  // change wap右侧展示icon数量
+  changeIconShowNum(status) {
+    useRoomBaseServer().setShowIconNum(status)
   }
 }
 

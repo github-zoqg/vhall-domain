@@ -37,9 +37,13 @@ class LotteryServer extends BaseServer {
           this.state.iconVisible = true
           this.state.docVisible = true
           this.$emit(this.Events.LOTTERY_PUSH, msg);
+          // wap icon显示数量+1
+          !this.state.iconVisible && this.changeIconShowNum(true)
           break;
         case this.Events.LOTTERY_RESULT_NOTICE:
           console.log('抽奖结果:', msg)
+          // wap icon显示数量+1
+          !this.state.iconVisible && this.changeIconShowNum(true)
           this.state.iconVisible = true
           this.$emit(this.Events.LOTTERY_RESULT_NOTICE, msg);
           break;
@@ -161,6 +165,8 @@ class LotteryServer extends BaseServer {
   initIconStatus() {
     return this.getLotteryHistory().then(list => {
       if (list.length) {
+        // wap icon显示数量+1
+        !this.state.iconVisible && this.changeIconShowNum(true)
         this.state.iconVisible = true // 有历史抽奖显示icon
         const lastLottery = list[0] // 倒序排列
         const winLotteryList = list.filter(lot => lot.win === 1 && lot.take_award === 0 && lot.need_take_award === 1) // 中奖且必须领奖,未领奖
@@ -170,6 +176,11 @@ class LotteryServer extends BaseServer {
       }
       return list
     })
+  }
+
+  // change wap右侧展示icon数量
+  changeIconShowNum(status) {
+    useRoomBaseServer().setShowIconNum(status)
   }
 
 }
