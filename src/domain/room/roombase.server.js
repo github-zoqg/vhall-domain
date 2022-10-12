@@ -526,6 +526,10 @@ class RoomBaseServer extends BaseServer {
     return meeting.getInavToolStatus(retParams).then(res => {
       if (res.code == 200) {
         this.state.interactToolStatus = res.data;
+        // 观众，如果是回放，需要使用watch/init中该回放对应场次的融屏状态重制
+        if (this.state.watchInitData.webinar.type == 5 && this.state.watchInitData.join_info.role_name == 2) {
+          this.state.interactToolStatus.speakerAndShowLayout = this.state.watchInitData?.record?.is_union_screen
+        }
         if (!this.state.interactToolStatus.presentation_screen) {
           // 演示人没有，设置主讲人是演示人
           this.state.interactToolStatus.presentation_screen =
