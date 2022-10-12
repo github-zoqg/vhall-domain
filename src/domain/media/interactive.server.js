@@ -717,6 +717,7 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_ADDED, msg => {
       console.log('========云渲染文档流添加========', msg);
       this.state.docStream = msg.data
+      this.state.isOpenDocCloudStatus = true
       if (msg.data?.streamId) {
         // 动态配置旁路主屏
         this.setBroadCastScreen(msg.data.streamId);
@@ -728,6 +729,7 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_REMOVED, msg => {
       console.log('========云渲染文档流移除========', msg);
       this.state.docStream = {}
+      this.state.isOpenDocCloudStatus = false
       if (msg.data?.reason?.msg && msg.data.reason.msg !== 'default') { // 非正常结束
         const { appId, channelId } = msg.data;
         this.closeDocCloudStream({ appId, channelId })
