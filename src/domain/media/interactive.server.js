@@ -41,7 +41,8 @@ class InteractiveServer extends BaseServer {
       mediaPermissionDenied: false, // V7.1.2版本需求   分组活动+开启自动上麦，pc端观众，默认自动上麦
       initInteractiveFailed: false, // 初始化互动是否失败
       initRole: null, // 初始化互动的角色*
-      docStream: {} // 云文档流
+      docStream: {}, // 云文档流
+      isOpenDocCloudStatus: false // 是否开启文档云融屏
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
@@ -161,6 +162,7 @@ class InteractiveServer extends BaseServer {
     console.log('openDocCloudStream---1', opt)
     return this.interactiveInstance.startDocCloudRender(opt).then(e => {
       console.log('startDocCloudRender success', e)
+      this.state.isOpenDocCloudStatus = true;
     })
   }
 
@@ -179,6 +181,7 @@ class InteractiveServer extends BaseServer {
     if (!opt.channelId) return;
     return this.interactiveInstance.stopDocCloudRender(opt).then(() => {
       console.log('stopDocCloudRender success')
+      this.state.isOpenDocCloudStatus = false
     })
   }
 
