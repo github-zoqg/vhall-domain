@@ -417,6 +417,7 @@ class ChatServer extends BaseServer {
       if (res.code == 200) {
         this.state.allBanned = params.status == 1 ? true : false;
       }
+      return res
     });
   }
 
