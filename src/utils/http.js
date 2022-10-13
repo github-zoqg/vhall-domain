@@ -24,6 +24,7 @@ function setBaseUrl(options) {
 
 function setRequestHeaders(options) {
   Object.assign(HEADERS, options);
+  // console.log(HEADERS, '---HEADERS');
 }
 
 // 返回当前请求头设置的platform 判断当前的使用的端
