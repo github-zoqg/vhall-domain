@@ -281,12 +281,8 @@ export default class StandardDocServer extends AbstractDocServer {
 
     // 观众可见按钮切换
     this.on(VHDocSDK.Event.SWITCH_CHANGE, status => {
-      const { watchInitData, clientType, interactToolStatus } = useRoomBaseServer().state;
-      if (watchInitData.webinar.type != 1) return;
-      console.log('[doc]========控制文档开关========', status, watchInitData.join_info.role_name, interactToolStatus.speakerAndShowLayout, useInteractiveServer().state.isInstanceInit);
-      if (watchInitData.join_info.role_name == 2 && interactToolStatus.speakerAndShowLayout == 1 && !useInteractiveServer().state.isInstanceInit) {
-        return;
-      }
+      const { clientType } = useRoomBaseServer().state;
+      console.log('[doc]========控制文档开关========', status);
       this.state.switchStatus = status === 'on';
       if (clientType != 'send') {
         this.resetLayoutByMiniElement()
