@@ -113,7 +113,7 @@ class InteractiveServer extends BaseServer {
           const { docStreams } = event;
           console.log('docStreams', docStreams, Object.keys(docStreams).length);
           const docYunStream = Object.keys(docStreams);
-          if (interactToolStatus.speakerAndShowLayout == 1 && docYunStream.length && watchInitData.join_info.role_name != 2) {
+          if (interactToolStatus.speakerAndShowLayout == 1 && docYunStream.length && (watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id)) {
             //todo sth...
             this.state.docStream = docStreams[docYunStream]
             console.log('docStreams----', this.state.docStream)
@@ -717,8 +717,10 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_ADDED, msg => {
       console.log('========云渲染文档流添加========', msg);
       this.state.docStream = msg.data
-      this.state.isOpenDocCloudStatus = true
-      if (msg.data?.streamId) {
+      this.state.isOpenDocCloudStatus = true;
+      const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+      const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
+      if (msg.data?.streamId && isHostPermission) {
         // 动态配置旁路主屏
         this.setBroadCastScreen(msg.data.streamId);
         this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode: VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_EXT1_MODE });
@@ -729,8 +731,10 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_REMOVED, msg => {
       console.log('========云渲染文档流移除========', msg);
       this.state.docStream = {}
-      this.state.isOpenDocCloudStatus = false
-      if (msg.data?.reason?.msg && msg.data.reason.msg !== 'default') { // 非正常结束
+      this.state.isOpenDocCloudStatus = false;
+      const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+      const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
+      if (msg.data?.reason?.msg && msg.data.reason.msg !== 'default' && isHostPermission) { // 非正常结束
         const { appId, channelId } = msg.data;
         this.closeDocCloudStream({ appId, channelId })
       }
@@ -739,8 +743,10 @@ class InteractiveServer extends BaseServer {
     // 云渲染服务创建异常
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_FAILED, async msg => {
       console.log('========云渲染服务创建异常========', msg);
-      this.state.docStream = {}
-      if (msg.data?.reason?.msg && msg.data.reason.msg !== 'default') { // 非正常结束
+      this.state.docStream = {};
+      const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+      const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
+      if (msg.data?.reason?.msg && msg.data.reason.msg !== 'default' && isHostPermission) { // 非正常结束
         const { appId, channelId } = msg.data;
         await this.closeDocCloudStream({ appId, channelId })
         this.openDocCloudStream();
