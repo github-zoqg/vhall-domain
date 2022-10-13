@@ -723,7 +723,7 @@ class InteractiveServer extends BaseServer {
       if (msg.data?.streamId && isHostPermission) {
         // 动态配置旁路主屏
         this.setBroadCastScreen(msg.data.streamId);
-        this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode: VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_EXT1_MODE });
+        // this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode: VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_EXT1_MODE });
         this.$emit('event_doc_stream_add', msg);
       }
     });
@@ -1450,17 +1450,12 @@ class InteractiveServer extends BaseServer {
     } else {
       if (groupInitData.isInGroup) return;
       // 自适应布局
-      if (Object.keys(this.state.docStream).length) {
-        this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode: VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_EXT1_MODE });
-        console.log('文档云融屏layout--CANVAS_ADAPTIVE_LAYOUT_TILED_EXT1_MODE')
-      } else {
-        const res = await useRoomBaseServer().getInavToolStatus();
-        const type = res.code == 200 && res.data.layout ? res.data.layout : useMediaSettingServer().state.layout;
-        console.log('自适应布局模式====', type)
-        const adaptiveLayoutMode = VhallRTC[type];
-        window.vhallReportForProduct?.toReport(110240, { report_extra: { broadCastAdaptiveLayoutMode: res } });
-        await this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode });
-      }
+      const res = await useRoomBaseServer().getInavToolStatus();
+      const type = res.code == 200 && res.data.layout ? res.data.layout : useMediaSettingServer().state.layout;
+      console.log('自适应布局模式====', type)
+      const adaptiveLayoutMode = VhallRTC[type];
+      window.vhallReportForProduct?.toReport(110240, { report_extra: { broadCastAdaptiveLayoutMode: res } });
+      await this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode });
     }
   }
 
@@ -1485,7 +1480,7 @@ class InteractiveServer extends BaseServer {
 
   // 动态配置旁路主屏
   setBroadCastScreen(streamId) {
-    console.log('动态配置旁路主屏', streamId)
+    console.log('动态配置旁路主屏-a', streamId)
     const speakerList = useMicServer().state.speakerList
     const mainScreenStream = speakerList.find(item => {
       return item.accountId === useRoomBaseServer().state.interactToolStatus.main_screen
