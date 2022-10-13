@@ -6,7 +6,7 @@ export default {
   //播放器sdk
   player: {
     name: 'VhallPlayer',
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.4.8.js'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-player/latest/vhall-jssdk-player-2.5.1.js'
   },
   //聊天sdk
   chat: {
@@ -25,7 +25,7 @@ export default {
   },
   questionnaire: {
     name: 'VhallQuestionnaire',
-    url: '//s3.e.vhall.com/common-static/middle/questionnaire/1.0.15/questionnaire_service.js',
+    url: '//s3.e.vhall.com/common-static/middle/questionnaire/1.0.16/questionnaire_service.js',
     defer: true // 新增属性，延迟执行
   }
 };
