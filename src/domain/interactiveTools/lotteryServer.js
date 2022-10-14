@@ -34,11 +34,11 @@ class LotteryServer extends BaseServer {
         //【分组创建/新增完成】
         case this.Events.LOTTERY_PUSH:
           console.log('开始抽奖:', msg)
+          // wap icon显示数量+1
+          !this.state.iconVisible && this.changeIconShowNum(true)
           this.state.iconVisible = true
           this.state.docVisible = true
           this.$emit(this.Events.LOTTERY_PUSH, msg);
-          // wap icon显示数量+1
-          !this.state.iconVisible && this.changeIconShowNum(true)
           break;
         case this.Events.LOTTERY_RESULT_NOTICE:
           console.log('抽奖结果:', msg)
