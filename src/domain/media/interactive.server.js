@@ -117,7 +117,7 @@ class InteractiveServer extends BaseServer {
             //todo sth...
             this.state.docStream = docStreams[docYunStream]
             console.log('docStreams----', this.state.docStream)
-            await this.closeDocCloudStream();
+            // await this.closeDocCloudStream();
             this.openDocCloudStream({ source: 'init' });
           }
           streams = streams.filter(stream => stream.streamType <= 2)
@@ -152,9 +152,10 @@ class InteractiveServer extends BaseServer {
    */
   openDocCloudStream(options) {
     const { watchInitData } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state
     let opt = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
-      channelId: watchInitData.interact.channel_id,    //必填文档channelId
+      channelId: groupInitData.isInGroup ? groupInitData.channel_id : watchInitData.interact.channel_id,    //必填文档channelId
       delayStopTime: 180000 //可选参数，默认3分钟,这里意为房间内不存在实际用户后的释放时间参数 单位ms；例：房间内没有真实用户，只有云渲染流，3分钟后，如果房间内还没有真实用户存在，销毁云实例
     }
     opt = Object.assign(opt, options)
@@ -719,7 +720,10 @@ class InteractiveServer extends BaseServer {
       this.state.docStream = msg.data
       this.state.isOpenDocCloudStatus = true;
       const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
-      const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
+      const { groupInitData } = useGroupServer().state
+      const isHostPermission = watchInitData.join_info.role_name == 1 ||
+        interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id ||
+        groupInitData.isInGroup && groupInitData.join_role == 20;
       if (msg.data?.streamId && isHostPermission) {
         // 动态配置旁路主屏
         this.setBroadCastScreen(msg.data.streamId);
@@ -748,7 +752,7 @@ class InteractiveServer extends BaseServer {
       const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
       if (msg.data?.reason?.msg && msg.data.reason.msg !== 'default' && isHostPermission) { // 非正常结束
         const { appId, channelId } = msg.data;
-        await this.closeDocCloudStream({ appId, channelId })
+        // await this.closeDocCloudStream({ appId, channelId })
         this.openDocCloudStream();
       }
       this.$emit('event_doc_stream_failed', msg);
