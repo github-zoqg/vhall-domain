@@ -739,7 +739,7 @@ class InteractiveServer extends BaseServer {
       const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
       const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
       if (isHostPermission) {
-        this.setBroadCastScreen();
+        this.resetLayout();
       }
       if (msg.data?.reason?.msg && msg.data.reason.msg !== 'default' && isHostPermission) { // 非正常结束
         const { appId, channelId } = msg.data;
@@ -754,7 +754,7 @@ class InteractiveServer extends BaseServer {
       const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
       const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
       if (isHostPermission) {
-        this.setBroadCastScreen();
+        this.resetLayout();
       }
       if (msg.data?.reason?.msg && msg.data.reason.msg !== 'default' && isHostPermission) { // 非正常结束
         const { appId, channelId } = msg.data;
