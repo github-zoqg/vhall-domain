@@ -38,6 +38,7 @@ class RedPacketServer extends BaseServer {
       const available = hasRest && redPacketInfo.is_luck !== 1 // 当已没有剩余红包且自己没领取过了
       this.state.available = available;
       if (redPacketInfo.status == 1) {
+        !this.state.iconVisible && this.changeIconShowNum(true)
         this.state.iconVisible = true;
         if (available) {
           this.state.dotVisible = true;
@@ -73,6 +74,7 @@ class RedPacketServer extends BaseServer {
         case RED_ENVELOPE_OK:
           console.log('红包消息:RED_ENVELOPE_OK')
           this.state.available = true
+          !this.state.iconVisible && this.changeIconShowNum(true)
           this.state.iconVisible = true
           this.state.dotVisible = true
           this._lastUUid = msg.data.red_packet_uuid
@@ -214,6 +216,11 @@ class RedPacketServer extends BaseServer {
       }
       return res
     })
+  }
+
+  // change wap右侧展示icon数量
+  changeIconShowNum(status) {
+    useRoomBaseServer().setShowIconNum(status)
   }
 }
 

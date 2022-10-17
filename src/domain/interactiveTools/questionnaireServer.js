@@ -36,6 +36,7 @@ class QuestionnaireServer extends BaseServer {
           console.log('问卷消息', msg);
           const questionnaireId = msg.data.questionnaire_id
           this.state.lastQuestionnaireId = questionnaireId
+          !this.state.iconVisible && this.changeIconShowNum(true)
           this.state.iconVisible = true
           this.$emit(this.EVENT_TYPE.QUESTIONNAIRE_PUSH, msg.data);
           break;
@@ -375,6 +376,7 @@ class QuestionnaireServer extends BaseServer {
       const questionId = res?.data?.questionId;
       this.state.lastQuestionnaireId = questionId
       if (questionId) {
+        !this.state.iconVisible && this.changeIconShowNum(true)
         this.state.iconVisible = true;
         this.checkAnswerStatus(questionId).then(response => {
           if (response.data) {
@@ -431,6 +433,11 @@ class QuestionnaireServer extends BaseServer {
   // 设置问卷别名
   setAlias(data) {
     this.state.alias = data
+  }
+
+  // change wap右侧展示icon数量
+  changeIconShowNum(status) {
+    useRoomBaseServer().setShowIconNum(status)
   }
 }
 
