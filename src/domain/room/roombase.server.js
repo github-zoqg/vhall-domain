@@ -79,7 +79,8 @@ class RoomBaseServer extends BaseServer {
       warmUpVideo: {
         warmup_paas_record_id: [],
         warmup_player_type: 1
-      }
+      },
+      showIconNum: 0     // wap右侧展示icon数量
     };
     RoomBaseServer.instance = this;
     return this;
@@ -821,6 +822,16 @@ class RoomBaseServer extends BaseServer {
         this.setUnionConfig(res.data)
       }
     });
+  }
+
+  // 设置展示icon数量
+  setShowIconNum(status) {
+    console.log('setShowIconNum', status)
+    if (status) {
+      this.state.showIconNum++
+    } else {
+      this.state.showIconNum--
+    }
   }
 }
 
