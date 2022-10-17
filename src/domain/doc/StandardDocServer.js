@@ -199,27 +199,7 @@ export default class StandardDocServer extends AbstractDocServer {
         this.$emit('live_start');
 
       } else if (msgType === 'live_over' || (msgType === 'group_switch_end' && msg.data.over_type)) {
-        // 直播结束（包括分组直播的结束）
-        console.log('live_over domain');
-        // 删除所有容器, 该方法包含重置观众不可见的逻辑
-        this.resetContainer();
-
-        // 还原
-        this.state.currentCid = ''; //当前正在展示的容器id
-        this.state.docCid = ''; // 当前文档容器Id
-        this.state.boardCid = ''; // 当前白板容器Id
-        this.state.containerList = []; // 动态容器列表
-        this.state.pageTotal = 1; //总页数
-        this.state.pageNum = 1; // 当前页码Ï
-        this.state.allComplete = false;
-        this.state.docLoadComplete = true; // 文档是否加载完成
-        this.state.thumbnailList = []; // 缩略图列表
-        this.state.switchStatus = false; // 观众是否可见
-
-        const { watchInitData } = useRoomBaseServer().state;
-        if (watchInitData.join_info.role_name == 1) {
-          this.start(2, watchInitData.webinar.mode == 3 ? 2 : 1);
-        }
+        this.handleLiveOver()
         this.$emit('live_over');
       }
     })
@@ -417,6 +397,31 @@ export default class StandardDocServer extends AbstractDocServer {
         }
         this.$emit('dispatch_doc_vod_time_update', { isChange });
       });
+    }
+  }
+
+  // 直播/录制结束重置文档实例状态
+  handleLiveOver() {
+    // 直播结束（包括分组直播的结束）
+    console.log('live_over domain');
+    // 删除所有容器, 该方法包含重置观众不可见的逻辑
+    this.resetContainer();
+
+    // 还原
+    this.state.currentCid = ''; //当前正在展示的容器id
+    this.state.docCid = ''; // 当前文档容器Id
+    this.state.boardCid = ''; // 当前白板容器Id
+    this.state.containerList = []; // 动态容器列表
+    this.state.pageTotal = 1; //总页数
+    this.state.pageNum = 1; // 当前页码Ï
+    this.state.allComplete = false;
+    this.state.docLoadComplete = true; // 文档是否加载完成
+    this.state.thumbnailList = []; // 缩略图列表
+    this.state.switchStatus = false; // 观众是否可见
+
+    const { watchInitData } = useRoomBaseServer().state;
+    if (watchInitData.join_info.role_name == 1) {
+      this.start(2, watchInitData.webinar.mode == 3 ? 2 : 1);
     }
   }
   /**
