@@ -42,7 +42,8 @@ class InteractiveServer extends BaseServer {
       initInteractiveFailed: false, // 初始化互动是否失败
       initRole: null, // 初始化互动的角色*
       docStream: {}, // 云文档流
-      isOpenDocCloudStatus: false // 是否开启文档云融屏
+      isOpenDocCloudStatus: false, // 是否开启文档云融屏
+      yunDocTestNum: 0 // 云文档异常尝试次数
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
@@ -90,7 +91,7 @@ class InteractiveServer extends BaseServer {
     return new Promise((resolve, reject) => {
       this.createInteractiveInstance(
         options,
-        async event => {
+        event => {
           this.state.initRole = options.role
           let streams = event.currentStreams.filter(stream => {
             try {
@@ -719,6 +720,7 @@ class InteractiveServer extends BaseServer {
       console.log('========云渲染文档流添加========', msg);
       this.state.docStream = msg.data
       this.state.isOpenDocCloudStatus = true;
+      this.state.yunDocTestNum = 0;
       const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
       const { groupInitData } = useGroupServer().state
       const isHostPermission = watchInitData.join_info.role_name == 1 ||
@@ -736,6 +738,7 @@ class InteractiveServer extends BaseServer {
       console.log('========云渲染文档流移除========', msg);
       this.state.docStream = {}
       this.state.isOpenDocCloudStatus = false;
+      this.state.yunDocTestNum = 0;
       const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
       const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
       if (isHostPermission) {
@@ -751,15 +754,19 @@ class InteractiveServer extends BaseServer {
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_FAILED, async msg => {
       console.log('========云渲染服务创建异常========', msg);
       this.state.docStream = {};
+      this.state.isOpenDocCloudStatus = false;
       const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
       const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
       if (isHostPermission) {
         this.resetLayout();
       }
+      this.state.yunDocTestNum += 1;
       if (msg.data?.reason?.msg && msg.data.reason.msg !== 'default' && isHostPermission) { // 非正常结束
-        const { appId, channelId } = msg.data;
+        // const { appId, channelId } = msg.data;
         // await this.closeDocCloudStream({ appId, channelId })
-        this.openDocCloudStream();
+        if (this.state.yunDocTestNum < 3) {
+          this.openDocCloudStream();
+        }
       }
       this.$emit('event_doc_stream_failed', msg);
     });
