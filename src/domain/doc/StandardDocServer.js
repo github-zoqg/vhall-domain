@@ -79,7 +79,7 @@ export default class StandardDocServer extends AbstractDocServer {
           this.setRole(VHDocSDK.RoleType.ASSISTANT);
         }
         // 无延迟
-        if (watchInitData.webinar.no_delay_webinar) {
+        if (watchInitData.webinar.no_delay_webinar || useMicServer().state.isSpeakOn) {
           this.setPlayMode(VHDocSDK.PlayMode.INTERACT);
         }
         if (watchInitData?.rebroadcast?.channel_id) {
@@ -234,6 +234,21 @@ export default class StandardDocServer extends AbstractDocServer {
         // 在直播间内
         await useRoomBaseServer().getInavToolStatus();
         this._setDocPermisson();
+      }
+    })
+
+    const { watchInitData: { join_info } } = useRoomBaseServer().state;
+    // 监听上麦下麦，设置模式
+    useMicServer().$on('vrtc_connect_success', (msg) => {
+      if (join_info.third_party_user_id == msg.data.room_join_id && join_info.role_name == 2) {
+        this.setPlayMode(VHDocSDK.PlayMode.INTERACT)
+      }
+    })
+
+    // 监听上麦下麦，设置模式
+    useMicServer().$on('vrtc_disconnect_success', (msg) => {
+      if (join_info.third_party_user_id == msg.data.room_join_id && join_info.role_name == 2) {
+        this.setPlayMode(VHDocSDK.PlayMode.FLV)
       }
     })
 
