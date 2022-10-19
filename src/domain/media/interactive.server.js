@@ -728,8 +728,7 @@ class InteractiveServer extends BaseServer {
         groupInitData.isInGroup && groupInitData.join_role == 20;
       if (msg.data?.streamId && isHostPermission) {
         // 动态配置旁路主屏
-        this.setBroadCastScreen(msg.data.streamId);
-        // this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode: VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_EXT1_MODE });
+        this.resetLayout();
         this.$emit('event_doc_stream_add', msg);
       }
     });
