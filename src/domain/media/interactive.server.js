@@ -180,7 +180,7 @@ class InteractiveServer extends BaseServer {
       channelId: watchInitData.interact.channel_id,    //必填文档channelId
     }
     opt = Object.assign(opt, options)
-    if (!opt.channelId) return;
+    if (!opt.channelId || !this.interactiveInstance) return;
     return this.interactiveInstance.stopDocCloudRender(opt).then(() => {
       console.log('stopDocCloudRender success')
       this.state.isOpenDocCloudStatus = false
