@@ -269,13 +269,11 @@ class SplitScreenServer extends BaseServer {
 
     // 接收设为主讲人消息
     micServer.$on('vrtc_big_screen_set', msg => {
-      if (roomBaseServer.state.watchInitData.join_info.role_name == 1) {
-        const mainScreenSpeaker = micServer.state.speakerList.find(
-          speaker => speaker.accountId == msg.data.room_join_id
-        );
-        if (mainScreenSpeaker.streamId) {
-          interactiveServer.setBroadCastScreen(mainScreenSpeaker.streamId);
-        }
+      console.log('[interactiveServer]-------获取分辨率---')
+      const { interactToolStatus, watchInitData } = useRoomBaseServer().state;
+      // 主持人或当前主讲人重新旁路布局
+      if (watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id) {
+        interactToolStatus.resetLayout()
       }
     });
   }
