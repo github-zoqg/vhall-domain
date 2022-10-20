@@ -25,7 +25,27 @@ class GoodServer extends BaseServer {
   }
 
   //监听msgServer通知
-  listenEvents() {}
+  listenEvents() {
+    // 自定义消息
+    useMsgServer().$onMsg('CUSTOM_MSG', rawMsg => {
+      let temp = Object.assign({}, rawMsg);
+
+      if (typeof temp.data !== 'object') {
+        temp.data = JSON.parse(temp.data);
+        temp.context = JSON.parse(temp.context);
+      }
+      console.log(temp, '原始消息');
+      const { type = '' } = temp.data || {};
+      switch (type) {
+        // 商品更新
+        case 'goods_update_info':
+          this.$emit('goods_update_info', temp);
+          break;
+        default:
+          break;
+      }
+    });
+  }
 
   // 根据问题id查询索引值
   static _findMsgItemByList(data, question_id) {
