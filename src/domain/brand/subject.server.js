@@ -29,7 +29,7 @@ class SubjectServer {
     return roomSubjectApi.subject.getWebinarList(data).then(res => {
       if (res.code === 200) {
         // 基本信息
-        this.state.webinarList = this.state.webinarList.concat(res.data.list)
+        this.state.webinarList = res.data.list
       }
       return res;
     });
