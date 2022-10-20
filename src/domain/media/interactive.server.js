@@ -1441,11 +1441,12 @@ class InteractiveServer extends BaseServer {
 
     const stream = this.getDesktopAndIntercutInfo();
 
+    // 此处需要过滤掉插播音频的情况
+    let status = stream && (!stream.attributes.hasOwnProperty('has_video') || (stream.attributes.hasOwnProperty('has_video') && stream.attributes.has_video != 0));
 
-
-    window.vhallReportForProduct?.toReport(110239, { report_extra: { stream } });
+    window.vhallReportForProduct?.toReport(110239, { report_extra: { stream, status } });
     // 如果有桌面共享或插播
-    if (stream) {
+    if (status) {
       await this.setBroadCastScreen(stream.streamId)
         .then(() => {
           console.log('[interactiveServer]----动态设置旁路主屏幕成功', stream.streamId);
@@ -1459,7 +1460,7 @@ class InteractiveServer extends BaseServer {
       await this.setBroadCastScreen()
     }
     // 插播和共享是全屏，只有合并模式占主屏
-    if (stream && interactToolStatus.speakerAndShowLayout == 0) {
+    if (status && interactToolStatus.speakerAndShowLayout == 0) {
       useMediaSettingServer().state.layout = VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 || 'CANVAS_ADAPTIVE_LAYOUT_TILED_MODE'
       // 一人铺满布局
       await this.setBroadCastLayout({ layout: VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 });
