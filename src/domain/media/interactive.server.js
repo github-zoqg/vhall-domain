@@ -718,6 +718,7 @@ class InteractiveServer extends BaseServer {
     // 云渲染文档流添加
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_ADDED, msg => {
       console.log('========云渲染文档流添加========', msg);
+      if (msg.data?.type !== 'doc-cloud-render') return;
       this.state.docStream = msg.data
       this.state.isOpenDocCloudStatus = true;
       this.state.yunDocTestNum = 0;
@@ -735,6 +736,7 @@ class InteractiveServer extends BaseServer {
     // 云渲染文档流移除
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_REMOVED, msg => {
       console.log('========云渲染文档流移除========', msg);
+      if (msg.data?.type !== 'doc-cloud-render') return;
       this.state.docStream = {}
       this.state.isOpenDocCloudStatus = false;
       this.state.yunDocTestNum = 0;
@@ -752,6 +754,7 @@ class InteractiveServer extends BaseServer {
     // 云渲染服务创建异常
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_FAILED, async msg => {
       console.log('========云渲染服务创建异常========', msg);
+      if (msg.data?.type !== 'doc-cloud-render') return;
       this.state.docStream = {};
       this.state.isOpenDocCloudStatus = false;
       const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
