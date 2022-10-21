@@ -14,7 +14,15 @@ const queryGoodsList = params => {
     params: params
   });
 };
+const queryGoodsListJson = params => {
+  return request({
+    url: params.url,
+    method: 'GET',
+    params: params
+  });
+};
 
 export default {
-  queryGoodsList
+  queryGoodsList,
+  queryGoodsListJson
 };

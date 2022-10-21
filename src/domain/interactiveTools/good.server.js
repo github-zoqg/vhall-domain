@@ -13,7 +13,8 @@ class GoodServer extends BaseServer {
     }
     super();
 
-    this.state = {};
+    this.state = {
+    };
 
     GoodServer.instance = this;
     return this;
@@ -57,6 +58,12 @@ class GoodServer extends BaseServer {
 
   queryGoodsList(params = {}) {
     return goodSaasApi.queryGoodsList(params).then(res => {
+      return res;
+    });
+  }
+
+  queryGoodsListJson(params = {}) {
+    return goodSaasApi.queryGoodsListJson(params).then(res => {
       return res;
     });
   }
