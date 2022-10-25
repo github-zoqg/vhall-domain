@@ -264,7 +264,7 @@ class InteractiveServer extends BaseServer {
    * 获取默认初始化参数
    */
   async _getDefaultOptions(options) {
-    const { watchInitData, interactToolStatus, skinInfo } = useRoomBaseServer().state;
+    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
 
     // 如果是在小组中，取小组中的互动id和房间id初始化互动实例
@@ -293,25 +293,40 @@ class InteractiveServer extends BaseServer {
       role, //用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
       attributes: '', // String 类型
       autoStartBroadcast: watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
-      broadcastConfig:
-        watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id
-          ? {
-            adaptiveLayoutMode:
-              VhallPaasSDK.modules.VhallRTC[useMediaSettingServer().state.layout] ||
-              VhallRTC[sessionStorage.getItem('layout')] ||
-              VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
-            profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
-            paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
-            precastPic: false, // 选填，当旁路布局模板未填满时，剩余的窗格默认会填充系统默认小人图标。可配置是否显示此图标。
-            border: {
-              // 旁路边框属性
-              width: 2,
-              color: '0x1a1a1a'
-            }
-          }
-          : {}, // 自动旁路   开启旁路直播方法所需参数
       otherOption: watchInitData.report_data
     };
+
+    defaultOptions.broadcastConfig = this.getBroadcastConfig()
+
+    console.log('初始化互动options', defaultOptions)
+    return defaultOptions;
+  }
+
+  /**
+   * 获取旁路配置参数
+   */
+  getBroadcastConfig() {
+    const { watchInitData, interactToolStatus, skinInfo } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state;
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission;
+    const broadcastConfig =
+      watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id
+        ? {
+          adaptiveLayoutMode:
+            VhallPaasSDK.modules.VhallRTC[useMediaSettingServer().state.layout] ||
+            VhallRTC[sessionStorage.getItem('layout')] ||
+            VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
+          profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
+          paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
+          precastPic: false, // 选填，当旁路布局模板未填满时，剩余的窗格默认会填充系统默认小人图标。可配置是否显示此图标。
+          border: {
+            // 旁路边框属性
+            width: 2,
+            color: '0x1a1a1a'
+          }
+        }
+        : {} // 自动旁路   开启旁路直播方法所需参数
+
     // 设置旁路背景颜色
     let skinJsonPc = {}
     if (skinInfo?.skin_json_pc) {
@@ -324,15 +339,14 @@ class InteractiveServer extends BaseServer {
 
     if ((watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id) && interactToolStatus?.videoBackGroundMap?.videoBackGroundColor) {
       let color = interactToolStatus.videoBackGroundMap.videoBackGroundColor.replace('#', '0x');
-      defaultOptions.broadcastConfig.backgroundColor = color;
-      defaultOptions.broadcastConfig.border.color = color;
+      broadcastConfig.backgroundColor = color;
+      broadcastConfig.border.color = color;
     } else if (isGroupLeader && skinJsonPc?.videoBackGroundColor) {
       let color = skinJsonPc?.videoBackGroundColor.replace('#', '0x');
-      defaultOptions.broadcastConfig.backgroundColor = color;
-      defaultOptions.broadcastConfig.border.color = color;
+      broadcastConfig.backgroundColor = color;
+      broadcastConfig.border.color = color;
     }
-    console.log('初始化互动options', defaultOptions)
-    return defaultOptions;
+    return broadcastConfig
   }
 
   /**
@@ -1320,16 +1334,7 @@ class InteractiveServer extends BaseServer {
    * @returns {Promise} - 开启旁路后的promise回调
    */
   startBroadCast(options = {}) {
-    const defaultOptions = {
-      layout: VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
-      profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
-      paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
-      border: {
-        // 旁路边框属性
-        width: 2,
-        color: '0x1a1a1a'
-      }
-    };
+    const defaultOptions = this.getBroadcastConfig()
 
     const params = merge.recursive({}, defaultOptions, options);
 
