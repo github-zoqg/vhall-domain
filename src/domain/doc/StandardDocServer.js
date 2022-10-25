@@ -1099,7 +1099,11 @@ export default class StandardDocServer extends AbstractDocServer {
           }
         } else if (type == 1 && (no_delay_webinar == 1 || isSpeakOn)) {
           // 直播状态下，无延迟或上麦是流列表
-          setChangeElement('stream-list');
+          if (isInsertFilePushing && speakerAndShowLayout == 1) {
+            setChangeElement('doc');
+          } else {
+            setChangeElement('stream-list');
+          }
         } else {
           if (speakerAndShowLayout == 1) {
             setChangeElement('');
