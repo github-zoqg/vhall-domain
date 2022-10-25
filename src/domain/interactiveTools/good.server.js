@@ -1,5 +1,6 @@
 import BaseServer from '@/domain/common/base.server.js';
 import { goodSaasApi } from '@/request/index.js';
+import useMsgServer from '@/domain/common/msg.server.js';
 
 /**
  * 问答服务
@@ -17,6 +18,7 @@ class GoodServer extends BaseServer {
     };
 
     GoodServer.instance = this;
+    this.listenEvents()
     return this;
   }
 
