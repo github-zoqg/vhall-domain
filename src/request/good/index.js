@@ -21,8 +21,18 @@ const queryGoodsListJson = params => {
     params: params
   });
 };
+// 观看端_查看活动下某个商品详情
+const getGoodDetail = params => {
+  const url = env.qa === 'v3' ? '/v3/interacts/goods/watch-get-goods-details' : '';
+  return request({
+    url: url,
+    method: 'GET',
+    params: params
+  });
+};
 
 export default {
   queryGoodsList,
-  queryGoodsListJson
+  queryGoodsListJson,
+  getGoodDetail
 };

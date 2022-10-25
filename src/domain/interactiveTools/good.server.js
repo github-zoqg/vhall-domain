@@ -69,6 +69,10 @@ class GoodServer extends BaseServer {
       return res;
     });
   }
+
+  getGoodDetail(params = {}) {
+    return goodSaasApi.getGoodDetail(params)
+  }
 }
 
 export default function useGoodServer() {
