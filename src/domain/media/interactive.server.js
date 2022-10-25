@@ -280,6 +280,7 @@ class InteractiveServer extends BaseServer {
     const role = await this._getInteractiveRole(options);
 
     const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission;
+    const autoStartBroadcast = (watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id) && !watchInitData?.rebroadcast?.isRebroadcasting // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
       inavId, // 互动房间ID，必填
@@ -292,7 +293,7 @@ class InteractiveServer extends BaseServer {
           : VhallPaasSDK.modules.VhallRTC.MODE_RTC, //应用场景模式，选填，可选值参考下文【应用场景类型】。支持版本：2.3.1及以上。
       role, //用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
       attributes: '', // String 类型
-      autoStartBroadcast: watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
+      autoStartBroadcast,
       otherOption: watchInitData.report_data
     };
 
