@@ -1512,7 +1512,7 @@ class InteractiveServer extends BaseServer {
     const mainScreenStream = speakerList.find(item => {
       return item.accountId === useRoomBaseServer().state.interactToolStatus.main_screen
     })
-    const mainScreenStreamId = streamId || (mainScreenStream && mainScreenStream.streamId) || this.state.localStream.streamId
+    const mainScreenStreamId = streamId || mainScreenStream?.streamId || this.state.localStream.streamId
     if (mainScreenStreamId == this.state.mainStreamId) return Promise.resolve();
     return this.interactiveInstance
       .setBroadCastScreen({ mainScreenStreamId }).then(res => {
