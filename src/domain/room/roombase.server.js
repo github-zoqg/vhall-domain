@@ -527,6 +527,10 @@ class RoomBaseServer extends BaseServer {
     return meeting.getInavToolStatus(retParams).then(res => {
       if (res.code == 200) {
         this.state.interactToolStatus = res.data;
+        // 观众，如果是回放，需要使用watch/init中该回放对应场次的融屏状态重制
+        if (this.state.watchInitData.webinar.type == 5 && this.state.watchInitData.join_info.role_name == 2) {
+          this.state.interactToolStatus.speakerAndShowLayout = this.state.watchInitData?.record?.is_union_screen
+        }
         if (!this.state.interactToolStatus.presentation_screen) {
           // 演示人没有，设置主讲人是演示人
           this.state.interactToolStatus.presentation_screen =
@@ -554,6 +558,12 @@ class RoomBaseServer extends BaseServer {
     return meeting.getCommonConfig(retParams).then(res => {
       if (res.code == 200) {
         this.state.skinInfo = res.data['skin'] ? res.data['skin'].data : {}; // 皮肤信息
+        if (this.state.skinInfo?.skin_json_pc && this.state.skinInfo.skin_json_pc != 'null') {
+          this.state.skinInfo.skin_json_pc = JSON.parse(this.state.skinInfo.skin_json_pc);
+        }
+        if (this.state.skinInfo?.skin_json_wap && this.state.skinInfo.skin_json_wap != 'null') {
+          this.state.skinInfo.skin_json_wap = JSON.parse(this.state.skinInfo.skin_json_wap);
+        }
         this.state.webinarTag = res.data['webinar-tag'] ? res.data['webinar-tag'].data : {}; //活动标识
         this.state.screenPosterInfo = res.data['screen-poster']
           ? res.data['screen-poster'].data
