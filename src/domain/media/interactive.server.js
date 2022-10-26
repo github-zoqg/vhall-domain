@@ -156,12 +156,12 @@ class InteractiveServer extends BaseServer {
     const { groupInitData } = useGroupServer().state
     let opt = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
-      channelId: groupInitData.isInGroup ? groupInitData.channel_id : watchInitData.interact.channel_id,    //必填文档channelId
+      channelId: this.interactiveInstanceOptions.roomId === groupInitData?.group_room_id ? groupInitData?.channel_id : watchInitData?.interact?.channel_id, //必填文档channelId
       delayStopTime: 180000 //可选参数，默认3分钟,这里意为房间内不存在实际用户后的释放时间参数 单位ms；例：房间内没有真实用户，只有云渲染流，3分钟后，如果房间内还没有真实用户存在，销毁云实例
     }
     opt = Object.assign(opt, options)
     if (!opt.channelId) return;
-    console.log('openDocCloudStream---1', opt)
+    console.log('openDocCloudStream---1', opt, this.interactiveInstanceOptions)
     return this.interactiveInstance.startDocCloudRender(opt).then(e => {
       console.log('startDocCloudRender success', e)
       this.state.isOpenDocCloudStatus = true;
@@ -175,9 +175,10 @@ class InteractiveServer extends BaseServer {
    */
   closeDocCloudStream(options) {
     const { watchInitData } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state
     let opt = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
-      channelId: watchInitData.interact.channel_id,    //必填文档channelId
+      channelId: this.interactiveInstanceOptions.roomId === groupInitData?.group_room_id ? groupInitData?.channel_id : watchInitData?.interact?.channel_id,    //必填文档channelId
     }
     opt = Object.assign(opt, options)
     if (!opt.channelId || !this.interactiveInstance) return;
