@@ -175,9 +175,10 @@ class InteractiveServer extends BaseServer {
    */
   closeDocCloudStream(options) {
     const { watchInitData } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state
     let opt = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
-      channelId: watchInitData.interact.channel_id,    //必填文档channelId
+      channelId: groupInitData.isInGroup ? groupInitData.channel_id : watchInitData.interact.channel_id,    //必填文档channelId
     }
     opt = Object.assign(opt, options)
     if (!opt.channelId || !this.interactiveInstance) return;
