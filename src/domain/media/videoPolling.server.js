@@ -71,7 +71,7 @@ class VideoPollingServer extends BaseServer {
       interactiveServer.createInteractiveInstance(
         options,
         event => {
-          this.updateVideoPollingStreams(event)
+          this.updateVideoPollingStreams(event.currentStreams)
           resolve(event);
         },
         error => {
@@ -141,9 +141,15 @@ class VideoPollingServer extends BaseServer {
     });
   }
 
+  // 获取流列表更新轮巡列表
+  getStreamsAndUpdatePollingList() {
+    const streamList = useInteractiveServer().getRoomStreams()
+    this.updateVideoPollingStreams(streamList)
+  }
+
   // 获取视频轮询流列表
-  updateVideoPollingStreams(event) {
-    let streams = event.currentStreams.filter(stream => {
+  updateVideoPollingStreams(streamList) {
+    let streams = streamList.filter(stream => {
       try {
         if (stream.attributes && typeof stream.attributes == 'string') {
           stream.attributes = JSON.parse(stream.attributes);
@@ -192,6 +198,7 @@ class VideoPollingServer extends BaseServer {
     return videoRound.getRoundUsers(resultParams).then(res => {
       if (res.code === 200 && res.data.list) {
         this.state.pollingList = res.data.list.map(item => new PollingUser(item))
+
         this.state.isAutoPolling = Boolean(res.data.is_auto);
         this.state.downTime = res.data.interval;
         this.state.isPolling = res.data.list.some(el => { return el.account_id == watchInitData?.join_info?.third_party_user_id })
