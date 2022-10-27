@@ -5,6 +5,7 @@ import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
 import userMemberServer from '../member/member.server';
 import useGroupServer from '../group/StandardGroupServer';
+import useInsertFileServer from '../media/insertFile.server';
 import { Speaker } from './class'
 import useInteractiveServer from './interactive.server';
 import useMediaCheckServer from './mediaCheck.server';
@@ -225,7 +226,12 @@ class MicServer extends BaseServer {
             if (!msgServer.isMobileDevice()) {
               // 上麦成功后，如果开启文档可见，把主画面置为小屏
               if (useDocServer().state.switchStatus) {
-                useRoomBaseServer().setChangeElement('stream-list');
+                // 正在插播中，设置文档为小屏，否则为主画面音视频流
+                if (useInsertFileServer().state.isInsertFilePushing) {
+                  useRoomBaseServer().setChangeElement('doc');
+                } else {
+                  useRoomBaseServer().setChangeElement('stream-list');
+                }
               }
             }
             window.vhallReportForProduct?.toResultsReporting(170032, { event_type: 'message', res: msg });

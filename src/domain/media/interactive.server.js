@@ -41,6 +41,9 @@ class InteractiveServer extends BaseServer {
       mediaPermissionDenied: false, // V7.1.2版本需求   分组活动+开启自动上麦，pc端观众，默认自动上麦
       initInteractiveFailed: false, // 初始化互动是否失败
       initRole: null, // 初始化互动的角色*
+      docStream: {}, // 云文档流
+      isOpenDocCloudStatus: false, // 是否开启文档云融屏
+      yunDocTestNum: 0 // 云文档异常尝试次数
     };
     this.EVENT_TYPE = {
       INTERACTIVE_INSTANCE_INIT_SUCCESS: 'INTERACTIVE_INSTANCE_INIT_SUCCESS', // 互动初始化成功事件
@@ -108,7 +111,16 @@ class InteractiveServer extends BaseServer {
 
           // 拷贝streams
           this.currentStreams = [...streams]
-
+          const { docStreams } = event;
+          console.log('docStreams', docStreams, Object.keys(docStreams).length);
+          const docYunStream = Object.keys(docStreams);
+          if (interactToolStatus.speakerAndShowLayout == 1 && docYunStream.length && (watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id)) {
+            //todo sth...
+            this.state.docStream = docStreams[docYunStream]
+            console.log('docStreams----', this.state.docStream)
+            // await this.closeDocCloudStream();
+            this.openDocCloudStream({ source: 'init' });
+          }
           streams = streams.filter(stream => stream.streamType <= 2)
           console.log('[interactiveServer] streams----', streams)
           streams.forEach(stream => {
@@ -132,6 +144,48 @@ class InteractiveServer extends BaseServer {
         }
       );
     });
+  }
+
+  /**
+   * 开启文档云渲染
+   * @param {Object} options 参数
+   * @returns
+   */
+  openDocCloudStream(options) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state
+    let opt = {
+      appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
+      channelId: this.interactiveInstanceOptions.roomId === groupInitData?.group_room_id ? groupInitData?.channel_id : watchInitData?.interact?.channel_id, //必填文档channelId
+      delayStopTime: 180000 //可选参数，默认3分钟,这里意为房间内不存在实际用户后的释放时间参数 单位ms；例：房间内没有真实用户，只有云渲染流，3分钟后，如果房间内还没有真实用户存在，销毁云实例
+    }
+    opt = Object.assign(opt, options)
+    if (!opt.channelId) return;
+    console.log('openDocCloudStream---1', opt, this.interactiveInstanceOptions)
+    return this.interactiveInstance.startDocCloudRender(opt).then(e => {
+      console.log('startDocCloudRender success', e)
+      this.state.isOpenDocCloudStatus = true;
+    })
+  }
+
+  /**
+   * 关闭文档云渲染
+   * @param {Object} options 参数
+   * @returns
+   */
+  closeDocCloudStream(options) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state
+    let opt = {
+      appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
+      channelId: this.interactiveInstanceOptions.roomId === groupInitData?.group_room_id ? groupInitData?.channel_id : watchInitData?.interact?.channel_id,    //必填文档channelId
+    }
+    opt = Object.assign(opt, options)
+    if (!opt.channelId || !this.interactiveInstance) return;
+    return this.interactiveInstance.stopDocCloudRender(opt).then(() => {
+      console.log('stopDocCloudRender success')
+      this.state.isOpenDocCloudStatus = false
+    })
   }
 
   /**
@@ -211,7 +265,7 @@ class InteractiveServer extends BaseServer {
    * 获取默认初始化参数
    */
   async _getDefaultOptions(options) {
-    const { watchInitData, interactToolStatus, skinInfo } = useRoomBaseServer().state;
+    const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state;
 
     // 如果是在小组中，取小组中的互动id和房间id初始化互动实例
@@ -227,6 +281,7 @@ class InteractiveServer extends BaseServer {
     const role = await this._getInteractiveRole(options);
 
     const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission;
+    const autoStartBroadcast = (watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id) && !watchInitData?.rebroadcast?.isRebroadcasting // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
     const defaultOptions = {
       appId: watchInitData.interact.paas_app_id, // 互动应用ID，必填
       inavId, // 互动房间ID，必填
@@ -239,43 +294,61 @@ class InteractiveServer extends BaseServer {
           : VhallPaasSDK.modules.VhallRTC.MODE_RTC, //应用场景模式，选填，可选值参考下文【应用场景类型】。支持版本：2.3.1及以上。
       role, //用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
       attributes: '', // String 类型
-      autoStartBroadcast: watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id, // 是否开启自动旁路 Boolean 类型   主持人默认开启true v2.3.5版本以上可用
-      broadcastConfig:
-        watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id
-          ? {
-            adaptiveLayoutMode:
-              VhallPaasSDK.modules.VhallRTC[useMediaSettingServer().state.layout] ||
-              VhallRTC[sessionStorage.getItem('layout')] ||
-              VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
-            profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
-            paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
-            precastPic: false, // 选填，当旁路布局模板未填满时，剩余的窗格默认会填充系统默认小人图标。可配置是否显示此图标。
-            border: {
-              // 旁路边框属性
-              width: 2,
-              color: '0x1a1a1a'
-            }
-          }
-          : {}, // 自动旁路   开启旁路直播方法所需参数
+      autoStartBroadcast,
       otherOption: watchInitData.report_data
     };
+
+    defaultOptions.broadcastConfig = this.getBroadcastConfig()
+
+    console.log('初始化互动options', defaultOptions)
+    return defaultOptions;
+  }
+
+  /**
+   * 获取旁路配置参数
+   */
+  getBroadcastConfig() {
+    const { watchInitData, interactToolStatus, skinInfo } = useRoomBaseServer().state;
+    const { groupInitData } = useGroupServer().state;
+    const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission;
+    const broadcastConfig =
+      watchInitData.join_info.role_name == 1 || isGroupLeader || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id
+        ? {
+          adaptiveLayoutMode:
+            VhallPaasSDK.modules.VhallRTC[useMediaSettingServer().state.layout] ||
+            VhallRTC[sessionStorage.getItem('layout')] ||
+            VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_TILED_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
+          profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
+          paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
+          precastPic: false, // 选填，当旁路布局模板未填满时，剩余的窗格默认会填充系统默认小人图标。可配置是否显示此图标。
+          border: {
+            // 旁路边框属性
+            width: 2,
+            color: '0x1a1a1a'
+          }
+        }
+        : {} // 自动旁路   开启旁路直播方法所需参数
+
     // 设置旁路背景颜色
     let skinJsonPc = {}
-    if (skinInfo?.skin_json_pc && skinInfo.skin_json_pc != 'null') {
-      skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
+    if (skinInfo?.skin_json_pc) {
+      if (skinInfo.skin_json_pc != 'null' && Object.prototype.toString.call(skinInfo.skin_json_pc) == '[object String]') {
+        skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
+      } else {
+        skinJsonPc = skinInfo.skin_json_pc;
+      }
     }
 
     if ((watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id) && interactToolStatus?.videoBackGroundMap?.videoBackGroundColor) {
       let color = interactToolStatus.videoBackGroundMap.videoBackGroundColor.replace('#', '0x');
-      defaultOptions.broadcastConfig.backgroundColor = color;
-      defaultOptions.broadcastConfig.border.color = color;
+      broadcastConfig.backgroundColor = color;
+      broadcastConfig.border.color = color;
     } else if (isGroupLeader && skinJsonPc?.videoBackGroundColor) {
       let color = skinJsonPc?.videoBackGroundColor.replace('#', '0x');
-      defaultOptions.broadcastConfig.backgroundColor = color;
-      defaultOptions.broadcastConfig.border.color = color;
+      broadcastConfig.backgroundColor = color;
+      broadcastConfig.border.color = color;
     }
-    console.log('初始化互动options', defaultOptions)
-    return defaultOptions;
+    return broadcastConfig
   }
 
   /**
@@ -658,7 +731,63 @@ class InteractiveServer extends BaseServer {
       console.log('[interactiveServer]-----自动播放失败---------', e)
       this.$emit('EVENT_STREAM_PLAYABORT', e);
     });
-
+    // 云渲染文档流添加
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_ADDED, msg => {
+      console.log('========云渲染文档流添加========', msg);
+      if (msg.data?.type !== 'doc-cloud-render') return;
+      this.state.docStream = msg.data
+      this.state.isOpenDocCloudStatus = true;
+      this.state.yunDocTestNum = 0;
+      const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+      const { groupInitData } = useGroupServer().state
+      const isHostPermission = watchInitData.join_info.role_name == 1 ||
+        interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id ||
+        groupInitData.isInGroup && groupInitData.join_role == 20;
+      if (msg.data?.streamId && isHostPermission) {
+        // 动态配置旁路主屏
+        this.resetLayout();
+        this.$emit('event_doc_stream_add', msg);
+      }
+    });
+    // 云渲染文档流移除
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_REMOVED, msg => {
+      console.log('========云渲染文档流移除========', msg);
+      if (msg.data?.type !== 'doc-cloud-render') return;
+      this.state.docStream = {}
+      this.state.isOpenDocCloudStatus = false;
+      this.state.yunDocTestNum = 0;
+      const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+      const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
+      if (isHostPermission) {
+        this.resetLayout();
+      }
+      if (msg.data?.reason?.msg && msg.data.reason.msg !== 'default' && isHostPermission) { // 非正常结束
+        const { appId, channelId } = msg.data;
+        this.closeDocCloudStream({ appId, channelId })
+      }
+      this.$emit('event_doc_stream_remove', msg);
+    });
+    // 云渲染服务创建异常
+    this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_INTERNAL_STREAM_FAILED, async msg => {
+      console.log('========云渲染服务创建异常========', msg);
+      if (msg.data?.type !== 'doc-cloud-render') return;
+      this.state.docStream = {};
+      this.state.isOpenDocCloudStatus = false;
+      const { watchInitData, interactToolStatus } = useRoomBaseServer().state;
+      const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
+      if (isHostPermission) {
+        this.resetLayout();
+      }
+      this.state.yunDocTestNum += 1;
+      if (msg.data?.reason?.msg && msg.data.reason.msg !== 'default' && isHostPermission) { // 非正常结束
+        // const { appId, channelId } = msg.data;
+        // await this.closeDocCloudStream({ appId, channelId })
+        if (this.state.yunDocTestNum < 3) {
+          this.openDocCloudStream();
+        }
+      }
+      this.$emit('event_doc_stream_failed', msg);
+    });
     // 主讲人切换，调整分辨率
     useRoomBaseServer().$on('VRTC_SPEAKER_SWITCH', async (msg) => {
       if (this.state.localStream.streamId) {
@@ -727,6 +856,7 @@ class InteractiveServer extends BaseServer {
       }
       if (msg.data.type === 'live_over') {
         // 直播结束
+        this.closeDocCloudStream();
         this.setStreamListHeightInWatch(0);
         this.$emit('live_over')
       }
@@ -1206,16 +1336,7 @@ class InteractiveServer extends BaseServer {
    * @returns {Promise} - 开启旁路后的promise回调
    */
   startBroadCast(options = {}) {
-    const defaultOptions = {
-      layout: VhallPaasSDK.modules.VhallRTC.CANVAS_ADAPTIVE_LAYOUT_GRID_MODE, // 旁路布局，选填 默认大屏铺满，一行5个悬浮于下面
-      profile: VhallPaasSDK.modules.VhallRTC.BROADCAST_VIDEO_PROFILE_1080P_1, // 旁路直播视频质量参数
-      paneAspectRatio: VhallPaasSDK.modules.VhallRTC.BROADCAST_PANE_ASPACT_RATIO_16_9, //旁路混流窗格指定高宽比。  v2.3.2及以上
-      border: {
-        // 旁路边框属性
-        width: 2,
-        color: '0x1a1a1a'
-      }
-    };
+    const defaultOptions = this.getBroadcastConfig()
 
     const params = merge.recursive({}, defaultOptions, options);
 
@@ -1257,8 +1378,12 @@ class InteractiveServer extends BaseServer {
     const isGroupLeader = groupInitData.isInGroup && watchInitData.join_info.third_party_user_id == groupInitData.doc_permission
     let skinJsonPc = {}
     const isHostPermission = watchInitData.join_info.role_name == 1 || interactToolStatus.doc_permission == watchInitData.join_info.third_party_user_id;
-    if (skinInfo?.skin_json_pc && skinInfo.skin_json_pc != 'null') {
-      skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
+    if (skinInfo?.skin_json_pc) {
+      if (skinInfo.skin_json_pc != 'null' && Object.prototype.toString.call(skinInfo.skin_json_pc) == '[object String]') {
+        skinJsonPc = JSON.parse(skinInfo.skin_json_pc);
+      } else {
+        skinJsonPc = skinInfo.skin_json_pc;
+      }
     }
 
     let defaultOptions = {
@@ -1326,11 +1451,12 @@ class InteractiveServer extends BaseServer {
 
     const stream = this.getDesktopAndIntercutInfo();
 
+    // 此处需要过滤掉插播音频的情况
+    let status = stream && (!stream.attributes.hasOwnProperty('has_video') || (stream.attributes.hasOwnProperty('has_video') && stream.attributes.has_video != 0));
 
-
-    window.vhallReportForProduct?.toReport(110239, { report_extra: { stream } });
+    window.vhallReportForProduct?.toReport(110239, { report_extra: { stream, status } });
     // 如果有桌面共享或插播
-    if (stream) {
+    if (status) {
       await this.setBroadCastScreen(stream.streamId)
         .then(() => {
           console.log('[interactiveServer]----动态设置旁路主屏幕成功', stream.streamId);
@@ -1338,11 +1464,13 @@ class InteractiveServer extends BaseServer {
         .catch(e => {
           console.error('[interactiveServer]----动态设置旁路主屏幕失败', e);
         });
+    } else if (Object.keys(this.state.docStream).length) { // 存在旁路文档流
+      this.setBroadCastScreen(this.state.docStream.id)
     } else {
       await this.setBroadCastScreen()
     }
-
-    if (stream) {
+    // 插播和共享是全屏，只有合并模式占主屏
+    if (status && interactToolStatus.speakerAndShowLayout == 0) {
       useMediaSettingServer().state.layout = VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 || 'CANVAS_ADAPTIVE_LAYOUT_TILED_MODE'
       // 一人铺满布局
       await this.setBroadCastLayout({ layout: VhallRTC.CANVAS_LAYOUT_PATTERN_GRID_1 });
@@ -1356,7 +1484,6 @@ class InteractiveServer extends BaseServer {
       window.vhallReportForProduct?.toReport(110240, { report_extra: { broadCastAdaptiveLayoutMode: res } });
       await this.setBroadCastAdaptiveLayoutMode({ adaptiveLayoutMode });
     }
-
   }
 
   // 动态配置指定旁路布局模板
@@ -1380,12 +1507,12 @@ class InteractiveServer extends BaseServer {
 
   // 动态配置旁路主屏
   setBroadCastScreen(streamId) {
-    console.log('动态配置旁路主屏', streamId)
+    console.log('动态配置旁路主屏-a', streamId)
     const speakerList = useMicServer().state.speakerList
     const mainScreenStream = speakerList.find(item => {
       return item.accountId === useRoomBaseServer().state.interactToolStatus.main_screen
     })
-    const mainScreenStreamId = streamId || (mainScreenStream && mainScreenStream.streamId) || this.state.localStream.streamId
+    const mainScreenStreamId = streamId || mainScreenStream?.streamId || this.state.localStream.streamId
     if (mainScreenStreamId == this.state.mainStreamId) return Promise.resolve();
     return this.interactiveInstance
       .setBroadCastScreen({ mainScreenStreamId }).then(res => {
