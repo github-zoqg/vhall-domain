@@ -353,10 +353,10 @@ class PlayerServer extends BaseServer {
       liveOption: {
         defaultDefinition: ''
       },
-      pursueOption: {
-        enable: true, // 默认 false
-        mode: 'seek' // 追播模式 pursue：追播，seek：跳转。默认 pursue
-      }
+      // pursueOption: {
+      //   enable: false, // 默认 false
+      //   mode: 'seek' // 追播模式 pursue：追播，seek：跳转。默认 pursue
+      // }
     };
     if (!(watchInitData.rebroadcast && watchInitData.rebroadcast.id)) {
       // 播放器上报增加字段
