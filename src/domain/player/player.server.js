@@ -146,6 +146,16 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.getLimitSeek(onFail);
   }
 
+  //设置循环状态
+  setLoop(isLoop, onFail = () => { }) {
+    return this.playerInstance.setLoop(isLoop, onFail);
+  }
+
+  //获取循环状态
+  getLoop(onFail = () => { }) {
+    return this.playerInstance.getLoop(onFail);
+  }
+
   getUsableSpeed() {
     return this.playerInstance.getUsableSpeed();
   }
