@@ -136,6 +136,16 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.setCurrentTime(val, onFail);
   }
 
+  //设置seek限制
+  setLimitSeek(opt, onFail = () => { }) {
+    return this.playerInstance.setLimitSeek(opt, onFail);
+  }
+
+  //获取当前seek限制信息
+  getLimitSeek(onFail = () => { }) {
+    return this.playerInstance.getLimitSeek(onFail);
+  }
+
   getUsableSpeed() {
     return this.playerInstance.getUsableSpeed();
   }
