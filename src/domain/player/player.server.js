@@ -128,12 +128,12 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.getDuration(onFail);
   }
 
-  getCurrentTime() {
-    return this.playerInstance.getCurrentTime();
+  getCurrentTime(onFail = () => { }) {
+    return this.playerInstance.getCurrentTime(onFail);
   }
 
-  setCurrentTime(val) {
-    return this.playerInstance.setCurrentTime(val);
+  setCurrentTime(val, onFail = () => { }) {
+    return this.playerInstance.setCurrentTime(val, onFail);
   }
 
   getUsableSpeed() {
