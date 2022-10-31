@@ -156,12 +156,12 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.getLoop(onFail);
   }
 
-  getUsableSpeed() {
-    return this.playerInstance.getUsableSpeed();
+  getUsableSpeed(onFail = () => { }) {
+    return this.playerInstance.getUsableSpeed(onFail);
   }
 
-  setPlaySpeed(val) {
-    return this.playerInstance.setPlaySpeed(val);
+  setPlaySpeed(val, onFail = () => { }) {
+    return this.playerInstance.setPlaySpeed(val, onFail);
   }
 
   openControls(status) {
