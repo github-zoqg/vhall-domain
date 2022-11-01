@@ -111,14 +111,27 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.isFullscreen()
   }
 
+  //设置静音
   setMute(isMute, onFail = () => { }) {
     return this.playerInstance.setMute(isMute, onFail);
   }
 
+  //获取音量
   getVolume() {
     return this.playerInstance.getVolume();
   }
 
+  //获取当前网络状态
+  getNetworkState() {
+    return this.playerInstance.getNetworkState();
+  }
+
+  //视频截图
+  videoScreenshot() {
+    return this.playerInstance.videoScreenshot()
+  }
+
+  //设置音量
   setVolume(val, onFail = () => { }) {
     this.state.voice = val;
     return this.playerInstance.setVolume(val, onFail);
