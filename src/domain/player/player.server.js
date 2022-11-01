@@ -193,8 +193,8 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.setBarrageInfo(val);
   }
 
-  addBarrage(val) {
-    return this.playerInstance.addBarrage(val);
+  addBarrage(val, setting = {}, onFail = () => { }) {
+    return this.playerInstance.addBarrage(val, setting, onFail);
   }
 
   toggleBarrage() {
