@@ -98,12 +98,12 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.setQuality(item);
   }
 
-  enterFullScreen() {
-    return this.playerInstance.enterFullScreen();
+  enterFullScreen(onFail = () => { }) {
+    return this.playerInstance.enterFullScreen(onFail);
   }
 
-  exitFullScreen() {
-    return this.playerInstance.exitFullScreen();
+  exitFullScreen(onFail = () => { }) {
+    return this.playerInstance.exitFullScreen(onFail);
   }
 
   //播放器是否是全屏
@@ -111,17 +111,30 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.isFullscreen()
   }
 
-  setMute() {
-    return this.playerInstance.setMute();
+  //设置静音
+  setMute(isMute, onFail = () => { }) {
+    return this.playerInstance.setMute(isMute, onFail);
   }
 
+  //获取音量
   getVolume() {
     return this.playerInstance.getVolume();
   }
 
-  setVolume(val) {
+  //获取当前网络状态
+  getNetworkState() {
+    return this.playerInstance.getNetworkState();
+  }
+
+  //视频截图
+  videoScreenshot() {
+    return this.playerInstance.videoScreenshot()
+  }
+
+  //设置音量
+  setVolume(val, onFail = () => { }) {
     this.state.voice = val;
-    return this.playerInstance.setVolume(val);
+    return this.playerInstance.setVolume(val, onFail);
   }
 
   getDuration(onFail = () => { }) {
@@ -136,12 +149,32 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.setCurrentTime(val, onFail);
   }
 
-  getUsableSpeed() {
-    return this.playerInstance.getUsableSpeed();
+  //设置seek限制
+  setLimitSeek(opt, onFail = () => { }) {
+    return this.playerInstance.setLimitSeek(opt, onFail);
   }
 
-  setPlaySpeed(val) {
-    return this.playerInstance.setPlaySpeed(val);
+  //获取当前seek限制信息
+  getLimitSeek(onFail = () => { }) {
+    return this.playerInstance.getLimitSeek(onFail);
+  }
+
+  //设置循环状态
+  setLoop(isLoop, onFail = () => { }) {
+    return this.playerInstance.setLoop(isLoop, onFail);
+  }
+
+  //获取循环状态
+  getLoop(onFail = () => { }) {
+    return this.playerInstance.getLoop(onFail);
+  }
+
+  getUsableSpeed(onFail = () => { }) {
+    return this.playerInstance.getUsableSpeed(onFail);
+  }
+
+  setPlaySpeed(val, onFail = () => { }) {
+    return this.playerInstance.setPlaySpeed(val, onFail);
   }
 
   openControls(status) {
@@ -160,8 +193,8 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.setBarrageInfo(val);
   }
 
-  addBarrage(val) {
-    return this.playerInstance.addBarrage(val);
+  addBarrage(val, setting = {}, onFail = () => { }) {
+    return this.playerInstance.addBarrage(val, setting, onFail);
   }
 
   toggleBarrage() {
