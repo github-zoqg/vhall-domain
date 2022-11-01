@@ -343,6 +343,85 @@ class PlayerServer extends BaseServer {
       this.$emit(VhallPlayer.FULLSCREEN_CHANGE, e);
     });
 
+    // 当前时间改变，点播当前播放时间被改变时触发
+    this.playerInstance.on(VhallPlayer.CURRENTTIME_CHANGE, e => {
+      this.$emit(VhallPlayer.CURRENTTIME_CHANGE, e);
+    });
+
+    // 循环状态改变	点播循环状态被改变时触发
+    this.playerInstance.on(VhallPlayer.LOOP_CHANGE, e => {
+      this.$emit(VhallPlayer.LOOP_CHANGE, e);
+    });
+
+    // 静音状态改变	静音状态被改变时触发
+    this.playerInstance.on(VhallPlayer.MUTE_CHANGE, e => {
+      this.$emit(VhallPlayer.MUTE_CHANGE, e);
+    });
+
+    // 倍速改变	倍速被改变时触发
+    this.playerInstance.on(VhallPlayer.RATE_CHANGE, e => {
+      this.$emit(VhallPlayer.RATE_CHANGE, e);
+    });
+
+    // 声音改变	声音被改变时触发
+    this.playerInstance.on(VhallPlayer.VOLUME_CHANGE, e => {
+      this.$emit(VhallPlayer.VOLUME_CHANGE, e);
+    });
+
+    // 视频正在播放中
+    this.playerInstance.on(VhallPlayer.PLAYING, e => {
+      this.$emit(VhallPlayer.PLAYING, e);
+    });
+
+    // 视频加载中	点播视频加载中时触发
+    this.playerInstance.on(VhallPlayer.PROGRESS, e => {
+      this.$emit(VhallPlayer.PROGRESS, e);
+    });
+
+    // 视频元数据加载完成
+    this.playerInstance.on(VhallPlayer.LOADEDMETADATA, e => {
+      this.$emit(VhallPlayer.LOADEDMETADATA, e);
+    });
+
+    // 开启弹幕
+    this.playerInstance.on(VhallPlayer.OPEN_BARRAGE, e => {
+      this.$emit(VhallPlayer.OPEN_BARRAGE, e);
+    });
+
+    // 关闭弹幕
+    this.playerInstance.on(VhallPlayer.CLOSE_BARRAGE, e => {
+      this.$emit(VhallPlayer.CLOSE_BARRAGE, e);
+    });
+
+    // 清空弹幕
+    this.playerInstance.on(VhallPlayer.CLEAR_BARRAGE, e => {
+      this.$emit(VhallPlayer.CLEAR_BARRAGE, e);
+    });
+
+    // 开启字幕
+    this.playerInstance.on(VhallPlayer.OPEN_SUBTITLE, e => {
+      this.$emit(VhallPlayer.OPEN_SUBTITLE, e);
+    });
+
+    // 关闭字幕
+    this.playerInstance.on(VhallPlayer.CLOSE_SUBTITLE, e => {
+      this.$emit(VhallPlayer.CLOSE_SUBTITLE, e);
+    });
+
+    // 切换字幕文件
+    this.playerInstance.on(VhallPlayer.SUBTITLE_CHANGED, e => {
+      this.$emit(VhallPlayer.SUBTITLE_CHANGED, e);
+    });
+
+    // 开启直播字幕
+    this.playerInstance.on(VhallPlayer.LIVESUBTITLE_OPENED, e => {
+      this.$emit(VhallPlayer.LIVESUBTITLE_OPENED, e);
+    });
+
+    // 关闭直播字幕
+    this.playerInstance.on(VhallPlayer.LIVESUBTITLE_CLOSED, e => {
+      this.$emit(VhallPlayer.LIVESUBTITLE_CLOSED, e);
+    });
   }
 
   //获取默认初始化参数
