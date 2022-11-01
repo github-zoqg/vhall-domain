@@ -98,12 +98,12 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.setQuality(item);
   }
 
-  enterFullScreen() {
-    return this.playerInstance.enterFullScreen();
+  enterFullScreen(onFail = () => { }) {
+    return this.playerInstance.enterFullScreen(onFail);
   }
 
-  exitFullScreen() {
-    return this.playerInstance.exitFullScreen();
+  exitFullScreen(onFail = () => { }) {
+    return this.playerInstance.exitFullScreen(onFail);
   }
 
   //播放器是否是全屏
@@ -111,17 +111,17 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.isFullscreen()
   }
 
-  setMute() {
-    return this.playerInstance.setMute();
+  setMute(isMute, onFail = () => { }) {
+    return this.playerInstance.setMute(isMute, onFail);
   }
 
   getVolume() {
     return this.playerInstance.getVolume();
   }
 
-  setVolume(val) {
+  setVolume(val, onFail = () => { }) {
     this.state.voice = val;
-    return this.playerInstance.setVolume(val);
+    return this.playerInstance.setVolume(val, onFail);
   }
 
   getDuration(onFail = () => { }) {
