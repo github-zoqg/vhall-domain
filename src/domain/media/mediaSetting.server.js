@@ -341,9 +341,10 @@ class MediaSettingServer {
     };
     const options = merge.recursive({}, defaultOptions, customOptions);
     return new Promise((resolve, reject) => {
-      VhallPaasSDK.modules.VhallRTC.startPreview(
+      VhallPaasSDK.modules.VhallRTC.vhallrtc.createStream(
         options,
         event => {
+          console.log('创建视频流')
           this.state.videoPreviewStreamId = event.streamId;
           this.state.videoPreviewStream = event.stream;
           resolve(event);
@@ -371,8 +372,9 @@ class MediaSettingServer {
       return Promise.resolve('预览视频流不存在');
     }
     return new Promise((resolve, reject) => {
-      VhallPaasSDK.modules.VhallRTC.stopPreview({ streamId }, resolve, reject);
+      VhallPaasSDK.modules.VhallRTC.vhallrtc.destroyStream({ streamId }, resolve, reject);
     }).then(() => {
+      console.log('销毁视频流')
       this.state.videoPreviewStreamId = null;
     });
   }
