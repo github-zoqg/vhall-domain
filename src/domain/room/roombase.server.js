@@ -76,6 +76,7 @@ class RoomBaseServer extends BaseServer {
       thirdPullStreamMode: 1,   //第三方拉流模式  1,2
       isWapBodyDocSwitch: false, // 播放器文档位置是否切换
       isWapBodyDocSwitchFullScreen: false, // 竖屏直播下 文档和播放器是否互换位置。 默认 文档主画面，播放器小屏 false
+      isClearScreen: false, // 竖屏直播清屏状态
       unionConfig: {}, //通用配置 - 基本配置，播放器跑马灯配置，文档水印配置等
       warmUpVideo: {
         warmup_paas_record_id: [],
