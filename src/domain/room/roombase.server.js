@@ -143,6 +143,10 @@ class RoomBaseServer extends BaseServer {
               this.state.warmUpVideo = res.data.warmup;
             }
 
+            // 预约页 不支持竖屏
+            if (this.state.watchInitData.status === 'subscribe') {
+              this.state.watchInitData.webinar_show_type = 1
+            }
           }
 
           // 判断是不是第三方推流
