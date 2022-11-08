@@ -56,12 +56,18 @@ class MediaCheckServer {
     function getConstraints() {
       let constraints = {
         audio: true, video: {
-          width: 1920, height: 1080
+          width: 1920, height: 1080,
         }
       }
       const selectedVideoDeviceId = localStorage.getItem('media-check.selected.video')
       const selectedAudioDeviceId = localStorage.getItem('media-check.selected.audioInput')
-      if (selectedVideoDeviceId) constraints.video = { deviceId: selectedVideoDeviceId };
+      if (selectedVideoDeviceId) {
+        constraints.video = {
+          deviceId: selectedVideoDeviceId,
+          width: 1920,
+          height: 1080
+        };
+      }
       if (selectedAudioDeviceId) constraints.audio = { deviceId: selectedAudioDeviceId };
       return constraints
     }
