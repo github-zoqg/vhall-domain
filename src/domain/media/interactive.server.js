@@ -174,6 +174,7 @@ class InteractiveServer extends BaseServer {
    * @returns
    */
   closeDocCloudStream(options) {
+    if (!this.state.isOpenDocCloudStatus) return; // 未开启文档流不执行close
     const { watchInitData } = useRoomBaseServer().state;
     const { groupInitData } = useGroupServer().state
     let opt = {
