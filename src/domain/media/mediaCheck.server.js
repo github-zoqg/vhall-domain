@@ -14,7 +14,6 @@ class MediaCheckServer {
         device_status: 0, // 0未检测 1可以上麦 2不可以上麦
         device_type: 0
       },
-      selectedVideoDeviceId: '', // 当前选取的设备id
       localStreamId: '', // 本地流id
       devices: {
         videoInputDevices: [], //视频采集设备，如摄像头
@@ -55,10 +54,20 @@ class MediaCheckServer {
    */
   async getUserMediaWithSelectedDevices() {
     function getConstraints() {
-      let constraints = { audio: true, video: true }
-      const selectedVideoDeviceId = sessionStorage.getItem('selectedVideoDeviceId')
-      const selectedAudioDeviceId = sessionStorage.getItem('selectedAudioDeviceId')
-      if (selectedVideoDeviceId) constraints.video = { deviceId: selectedVideoDeviceId };
+      let constraints = {
+        audio: true, video: {
+          width: 1920, height: 1080,
+        }
+      }
+      const selectedVideoDeviceId = localStorage.getItem('media-check.selected.video')
+      const selectedAudioDeviceId = localStorage.getItem('media-check.selected.audioInput')
+      if (selectedVideoDeviceId) {
+        constraints.video = {
+          deviceId: selectedVideoDeviceId,
+          width: 1920,
+          height: 1080
+        };
+      }
       if (selectedAudioDeviceId) constraints.audio = { deviceId: selectedAudioDeviceId };
       return constraints
     }
