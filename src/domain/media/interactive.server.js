@@ -30,6 +30,12 @@ class InteractiveServer extends BaseServer {
         // audioMuted: false,
         // attributes: {}
       },
+      localSpeaker: { // 未开播前的初始化
+        streamId: null, // 本地流id
+        videoMuted: false,
+        audioMuted: false,
+        // attributes: {}
+      },
       // remoteStreams: [], // 远端流数组
       streamListHeightInWatch: 0, // PC观看端流列表高度
       fullScreenType: false, // wap 全屏状态
@@ -674,6 +680,12 @@ class InteractiveServer extends BaseServer {
     // 本地流采集停止事件(处理拔出设备和桌面共享停止时)
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_END, async e => {
       console.log('[interactiveServer]-------本地流断开----', third_party_user_id, e);
+
+      if (watchInitData.join_info.role_name != 2 && watchInitData.webinar.type != 1 && this.state.localSpeaker.streamId) {
+        this._clearLocalStream()
+        this._clearLocalSpeaker()
+      }
+
       if (e.data?.streamType != 3 && third_party_user_id === e.data?.accountId) {
         // 非桌面共享时设置设ti备不可用  / 若在麦上，下麦( 线上逻辑 )
         await useMediaCheckServer().setDevice({ status: 2, send_msg: 1 }); //send_msg： 传 0 不会发消息，不传或传 1 会发这个消息
@@ -687,6 +699,12 @@ class InteractiveServer extends BaseServer {
 
     this.interactiveInstance.on(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e => {
       // 本地流视频发送帧率异常事件
+
+      if (watchInitData.join_info.role_name != 2 && watchInitData.webinar.type != 1 && this.state.localSpeaker.streamId) {
+        this._clearLocalStream()
+        this._clearLocalSpeaker()
+      }
+
       console.log('EVENT_STREAM_STUNK_MSG', e)
       this.$emit('EVENT_STREAM_STUNK', e);
       // this.$emit(VhallPaasSDK.modules.VhallRTC.EVENT_STREAM_STUNK, e);
@@ -906,14 +924,14 @@ class InteractiveServer extends BaseServer {
       attributes,
       roleName
     } = statusBase.getBaseInfo();
-
+    console.log('-createLocalVideoStream-', options)
     let defaultOptions = {
       videoNode: options.videoNode, // 必填，传入本地视频显示容器ID
       audio: true, // 选填，是否采集音频设备，默认为true
       video: !isWebinarMode, // 选填，是否采集视频设备，默认为true
-      audioDevice: options.audioDevice || sessionStorage.getItem('selectedAudioDeviceId'), // 选填，指定的音频设备id，默认为系统缺省
+      audioDevice: options.audioDevice || localStorage.getItem('media-check.selected.audioInput'), // 选填，指定的音频设备id，默认为系统缺省
       videoDevice: !isWebinarMode
-        ? options.videoDevice || sessionStorage.getItem('selectedVideoDeviceId')
+        ? options.videoDevice || localStorage.getItem('media-check.selected.video')
         : null, // 选填，指定的视频设备id，默认为系统缺省
       profile:
         VhallRTC[this.getVideoProfile()] ||
@@ -943,7 +961,7 @@ class InteractiveServer extends BaseServer {
     defaultOptions = this.handleInsertFileMicStatus(defaultOptions)
 
     const params = merge.recursive({}, defaultOptions, options);
-
+    console.log('createLocalStream---', params)
     return this.createLocalStream(params).then(data => {
       this.updateSpeakerByAccountId(data, defaultOptions, watchInitData)
       return data
@@ -971,7 +989,7 @@ class InteractiveServer extends BaseServer {
       video: !isWebinarMode, // 选填，是否采集视频设备，默认为true
       // audioDevice: options.audioDevice || sessionStorage.getItem('selectedAudioDeviceId'), // 选填，指定的音频设备id，默认为系统缺省
       videoDevice: !isWebinarMode
-        ? options.videoDevice || sessionStorage.getItem('selectedVideoDeviceId')
+        ? options.videoDevice || localStorage.getItem('media-check.selected.video')
         : null, // 选填，指定的视频设备id，默认为系统缺省
       profile:
         VhallRTC[this.getVideoProfile()] ||
@@ -1195,6 +1213,7 @@ class InteractiveServer extends BaseServer {
 
   // 销毁本地流
   destroyStream(options = {}) {
+    console.log('destroyStream-----', options?.streamId, this.state.localStream.streamId)
     return this.interactiveInstance.destroyStream({ streamId: options?.streamId || this.state.localStream.streamId })
       .then(res => {
         // 如果是销毁本地上麦流，清空上麦流参数
@@ -1296,6 +1315,22 @@ class InteractiveServer extends BaseServer {
       // audioMuted: false,
       // attributes: {}
     };
+  }
+  // 开播前的初始化
+  setLocalSpeaker(opt) {
+    this.state.localSpeaker = Object.assign(this.state.localSpeaker, opt)
+  }
+
+  _clearLocalSpeaker() {
+    this.state.localSpeaker = {
+      streamId: null,
+      videoMuted: false,
+      audioMuted: false,
+    }
+  }
+  setDefMuted() {
+    this.state.localSpeaker.videoMuted = false;
+    this.state.localSpeaker.audioMuted = false;
   }
 
   /**
@@ -1699,6 +1734,8 @@ class InteractiveServer extends BaseServer {
       broadcast: 1
     };
     const retParams = merge.recursive({}, defaultParams, params);
+    console.log('setDeviceStatus=', retParams)
+    window.vhallReportForProduct?.toReport(110137, { report_extra: { ...retParams, mType: 'domain' } });
     return roomApi.activity.setDeviceStatus(retParams);
   }
 
