@@ -10,7 +10,6 @@ class MediaSettingServer {
       return MediaSettingServer.instance;
     }
     this.state = {
-      selectedVideoDeviceId: '', // 当前选取的设备id
       videoPreviewStreamId: '', // 当前[流ID]
       canvasImgUrl: '//cnstatic01.e.vhall.com/common-static/middle/images/canvasDefault.png', // 当前图片流url
       rate: '', // 当前画质
@@ -53,7 +52,6 @@ class MediaSettingServer {
 
   resetState() {
     this.state = {
-      selectedVideoDeviceId: '', // 当前选取的设备id
       videoPreviewStreamId: '', // 当前[流ID]
       canvasImgUrl: '//cnstatic01.e.vhall.com/common-static/middle/images/canvasDefault.png', // 当前图片流url
       rate: '', // 当前画质
