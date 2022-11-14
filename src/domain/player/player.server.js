@@ -98,12 +98,12 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.setQuality(item);
   }
 
-  enterFullScreen() {
-    return this.playerInstance.enterFullScreen();
+  enterFullScreen(onFail = () => { }) {
+    return this.playerInstance.enterFullScreen(onFail);
   }
 
-  exitFullScreen() {
-    return this.playerInstance.exitFullScreen();
+  exitFullScreen(onFail = () => { }) {
+    return this.playerInstance.exitFullScreen(onFail);
   }
 
   //播放器是否是全屏
@@ -111,37 +111,70 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.isFullscreen()
   }
 
-  setMute() {
-    return this.playerInstance.setMute();
+  //设置静音
+  setMute(isMute, onFail = () => { }) {
+    return this.playerInstance.setMute(isMute, onFail);
   }
 
+  //获取音量
   getVolume() {
     return this.playerInstance.getVolume();
   }
 
-  setVolume(val) {
+  //获取当前网络状态
+  getNetworkState() {
+    return this.playerInstance.getNetworkState();
+  }
+
+  //视频截图
+  videoScreenshot() {
+    return this.playerInstance.videoScreenshot()
+  }
+
+  //设置音量
+  setVolume(val, onFail = () => { }) {
     this.state.voice = val;
-    return this.playerInstance.setVolume(val);
+    return this.playerInstance.setVolume(val, onFail);
   }
 
   getDuration(onFail = () => { }) {
     return this.playerInstance.getDuration(onFail);
   }
 
-  getCurrentTime() {
-    return this.playerInstance.getCurrentTime();
+  getCurrentTime(onFail = () => { }) {
+    return this.playerInstance.getCurrentTime(onFail);
   }
 
-  setCurrentTime(val) {
-    return this.playerInstance.setCurrentTime(val);
+  setCurrentTime(val, onFail = () => { }) {
+    return this.playerInstance.setCurrentTime(val, onFail);
   }
 
-  getUsableSpeed() {
-    return this.playerInstance.getUsableSpeed();
+  //设置seek限制
+  setLimitSeek(opt, onFail = () => { }) {
+    return this.playerInstance.setLimitSeek(opt, onFail);
   }
 
-  setPlaySpeed(val) {
-    return this.playerInstance.setPlaySpeed(val);
+  //获取当前seek限制信息
+  getLimitSeek(onFail = () => { }) {
+    return this.playerInstance.getLimitSeek(onFail);
+  }
+
+  //设置循环状态
+  setLoop(isLoop, onFail = () => { }) {
+    return this.playerInstance.setLoop(isLoop, onFail);
+  }
+
+  //获取循环状态
+  getLoop(onFail = () => { }) {
+    return this.playerInstance.getLoop(onFail);
+  }
+
+  getUsableSpeed(onFail = () => { }) {
+    return this.playerInstance.getUsableSpeed(onFail);
+  }
+
+  setPlaySpeed(val, onFail = () => { }) {
+    return this.playerInstance.setPlaySpeed(val, onFail);
   }
 
   openControls(status) {
@@ -160,8 +193,8 @@ class PlayerServer extends BaseServer {
     return this.playerInstance.setBarrageInfo(val);
   }
 
-  addBarrage(val) {
-    return this.playerInstance.addBarrage(val);
+  addBarrage(val, setting = {}, onFail = () => { }) {
+    return this.playerInstance.addBarrage(val, setting, onFail);
   }
 
   toggleBarrage() {
@@ -310,6 +343,85 @@ class PlayerServer extends BaseServer {
       this.$emit(VhallPlayer.FULLSCREEN_CHANGE, e);
     });
 
+    // 当前时间改变，点播当前播放时间被改变时触发
+    this.playerInstance.on(VhallPlayer.CURRENTTIME_CHANGE, e => {
+      this.$emit(VhallPlayer.CURRENTTIME_CHANGE, e);
+    });
+
+    // 循环状态改变	点播循环状态被改变时触发
+    this.playerInstance.on(VhallPlayer.LOOP_CHANGE, e => {
+      this.$emit(VhallPlayer.LOOP_CHANGE, e);
+    });
+
+    // 静音状态改变	静音状态被改变时触发
+    this.playerInstance.on(VhallPlayer.MUTE_CHANGE, e => {
+      this.$emit(VhallPlayer.MUTE_CHANGE, e);
+    });
+
+    // 倍速改变	倍速被改变时触发
+    this.playerInstance.on(VhallPlayer.RATE_CHANGE, e => {
+      this.$emit(VhallPlayer.RATE_CHANGE, e);
+    });
+
+    // 声音改变	声音被改变时触发
+    this.playerInstance.on(VhallPlayer.VOLUME_CHANGE, e => {
+      this.$emit(VhallPlayer.VOLUME_CHANGE, e);
+    });
+
+    // 视频正在播放中
+    this.playerInstance.on(VhallPlayer.PLAYING, e => {
+      this.$emit(VhallPlayer.PLAYING, e);
+    });
+
+    // 视频加载中	点播视频加载中时触发
+    this.playerInstance.on(VhallPlayer.PROGRESS, e => {
+      this.$emit(VhallPlayer.PROGRESS, e);
+    });
+
+    // 视频元数据加载完成
+    this.playerInstance.on(VhallPlayer.LOADEDMETADATA, e => {
+      this.$emit(VhallPlayer.LOADEDMETADATA, e);
+    });
+
+    // 开启弹幕
+    this.playerInstance.on(VhallPlayer.OPEN_BARRAGE, e => {
+      this.$emit(VhallPlayer.OPEN_BARRAGE, e);
+    });
+
+    // 关闭弹幕
+    this.playerInstance.on(VhallPlayer.CLOSE_BARRAGE, e => {
+      this.$emit(VhallPlayer.CLOSE_BARRAGE, e);
+    });
+
+    // 清空弹幕
+    this.playerInstance.on(VhallPlayer.CLEAR_BARRAGE, e => {
+      this.$emit(VhallPlayer.CLEAR_BARRAGE, e);
+    });
+
+    // 开启字幕
+    this.playerInstance.on(VhallPlayer.OPEN_SUBTITLE, e => {
+      this.$emit(VhallPlayer.OPEN_SUBTITLE, e);
+    });
+
+    // 关闭字幕
+    this.playerInstance.on(VhallPlayer.CLOSE_SUBTITLE, e => {
+      this.$emit(VhallPlayer.CLOSE_SUBTITLE, e);
+    });
+
+    // 切换字幕文件
+    this.playerInstance.on(VhallPlayer.SUBTITLE_CHANGED, e => {
+      this.$emit(VhallPlayer.SUBTITLE_CHANGED, e);
+    });
+
+    // 开启直播字幕
+    this.playerInstance.on(VhallPlayer.LIVESUBTITLE_OPENED, e => {
+      this.$emit(VhallPlayer.LIVESUBTITLE_OPENED, e);
+    });
+
+    // 关闭直播字幕
+    this.playerInstance.on(VhallPlayer.LIVESUBTITLE_CLOSED, e => {
+      this.$emit(VhallPlayer.LIVESUBTITLE_CLOSED, e);
+    });
   }
 
   //获取默认初始化参数
