@@ -1160,20 +1160,26 @@ export default class StandardDocServer extends AbstractDocServer {
         configWater.doc_watermark_type.user_id && waterText_arr.push(watchInitData.join_info.join_id)
         configWater.doc_watermark_type.nick_name && waterText_arr.push(watchInitData.join_info.nickname)
       } else {
-        let userInfo = localStorage.getItem('userInfo')
-        configWater.doc_watermark_type.user_id && userInfo?.user_id && waterText_arr.push(userInfo.user_id)
-        configWater.doc_watermark_type.nick_name && userInfo?.nick_name && waterText_arr.push(userInfo.nick_name)
-      }
-      waterText = waterText_arr.join('-')
-      watermarkOptions = Object.assign({}, {
-        watermarkOption: {  // 如果有watermarkOption则展示水印，否则不展示。
-          text: waterText, // 水印内容，如果有watermarkOption必填，length最大为20
-          angle: 15, // 水印逆时针倾斜角度，选填，默认15，取值范围 [0-360]
-          color: configWater.doc_font_color || '#5a5a5a', // 水印颜色，选填，默认#000000
-          opcity: configWater.doc_transparency || 50, // 水印透明度，选填，默认50，取值范围 [0-100]
-          fontSize: configWater.doc_font_size || 12, // 字体大小，选填，默认12，取值范围 [12-48]
+        try {
+          let userInfo = JSON.parse(localStorage.getItem('userInfo'))
+          configWater.doc_watermark_type.user_id && userInfo?.user_id && waterText_arr.push(userInfo.user_id)
+          configWater.doc_watermark_type.nick_name && userInfo?.nick_name && waterText_arr.push(userInfo.nick_name)
+        } catch (err) {
+          console.log(err)
         }
-      })
+      }
+      if (waterText_arr.length) {
+        waterText = waterText_arr.join('-')
+        watermarkOptions = Object.assign({}, {
+          watermarkOption: {  // 如果有watermarkOption则展示水印，否则不展示。
+            text: waterText, // 水印内容，如果有watermarkOption必填，length最大为20
+            angle: 15, // 水印逆时针倾斜角度，选填，默认15，取值范围 [0-360]
+            color: configWater.doc_font_color || '#5a5a5a', // 水印颜色，选填，默认#000000
+            opcity: configWater.doc_transparency || 50, // 水印透明度，选填，默认50，取值范围 [0-100]
+            fontSize: configWater.doc_font_size || 12, // 字体大小，选填，默认12，取值范围 [12-48]
+          }
+        })
+      }
     }
 
     // Object.assign(defaultOptions, {
