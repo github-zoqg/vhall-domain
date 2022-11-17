@@ -52,7 +52,6 @@ class UserServer {
       mode: 'float',
       lang: !type ? lang || 'zh-CN' : 'zh-CN',
       onReady(instance) {
-        console.log('🚀 ~ initNECaptcha onReady ', instance);
         that.capInstance = instance;
         that.refreshNECaptha(false); // 方式多个模块之间计时器互相影响
       },
@@ -97,7 +96,7 @@ class UserServer {
       }, 1000);
     };
     const failure = res => {
-      this.state.capcapErrorMsg = res.msg;
+      this.state.capErrorMsg = res.msg;
       this.refreshNECaptha();
     };
     const params = {
