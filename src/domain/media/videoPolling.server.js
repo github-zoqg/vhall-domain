@@ -285,6 +285,7 @@ class VideoPollingServer extends BaseServer {
         if (!memberPolling.includes(elem.accountId)) {
           elem = {
             ...elem,
+            account_id: elem.accountId,
             isPolling: 1,
           }
           onlineUsers.push(elem)
