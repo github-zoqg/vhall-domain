@@ -18,10 +18,19 @@ class ExamServer extends BaseServer {
       }, // 观看端-快问快答列表
       iconExecuteType: null, // 观看端-点击icon触发行为(answer.答题 score.查看个人成绩 miss.错过答题机会 other.不做任何处理)
       iconExecuteItem: null, // icon触发-单条快问快答对象
+      dotVisible: false, // 是否展示小红点
       userCheckVo: {
         is_fill: null, // 是否需要填写表单 0.否 1.是
         is_answer: null // 是否已答题 0.否 1.是
       }, // 观看端-是否作答状态
+    }
+    this.EVENT_TYPE = {
+      EXAM_PAPER_SEND: 'paper_send', // 推送-快问快答
+      EXAM_PAPER_SEND_RANK: 'paper_send_rank', // 公布-快问快答-成绩
+      EXAM_PAPER_END: 'paper_end', // 快问快答-收卷
+      EXAM_PAPER_AUTO_END: 'paper_auto_end', // 快问快答-自动收卷
+      EXAM_PAPER_AUTO_SEND_RANK: 'paper_auto_send_rank', // 快问快答-自动公布成绩
+      EXAM_ERROR: 'exam_error'
     }
     this.init();
   }
@@ -86,7 +95,7 @@ class ExamServer extends BaseServer {
 
   // /v1/fqa/app/paper/get-push-list 观看端-快问快答 获取推送快问快答列表
   getExamPublishList(params) {
-    this.examInstance.api.getExamPublishList(params).then(res => {
+    this.examInstance?.api?.getExamPublishList(params).then(res => {
       if (res?.code === 200 && res?.data?.list?.length > 0) {
         // 第一步：数据格式化
         let resResult = res.data;
@@ -147,9 +156,14 @@ class ExamServer extends BaseServer {
     }
   }
 
+  // 是否展示小红点
+  setExamWatchDotVisible(visible) {
+    this.state.dotVisible = visible
+  }
+
   // v1/fqa/app/user-info-form/check 观看端-答题前置条件检查
   checkExam(params) {
-    this.examInstance.api.checkExam(params).then(res => {
+    this.examInstance?.api?.checkExam(params).then(res => {
       if (res.code === 200) {
         this.state.userCheckVo = res.data;
       }
@@ -158,7 +172,6 @@ class ExamServer extends BaseServer {
       return err;
     });
   }
-
 }
 
 export default function useExamServer(options = {}) {
