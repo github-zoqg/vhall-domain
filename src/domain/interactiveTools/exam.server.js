@@ -6,19 +6,25 @@
 
 
 import BaseServer from '../common/base.server';
-
+import useMsgServer from '../common/msg.server';
+import useRoomBaseServer from '../room/roombase.server';
+import { exam } from '@/request/index.js'
 class ExamServer extends BaseServer {
   constructor(options = {}) {
     super(options)
-    console.log("🚀 ~ file: examServer.js ~ line 6 ~ ExamServer ~ constructor ~ options", options)
-    this.server = new window.ExamTemplateServer();
-    console.log("🚀 ~ file: exam.server.js ~ line 14 ~ ExamServer ~ constructor ~ ExamTemplateServer", ExamTemplateServer)
-    console.log("🚀 ~ file: exam.server.js ~ line 14 ~ ExamServer ~ constructor ~ server", this.server)
     this.state = {
 
     }
+    this.init()
   }
-
+  async init() {
+    console.log(window.ExamTemplateServer)
+    const { watchInitData } = useRoomBaseServer().state;
+    console.log("--------->", watchInitData)
+    // await exam.getExamToken({ webinar_id: watchInitData.webinar.id })
+    console.log("ExamTemplateServer", window.ExamTemplateServer)
+    this.ExamInstance = new window.ExamTemplateServer({})
+  }
 
   getExamList() { }
 
