@@ -18,7 +18,9 @@ class ExamServer extends BaseServer {
         is_answer: null // 是否已答题 0.否 1.是
       }
     }
-    this.init()
+    if (!this.ExamInstance) {
+      this.init()
+    }
   }
   async init() {
     console.log(window.ExamTemplateServer)
@@ -34,7 +36,7 @@ class ExamServer extends BaseServer {
     console.log("ExamTemplateServer", window.ExamTemplateServer)
     //发卷人or答卷人
     const role = watchInitData.join_info.role_name != 1 ? 2 : 1
-    this.ExamInstance = new window.ExamTemplateServer(role, examToken)
+    this.ExamInstance = new window.ExamTemplateServer(1, examToken)
   }
 
   getExamList() { }
