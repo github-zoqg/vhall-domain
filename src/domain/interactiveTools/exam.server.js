@@ -15,7 +15,7 @@ function checkInitiated() {
   return (_, name, descriptor) => {
     const method = descriptor.value;
     descriptor.value = function(...args) {
-      if (!this.ExamInstance) {
+      if (!this.examInstance) {
         console.error('ExamServer 未 init'); //FIXME: 调试完成后删掉
         return this.init().then(() => {
           return method.apply(this, args);
@@ -79,7 +79,14 @@ class ExamServer extends BaseServer {
           biz_permission_key: "068074a1142cd176af1fe3f5718021ec",
         };
       }
-      const role = watchInitData?.join_info?.role_name != 1 ? 2 : 1
+      examToken = {
+        app_id: "eyJ0eXAF",
+        csd_token:
+          "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50X3R5cGUiOjEsImFjY291bnRfaWQiOiIxNjQyMjY4MCIsImV4cCI6Ijg2NDAwIiwiaWF0IjoxNjY4OTIyNjc1LCJwbGF0Zm9ybSI6MTd9.lLRvfNUEnsJwhFvdrW4cvGq1TRkJNhqziMX753ws35k",
+        biz_permission_key: "068074a1142cd176af1fe3f5718021ec",
+      };
+      // const role = watchInitData?.join_info?.role_name != 1 ? 2 : 1
+      const role = 1
       this.examInstance = new window.ExamTemplateServer({
         role: role,
         source_type: 1,//渠道化蝶为1
@@ -106,10 +113,30 @@ class ExamServer extends BaseServer {
     const data = {
       ...params,
       // source_id: webinar_id, // 活动id
-      source_id: 543549272, // 活动id
+      source_id: 863283088, // 活动id
       source_type: 1,
     }
     return this.examInstance.api.getExamList(data)
+  }
+
+  // 复制问卷
+  @checkInitiated()
+  copyExam(examId) {
+    const data = {
+      id: examId
+    }
+    return this.examInstance.api.copyExam(data)
+  }
+  // 删除问卷
+  @checkInitiated()
+  delExam(examIds = []) {
+    if (!Array.isArray(examIds)) {
+      examIds = [examIds]
+    }
+    const data = {
+      ids: examIds.join(',')
+    }
+    return this.examInstance.api.delExam(data)
   }
 
   // /console/exam/paper-create 「创建考试试卷」
@@ -217,12 +244,6 @@ export default function useExamServer(options = {}) {
   }
   return useExamServer.instance
 }
-
-
-
-// export default function useExamServer() {
-// v2/exam/watch-list 「获取考试列表」
-function getExamList() { }
 
 // /console/exam/paper-create 「创建考试试卷」
 function createExamPaper() { }
