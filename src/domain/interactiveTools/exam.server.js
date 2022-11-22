@@ -13,7 +13,10 @@ class ExamServer extends BaseServer {
   constructor(options = {}) {
     super(options)
     this.state = {
-
+      userCheckVo: {
+        is_fill: null, // 是否需要填写表单 0.否 1.是
+        is_answer: null // 是否已答题 0.否 1.是
+      }
     }
     this.init()
   }
@@ -46,6 +49,17 @@ class ExamServer extends BaseServer {
   // /v2/exam/answer 回复/填写 exam
   answerExam() { }
 
+  // v1/fqa/app/user-info-form/check 观看端-答题前置条件检查
+  checkExam(params) {
+    this.ExamInstance.api.checkExam(params).then(res => {
+      if (res.code === 200) {
+        this.state.userCheckVo = res.data;
+      }
+      return res;
+    }).catch(err => {
+      return err;
+    });
+  }
 }
 
 export default function useExamServer(options = {}) {
