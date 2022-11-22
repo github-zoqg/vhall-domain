@@ -86,7 +86,7 @@ class ExamServer extends BaseServer {
 
   // /v1/fqa/app/paper/get-push-list 观看端-快问快答 获取推送快问快答列表
   getExamPublishList(params) {
-    this.ExamInstance.api.getExamPublishList(params).then(res => {
+    this.examInstance.api.getExamPublishList(params).then(res => {
       if (res?.code === 200 && res?.data?.list?.length > 0) {
         // 第一步：数据格式化
         let resResult = res.data;
@@ -149,7 +149,7 @@ class ExamServer extends BaseServer {
 
   // v1/fqa/app/user-info-form/check 观看端-答题前置条件检查
   checkExam(params) {
-    this.ExamInstance.api.checkExam(params).then(res => {
+    this.examInstance.api.checkExam(params).then(res => {
       if (res.code === 200) {
         this.state.userCheckVo = res.data;
       }
