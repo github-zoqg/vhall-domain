@@ -58,6 +58,7 @@ class RoomBaseServer extends BaseServer {
       noticeInfo: {}, // 公告
       signInfo: {}, //签到信息
       timerInfo: {}, //计时器
+      examInfo: {},//快问快答
       interactToolStatus: {}, //互动工具状态信息
       roomVisibleModules: [],
       miniElement: 'stream-list', // 可能的值：doc  stream-list sceen
@@ -595,6 +596,7 @@ class RoomBaseServer extends BaseServer {
         this.state.noticeInfo = res.data['announcement'] ? res.data['announcement'].data : {}; //公告
         this.state.signInfo = res.data['sign'] ? res.data['sign'].data : {}; //签到信息
         this.state.timerInfo = res.data['timer'] ? res.data['timer'].data : {}; //计时器
+        this.state.examInfo = res.data['exam'] ? res.data['exam'].data : {}
       }
       return res;
     });

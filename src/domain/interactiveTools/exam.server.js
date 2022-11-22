@@ -19,11 +19,19 @@ class ExamServer extends BaseServer {
   }
   async init() {
     console.log(window.ExamTemplateServer)
-    const { watchInitData } = useRoomBaseServer().state;
-    console.log("--------->", watchInitData)
-    // await exam.getExamToken({ webinar_id: watchInitData.webinar.id })
+    const { watchInitData, examInfo } = useRoomBaseServer().state;
+    let examToken = ''
+    if (watchInitData.join_info.role_name != 1) {
+      examToken = examInfo
+    } else {
+      const res = await exam.getExamToken({ webinar_id: watchInitData.webinar.id })
+      examToken = res?.data
+    }
+    examToken.platform = 17
     console.log("ExamTemplateServer", window.ExamTemplateServer)
-    this.ExamInstance = new window.ExamTemplateServer({})
+    //发卷人or答卷人
+    const role = watchInitData.join_info.role_name != 1 ? 2 : 1
+    this.ExamInstance = new window.ExamTemplateServer(role, examToken)
   }
 
   getExamList() { }
