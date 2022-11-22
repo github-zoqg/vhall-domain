@@ -3,8 +3,6 @@
  * @returns
  */
 
-
-
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
@@ -15,18 +13,47 @@ class ExamServer extends BaseServer {
     this.state = {
 
     }
-    this.init()
   }
   async init() {
-    console.log(window.ExamTemplateServer)
-    const { watchInitData } = useRoomBaseServer().state;
-    console.log("--------->", watchInitData)
-    // await exam.getExamToken({ webinar_id: watchInitData.webinar.id })
-    console.log("ExamTemplateServer", window.ExamTemplateServer)
-    this.ExamInstance = new window.ExamTemplateServer({})
+    if (this.examInstance instanceof ExamTemplateServer) {
+      this.$emit('initiated') // 派发自己初始化完成(只需要知道已完成  不需要过程)
+      return Promise.resolve(this.examInstance)
+    }
+    try {
+      // console.log(window.ExamTemplateServer)
+      // const { watchInitData } = useRoomBaseServer().state;
+      // console.log("--------->", watchInitData)
+      // await exam.getExamToken({ webinar_id: watchInitData.webinar.id }) //发起端
+      //FIXME: mock  互动token,后期删除
+      sessionStorage.setItem('interact-token', localStorage.getItem('interact-token') || 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqaWQiOjIwOTkxNDgsInVpZCI6MTY0MjI5MjksInZpZCI6IiIsInRwdWlkIjoiMTY0MjI5MjkiLCJ3aWQiOjU0MzU0OTI3Miwicm9vbV9pZCI6Imxzc182ODNjNzQwYiIsImN0IjoxNjY5MDg4ODEzfQ.k3mzcL4nN95R3PptE_6hqvek9MA-vG0izh-z-qpklRM')
+      const { data: accountInfo } = await exam.getExamToken({ webinar_id: 543549272 }) //发起端
+
+      this.examInstance = new window.ExamTemplateServer({
+        ...accountInfo,
+        platform: 7
+      })
+      this.$emit('initiated') // 派发自己初始化完成
+      return Promise.resolve(this.examInstance)
+    } catch (e) {
+      return Promise.reject(e);
+    }
+
   }
 
-  getExamList() { }
+  mount(...args) {
+    this.examInstance && this.examInstance.mount(...args)
+  }
+
+  // 获取问卷列表
+  getExamList(params) {
+    const data = {
+      ...params,
+      // source_id: webinar_id, // 活动id
+      source_id: 543549272, // 活动id
+      source_type: 1,
+    }
+    return this.examInstance.api.getExamList(data)
+  }
 
   // /console/exam/paper-create 「创建考试试卷」
   createExamPaper() { }
