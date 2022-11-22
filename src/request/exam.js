@@ -5,7 +5,7 @@ const getExamToken = params => {
   return request({
     url: '/v3/interacts/exam/get-init-data',
     method: 'post',
-    params: params
+    data: params
   });
 };
 export default {
