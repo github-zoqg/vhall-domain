@@ -17,7 +17,30 @@ const pushExam = params => {
     data: params
   });
 };
+
+// 收卷
+const collectExam = params => {
+  return request({
+    url: '/v3/interacts/exam/paper-end',
+    method: 'post',
+    data: params
+  });
+};
+
+// 发布
+const publishExam = params => {
+  return request({
+    url: '/v3/interacts/exam/paper-send-rank',
+    method: 'post',
+    data: params
+  });
+};
+
+
+
 export default {
   getExamToken,
-  pushExam
+  pushExam,
+  collectExam,
+  publishExam
 }

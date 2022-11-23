@@ -118,21 +118,23 @@ class ExamServer extends BaseServer {
   }
 
   // 收卷
-  @checkInitiated()
   sendCollectExam(examId) {
+    const { watchInitData } = useRoomBaseServer().state;
     const data = {
-      paper_id: examId
+      paper_id: examId,
+      webinar_id: watchInitData?.webinar?.id
     }
-    return this.examInstance.api.sendCollectExam(data)
+    return examApi.collectExam(data)
   }
 
   // 公布
-  @checkInitiated()
   sendPublishExam(examId) {
+    const { watchInitData } = useRoomBaseServer().state;
     const data = {
-      paper_id: examId
+      paper_id: examId,
+      webinar_id: watchInitData?.webinar?.id
     }
-    return this.examInstance.api.sendPublishExam(data)
+    return examApi.publishExam(data)
   }
 
   // /console/exam/paper-create 「创建考试试卷」
