@@ -15,7 +15,7 @@ function checkInitiated() {
   return (_, name, descriptor) => {
     const method = descriptor.value;
     descriptor.value = function (...args) {
-      if (!this.ExamInstance) {
+      if (!this.examInstance) {
         console.error('ExamServer 未 init'); //FIXME: 调试完成后删掉
         return this.init().then(() => {
           return method.apply(this, args);
@@ -40,6 +40,7 @@ class ExamServer extends BaseServer {
         is_answer: null // 是否已答题 0.否 1.是
       }
     }
+    this.init()
   }
   async init() {
     if (this.examInstance instanceof ExamTemplateServer) {
@@ -109,8 +110,9 @@ class ExamServer extends BaseServer {
   answerExam() { }
 
   // v1/fqa/app/user-info-form/check 观看端-答题前置条件检查
+  @checkInitiated()
   checkExam(params) {
-    this.ExamInstance.api.checkExam(params).then(res => {
+    this.examInstance.api.checkExam(params).then(res => {
       if (res.code === 200) {
         this.state.userCheckVo = res.data;
       }
