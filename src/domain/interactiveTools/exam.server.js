@@ -35,26 +35,12 @@ class ExamServer extends BaseServer {
   constructor(options = {}) {
     super(options)
     this.state = {
-      examWatchResult: {
-        total: 0,
-        list: []
-      }, // 观看端-快问快答列表
-      iconExecuteType: null, // 观看端-点击icon触发行为(answer.答题 score.查看个人成绩 miss.错过答题机会 other.不做任何处理)
-      iconExecuteItem: null, // icon触发-单条快问快答对象
-      dotVisible: false, // 是否展示小红点
       userCheckVo: {
         is_fill: null, // 是否需要填写表单 0.否 1.是
         is_answer: null // 是否已答题 0.否 1.是
-      }, // 观看端-是否作答状态
+      }
     }
-    this.EVENT_TYPE = {
-      EXAM_PAPER_SEND: 'paper_send', // 推送-快问快答
-      EXAM_PAPER_SEND_RANK: 'paper_send_rank', // 公布-快问快答-成绩
-      EXAM_PAPER_END: 'paper_end', // 快问快答-收卷
-      EXAM_PAPER_AUTO_END: 'paper_auto_end', // 快问快答-自动收卷
-      EXAM_PAPER_AUTO_SEND_RANK: 'paper_auto_send_rank', // 快问快答-自动公布成绩
-      EXAM_ERROR: 'exam_error'
-    }
+    this.init()
   }
   async init() {
     if (this.examInstance instanceof ExamTemplateServer) {
@@ -70,14 +56,8 @@ class ExamServer extends BaseServer {
       if (watchInitData?.join_info?.role_name != 1) {
         examToken = examInfo
       } else {
-        const { data: accountInfo } = await exam.getExamToken({ webinar_id: 706175892 }) //发起端
+        const { data: accountInfo } = await exam.getExamToken({ webinar_id: watchInitData.webinar.id }) //发起端
         examToken = accountInfo
-        examToken = {
-          app_id: "eyJ0eXAF",
-          csd_token:
-            "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50X3R5cGUiOjEsImFjY291bnRfaWQiOiIxNjQyMjY4MCIsImV4cCI6Ijg2NDAwIiwiaWF0IjoxNjY4OTIyNjc1LCJwbGF0Zm9ybSI6MTd9.lLRvfNUEnsJwhFvdrW4cvGq1TRkJNhqziMX753ws35k",
-          biz_permission_key: "068074a1142cd176af1fe3f5718021ec",
-        };
       }
       examToken = {
         app_id: "eyJ0eXAF",
@@ -89,7 +69,6 @@ class ExamServer extends BaseServer {
       const role = 1
       this.examInstance = new window.ExamTemplateServer({
         role: role,
-        source_type: 1,//渠道化蝶为1
         accountInfo: {
           ...examToken,
           platform: 7
@@ -166,77 +145,10 @@ class ExamServer extends BaseServer {
   // /v2/exam/answer 回复/填写 exam
   answerExam() { }
 
-  // /v1/fqa/app/paper/get-push-list 观看端-快问快答 获取推送快问快答列表
-  getExamPublishList(params) {
-    this.examInstance?.api?.getExamPublishList(params).then(res => {
-      if (res?.code === 200 && res?.data?.list?.length > 0) {
-        // 第一步：数据格式化
-        let resResult = res.data;
-        let formatStrByMinute = (str) => {
-          let hour = Math.floor(str / 60);
-          let minute = str - hour * 60;
-          return `${hour > 9 ? hour : `0${hour}`}:${minute > 9 ? minute : `0${minute}`}`;
-        };
-        resResult.list.map(item => {
-          item.push_time_str = dayjs(item.push_time).format('HH:mm');
-          item.limit_time_str =
-            item.limit_time_switch == 1 ? formatStrByMinute(item.limit_time) : '';
-        });
-        this.state.examWatchResult = resResult;
-        // 第二步：判断当前icon触发动作
-      } else {
-        this.state.examWatchResult = {
-          total: 0,
-          list: []
-        }
-      }
-      return res;
-    }).catch(err => {
-      this.state.examWatchResult = {
-        total: 0,
-        list: []
-      }
-      return err;
-    });
-  }
-
-  // 判断icon触发动作类型
-  setExecuteIconEvents() {
-    // 过滤数组：未作答 且  答题未超时（开启了限时答题） 或者 未作答（未开启限时答题）
-    let arr = this.state.examWatchResult.list.filter(item => {
-      return (
-        (item.limit_time_switch == 1 && item.status == 0 && item.is_end == 0) ||
-        item.status == 0
-      );
-    });
-    // 如果只有一份，直接进入到当前答题
-    if (arr.length == 1) {
-      this.state.iconExecuteType = 'answer';
-      this.state.iconExecuteItem = arr[0];
-    } else if (this.state.examWatchResult.total == 0) {
-      let item = this.state.examWatchResult.list[0];
-      this.state.iconExecuteItem = item;
-      if (item.status == 1) {
-        // 已作答，已答题，直接查看个人成绩
-        this.state.iconExecuteType = 'score';
-      } else if (item.limit_time_switch == 1 && item.is_end == 1) {
-        // 限时答题 & 已超时 & 未作答，toast提示 “很遗憾，您已错过本次答题机会！”
-        this.state.iconExecuteType = 'miss';
-      }
-    } else {
-      this.state.iconExecuteType = 'other';
-      this.state.iconExecuteItem = null;
-    }
-  }
-
-  // 是否展示小红点
-  setExamWatchDotVisible(visible) {
-    this.state.dotVisible = visible
-  }
-
   // v1/fqa/app/user-info-form/check 观看端-答题前置条件检查
+  @checkInitiated()
   checkExam(params) {
-    this.examInstance?.api?.checkExam(params).then(res => {
+    this.examInstance.api.checkExam(params).then(res => {
       if (res.code === 200) {
         this.state.userCheckVo = res.data;
       }
