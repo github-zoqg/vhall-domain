@@ -6,7 +6,7 @@
 import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
-import { exam } from '@/request/index.js'
+import { exam as examApi } from '@/request/index.js'
 import dayjs from 'dayjs';
 
 
@@ -40,33 +40,21 @@ class ExamServer extends BaseServer {
         is_answer: null // 是否已答题 0.否 1.是
       }
     }
-    this.init()
   }
   async init() {
     if (this.examInstance instanceof ExamTemplateServer) {
-      this.$emit('initiated') // 派发自己初始化完成(只需要知道已完成  不需要过程)
       return Promise.resolve(this.examInstance)
     }
     try {
-      // console.log(window.ExamTemplateServer)
-      //FIXME: mock  互动token,后期删除
-      // sessionStorage.setItem('interact-token', localStorage.getItem('interact-token') || 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqaWQiOjIwOTkxNDgsInVpZCI6MTY0MjI5MjksInZpZCI6IiIsInRwdWlkIjoiMTY0MjI5MjkiLCJ3aWQiOjU0MzU0OTI3Miwicm9vbV9pZCI6Imxzc182ODNjNzQwYiIsImN0IjoxNjY5MDg4ODEzfQ.k3mzcL4nN95R3PptE_6hqvek9MA-vG0izh-z-qpklRM')
       const { watchInitData, examInfo } = useRoomBaseServer().state;
       let examToken = ''
       if (watchInitData?.join_info?.role_name != 1) {
         examToken = examInfo
       } else {
-        const { data: accountInfo } = await exam.getExamToken({ webinar_id: watchInitData.webinar.id }) //发起端
+        const { data: accountInfo } = await examApi.getExamToken({ webinar_id: watchInitData.webinar.id }) //发起端
         examToken = accountInfo
       }
-      examToken = {
-        app_id: "eyJ0eXAF",
-        csd_token:
-          "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhY2NvdW50X3R5cGUiOjEsImFjY291bnRfaWQiOiIxNjQyMjY4MCIsImV4cCI6Ijg2NDAwIiwiaWF0IjoxNjY4OTIyNjc1LCJwbGF0Zm9ybSI6MTd9.lLRvfNUEnsJwhFvdrW4cvGq1TRkJNhqziMX753ws35k",
-        biz_permission_key: "068074a1142cd176af1fe3f5718021ec",
-      };
-      // const role = watchInitData?.join_info?.role_name != 1 ? 2 : 1
-      const role = 1
+      const role = watchInitData?.join_info?.role_name != 1 ? 2 : 1
       this.examInstance = new window.ExamTemplateServer({
         role: role,
         accountInfo: {
@@ -74,7 +62,6 @@ class ExamServer extends BaseServer {
           platform: 7
         }
       })
-      this.$emit('initiated') // 派发自己初始化完成
       return Promise.resolve(this.examInstance)
     } catch (e) {
       return Promise.reject(e);
@@ -89,10 +76,10 @@ class ExamServer extends BaseServer {
   // 获取问卷列表
   @checkInitiated()
   getExamList(params) {
+    const { watchInitData } = useRoomBaseServer().state;
     const data = {
       ...params,
-      // source_id: webinar_id, // 活动id
-      source_id: 863283088, // 活动id
+      source_id: watchInitData?.webinar?.id, // 活动id
       source_type: 1,
     }
     return this.examInstance.api.getExamList(data)
@@ -119,14 +106,35 @@ class ExamServer extends BaseServer {
   }
 
 
-  // 推送问卷
-  @checkInitiated()
+  // 推送问卷(化蝶)
   sendPushExam(examId) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const data = {
+      paper_id: examId,
+      webinar_id: watchInitData?.webinar?.id,
+      switch_id: watchInitData?.switch?.switch_id
+    }
+    return examApi.pushExam(data)
+  }
+
+  // 收卷
+  @checkInitiated()
+  sendCollectExam(examId) {
     const data = {
       paper_id: examId
     }
-    return this.examInstance.api.sendPushExam(data)
+    return this.examInstance.api.sendCollectExam(data)
   }
+
+  // 公布
+  @checkInitiated()
+  sendPublishExam(examId) {
+    const data = {
+      paper_id: examId
+    }
+    return this.examInstance.api.sendPublishExam(data)
+  }
+
   // /console/exam/paper-create 「创建考试试卷」
   createExamPaper() { }
 
