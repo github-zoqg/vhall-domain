@@ -7,14 +7,11 @@ import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
 import { exam as examApi } from '@/request/index.js'
-import dayjs from 'dayjs';
-
-
 
 function checkInitiated() {
   return (_, name, descriptor) => {
     const method = descriptor.value;
-    descriptor.value = function (...args) {
+    descriptor.value = function(...args) {
       if (!this.examInstance) {
         console.error('ExamServer 未 init'); //FIXME: 调试完成后删掉
         return this.init().then(() => {
@@ -27,9 +24,6 @@ function checkInitiated() {
     };
   };
 }
-
-
-
 
 class ExamServer extends BaseServer {
   constructor(options = {}) {
@@ -55,7 +49,6 @@ class ExamServer extends BaseServer {
       EXAM_PAPER_AUTO_SEND_RANK: 'paper_auto_send_rank', // 快问快答-自动公布成绩
       EXAM_ERROR: 'exam_error'
     }
-    this.init()
   }
   async init() {
     if (this.examInstance instanceof ExamTemplateServer) {
@@ -148,6 +141,7 @@ class ExamServer extends BaseServer {
     }
     return this.examInstance.api.copyExam(data)
   }
+
   // 删除问卷
   @checkInitiated()
   delExam(examIds = []) {
@@ -159,7 +153,6 @@ class ExamServer extends BaseServer {
     }
     return this.examInstance.api.delExam(data)
   }
-
 
   // 推送问卷(化蝶)
   sendPushExam(examId) {
@@ -190,6 +183,21 @@ class ExamServer extends BaseServer {
       webinar_id: watchInitData?.webinar?.id
     }
     return examApi.publishExam(data)
+  }
+
+  // 问卷统计数据
+  @checkInitiated()
+  getExamSummary(examId) {
+    const data = {
+      paper_id: examId
+    }
+    return this.examInstance.api.getExamPaperSummary(data)
+  }
+
+  // 问卷排行榜
+  @checkInitiated()
+  getExamRankList(params) {
+    return this.examInstance.api.getExamPaperSummary(params)
   }
 
   // /console/exam/paper-create 「创建考试试卷」
