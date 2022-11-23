@@ -54,7 +54,6 @@ import useInviteServer from '@/domain/interactiveTools/invite.server.js';
 import useEntryformServer from '@/domain/entryform/entry.server.js';
 import useSubscribeServer from '@/domain/subscribe/subscribe.server';
 import useSubjectServer from '@/domain/brand/subject.server';
-import useRedPacketServer from '@/domain/interactiveTools/redPacketServer.js';
 import useCodeRedPacketServer from '@/domain/interactiveTools/redCodePacketServer.js';
 
 import useSplitScreenServer from '@/domain/media/splitScreen.server';
@@ -197,7 +196,6 @@ export {
   useSignUpFormServer,
   useSubscribeServer,
   useSubjectServer,
-  useRedPacketServer,
   useCodeRedPacketServer,
   useKeyLoginServer,
   useSplitScreenServer,
