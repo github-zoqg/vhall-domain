@@ -78,10 +78,49 @@ class ExamServer extends BaseServer {
           platform: 7
         }
       })
+      this.listenMsg()
       return Promise.resolve(this.examInstance)
     } catch (e) {
       return Promise.reject(e);
     }
+  }
+
+  listenMsg() {
+    // 房间消息
+    useMsgServer().$onMsg('ROOM_MSG', rawMsg => {
+      let temp = Object.assign({}, rawMsg);
+
+      if (typeof temp.data !== 'object') {
+        temp.data = JSON.parse(temp.data);
+        temp.context = JSON.parse(temp.context);
+      }
+      // console.log(temp, '原始消息');
+      const { type = '' } = temp.data || {};
+      switch (type) {
+        // 推送-快问快答
+        case this.EVENT_TYPE.EXAM_PAPER_SEND:
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND, temp);
+          break;
+        // 公布-快问快答-成绩
+        case this.EVENT_TYPE.EXAM_PAPER_SEND_RANK:
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND_RANK, temp);
+          break;
+        // 快问快答-收卷
+        case this.EVENT_TYPE.EXAM_PAPER_END:
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_END, temp);
+          break;
+        // 快问快答-自动收卷
+        case this.EVENT_TYPE.EXAM_PAPER_AUTO_END:
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_END, temp);
+          break;
+        // 快问快答-自动公布成绩
+        case this.EVENT_TYPE.EXAM_PAPER_AUTO_SEND_RANK:
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_SEND_RANK, temp);
+          break;
+        default:
+          break;
+      }
+    });
   }
 
   @checkInitiated()
@@ -173,10 +212,11 @@ class ExamServer extends BaseServer {
   @checkInitiated()
   getExamPublishList(params) {
     this.examInstance?.api?.getExamPublishList(params).then(res => {
-      if (res?.code === 200 && res?.data?.list?.length > 0) {
-        this.state.examWatchResult = res.data;
-        // 第二步：判断当前icon触发动作
-
+      if (res.code === 200 && res.data) {
+        this.state.examWatchResult = {
+          list: res.data,
+          total: res.data.length
+        }
       } else {
         this.state.examWatchResult = {
           total: 0,
