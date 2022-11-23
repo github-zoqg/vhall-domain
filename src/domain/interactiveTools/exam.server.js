@@ -55,7 +55,6 @@ class ExamServer extends BaseServer {
       EXAM_PAPER_AUTO_SEND_RANK: 'paper_auto_send_rank', // 快问快答-自动公布成绩
       EXAM_ERROR: 'exam_error'
     }
-    this.init()
   }
   async init() {
     if (this.examInstance instanceof ExamTemplateServer) {
