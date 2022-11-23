@@ -139,6 +139,15 @@ class ExamServer extends BaseServer {
     return this.examInstance.api.delExam(data)
   }
 
+
+  // 推送问卷
+  @checkInitiated()
+  sendPushExam(examId) {
+    const data = {
+      paper_id: examId
+    }
+    return this.examInstance.api.sendPushExam(data)
+  }
   // /console/exam/paper-create 「创建考试试卷」
   createExamPaper() { }
 
