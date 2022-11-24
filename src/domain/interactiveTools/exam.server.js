@@ -11,7 +11,7 @@ import { exam as examApi } from '@/request/index.js'
 function checkInitiated() {
   return (_, name, descriptor) => {
     const method = descriptor.value;
-    descriptor.value = function(...args) {
+    descriptor.value = function (...args) {
       if (!this.examInstance) {
         console.error('ExamServer 未 init'); //FIXME: 调试完成后删掉
         return this.init().then(() => {
@@ -289,6 +289,12 @@ class ExamServer extends BaseServer {
     }).catch(err => {
       return err;
     });
+  }
+
+  // /v1/fqa/app/paper/get-preview-info 观看端-预览快问快答
+  @checkInitiated()
+  getExamPreviewInfo(params) {
+    return this.examInstance.api.getExamPreviewInfo(params);
   }
 }
 
