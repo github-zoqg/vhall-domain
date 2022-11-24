@@ -75,6 +75,8 @@ class RoomBaseServer extends BaseServer {
       thirdPullStreamUrl: '',   //第三方拉流地址
       thirdPullStreamMode: 1,   //第三方拉流模式  1,2
       isWapBodyDocSwitch: false, // 播放器文档位置是否切换
+      isWapBodyDocSwitchFullScreen: false, // 竖屏直播下 文档和播放器是否互换位置。 默认 文档主画面，播放器小屏 false
+      isClearScreen: false, // 竖屏直播清屏状态
       unionConfig: {}, //通用配置 - 基本配置，播放器跑马灯配置，文档水印配置等
       warmUpVideo: {
         warmup_paas_record_id: [],
@@ -105,6 +107,7 @@ class RoomBaseServer extends BaseServer {
     if (['embed'].includes(options.clientType)) {
       // v6.5.9新增 - 分组直播是单视频嵌入的时候，不支持。
       options.embed_type = this.state.embedObj.embedVideo ? 'video' : 'full'
+      options.origin_page = location.pathname.includes('watch') ? 'watch' : 'subscribe'
     }
 
     this.state.watchInitData.live_type = options.live_type
@@ -141,7 +144,12 @@ class RoomBaseServer extends BaseServer {
               this.state.warmUpVideo = res.data.warmup;
             }
 
+            // 预约页 不支持竖屏
+            if (this.state.watchInitData.status === 'subscribe') {
+              this.state.watchInitData.webinar_show_type = 1
+            }
           }
+
           // 判断是不是第三方推流
           if (res.data.switch && res.data.switch.start_type == 4) {
             this.state.isThirdStream = true;
@@ -198,6 +206,8 @@ class RoomBaseServer extends BaseServer {
 
         // 直播结束还原位置切换的状态
         this.state.isWapBodyDocSwitch = false
+        // 直播结束还原位置切换的状态
+        this.state.isWapBodyDocSwitchFullScreen = false
         // 把演示人、主讲人、主屏人都设置成主持人
         this.state.interactToolStatus.presentation_screen = this.state.watchInitData.webinar.userinfo.user_id;
         this.state.interactToolStatus.doc_permission = this.state.watchInitData.webinar.userinfo.user_id;
