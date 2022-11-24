@@ -4,6 +4,7 @@ import BaseServer from './base.server';
 import VhallPaasSDK from '@/sdk/index.js';
 import useGroupServer from '../group/StandardGroupServer';
 import useMediaCheckServer from '../media/mediaCheck.server';
+import { getPlatform } from '@/utils/http';
 class MsgServer extends BaseServer {
   constructor() {
     if (typeof MsgServer.instance === 'object') {
@@ -252,13 +253,22 @@ class MsgServer extends BaseServer {
       this._handlePaasInstanceOn(instance, eventType, msg => {
         // 回放状态，房间消息白名单
         const { watchInitData } = useRoomBaseServer().state
+        const platform = getPlatform()
         if (
           eventType == 'ROOM_MSG' &&
           watchInitData?.join_info?.role_name == 2 &&
           watchInitData?.webinar?.type == 5 &&
+          platform != 18 &&
           this._roomMsgWhiteListInPlayback.indexOf(msg.data.type) == -1
         ) {
           return;
+        }
+
+        if (msg.data.type == 'live_start' &&
+          watchInitData?.join_info?.role_name == 2 &&
+          watchInitData?.webinar?.type == 5 &&
+          platform == 18) {
+          msg.data.type = 'sdk_live_start'
         }
 
         // 为了兼容老客户端，开始彩排的时候，嘉宾会收到开始直播和结束直播的消息。网页不需要关心直接 return 即可
