@@ -197,7 +197,7 @@ class ExamServer extends BaseServer {
   // 问卷排行榜
   @checkInitiated()
   getExamRankList(params) {
-    return this.examInstance.api.getExamPaperSummary(params)
+    return this.examInstance.api.getExamUserPerformances(params)
   }
 
   // /console/exam/paper-create 「创建考试试卷」
