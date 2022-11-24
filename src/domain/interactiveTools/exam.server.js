@@ -296,6 +296,18 @@ class ExamServer extends BaseServer {
   getExamPreviewInfo(params) {
     return this.examInstance.api.getExamPreviewInfo(params);
   }
+
+  // 【观看端】获取榜单信息
+  getSimpleRankList(params) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const data = {
+      paper_id: params.paper_id,
+      webinar_id: watchInitData?.webinar?.id,
+      pos: params.pos,
+      limit: params.limit
+    }
+    return examApi.getSimpleRankList(data)
+  }
 }
 
 export default function useExamServer(options = {}) {
