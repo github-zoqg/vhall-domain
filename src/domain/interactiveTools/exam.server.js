@@ -11,7 +11,7 @@ import { exam as examApi } from '@/request/index.js'
 function checkInitiated() {
   return (_, name, descriptor) => {
     const method = descriptor.value;
-    descriptor.value = function(...args) {
+    descriptor.value = function (...args) {
       if (!this.examInstance) {
         console.error('ExamServer 未 init'); //FIXME: 调试完成后删掉
         return this.init().then(() => {
