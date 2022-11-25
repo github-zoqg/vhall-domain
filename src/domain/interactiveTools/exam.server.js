@@ -280,8 +280,14 @@ class ExamServer extends BaseServer {
 
   // v1/fqa/app/user-info-form/check 观看端-答题前置条件检查
   @checkInitiated()
-  checkExam(params) {
-    this.examInstance.api.checkExam(params).then(res => {
+  checkWebinarExam(params) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const data = {
+      source_type: 1,
+      source_id: watchInitData?.webinar?.id,
+      ...params
+    }
+    this.examInstance.api.checkExam(data).then(res => {
       if (res.code === 200) {
         this.state.userCheckVo = res.data;
       }
