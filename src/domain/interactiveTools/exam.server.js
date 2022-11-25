@@ -197,7 +197,7 @@ class ExamServer extends BaseServer {
   // 问卷排行榜
   @checkInitiated()
   getExamRankList(params) {
-    return this.examInstance.api.getExamPaperSummary(params)
+    return this.examInstance.api.getExamUserPerformances(params)
   }
 
   // /console/exam/paper-create 「创建考试试卷」
@@ -289,6 +289,12 @@ class ExamServer extends BaseServer {
     }).catch(err => {
       return err;
     });
+  }
+
+  // /v1/fqa/app/paper/get-preview-info 观看端-预览快问快答
+  @checkInitiated()
+  getExamPreviewInfo(params) {
+    return this.examInstance.api.getExamPreviewInfo(params);
   }
 }
 
