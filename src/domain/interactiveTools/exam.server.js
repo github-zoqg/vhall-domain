@@ -221,7 +221,14 @@ class ExamServer extends BaseServer {
   // /v1/fqa/app/paper/get-push-list 观看端-快问快答 获取推送快问快答列表
   @checkInitiated()
   getExamPublishList(params) {
-    this.examInstance?.api?.getExamPublishList(params).then(res => {
+    const { watchInitData } = useRoomBaseServer().state;
+    const data = {
+      source_id: watchInitData?.webinar?.id, // 活动ID
+      source_type: 1, // 类型：活动1
+      switch_id: watchInitData?.switch?.switch_id,
+      ...params
+    }
+    this.examInstance?.api?.getExamPublishList(data).then(res => {
       if (res.code === 200 && res.data) {
         this.state.examWatchResult = {
           list: res.data,
