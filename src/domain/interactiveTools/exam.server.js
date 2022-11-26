@@ -223,7 +223,14 @@ class ExamServer extends BaseServer {
   // /v1/fqa/app/paper/get-push-list 观看端-快问快答 获取推送快问快答列表
   @checkInitiated()
   getExamPublishList(params) {
-    this.examInstance?.api?.getExamPublishList(params).then(res => {
+    const { watchInitData } = useRoomBaseServer().state;
+    const data = {
+      source_id: watchInitData?.webinar?.id, // 活动ID
+      source_type: 1, // 类型：活动1
+      switch_id: watchInitData?.switch?.switch_id,
+      ...params
+    }
+    this.examInstance?.api?.getExamPublishList(data).then(res => {
       if (res.code === 200 && res.data) {
         this.state.examWatchResult = {
           list: res.data,
@@ -282,8 +289,14 @@ class ExamServer extends BaseServer {
 
   // v1/fqa/app/user-info-form/check 观看端-答题前置条件检查
   @checkInitiated()
-  checkExam(params) {
-    this.examInstance.api.checkExam(params).then(res => {
+  checkWebinarExam(params) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const data = {
+      source_type: 1,
+      source_id: watchInitData?.webinar?.id,
+      ...params
+    }
+    this.examInstance.api.checkExam(data).then(res => {
       if (res.code === 200) {
         this.state.userCheckVo = res.data;
       }
@@ -297,6 +310,18 @@ class ExamServer extends BaseServer {
   @checkInitiated()
   getExamPreviewInfo(params) {
     return this.examInstance.api.getExamPreviewInfo(params);
+  }
+
+  // 【观看端】获取榜单信息
+  getSimpleRankList(params) {
+    const { watchInitData } = useRoomBaseServer().state;
+    const data = {
+      paper_id: params.paper_id,
+      webinar_id: watchInitData?.webinar?.id,
+      pos: params.pos,
+      limit: params.limit
+    }
+    return examApi.getSimpleRankList(data)
   }
 }
 

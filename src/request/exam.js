@@ -38,9 +38,20 @@ const publishExam = params => {
 
 
 
+// 【观看端】获取榜单信息
+const getSimpleRankList = params => {
+  return request({
+    url: '/v3/interacts/exam/get-simple-rank-list',
+    method: 'post',
+    data: params
+  });
+};
+
+
 export default {
   getExamToken,
   pushExam,
   collectExam,
-  publishExam
+  publishExam,
+  getSimpleRankList
 }
