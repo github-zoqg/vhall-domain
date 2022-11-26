@@ -57,7 +57,7 @@ class ExamServer extends BaseServer {
     try {
       const { watchInitData, examInfo } = useRoomBaseServer().state;
       let examToken = ''
-      if (watchInitData?.join_info?.role_name != 1) {
+      if (watchInitData?.join_info?.role_name == 2) {
         examToken = examInfo
       } else {
         const { data: accountInfo } = await examApi.getExamToken({ webinar_id: watchInitData.webinar.id }) //发起端
@@ -66,6 +66,8 @@ class ExamServer extends BaseServer {
       const role = watchInitData?.join_info?.role_name != 1 ? 2 : 1
       this.examInstance = new window.ExamTemplateServer({
         role: role,
+        source_id: watchInitData.webinar.id,
+        source_type: 1,
         accountInfo: {
           ...examToken,
           platform: 7
