@@ -222,7 +222,7 @@ class ExamServer extends BaseServer {
 
   // /v1/fqa/app/paper/get-push-list 观看端-快问快答 获取推送快问快答列表
   @checkInitiated()
-  getExamPublishList(params) {
+  getExamPublishList(params = {}) {
     const { watchInitData } = useRoomBaseServer().state;
     const data = {
       source_id: watchInitData?.webinar?.id, // 活动ID
@@ -322,6 +322,138 @@ class ExamServer extends BaseServer {
       limit: params.limit
     }
     return examApi.getSimpleRankList(data)
+  }
+
+  /**
+   * 初始化用户表单信息
+   * @param {string} paper_id 试卷id
+   * @returns promise
+   */
+  @checkInitiated()
+  getExamUserFormInit(paper_id) {
+    const params = {
+      webinar_id: watchInitData?.webinar?.id,
+      paper_id: paper_id
+    }
+    return this.examInstance.api.getExamUserFormInit(params)
+  }
+
+  /**
+   * 发送验证码
+   * @param {object} parm 
+   * {
+   * phone:手机号，必填
+   * paper_id：试卷id,非必填
+   * country_code：国家码 默认CN，非必填
+   * }
+   * @returns promise
+   */
+  @checkInitiated()
+  sendExamPhone(parm) {
+    const params = {
+      webinar_id: watchInitData?.webinar?.id,
+      ...parm
+    }
+    return this.examInstance.api.sendExamPhone(params)
+  }
+
+  /**
+   * -验证手机验证码---感觉没用，是不是提交保存的时候校验
+   * @param {object}
+   * {
+   *  paper_id:试卷id,必填
+   * phone:手机号,必填
+   * verify_code:验证码,必填
+   * country_code:国家码 默认CN,必填
+   * }
+   * @returns promise
+   */
+  @checkInitiated()
+  checkExamPhone(parm) {
+    const params = {
+      webinar_id: watchInitData?.webinar?.id,
+      ...parm
+    }
+    return this.examInstance.api.checkExamPhone(params)
+  }
+
+  /**
+   * 保存用户表单信息
+   * * @param {object}
+   * {
+   *  paper_id:试卷id,必填
+   * user_detail:用户提交 表单json,必填
+   * verify_code:验证码,必填
+   * }
+   * @returns promise
+   */
+  @checkInitiated()
+  submitExamUserInfo(parm) {
+    const params = {
+      webinar_id: watchInitData?.webinar?.id,
+      ...parm
+    }
+    return this.examInstance.api.submitExamUserInfo(params)
+  }
+
+  /**
+   * 单题提交
+   * * * @param {object}
+   * {
+   * paper_id:试卷id,必填
+   * user_answer:用户答案,必填
+   * question_id:题目id,必填
+   * }
+   */
+  @checkInitiated()
+  submitExamAnswerInfo() {
+    const params = {
+      webinar_id: watchInitData?.webinar?.id,
+      ...parm
+    }
+    return this.examInstance.api.submitExamAnswerInfo(params)
+  }
+
+  /**
+   * 主动交卷
+   * @package {string} paper_id 试卷id
+   * @returns promise
+   */
+  @checkInitiated()
+  submitExamAnswerAll(paper_id) {
+    const params = {
+      webinar_id: watchInitData?.webinar?.id,
+      paper_id: paper_id
+    }
+    return this.examInstance.api.submitExamAnswerAll(params)
+  }
+
+  /**
+   * 获取已答题记录断点续答
+   * @package {string} paper_id 试卷id
+   * @returns promise
+   */
+  @checkInitiated()
+  getExamAnswerInfo() {
+    const params = {
+      webinar_id: watchInitData?.webinar?.id,
+      paper_id: paper_id
+    }
+    return this.examInstance.api.getExamAnswerInfo(params)
+  }
+
+  /**
+   * 获取个人成绩
+   * @package {string} paper_id 试卷id
+   * @returns promise
+   */
+  @checkInitiated()
+  getExamUserScope(paper_id) {
+    const params = {
+      webinar_id: watchInitData?.webinar?.id,
+      paper_id: paper_id
+    }
+    return this.examInstance.api.getExamUserScope(params)
   }
 }
 
