@@ -11,7 +11,7 @@ import { exam as examApi } from '@/request/index.js'
 function checkInitiated() {
   return (_, name, descriptor) => {
     const method = descriptor.value;
-    descriptor.value = function (...args) {
+    descriptor.value = function(...args) {
       if (!this.examInstance) {
         console.error('ExamServer 未 init'); //FIXME: 调试完成后删掉
         return this.init().then(() => {
@@ -49,6 +49,7 @@ class ExamServer extends BaseServer {
       EXAM_PAPER_AUTO_SEND_RANK: 'paper_auto_send_rank', // 快问快答-自动公布成绩
       EXAM_ERROR: 'exam_error'
     }
+    this.listenMsg()
   }
   async init() {
     if (this.examInstance instanceof ExamTemplateServer) {
@@ -73,7 +74,6 @@ class ExamServer extends BaseServer {
           platform: 7
         }
       })
-      this.listenMsg()
       return Promise.resolve(this.examInstance)
     } catch (e) {
       return Promise.reject(e);
