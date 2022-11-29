@@ -13,12 +13,10 @@ function checkInitiated() {
     const method = descriptor.value;
     descriptor.value = function(...args) {
       if (!this.examInstance) {
-        console.error('ExamServer 未 init'); //FIXME: 调试完成后删掉
         return this.init().then(() => {
           return method.apply(this, args);
         })
       } else {
-        console.warn('ExamServer 完成了 checkInitiated'); //FIXME: 调试完成后删掉
         return method.apply(this, args);
       }
     };
