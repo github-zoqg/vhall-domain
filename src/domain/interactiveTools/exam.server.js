@@ -11,7 +11,7 @@ import { exam as examApi } from '@/request/index.js'
 function checkInitiated() {
   return (_, name, descriptor) => {
     const method = descriptor.value;
-    descriptor.value = function(...args) {
+    descriptor.value = function (...args) {
       if (!this.examInstance) {
         console.error('ExamServer 未 init'); //FIXME: 调试完成后删掉
         return this.init().then(() => {
@@ -252,36 +252,6 @@ class ExamServer extends BaseServer {
     });
   }
 
-  // 判断icon触发动作类型
-  @checkInitiated()
-  setExecuteIconEvents() {
-    // 过滤数组：未作答 且  答题未超时（开启了限时答题） 或者 未作答（未开启限时答题）
-    let arr = this.state.examWatchResult.list.filter(item => {
-      return (
-        (item.limit_time_switch == 1 && item.status == 0 && item.is_end == 0) ||
-        item.status == 0
-      );
-    });
-    // 如果只有一份，直接进入到当前答题
-    if (arr.length == 1) {
-      this.state.iconExecuteType = 'answer';
-      this.state.iconExecuteItem = arr[0];
-    } else if (this.state.examWatchResult.total == 0) {
-      let item = this.state.examWatchResult.list[0];
-      this.state.iconExecuteItem = item;
-      if (item.status == 1) {
-        // 已作答，已答题，直接查看个人成绩
-        this.state.iconExecuteType = 'score';
-      } else if (item.limit_time_switch == 1 && item.is_end == 1) {
-        // 限时答题 & 已超时 & 未作答，toast提示 “很遗憾，您已错过本次答题机会！”
-        this.state.iconExecuteType = 'miss';
-      }
-    } else {
-      this.state.iconExecuteType = 'other';
-      this.state.iconExecuteItem = null;
-    }
-  }
-
   // 是否展示小红点
   setExamWatchDotVisible(visible) {
     this.state.dotVisible = visible
@@ -340,7 +310,7 @@ class ExamServer extends BaseServer {
 
   /**
    * 发送验证码
-   * @param {object} parm 
+   * @param {object} parm
    * {
    * phone:手机号，必填
    * paper_id：试卷id,非必填
