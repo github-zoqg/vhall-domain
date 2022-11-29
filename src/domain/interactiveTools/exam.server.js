@@ -296,6 +296,7 @@ class ExamServer extends BaseServer {
    */
   @checkInitiated()
   getExamUserFormInit(paper_id) {
+    const { watchInitData } = useRoomBaseServer().state;
     const params = {
       webinar_id: watchInitData?.webinar?.id,
       paper_id: paper_id
@@ -315,6 +316,7 @@ class ExamServer extends BaseServer {
    */
   @checkInitiated()
   sendExamPhone(parm) {
+    const { watchInitData } = useRoomBaseServer().state;
     const params = {
       webinar_id: watchInitData?.webinar?.id,
       ...parm
@@ -335,6 +337,7 @@ class ExamServer extends BaseServer {
    */
   @checkInitiated()
   checkExamPhone(parm) {
+    const { watchInitData } = useRoomBaseServer().state;
     const params = {
       webinar_id: watchInitData?.webinar?.id,
       ...parm
@@ -354,6 +357,7 @@ class ExamServer extends BaseServer {
    */
   @checkInitiated()
   submitExamUserInfo(parm) {
+    const { watchInitData } = useRoomBaseServer().state;
     const params = {
       webinar_id: watchInitData?.webinar?.id,
       ...parm
@@ -372,6 +376,7 @@ class ExamServer extends BaseServer {
    */
   @checkInitiated()
   submitExamAnswerInfo() {
+    const { watchInitData } = useRoomBaseServer().state;
     const params = {
       webinar_id: watchInitData?.webinar?.id,
       ...parm
@@ -386,6 +391,7 @@ class ExamServer extends BaseServer {
    */
   @checkInitiated()
   submitExamAnswerAll(paper_id) {
+    const { watchInitData } = useRoomBaseServer().state;
     const params = {
       webinar_id: watchInitData?.webinar?.id,
       paper_id: paper_id
@@ -400,6 +406,7 @@ class ExamServer extends BaseServer {
    */
   @checkInitiated()
   getExamAnswerInfo() {
+    const { watchInitData } = useRoomBaseServer().state;
     const params = {
       webinar_id: watchInitData?.webinar?.id,
       paper_id: paper_id
@@ -408,19 +415,22 @@ class ExamServer extends BaseServer {
   }
 
   /**
-   * 获取个人成绩
-   * @package {string} paper_id 试卷id
-   * @returns promise
-   */
+    * 获取个人成绩
+    * @package {string} paper_id 试卷id
+    * @returns promise
+    */
   @checkInitiated()
   getExamUserScope(paper_id) {
+    const { watchInitData } = useRoomBaseServer().state;
     const params = {
-      webinar_id: watchInitData?.webinar?.id,
+      account_id: watchInitData?.webinar?.id,
+      account_type: 4, // 化蝶默认都是参会ID，不论是否登录
       paper_id: paper_id
     }
     return this.examInstance.api.getExamUserScope(params)
   }
 }
+
 
 export default function useExamServer(options = {}) {
   if (!useExamServer.instance) {
