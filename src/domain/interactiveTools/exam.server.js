@@ -64,7 +64,7 @@ class ExamServer extends BaseServer {
         const { data: accountInfo } = await examApi.getExamToken({ webinar_id: watchInitData.webinar.id }) //发起端
         examToken = accountInfo
       }
-      const role = watchInitData?.join_info?.role_name != 1 ? 2 : 1
+      const role = watchInitData?.join_info?.role_name != 2 ? 1 : 2
       this.examInstance = new window.ExamTemplateServer({
         role: role,
         source_id: watchInitData.webinar.id,
