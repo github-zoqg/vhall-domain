@@ -49,6 +49,7 @@ class ExamServer extends BaseServer {
       EXAM_PAPER_AUTO_SEND_RANK: 'paper_auto_send_rank', // 快问快答-自动公布成绩
       EXAM_ERROR: 'exam_error'
     }
+    // 发起端事件用到
     this.listenMsg()
   }
   async init() {
@@ -82,35 +83,27 @@ class ExamServer extends BaseServer {
 
   listenMsg() {
     // 房间消息
-    useMsgServer().$onMsg('ROOM_MSG', rawMsg => {
-      let temp = Object.assign({}, rawMsg);
-
-      if (typeof temp.data !== 'object') {
-        temp.data = JSON.parse(temp.data);
-        temp.context = JSON.parse(temp.context);
-      }
-      // console.log(temp, '原始消息');
-      const { type = '' } = temp.data || {};
-      switch (type) {
+    useMsgServer().$onMsg('ROOM_MSG', msg => {
+      switch (msg.data.event_type || msg.data.type) {
         // 推送-快问快答
         case this.EVENT_TYPE.EXAM_PAPER_SEND:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND, msg);
           break;
         // 公布-快问快答-成绩
         case this.EVENT_TYPE.EXAM_PAPER_SEND_RANK:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND_RANK, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND_RANK, msg);
           break;
         // 快问快答-收卷
         case this.EVENT_TYPE.EXAM_PAPER_END:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_END, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_END, msg);
           break;
         // 快问快答-自动收卷
         case this.EVENT_TYPE.EXAM_PAPER_AUTO_END:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_END, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_END, msg);
           break;
         // 快问快答-自动公布成绩
         case this.EVENT_TYPE.EXAM_PAPER_AUTO_SEND_RANK:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_SEND_RANK, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_SEND_RANK, msg);
           break;
         default:
           break;
