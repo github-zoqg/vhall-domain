@@ -16,7 +16,7 @@ export default {
   //互动sdk
   interaction: {
     name: 'VhallRTC',
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-3.0.1.js'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-hybrid-3.0.1.js'
   },
   //文档sdk
   doc: {
