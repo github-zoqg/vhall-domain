@@ -7,6 +7,7 @@ import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
 import { exam as examApi } from '@/request/index.js'
+import { getPlatform } from '@/utils/http';
 
 function checkInitiated() {
   return (_, name, descriptor) => {
@@ -65,13 +66,14 @@ class ExamServer extends BaseServer {
         examToken = accountInfo
       }
       const role = watchInitData?.join_info?.role_name != 2 ? 1 : 2
+      const platform = getPlatform()
       this.examInstance = new window.ExamTemplateServer({
         role: role,
         source_id: watchInitData.webinar.id,
         source_type: 1,
         accountInfo: {
           ...examToken,
-          platform: 7
+          platform: platform
         }
       })
       return Promise.resolve(this.examInstance)
