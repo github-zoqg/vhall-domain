@@ -16,7 +16,7 @@ export default {
   //互动sdk
   interaction: {
     name: 'VhallRTC',
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-2.4.2.js'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-interaction/latest/vhall-jssdk-interaction-hybrid-3.0.1.js'
   },
   //文档sdk
   doc: {
@@ -25,7 +25,7 @@ export default {
   },
   questionnaire: {
     name: 'VhallQuestionnaire',
-    url: '//s3.e.vhall.com/common-static/middle/questionnaire/1.0.19/questionnaire_service.js',
+    url: '//s3.e.vhall.com/common-static/middle/questionnaire/1.0.20/questionnaire_service.js',
     defer: true // 新增属性，延迟执行
   }
 };
