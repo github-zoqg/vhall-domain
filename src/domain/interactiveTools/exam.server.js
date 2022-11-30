@@ -50,6 +50,7 @@ class ExamServer extends BaseServer {
       EXAM_PAPER_AUTO_SEND_RANK: 'paper_auto_send_rank', // 快问快答-自动公布成绩
       EXAM_ERROR: 'exam_error'
     }
+    // 发起端事件用到
     this.listenMsg()
   }
   async init() {
@@ -84,35 +85,27 @@ class ExamServer extends BaseServer {
 
   listenMsg() {
     // 房间消息
-    useMsgServer().$onMsg('ROOM_MSG', rawMsg => {
-      let temp = Object.assign({}, rawMsg);
-
-      if (typeof temp.data !== 'object') {
-        temp.data = JSON.parse(temp.data);
-        temp.context = JSON.parse(temp.context);
-      }
-      // console.log(temp, '原始消息');
-      const { type = '' } = temp.data || {};
-      switch (type) {
+    useMsgServer().$onMsg('ROOM_MSG', msg => {
+      switch (msg.data.event_type || msg.data.type) {
         // 推送-快问快答
         case this.EVENT_TYPE.EXAM_PAPER_SEND:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND, msg);
           break;
         // 公布-快问快答-成绩
         case this.EVENT_TYPE.EXAM_PAPER_SEND_RANK:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND_RANK, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND_RANK, msg);
           break;
         // 快问快答-收卷
         case this.EVENT_TYPE.EXAM_PAPER_END:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_END, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_END, msg);
           break;
         // 快问快答-自动收卷
         case this.EVENT_TYPE.EXAM_PAPER_AUTO_END:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_END, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_END, msg);
           break;
         // 快问快答-自动公布成绩
         case this.EVENT_TYPE.EXAM_PAPER_AUTO_SEND_RANK:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_SEND_RANK, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_SEND_RANK, msg);
           break;
         default:
           break;
@@ -333,7 +326,6 @@ class ExamServer extends BaseServer {
    * {
    * phone:手机号,必填
    * verify_code:验证码,必填
-   * country_code:国家码 默认CN,必填
    * }
    * @returns promise
    * 标品未用，jssdk使用
@@ -355,7 +347,6 @@ class ExamServer extends BaseServer {
    */
   @checkInitiated()
   submitExamUserInfo(parm) {
-    const { watchInitData } = useRoomBaseServer().state;
     const params = {
       source_id: watchInitData?.webinar?.id,
       source_type: 1,
@@ -409,19 +400,21 @@ class ExamServer extends BaseServer {
 
   /**
    * 获取个人成绩
+   * @package {string} paper_id 试卷id
    * @returns promise
-   * 标品未用，jssdk使用
    */
   @checkInitiated()
-  getExamUserScope() {
+  getExamUserScope(paper_id) {
     const { watchInitData } = useRoomBaseServer().state;
     const params = {
-      account_id: watchInitData.join_info.third_party_user_id,
-      account_type: 4,////2.c端用户id 3.c端游客id 4.c端参会id
+      account_id: watchInitData?.webinar?.id,
+      account_type: 4, // 化蝶默认都是参会ID，不论是否登录
+      paper_id: paper_id
     }
     return this.examInstance.api.getExamUserScope(params)
   }
 }
+
 
 export default function useExamServer(options = {}) {
   if (!useExamServer.instance) {
