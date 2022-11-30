@@ -298,15 +298,12 @@ class ExamServer extends BaseServer {
 
   /**
    * 初始化用户表单信息
-   * @param {string} paper_id 试卷id
+   * @param {string} 
    * @returns promise
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
-  getExamUserFormInit(paper_id) {
-    const params = {
-      webinar_id: watchInitData?.webinar?.id,
-      paper_id: paper_id
-    }
+  getExamUserFormInit(params) {
     return this.examInstance.api.getExamUserFormInit(params)
   }
 
@@ -315,16 +312,17 @@ class ExamServer extends BaseServer {
    * @param {object} parm
    * {
    * phone:手机号，必填
-   * paper_id：试卷id,非必填
-   * country_code：国家码 默认CN，非必填
    * }
    * @returns promise
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
-  sendExamPhone(parm) {
+  sendExamPhone(phone) {
     const params = {
-      webinar_id: watchInitData?.webinar?.id,
-      ...parm
+      phone: phone,
+      scene: 1,
+      msg_template_id: "a6f7552d669145f999b77a462f62b3f5",
+      msg_sign_id: "d54a2a1e59a54dc5bfdd9c74822e9974",
     }
     return this.examInstance.api.sendExamPhone(params)
   }
@@ -333,19 +331,15 @@ class ExamServer extends BaseServer {
    * -验证手机验证码---感觉没用，是不是提交保存的时候校验
    * @param {object}
    * {
-   *  paper_id:试卷id,必填
    * phone:手机号,必填
    * verify_code:验证码,必填
    * country_code:国家码 默认CN,必填
    * }
    * @returns promise
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
-  checkExamPhone(parm) {
-    const params = {
-      webinar_id: watchInitData?.webinar?.id,
-      ...parm
-    }
+  checkExamPhone(params) {
     return this.examInstance.api.checkExamPhone(params)
   }
 
@@ -353,16 +347,18 @@ class ExamServer extends BaseServer {
    * 保存用户表单信息
    * * @param {object}
    * {
-   *  paper_id:试卷id,必填
    * user_detail:用户提交 表单json,必填
    * verify_code:验证码,必填
    * }
    * @returns promise
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
   submitExamUserInfo(parm) {
+    const { watchInitData } = useRoomBaseServer().state;
     const params = {
-      webinar_id: watchInitData?.webinar?.id,
+      source_id: watchInitData?.webinar?.id,
+      source_type: 1,
       ...parm
     }
     return this.examInstance.api.submitExamUserInfo(params)
@@ -376,13 +372,10 @@ class ExamServer extends BaseServer {
    * user_answer:用户答案,必填
    * question_id:题目id,必填
    * }
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
-  submitExamAnswerInfo() {
-    const params = {
-      webinar_id: watchInitData?.webinar?.id,
-      ...parm
-    }
+  submitExamAnswerInfo(params) {
     return this.examInstance.api.submitExamAnswerInfo(params)
   }
 
@@ -390,11 +383,11 @@ class ExamServer extends BaseServer {
    * 主动交卷
    * @package {string} paper_id 试卷id
    * @returns promise
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
   submitExamAnswerAll(paper_id) {
     const params = {
-      webinar_id: watchInitData?.webinar?.id,
       paper_id: paper_id
     }
     return this.examInstance.api.submitExamAnswerAll(params)
@@ -404,11 +397,11 @@ class ExamServer extends BaseServer {
    * 获取已答题记录断点续答
    * @package {string} paper_id 试卷id
    * @returns promise
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
-  getExamAnswerInfo() {
+  getExamAnswerInfo(paper_id) {
     const params = {
-      webinar_id: watchInitData?.webinar?.id,
       paper_id: paper_id
     }
     return this.examInstance.api.getExamAnswerInfo(params)
@@ -416,14 +409,15 @@ class ExamServer extends BaseServer {
 
   /**
    * 获取个人成绩
-   * @package {string} paper_id 试卷id
    * @returns promise
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
-  getExamUserScope(paper_id) {
+  getExamUserScope() {
+    const { watchInitData } = useRoomBaseServer().state;
     const params = {
-      webinar_id: watchInitData?.webinar?.id,
-      paper_id: paper_id
+      account_id: watchInitData.join_info.third_party_user_id,
+      account_type: 4,////2.c端用户id 3.c端游客id 4.c端参会id
     }
     return this.examInstance.api.getExamUserScope(params)
   }
