@@ -83,7 +83,9 @@ class RoomBaseServer extends BaseServer {
         warmup_paas_record_id: [],
         warmup_player_type: 1
       },
-      showIconNum: 0     // wap右侧展示icon数量
+      showIconNum: 0,     // wap右侧展示icon数量
+      isExamStickTop: false, // 快问快答-是否吸顶
+      stickType: null // 快问快答-吸顶面板
     };
     RoomBaseServer.instance = this;
     return this;
@@ -854,6 +856,18 @@ class RoomBaseServer extends BaseServer {
       this.state.showIconNum--
     }
   }
+
+  // 设置快问快答是否吸顶
+  setIsExamStickTop(status) {
+    console.log('设置快问快答是否吸顶', status)
+    this.state.isExamStickTop = status;
+  }
+
+  // 设置快问快答吸顶类型
+  setStickType(stickType) {
+    this.state.stickType = stickType;
+  }
+
 }
 
 export default function useRoomBaseServer() {

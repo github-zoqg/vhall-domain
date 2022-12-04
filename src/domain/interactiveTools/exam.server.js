@@ -7,11 +7,12 @@ import BaseServer from '../common/base.server';
 import useMsgServer from '../common/msg.server';
 import useRoomBaseServer from '../room/roombase.server';
 import { exam as examApi } from '@/request/index.js'
+import { getPlatform } from '@/utils/http';
 
 function checkInitiated() {
   return (_, name, descriptor) => {
     const method = descriptor.value;
-    descriptor.value = function(...args) {
+    descriptor.value = function (...args) {
       if (!this.examInstance) {
         return this.init().then(() => {
           return method.apply(this, args);
@@ -47,6 +48,7 @@ class ExamServer extends BaseServer {
       EXAM_PAPER_AUTO_SEND_RANK: 'paper_auto_send_rank', // 快问快答-自动公布成绩
       EXAM_ERROR: 'exam_error'
     }
+    // 发起端事件用到
     this.listenMsg()
   }
   async init() {
@@ -62,14 +64,15 @@ class ExamServer extends BaseServer {
         const { data: accountInfo } = await examApi.getExamToken({ webinar_id: watchInitData.webinar.id }) //发起端
         examToken = accountInfo
       }
-      const role = watchInitData?.join_info?.role_name != 1 ? 2 : 1
+      const role = watchInitData?.join_info?.role_name != 2 ? 1 : 2
+      const platform = getPlatform()
       this.examInstance = new window.ExamTemplateServer({
         role: role,
         source_id: watchInitData.webinar.id,
         source_type: 1,
         accountInfo: {
           ...examToken,
-          platform: 7
+          platform: platform
         }
       })
       return Promise.resolve(this.examInstance)
@@ -80,35 +83,27 @@ class ExamServer extends BaseServer {
 
   listenMsg() {
     // 房间消息
-    useMsgServer().$onMsg('ROOM_MSG', rawMsg => {
-      let temp = Object.assign({}, rawMsg);
-
-      if (typeof temp.data !== 'object') {
-        temp.data = JSON.parse(temp.data);
-        temp.context = JSON.parse(temp.context);
-      }
-      // console.log(temp, '原始消息');
-      const { type = '' } = temp.data || {};
-      switch (type) {
+    useMsgServer().$onMsg('ROOM_MSG', msg => {
+      switch (msg.data.event_type || msg.data.type) {
         // 推送-快问快答
         case this.EVENT_TYPE.EXAM_PAPER_SEND:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND, msg);
           break;
         // 公布-快问快答-成绩
         case this.EVENT_TYPE.EXAM_PAPER_SEND_RANK:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND_RANK, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_SEND_RANK, msg);
           break;
         // 快问快答-收卷
         case this.EVENT_TYPE.EXAM_PAPER_END:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_END, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_END, msg);
           break;
         // 快问快答-自动收卷
         case this.EVENT_TYPE.EXAM_PAPER_AUTO_END:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_END, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_END, msg);
           break;
         // 快问快答-自动公布成绩
         case this.EVENT_TYPE.EXAM_PAPER_AUTO_SEND_RANK:
-          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_SEND_RANK, temp);
+          this.$emit(this.EVENT_TYPE.EXAM_PAPER_AUTO_SEND_RANK, msg);
           break;
         default:
           break;
@@ -250,36 +245,6 @@ class ExamServer extends BaseServer {
     });
   }
 
-  // 判断icon触发动作类型
-  @checkInitiated()
-  setExecuteIconEvents() {
-    // 过滤数组：未作答 且  答题未超时（开启了限时答题） 或者 未作答（未开启限时答题）
-    let arr = this.state.examWatchResult.list.filter(item => {
-      return (
-        (item.limit_time_switch == 1 && item.status == 0 && item.is_end == 0) ||
-        item.status == 0
-      );
-    });
-    // 如果只有一份，直接进入到当前答题
-    if (arr.length == 1) {
-      this.state.iconExecuteType = 'answer';
-      this.state.iconExecuteItem = arr[0];
-    } else if (this.state.examWatchResult.total == 0) {
-      let item = this.state.examWatchResult.list[0];
-      this.state.iconExecuteItem = item;
-      if (item.status == 1) {
-        // 已作答，已答题，直接查看个人成绩
-        this.state.iconExecuteType = 'score';
-      } else if (item.limit_time_switch == 1 && item.is_end == 1) {
-        // 限时答题 & 已超时 & 未作答，toast提示 “很遗憾，您已错过本次答题机会！”
-        this.state.iconExecuteType = 'miss';
-      }
-    } else {
-      this.state.iconExecuteType = 'other';
-      this.state.iconExecuteItem = null;
-    }
-  }
-
   // 是否展示小红点
   setExamWatchDotVisible(visible) {
     this.state.dotVisible = visible
@@ -324,33 +289,31 @@ class ExamServer extends BaseServer {
 
   /**
    * 初始化用户表单信息
-   * @param {string} paper_id 试卷id
+   * @param {string} 
    * @returns promise
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
-  getExamUserFormInit(paper_id) {
-    const params = {
-      webinar_id: watchInitData?.webinar?.id,
-      paper_id: paper_id
-    }
+  getExamUserFormInit(params) {
     return this.examInstance.api.getExamUserFormInit(params)
   }
 
   /**
    * 发送验证码
-   * @param {object} parm 
+   * @param {object} parm
    * {
    * phone:手机号，必填
-   * paper_id：试卷id,非必填
-   * country_code：国家码 默认CN，非必填
    * }
    * @returns promise
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
-  sendExamPhone(parm) {
+  sendExamPhone(phone) {
     const params = {
-      webinar_id: watchInitData?.webinar?.id,
-      ...parm
+      phone: phone,
+      scene: 1,
+      msg_template_id: "a6f7552d669145f999b77a462f62b3f5",
+      msg_sign_id: "d54a2a1e59a54dc5bfdd9c74822e9974",
     }
     return this.examInstance.api.sendExamPhone(params)
   }
@@ -359,19 +322,14 @@ class ExamServer extends BaseServer {
    * -验证手机验证码---感觉没用，是不是提交保存的时候校验
    * @param {object}
    * {
-   *  paper_id:试卷id,必填
    * phone:手机号,必填
    * verify_code:验证码,必填
-   * country_code:国家码 默认CN,必填
    * }
    * @returns promise
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
-  checkExamPhone(parm) {
-    const params = {
-      webinar_id: watchInitData?.webinar?.id,
-      ...parm
-    }
+  checkExamPhone(params) {
     return this.examInstance.api.checkExamPhone(params)
   }
 
@@ -379,16 +337,17 @@ class ExamServer extends BaseServer {
    * 保存用户表单信息
    * * @param {object}
    * {
-   *  paper_id:试卷id,必填
    * user_detail:用户提交 表单json,必填
    * verify_code:验证码,必填
    * }
    * @returns promise
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
   submitExamUserInfo(parm) {
     const params = {
-      webinar_id: watchInitData?.webinar?.id,
+      source_id: watchInitData?.webinar?.id,
+      source_type: 1,
       ...parm
     }
     return this.examInstance.api.submitExamUserInfo(params)
@@ -402,13 +361,10 @@ class ExamServer extends BaseServer {
    * user_answer:用户答案,必填
    * question_id:题目id,必填
    * }
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
-  submitExamAnswerInfo() {
-    const params = {
-      webinar_id: watchInitData?.webinar?.id,
-      ...parm
-    }
+  submitExamAnswerInfo(params) {
     return this.examInstance.api.submitExamAnswerInfo(params)
   }
 
@@ -416,11 +372,11 @@ class ExamServer extends BaseServer {
    * 主动交卷
    * @package {string} paper_id 试卷id
    * @returns promise
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
   submitExamAnswerAll(paper_id) {
     const params = {
-      webinar_id: watchInitData?.webinar?.id,
       paper_id: paper_id
     }
     return this.examInstance.api.submitExamAnswerAll(params)
@@ -430,11 +386,11 @@ class ExamServer extends BaseServer {
    * 获取已答题记录断点续答
    * @package {string} paper_id 试卷id
    * @returns promise
+   * 标品未用，jssdk使用
    */
   @checkInitiated()
-  getExamAnswerInfo() {
+  getExamAnswerInfo(paper_id) {
     const params = {
-      webinar_id: watchInitData?.webinar?.id,
       paper_id: paper_id
     }
     return this.examInstance.api.getExamAnswerInfo(params)
@@ -447,13 +403,16 @@ class ExamServer extends BaseServer {
    */
   @checkInitiated()
   getExamUserScope(paper_id) {
+    const { watchInitData } = useRoomBaseServer().state;
     const params = {
-      webinar_id: watchInitData?.webinar?.id,
+      account_id: watchInitData?.webinar?.id,
+      account_type: 4, // 化蝶默认都是参会ID，不论是否登录
       paper_id: paper_id
     }
     return this.examInstance.api.getExamUserScope(params)
   }
 }
+
 
 export default function useExamServer(options = {}) {
   if (!useExamServer.instance) {
