@@ -27,5 +27,9 @@ export default {
     name: 'VhallQuestionnaire',
     url: '//s3.e.vhall.com/common-static/middle/questionnaire/1.0.17/questionnaire_service.js',
     defer: true // 新增属性，延迟执行
+  },
+  exam: {
+    name: "ExamTemplateServer",
+    url: "//vhallstatic.oss-cn-beijing.aliyuncs.com/common-static/vhall-form/vhall-form-vue.js"
   }
 };

@@ -34,9 +34,9 @@ class VhallPaasSDK {
         for (const k of deferSdks) {
           loadjs(ALLSDKCONFIG[k].url, k, {
             async: false,
-            success: function() { },
-            error: function(pathsNotFound) { },
-            before: function(path, scriptEl) {
+            success: function () { },
+            error: function (pathsNotFound) { },
+            before: function (path, scriptEl) {
               scriptEl.defer = true;
               document.body.appendChild(scriptEl);
               /* return `false` to bypass default DOM insertion mechanism */
@@ -71,10 +71,10 @@ class VhallPaasSDK {
       // report sdk已经定义过,但是未执行完毕，需要等待执行完毕后继续
       return await new Promise((resolve, reject) => {
         loadjs.ready("report", {
-          success: function() {
+          success: function () {
             resolve();
           },
-          error: function(depsNotFound) {
+          error: function (depsNotFound) {
             reject(depsNotFound);
           },
         });
