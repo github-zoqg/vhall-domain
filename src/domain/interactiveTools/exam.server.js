@@ -51,7 +51,7 @@ class ExamServer extends BaseServer {
     // 发起端事件用到
     this.listenMsg()
   }
-  async init() {
+  async init(opts = {}) {
     if (this.examInstance instanceof ExamTemplateServer) {
       return Promise.resolve(this.examInstance)
     }
@@ -61,19 +61,31 @@ class ExamServer extends BaseServer {
       if (watchInitData?.join_info?.role_name == 2) {
         examToken = examInfo
       } else {
-        const { data: accountInfo } = await examApi.getExamToken({ webinar_id: watchInitData.webinar.id }) //发起端
+        let { source_id } = opts // 若是动态传入的活动ID
+        const { data: accountInfo } = await examApi.getExamToken({ webinar_id: watchInitData?.webinar?.id || source_id }) //发起端
         examToken = accountInfo
       }
       const role = watchInitData?.join_info?.role_name != 2 ? 1 : 2
       const platform = getPlatform()
-      this.examInstance = new window.ExamTemplateServer({
+      console.log('重置之后数据', {
         role: role,
-        source_id: watchInitData.webinar.id,
+        source_id: watchInitData?.webinar?.id,
         source_type: 1,
         accountInfo: {
           ...examToken,
           platform: platform
-        }
+        },
+        ...opts
+      })
+      this.examInstance = new window.ExamTemplateServer({
+        role: role,
+        source_id: watchInitData?.webinar?.id,
+        source_type: 1,
+        accountInfo: {
+          ...examToken,
+          platform: platform
+        },
+        ...opts
       })
       return Promise.resolve(this.examInstance)
     } catch (e) {
@@ -223,8 +235,8 @@ class ExamServer extends BaseServer {
       switch_id: watchInitData?.switch?.switch_id,
       ...params
     }
-    this.examInstance?.api?.getExamPublishList(data).then(res => {
-      if (res.code === 200 && res.data) {
+    return this.examInstance?.api?.getExamPublishList(data).then(res => {
+      if (res.code == 200 && res.data) {
         this.state.examWatchResult = {
           list: res.data,
           total: res.data.length
@@ -259,8 +271,8 @@ class ExamServer extends BaseServer {
       source_id: watchInitData?.webinar?.id,
       ...params
     }
-    this.examInstance.api.checkExam(data).then(res => {
-      if (res.code === 200) {
+    return this.examInstance.api.checkExam(data).then(res => {
+      if (res.code == 200) {
         this.state.userCheckVo = res.data;
       }
       return res;
@@ -289,7 +301,7 @@ class ExamServer extends BaseServer {
 
   /**
    * 初始化用户表单信息
-   * @param {string} 
+   * @param {string}
    * @returns promise
    * 标品未用，jssdk使用
    */
