@@ -235,8 +235,8 @@ class ExamServer extends BaseServer {
       switch_id: watchInitData?.switch?.switch_id,
       ...params
     }
-    this.examInstance?.api?.getExamPublishList(data).then(res => {
-      if (res.code === 200 && res.data) {
+    return this.examInstance?.api?.getExamPublishList(data).then(res => {
+      if (res.code == 200 && res.data) {
         this.state.examWatchResult = {
           list: res.data,
           total: res.data.length
@@ -271,8 +271,8 @@ class ExamServer extends BaseServer {
       source_id: watchInitData?.webinar?.id,
       ...params
     }
-    this.examInstance.api.checkExam(data).then(res => {
-      if (res.code === 200) {
+    return this.examInstance.api.checkExam(data).then(res => {
+      if (res.code == 200) {
         this.state.userCheckVo = res.data;
       }
       return res;
