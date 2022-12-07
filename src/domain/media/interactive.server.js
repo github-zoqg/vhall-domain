@@ -302,7 +302,8 @@ class InteractiveServer extends BaseServer {
       role, //用户角色，选填，可选值参考下文【互动参会角色】。当mode为rtc模式时，不需要配置role。支持版本：2.3.1及以上。
       attributes: '', // String 类型
       autoStartBroadcast,
-      otherOption: watchInitData.report_data
+      otherOption: watchInitData.report_data,
+      socketTimeout: 10000 // ws超时时间单位ms，选填 支持版本V3.0.1及以上
     };
 
     defaultOptions.broadcastConfig = this.getBroadcastConfig()

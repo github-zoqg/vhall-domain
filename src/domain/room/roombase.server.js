@@ -110,6 +110,7 @@ class RoomBaseServer extends BaseServer {
     if (['embed'].includes(options.clientType)) {
       // v6.5.9新增 - 分组直播是单视频嵌入的时候，不支持。
       options.embed_type = this.state.embedObj.embedVideo ? 'video' : 'full'
+      options.origin_page = location.pathname.includes('watch') ? 'watch' : 'subscribe'
     }
 
     this.state.watchInitData.live_type = options.live_type

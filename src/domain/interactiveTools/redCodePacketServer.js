@@ -76,6 +76,12 @@ class RedCodePacketServer extends BaseServer {
           this.state.iconVisible = true
           this.state.dotVisible = true
           this._lastUUid = msg.data.red_packet_uuid
+          this.state.info = {
+            avatar: msg.data.sender_avatar,
+            nickname: msg.data.sender_nickname,
+            number: 1,
+            red_packet_uuid: msg.data.red_packet_uuid
+          }
           this.$emit(PWD_RED_ENVELOPE_OK, msg.data);
           break;
       }
