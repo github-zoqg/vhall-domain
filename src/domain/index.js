@@ -87,7 +87,7 @@ class Domain {
       setRequestBody(options.requestBody);
     }
 
-    let taskList = VhallPaasSDK.init(options.plugins, options.questionnaireNoDefer = false);
+    let taskList = VhallPaasSDK.init(options.plugins, options.questionnaireNoDefer);
     // 是否在创建domain实例的时候初始化房间
     if (!options.isNotInitRoom) {
       taskList.push(this.initRoom(options.initRoom, options.devLogOptions))
