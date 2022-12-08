@@ -1091,7 +1091,7 @@ export default class StandardDocServer extends AbstractDocServer {
           if (role_name == 4) {
             setChangeElement('stream-list')
           } else {
-            if (role_name == 2 && speakerAndShowLayout == 1) {
+            if (role_name == 2 && speakerAndShowLayout == 1 && no_delay_webinar != 1) {
               setChangeElement('');
             } else {
               setChangeElement('doc');
