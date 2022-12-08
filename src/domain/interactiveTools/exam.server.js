@@ -94,7 +94,7 @@ class ExamServer extends BaseServer {
         }
       })
       // 查到的用户信息，赋值
-      this.state.examUserInfo = accountInfo
+      this.state.examUserInfo = examToken
       return Promise.resolve(this.examInstance)
     } catch (e) {
       return Promise.reject(e);
