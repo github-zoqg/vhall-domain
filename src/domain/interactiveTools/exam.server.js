@@ -14,9 +14,15 @@ function checkInitiated() {
     const method = descriptor.value;
     descriptor.value = function (...args) {
       if (!this.examInstance) {
-        return this.init().then(() => {
-          return method.apply(this, args);
-        })
+        if (this.examlModel == 'appSdk') {
+          return this.appSdkInit().then(() => {
+            return method.apply(this, args);
+          })
+        } else {
+          return this.init().then(() => {
+            return method.apply(this, args);
+          })
+        }
       } else {
         return method.apply(this, args);
       }
@@ -38,6 +44,11 @@ class ExamServer extends BaseServer {
       userCheckVo: {
         is_fill: null, // 是否需要填写表单 0.否 1.是
         is_answer: null // 是否已答题 0.否 1.是
+      },
+      examUserInfo: {
+        avatar: '',
+        nickname: '',
+        phone: ''
       }
     }
     this.EVENT_TYPE = {
@@ -48,10 +59,11 @@ class ExamServer extends BaseServer {
       EXAM_PAPER_AUTO_SEND_RANK: 'paper_auto_send_rank', // 快问快答-自动公布成绩
       EXAM_ERROR: 'exam_error'
     }
+    this.examlModel = options.model || ''
     // 发起端事件用到
     this.listenMsg()
   }
-  async init(opts = {}) {
+  async init() {
     if (this.examInstance instanceof ExamTemplateServer) {
       return Promise.resolve(this.examInstance)
     }
@@ -61,32 +73,62 @@ class ExamServer extends BaseServer {
       if (watchInitData?.join_info?.role_name == 2) {
         examToken = examInfo
       } else {
-        let { source_id } = opts // 若是动态传入的活动ID
-        const { data: accountInfo } = await examApi.getExamToken({ webinar_id: watchInitData?.webinar?.id || source_id }) //发起端
+        const { data: accountInfo } = await examApi.getExamToken({ webinar_id: watchInitData?.webinar?.id }) //发起端
         examToken = accountInfo
       }
       const role = watchInitData?.join_info?.role_name != 2 ? 1 : 2
       const platform = getPlatform()
-      console.log('重置之后数据', {
-        role: role,
-        source_id: watchInitData?.webinar?.id,
-        source_type: 1,
-        accountInfo: {
-          ...examToken,
-          platform: platform
-        },
-        ...opts
-      })
+
       this.examInstance = new window.ExamTemplateServer({
         role: role,
         source_id: watchInitData?.webinar?.id,
         source_type: 1,
         accountInfo: {
-          ...examToken,
+          ...{
+            app_id: examToken.app_id,
+            biz_permission_key: examToken.biz_permission_key,
+            csd_token: examToken.csd_token,
+            platform: examToken.platform
+          },
           platform: platform
-        },
-        ...opts
+        }
       })
+      // 查到的用户信息，赋值
+      this.state.examUserInfo = accountInfo
+      return Promise.resolve(this.examInstance)
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
+
+  // 移动端app-sdk使用
+  setExamExtends(opts = {}) {
+    this.examExtends = opts;
+  }
+  async appSdkInit() {
+    if (this.examInstance instanceof ExamTemplateServer) {
+      return Promise.resolve(this.examInstance)
+    }
+    try {
+      console.log('进入appSdkInit当前', this.examExtends)
+      const { data: accountInfo } = await examApi.getExamToken({ webinar_id: this.examExtends.webinar_id }) // app-sdk嵌入
+      const platform = getPlatform()
+      this.examInstance = new window.ExamTemplateServer({
+        role: 2,
+        source_id: this.examExtends.webinar_id,
+        source_type: 1,
+        accountInfo: {
+          ...{
+            app_id: accountInfo.app_id,
+            biz_permission_key: accountInfo.biz_permission_key,
+            csd_token: accountInfo.csd_token,
+            platform: accountInfo.platform
+          },
+          platform: platform || 10
+        }
+      })
+      // 查到的用户信息，赋值
+      this.state.examUserInfo = accountInfo
       return Promise.resolve(this.examInstance)
     } catch (e) {
       return Promise.reject(e);
@@ -228,12 +270,22 @@ class ExamServer extends BaseServer {
   // /v1/fqa/app/paper/get-push-list 观看端-快问快答 获取推送快问快答列表
   @checkInitiated()
   getExamPublishList(params = {}) {
-    const { watchInitData } = useRoomBaseServer().state;
-    const data = {
-      source_id: watchInitData?.webinar?.id, // 活动ID
-      source_type: 1, // 类型：活动1
-      switch_id: watchInitData?.switch?.switch_id,
-      ...params
+    let data = {}
+    if (this.examlModel == 'appSdk') {
+      data = {
+        source_id: this.examExtends.webinar_id, // 活动ID
+        source_type: 1, // 类型：活动1
+        switch_id: this.examExtends.switch_id,
+        ...params
+      }
+    } else {
+      const { watchInitData } = useRoomBaseServer().state;
+      data = {
+        source_id: watchInitData?.webinar?.id, // 活动ID
+        source_type: 1, // 类型：活动1
+        switch_id: watchInitData?.switch?.switch_id,
+        ...params
+      }
     }
     return this.examInstance?.api?.getExamPublishList(data).then(res => {
       if (res.code == 200 && res.data) {
