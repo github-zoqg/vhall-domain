@@ -6,6 +6,7 @@ import useUserServer from '@/domain/user/userServer.js';
 import { textToEmojiText } from '@/utils/emoji';
 import { player } from '../../request/index';
 import { merge } from '../../utils';
+import { getPlatform } from '@/utils/http';
 class PlayerServer extends BaseServer {
   constructor(options) {
     // // 创建单例之外的额外的实例
@@ -53,6 +54,7 @@ class PlayerServer extends BaseServer {
           this.state.markPoints = event.markPoints;
           this.openControls(false);
           this.openUI(false);
+
           this._addPlayerListeners();
           resolve(event);
         },
@@ -247,17 +249,20 @@ class PlayerServer extends BaseServer {
   _addPlayerListeners() {
     const msgServer = useMsgServer();
     const roomBaseServer = useRoomBaseServer()
-    // 弹幕
-    msgServer.$onMsg('CHAT', msg => {
-      // msg.data.target_id: 不能是私聊，只有聊天输入的信息才是弹幕
-      if (this.state.isBarrage && !msg.data.target_id) {
-        // 表情转化为图片，非文字
-        if (msg.data.type == 'text') {
-          //表情处理
-          this.addBarrage(textToEmojiText(msg.data.barrageTxt))
+    const platform = getPlatform()
+    if (platform != 18) {
+      // 弹幕
+      msgServer.$onMsg('CHAT', msg => {
+        // msg.data.target_id: 不能是私聊，只有聊天输入的信息才是弹幕
+        if (this.state.isBarrage && !msg.data.target_id) {
+          // 表情转化为图片，非文字
+          if (msg.data.type == 'text') {
+            //表情处理
+            this.addBarrage(textToEmojiText(msg.data.barrageTxt))
+          }
         }
-      }
-    });
+      });
+    }
     // 结束直播
     msgServer.$onMsg('ROOM_MSG', msg => {
       // live_over 结束直播
