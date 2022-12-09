@@ -58,6 +58,7 @@ class RoomBaseServer extends BaseServer {
       noticeInfo: {}, // 公告
       signInfo: {}, //签到信息
       timerInfo: {}, //计时器
+      examInfo: {},//快问快答
       interactToolStatus: {}, //互动工具状态信息
       roomVisibleModules: [],
       miniElement: 'stream-list', // 可能的值：doc  stream-list sceen
@@ -82,7 +83,9 @@ class RoomBaseServer extends BaseServer {
         warmup_paas_record_id: [],
         warmup_player_type: 1
       },
-      showIconNum: 0     // wap右侧展示icon数量
+      showIconNum: 0,     // wap右侧展示icon数量
+      isExamStickTop: false, // 快问快答-是否吸顶
+      stickType: null // 快问快答-吸顶面板
     };
     RoomBaseServer.instance = this;
     return this;
@@ -596,6 +599,7 @@ class RoomBaseServer extends BaseServer {
         this.state.noticeInfo = res.data['announcement'] ? res.data['announcement'].data : {}; //公告
         this.state.signInfo = res.data['sign'] ? res.data['sign'].data : {}; //签到信息
         this.state.timerInfo = res.data['timer'] ? res.data['timer'].data : {}; //计时器
+        this.state.examInfo = res.data['exam'] ? res.data['exam'].data : {}
       }
       return res;
     });
@@ -853,6 +857,18 @@ class RoomBaseServer extends BaseServer {
       this.state.showIconNum--
     }
   }
+
+  // 设置快问快答是否吸顶
+  setIsExamStickTop(status) {
+    console.log('设置快问快答是否吸顶', status)
+    this.state.isExamStickTop = status;
+  }
+
+  // 设置快问快答吸顶类型
+  setStickType(stickType) {
+    this.state.stickType = stickType;
+  }
+
 }
 
 export default function useRoomBaseServer() {
