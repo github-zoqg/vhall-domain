@@ -39,7 +39,8 @@ import qaList from './qa/list/index.js';
 import goodSaasApi from './good/index.js';
 // 专题
 import subject from './room-subject/subject';
-
+//快问快答
+import exam from './exam.js'
 const im = {
   chat: imChat,
   keyWords: imKeyWords,
@@ -93,5 +94,6 @@ export {
   signUpFormApi,
   homepageApi,
   roomSubjectApi,
-  recommendApi
+  recommendApi,
+  exam
 };
