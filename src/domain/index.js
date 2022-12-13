@@ -62,6 +62,7 @@ import useVideoPollingServer from '@/domain/media/videoPolling.server';
 import useHomepageServer from '@/domain/brand/homepage.server';
 
 import useRecommendServer from '@/domain/brand/recommend.server'
+import useExamServer from '@/domain/interactiveTools/exam.server.js';
 
 /**
  * options:{
@@ -202,5 +203,6 @@ export {
   useVideoPollingServer,
   useHomepageServer,
   useRecommendServer,
-  useZIndexServer
+  useZIndexServer,
+  useExamServer
 };

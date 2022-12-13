@@ -21,11 +21,15 @@ export default {
   //文档sdk
   doc: {
     name: 'VHDocSDK',
-    url: '//static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.4.4.js'
+    url: '//static.vhallyun.com/jssdk/vhall-jssdk-doc/latest/vhall-jssdk-doc-3.4.6.js'
   },
   questionnaire: {
     name: 'VhallQuestionnaire',
-    url: '//s3.e.vhall.com/common-static/middle/questionnaire/1.0.21/questionnaire_service.js',
+    url: '//s3.e.vhall.com/common-static/middle/questionnaire/1.0.22/questionnaire_service.js',
     defer: true // 新增属性，延迟执行
+  },
+  exam: {
+    name: "ExamTemplateServer",
+    url: "//s3.e.vhall.com/common-static/vhall-form/1.0.0-pre/vhall-form-vue.js"
   }
 };
