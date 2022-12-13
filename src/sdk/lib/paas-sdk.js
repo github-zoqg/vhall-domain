@@ -30,6 +30,6 @@ export default {
   },
   exam: {
     name: "ExamTemplateServer",
-    url: "//s3.e.vhall.com/common-static/vhall-form/1.0.0-pre/vhall-form-vue.js"
+    url: "//s3.e.vhall.com/common-static/vhall-form/1.0.0/vhall-form-vue.js"
   }
 };
